@@ -11,9 +11,9 @@ from tqdm import tqdm
 from time import sleep
 from datetime import datetime
 from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername
-from featureextraction.views import check_npy_components_of_capture
+from featureextraction.views import check_npy_components_of_capture, quantity_ui_elements_fe_technique, location_ui_elements_fe_technique, location_ui_elements_and_plaintext_fe_technique
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from featureextraction.views import gui_components_detection, classify_image_components, uied_classify_image_components, feature_extraction_technique
+from featureextraction.views import gui_components_detection, classify_image_components, uied_classify_image_components
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -141,6 +141,22 @@ def generate_case_study(case_study):
                             case "uied":
                                 times[n][function_to_exec] = {"start": time.time()}
                                 output = uied_classify_image_components(*to_exec_args[function_to_exec])
+                                times[n][function_to_exec]["finish"] = time.time()
+                            case _:
+                                pass
+                    elif function_to_exec == "feature_extraction_technique":
+                        match case_study.classify_image_components.algorithm:
+                            case "quantity":
+                                times[n][function_to_exec] = {"start": time.time()}
+                                output = quantity_ui_elements_fe_technique(*to_exec_args[function_to_exec])
+                                times[n][function_to_exec]["finish"] = time.time()
+                            case "location":
+                                times[n][function_to_exec] = {"start": time.time()}
+                                output = location_ui_elements_fe_technique(*to_exec_args[function_to_exec])
+                                times[n][function_to_exec]["finish"] = time.time()
+                            case "plaintext":
+                                times[n][function_to_exec] = {"start": time.time()}
+                                output = location_ui_elements_and_plaintext_fe_technique(*to_exec_args[function_to_exec])
                                 times[n][function_to_exec]["finish"] = time.time()
                             case _:
                                 pass

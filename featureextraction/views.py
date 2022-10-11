@@ -828,3 +828,12 @@ def check_npy_components_of_capture(image_name="1.png.npy", image_path="media/sc
         image_path = input(
             "Do you want to check another image components? Indicate another npy file name: ")
         check_npy_components_of_capture(image_path, None, True)
+
+def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwrite_info):
+    print("TODO") # TODO: 
+
+def location_ui_elements_fe_technique(feature_extraction_technique_name, overwrite_info):
+    print("TODO") # TODO: 
+
+def location_ui_elements_and_plaintext_fe_technique(feature_extraction_technique_name, overwrite_info):
+    print("TODO") # TODO: 
