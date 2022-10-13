@@ -278,6 +278,14 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, quantity_differe
 
 
 def experiments_results_collectors(case_study, decision_tree_filename):
+    """
+    Calculates the results of a given case_study
+
+    :param case_study: Case study to analyze
+    :type case_study: CaseStudy
+    :returns: Path leading to the csv containing the results
+    :rtype: str
+    """
     csv_filename = case_study.exp_folder_complete_path + sep + case_study.exp_foldername + "_results.csv"
 
     times_info_path = metadata_location + sep + case_study.exp_foldername + "_metadata" + sep
@@ -296,7 +304,8 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     # tree_training_time = []
     # tree_training_accuracy = []
     
-    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and case_study.decision_tree_training.algorithms) else None
+    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and 
+                                                                                case_study.decision_tree_training.algorithms) else None
 
     if decision_tree_algorithms:
         accuracy = {}
@@ -406,10 +415,9 @@ def experiments_results_collectors(case_study, decision_tree_filename):
 
 def case_study_generator(data):
     '''
-    Mandatory Attributes: mode, exp_foldername, phases_to_execute, decision_point_activity, exp_folder_complete_path, gui_class_success_regex, gui_quantity_difference, scenarios_to_study, drop, special_colnames
+    Mandatory Attributes: title, exp_foldername, phases_to_execute, decision_point_activity, exp_folder_complete_path, gui_class_success_regex, gui_quantity_difference, scenarios_to_study, drop, special_colnames
     Example values:
-    version_name = "Advanced_10_30"
-    mode = "generation"
+    title = "case study 1"
     decision_point_activity = "D"
     path_to_save_experiment = None
     gui_class_success_regex = "CheckBox_D or ImageView_D or TextView_D" # "(CheckBox_D or ImageView_D or TextView_D) and (ImageView_B or TextView_B)"
@@ -425,6 +433,7 @@ def case_study_generator(data):
     '''
     with transaction.atomic():
 
+        # Introduce a default value for scencarios_to_study if there is none
         if not data['scenarios_to_study']:
             data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
                 
@@ -432,6 +441,7 @@ def case_study_generator(data):
         cs_serializer.is_valid(raise_exception=True)
         case_study = cs_serializer.save()
 
+        # For each phase we want to execute, we create a database row for it and relate it with the case study
         for phase in data['phases_to_execute']:
             match phase:
                 case "gui_components_detection":
@@ -456,7 +466,8 @@ def case_study_generator(data):
                     case_study.decision_tree_training = serializer.save()
                 case _:
                     pass
-
+        
+        # Updating the case study with the foreign keys of the phases to execute
         case_study.save()
     
     # mode = data['mode']

@@ -61,9 +61,9 @@ def get_ocr_image(pipeline, param_img_root, images_input):
     Aplica Keras-OCR sobre la imagen o imágenes de entrada para extraer el texto plano y las coordenadas
     correspondientes a las palabras que estén presentes.
 
-    :pipeline: keras pipeline
+    :param pipeline: keras pipeline
     :type pipeline: keras pipeline
-    :param_img_root: ruta donde se almacenan las imágenes capturadas asociadas a cada fila del log
+    :param param_img_root: ruta donde se almacenan las imágenes capturadas asociadas a cada fila del log
     :type param_img_root: str
     :param images_input: ruta (string) o lista con las rutas, de la imagen/es a tratar
     :type images_input: str or list
@@ -117,8 +117,18 @@ def nesting_inspection(org, grey, compos, ffl_block):
     return nesting_compos
 
 
-def get_uied_gui_components_crops(input_imgs_path, image_names, img_index, path_to_save_components_json):
-
+def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
+    '''
+    Analyzes an image and extracts its UI components with an alternative algorithm
+    :param param_img_root: Path to the image
+    :type param_img_root: str
+    :param image_names: Names of the images in the path
+    :type image_names: list
+    :param img_index: Index of the image we want to analyze in images_names
+    :type img_index: int
+    :return: List of image crops and Dict object with components detected
+    :rtype: Tuple
+    '''
     resize_by_height = 800
     input_img_path = pjoin(input_imgs_path, image_names[img_index])
 
@@ -172,6 +182,23 @@ def get_uied_gui_components_crops(input_imgs_path, image_names, img_index, path_
 
 
 def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, add_words_columns, img_index):
+    '''
+    Analyzes an image and extracts its UI components
+    :param param_img_root: Path to the image
+    :type param_img_root: str
+    :param image_names: Names of the images in the path
+    :type image_names: list
+    :param texto_detectado_ocr: Text detected by OCR in previous step
+    :type texto_detectado_ocr: list
+    :param path_to_save_bordered_images: Path to save the image along with the components detected
+    :type path_to_save_bordered_images: str
+    :param add_words_columns: Save words detected by OCR
+    :type add_words_columns: bool
+    :param img_index: Index of the image we want to analyze in images_names
+    :type img_index: int
+    :return: Crops and text inside components
+    :rtype: Tuple
+    '''
     words = {}
     words_columns_names = {}
 
@@ -415,7 +442,7 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
                 path_to_save_components_json = path_to_save_gui_components_npy.replace(
                     "components_npy", "components_json")
                 recortes, uicompos = get_uied_gui_components_crops(
-                    param_img_root, image_names, img_index, path_to_save_components_json)
+                    param_img_root, image_names, img_index)
                 if not os.path.exists(path_to_save_components_json):
                     os.makedirs(path_to_save_components_json)
                 utils.save_corners_json(
@@ -445,18 +472,30 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
                                    rewrite_log=False):
     """
     Con esta función clasificamos los componentes recortados de cada una de las capturas para posteriormente añadir al log
-    10 columnas. Estas corresponden a cada una de las clases en las que se puede clasificar un componente GUI. Los valores 
+    el numero de columnas corrrespondientes al numero de clases del modelo proporcionado. Estas corresponden a cada una de las
+    clases en las que se puede clasificar un componente GUI. Los valores 
     indicados en estas columnas añadidas indican cuántos de componentes GUI están presentes en la captura según su tipo, es
     decir, 2 button, 3 image_view, 1 text_view, etc.
 
-    :param_img_root: ruta donde se almacenan las imágenes capturadas asociadas a cada fila del log
-    :type param_img_root: str
-    :param_json_file_name: estructura del modelo de conocimiento de la red neuronal que clasifica los componentes GUI
-    :type param_json_file_name: json
-    :param_model_weights: pesos de las aristas de la red neuronal que clasifica los componentes GUI 
+    
+    :param_model_weights: Pesos de las aristas de la red neuronal que clasifica los componentes GUI 
     :type param_model_weights: h5
-    :param_log_path: ruta donde se encuentra el log que queremos enriquecer con cuántos componentes GUI de cada tipo hay en sus capturas
+    :param model_properties: Clases y "shape" del modelo de clasificacion
+    :type model_properties: json file
+    :param param_images_root: Ruta donde se encuentran los recorted de las imágenes
+    :type param_images_root: str
+    :param param_json_root: Ruta donde se encuentra el json con los componentes de la imagen
+    :type param_json_root: str
+    :param param_log_path: Ruta donde se encuentra el log que queremos enriquecer con cuántos componentes GUI de cada tipo hay en sus capturas
     :type param_log_path: str
+    :param enriched_log_output_path: Ruta donde se desea guardar el log enriquecido
+    :type enriched_log_output_path: str
+    :param screenshot_colname: Name of the column in the log indicating the images names
+    :type screenshot_colname: str
+    :param rewrite_log: Rewrite log
+    :type rewrite_log: bool
+    :returns: Log enriquecido
+    :rtype: DataFrame
     """
     if not os.path.exists(enriched_log_output_path) or rewrite_log:
         # Load the model properties from the json
@@ -558,21 +597,32 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
     return log_enriched
 
 
-def classify_image_components(param_json_file_name="resources/models/model.json", param_model_weights="resources/models/model.h5", model_properties="resources/models/custom-v2-classes.json", param_images_root="resources/screenshots/components_npy/", param_log_path="resources/log.csv", enriched_log_output_path="resources/enriched_log_feature_extracted.csv", screenshot_colname="Screenshot", rewrite_log=False):
+def classify_image_components(param_json_file_name="resources/models/model.json", param_model_weights="resources/models/model.h5", 
+                            model_properties="resources/models/custom-v2-classes.json", param_images_root="resources/screenshots/components_npy/",
+                            param_log_path="resources/log.csv", enriched_log_output_path="resources/enriched_log_feature_extracted.csv", 
+                            screenshot_colname="Screenshot", rewrite_log=False):
     """
     Con esta función clasificamos los componentes recortados de cada una de las capturas para posteriormente añadir al log
     14 columnas. Estas corresponden a cada una de las clases en las que se puede clasificar un componente GUI. Los valores 
     indicados en estas columnas añadidas indican cuántos de componentes GUI están presentes en la captura según su tipo, es
     decir, 2 button, 3 image_view, 1 text_view, etc.
-
-    :param_img_root: ruta donde se almacenan las imágenes capturadas asociadas a cada fila del log
-    :type param_img_root: str
-    :param_json_file_name: estructura del modelo de conocimiento de la red neuronal que clasifica los componentes GUI
-    :type param_json_file_name: json
-    :param_model_weights: pesos de las aristas de la red neuronal que clasifica los componentes GUI 
+    
+    :param param_json_file_name:
+    :type param_json_file_name: json file
+    :param_model_weights: Pesos de las aristas de la red neuronal que clasifica los componentes GUI 
     :type param_model_weights: h5
-    :param_log_path: ruta donde se encuentra el log que queremos enriquecer con cuántos componentes GUI de cada tipo hay en sus capturas
+    :param param_images_root: Ruta donde se encuentran los recorted de las imágenes
+    :type param_images_root: str
+    :param param_log_path: Ruta donde se encuentra el log que queremos enriquecer con cuántos componentes GUI de cada tipo hay en sus capturas
     :type param_log_path: str
+    :param enriched_log_output_path: Ruta donde se desea guardar el log enriquecido
+    :type enriched_log_output_path: str
+    :param screenshot_colname: Name of the column in the log indicating the images names
+    :type screenshot_colname: str
+    :param rewrite_log: Rewrite log
+    :type rewrite_log: bool
+    :returns: Log enriquecido
+    :rtype: DataFrame
     """
     if not os.path.exists(enriched_log_output_path) or rewrite_log:
         column_names = ['x0_Button', 'x0_CheckBox', 'x0_CheckedTextView', 'x0_EditText',
