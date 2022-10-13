@@ -47,27 +47,24 @@ from tqdm import tqdm
 # Create your views here.
 
 """
-Detección cuadros de texto: KERAS_OCR
+Text boxes detection: KERAS_OCR
 
-Con el objetivo de detectar los cuadros de texto dentro las capturas de pantalla,
-definimos la función get_keras_ocr_image.
-Esta función tendrá como input una lista de imagénes, y como output, una lista en la que habrá una lista por cada imagen de entrada.
-En cada una de estas listas, estarán las coordenadas de las esquinas que conforman cada uno de los cuadros de texto detectados.
+In order to detect the text boxes inside the screenshots, we define the get_keras_ocr_image.
+This function has a list of images as input, and a list of lists with the coordinates of text boxes coordinates
 """
-
 
 def get_ocr_image(pipeline, param_img_root, images_input):
     """
-    Aplica Keras-OCR sobre la imagen o imágenes de entrada para extraer el texto plano y las coordenadas
-    correspondientes a las palabras que estén presentes.
+    Applies Keras-OCR over the input image or images to extract plain text and the coordinates corresponding
+    to the present words
 
     :param pipeline: keras pipeline
     :type pipeline: keras pipeline
-    :param param_img_root: ruta donde se almacenan las imágenes capturadas asociadas a cada fila del log
+    :param param_img_root: Path where the imaages associated to each log row are stored
     :type param_img_root: str
-    :param images_input: ruta (string) o lista con las rutas, de la imagen/es a tratar
+    :param images_input: Path or list of paths of the image/s to process
     :type images_input: str or list
-    :returns: lista de listas correspondientes a las palabras identificadas en la imagen de entrada. Ejemplo: lista de array de información sobre palabras descubiertas ('delete', array([[1161.25,  390.  ], [1216.25,  390.  ], [1216.25,  408.75], [1161.25,  408.75]], dtype=float32))
+    :returns: List of lists corresponding the words identified in the input. Example: ('delete', array([[1161.25,  390.  ], [1216.25,  390.  ], [1216.25,  408.75], [1161.25,  408.75]], dtype=float32))
     :rtype: list
     """
 
@@ -120,6 +117,7 @@ def nesting_inspection(org, grey, compos, ffl_block):
 def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
     '''
     Analyzes an image and extracts its UI components with an alternative algorithm
+
     :param param_img_root: Path to the image
     :type param_img_root: str
     :param image_names: Names of the images in the path
@@ -184,6 +182,7 @@ def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
 def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, add_words_columns, img_index):
     '''
     Analyzes an image and extracts its UI components
+
     :param param_img_root: Path to the image
     :type param_img_root: str
     :param image_names: Names of the images in the path
@@ -371,19 +370,20 @@ def gaze_events_associated_to_event_time_range(eyetracking_log, colnames, timest
 
 def detect_images_components(param_img_root, log, special_colnames, overwrite_npy, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, path_to_save_gui_components_npy, add_words_columns, algorithm):
     """
-    Con esta función preprocesamos las imágenes de las capturas a partir de la información resultante de 
-    aplicar OCR y de la propia imagen. Recortamos los componentes GUI y se almacena un numpy array con
-    todos los componentes recortados para cada una de las imágenes indicadas en images_names
+    With this function we process the screencaptures using the information resulting by aplying OCR
+    and the image itself. We crop the GUI components and store them in a numpy array with all the 
+    cropped components for each of the images in images_names
 
-    :param_img_root: ruta donde se almacenan las imágenes capturadas asociadas a cada fila del log
+
+    :param param_img_root: Path where the imaages associated to each log row are stored
     :type param_img_root: str
-    :image_names: lista con el nombre de las imágenes que están presentes en el log (listadas por orden de aparición)
+    :image_names: Names of images in the log by alphabetical order
     :type image_names: list
-    :texto_detectado_ocr: lista de listas, en la que cada una de ellas se corresponde con las palabras detectadas en cada imagen del log y sus coordenadas correpsondientes. Se corresponde con el formato de salida de la función get_ocr_image
+    :texto_detectado_ocr: List of lists corresponding the words identified in the images on the log file
     :type texto_detectado_ocr: list
-    :path_to_save_gui_components_npy: ruta donde almacenar los numpy arrays con los componentes recortados de cada imagen
+    :path_to_save_gui_components_npy: Path where the numpy arrays with the crops must be saved
     :type path_to_save_gui_components_npy: str
-    :path_to_save_bordered_images: ruta donde se almacenan las imágenes de cada componente con el borde resaltado
+    :path_to_save_bordered_images: Path where the images along with their component borders must be stored
     :type path_to_save_bordered_images: str
     """
     no_modification = True

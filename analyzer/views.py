@@ -177,9 +177,9 @@ def generate_case_study(case_study):
             # Writing to .json
             with open(metadata_path+scenario+"-metainfo.json", "w") as outfile:
                 outfile.write(json_object)
-    # cada experimento una linea: csv
-    # almaceno los tiempos por cada fase y por cada experimento (por cada familia hay 30)
-    # ejecutar solamente los experimentos
+    # each experiment one csv line
+    # store exceution times per each phase and experiment (30 per family)
+    # execute only the experiments
 
 
 def times_duration(times_dict):
