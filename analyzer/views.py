@@ -35,23 +35,16 @@ def get_foldernames_as_list(path, sep):
     return foldername_logs_with_different_size_balance
 
 def generate_case_study(case_study):
-    """ Generate case study. This function executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is. 
+    """ 
+    Generate case study. This function executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is. 
     
     Args:
         exp_foldername (string): name of the folder where all case study data is stored. Example 'case_study_data'
-
         exp_folder_complete_path (string): complete path to the folder where all case study data is stored, including the name of the folder in this path. Example 'C:\\John\\Desktop\\case_study_data'
-        
         decision_activity (string): activity where decision we want to study is taken. Example: 'B' 
-
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
-
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-
         to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['gui_components_detection','classify_image_components','extract_training_dataset','decision_tree_training']
-
-    Returns:
-        None
     """
     times = {}
     foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
@@ -65,6 +58,7 @@ def generate_case_study(case_study):
         sleep(.1)
         print("\nActual Scenario: " + str(scenario))
         param_path = case_study.exp_folder_complete_path + sep + scenario + sep
+        # We check there is at least 1 phase to execute
         if case_study.gui_components_detection or case_study.classify_image_components or case_study.extract_training_dataset or case_study.decision_tree_training:
             for n in foldername_logs_with_different_size_balance:
                 times[n] = {}
@@ -101,6 +95,7 @@ def generate_case_study(case_study):
                                                  case_study.gui_components_detection.add_words_columns,
                                                  case_study.gui_components_detection.overwrite_npy,
                                                  case_study.gui_components_detection.algorithm) 
+                                                 # We check this phase is present in case_study to avoid exceptions 
                                                  if case_study.gui_components_detection else None,
                     'classify_image_components': (case_study.classify_image_components.model_json_file_name,
                                                   case_study.classify_image_components.model_weights,
@@ -110,29 +105,35 @@ def generate_case_study(case_study):
                                                   param_path+n+sep+'enriched_log.csv',
                                                   case_study.special_colnames["Screenshot"],
                                                   case_study.classify_image_components.overwrite_npy)
+                                                 # We check this phase is present in case_study to avoid exceptions 
                                                   if case_study.classify_image_components else None,
                     'feature_extraction_technique': (case_study.feature_extraction_technique.name,
                                                   case_study.feature_extraction_technique.overwrite_npy)
+                                                 # We check this phase is present in case_study to avoid exceptions 
                                                   if case_study.feature_extraction_technique else None,
                     'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv', 
                                                 param_path + n + sep, case_study.extract_training_dataset.columns_to_ignore, 
                                                 case_study.special_colnames["Variant"], case_study.special_colnames["Case"], 
                                                 case_study.special_colnames["Screenshot"], case_study.special_colnames["Timestamp"], 
                                                 case_study.special_colnames["Activity"]) 
+                                                # We check this phase is present in case_study to avoid exceptions 
                                                 if case_study.extract_training_dataset else None,
                     'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', param_path+n+sep,
                                                 case_study.decision_tree_training.library,
                                                 case_study.decision_tree_training.mode,
                                                 case_study.decision_tree_training.algorithms,
                                                 case_study.decision_tree_training.columns_to_ignore) 
+                                                # We check this phase is present in case_study to avoid exceptions 
                                                 if case_study.decision_tree_training  else None # 'autogeneration' -> to plot tree automatically
                     }
                 
+                # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
                 for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
                     if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library!='sklearn':
                         res, tree_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
                         times[n][function_to_exec] = tree_times
                     elif function_to_exec == "classify_image_components":
+                        # Classification can be done with different algorithms
                         match case_study.classify_image_components.algorithm:
                             case "legacy":
                                 times[n][function_to_exec] = {"start": time.time()}
@@ -145,6 +146,7 @@ def generate_case_study(case_study):
                             case _:
                                 pass
                     elif function_to_exec == "feature_extraction_technique":
+                        # Classification can be done with different algorithms
                         match case_study.classify_image_components.algorithm:
                             case "quantity":
                                 times[n][function_to_exec] = {"start": time.time()}

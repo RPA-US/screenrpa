@@ -209,13 +209,13 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     #     gaze_point_x = False
 
     image_path = param_img_root + image_names[img_index]
-    # Leemos la imagen
+    # Read the image
     img = cv2.imread(image_path)
     img_copy = img.copy()
     # cv2_imshow(img_copy)
 
-    # Almacenamos en global_y todas las coordenadas "y" de los cuadros de texto
-    # Cada fila es un cuadro de texto distinto, mucho más amigable que el formato que devuelve keras_ocr
+    # Store on global_y all the "y" coordinates and text boxes
+    # Each row is a different text box, much more friendly than the format returned by keras_ocr 
     global_y = []
     global_x = []
     words[img_index] = {}
@@ -249,7 +249,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     # print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
 
-    # Cálculo los intervalos de los cuadros de texto
+    # Interval calculation of the text boxes
     intervalo_y = []
     intervalo_x = []
     for j in range(0, len(global_y)):
@@ -258,30 +258,30 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     # print("Intervalo y", intervalo_y)
     # print("Intervalo x", intervalo_x)
 
-    # Convertimos a escala de grises
+    # Conversion to grey Scale
     gris = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # cv2_imshow(gris)
 
-    # Aplicar suavizado Gaussiano
+    # Gaussian blur
     gauss = cv2.GaussianBlur(gris, (5, 5), 0)
     # cv2_imshow(gauss)
 
-    # Detectamos los bordes con Canny
+    # Border detection with Canny
     canny = cv2.Canny(gauss, 50, 150)
     # cv2_imshow(canny)
 
-    # Buscamos los contornos
+    # Countour search in the image
     (contornos, _) = cv2.findContours(canny.copy(),
                                       cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # print("Number of GUI components detected: ", len(contornos), "\n")
 
-    # y los dibujamos
+    # draw the countours on the image
     cv2.drawContours(img_copy, contornos, -1, (0, 0, 255), 2)
     # cv2_imshow(img_copy)
     cv2.imwrite(path_to_save_bordered_images +
                 image_names[img_index] + '_contornos.png', img_copy)
 
-    # Llevamos a cabo los recortes para cada contorno detectado
+    # We carry out the crops for each detected countour
     recortes = []
     lista_para_no_recortar_dos_veces_mismo_gui = []
 
@@ -290,7 +290,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     for j in range(0, len(contornos)):
         cont_horizontal = []
         cont_vertical = []
-        # Obtenemos componentes máximas y mínimas (eje x,y) del contorno
+        # Obtain x and y max and min values of the countour
         for i in range(0, len(contornos[j])-1):
             cont_horizontal.append(contornos[j][i][0][0])
             cont_vertical.append(contornos[j][i][0][1])
@@ -301,7 +301,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         #print('Coord x, componente' + str(j+1) + '  ' + str(x) + ' : ' + str(w))
         #print('Coord y, componente' + str(j+1) + '  ' + str(y) + ' : ' + str(h))
 
-        # Comprobamos que los contornos no solapen con cuadros de texto y optamos por recortar los cuadros de texto si solapan.
+        # Check that the countours are not overlapping with text boxes. If so, cut the text boxes
         condicion_recorte = True
         no_solapa = 1
         for k in range(0, len(intervalo_y)):
@@ -333,7 +333,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         #print("Componente " + str(j+1) + " solapa con cuadro de texto")
         # recortes.append(crop_img)
         # else:
-        # Si el componente GUI solapa con el cuadro de texto, cortamos el cuadro de texto a partir de las coordenadas de sus esquinas
+        # If the GUI component overlaps with the textbox, cut the later one
         # gaze_point_x and gaze_point_x >= x and gaze_point_x <= w and gaze_point_y >= y and gaze_point_y <= h and duration >= gaze_analysis_threshold
         coincidence_with_attention_point = True
         if (condicion_recorte and coincidence_with_attention_point):
@@ -399,7 +399,7 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
 
     last_upper_limit = 0
 
-    # Recorremos la lista de imágenes
+    # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
         screenshot_texts_npy = path_to_save_gui_components_npy + \
             image_names[img_index] + "_texts.npy"
@@ -453,7 +453,7 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
             # if (add_words_columns and (not no_modification)) or (add_words_columns and (not os.path.exists(param_img_root+"text_colums.csv"))):
             #     storage_text_info_as_dataset(words, image_names, log, param_img_root)
 
-# Para el caso de este ejemplo elegimos la función de Zero-padding para redimensionar las imágenes
+# In this example, we choose zero-padding to resize the images
 
 
 def pad(img, h, w):
@@ -471,30 +471,28 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
                                    enriched_log_output_path="resources/enriched_log_feature_extracted.csv", screenshot_colname="Screenshot",
                                    rewrite_log=False):
     """
-    Con esta función clasificamos los componentes recortados de cada una de las capturas para posteriormente añadir al log
-    el numero de columnas corrrespondientes al numero de clases del modelo proporcionado. Estas corresponden a cada una de las
-    clases en las que se puede clasificar un componente GUI. Los valores 
-    indicados en estas columnas añadidas indican cuántos de componentes GUI están presentes en la captura según su tipo, es
-    decir, 2 button, 3 image_view, 1 text_view, etc.
-
+    With this function we classify the copped component from each of the sreenshots to later add to the log the number of
+    columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
+    The values indicated in these columns added indicate how many GUI components are present with regard to their class.
+    Example. 2 button, 3 image_view, 1 text_view, etc.
     
-    :param_model_weights: Pesos de las aristas de la red neuronal que clasifica los componentes GUI 
+    :param_model_weights: Classification model 
     :type param_model_weights: h5
-    :param model_properties: Clases y "shape" del modelo de clasificacion
+    :param model_properties: Classes and shape of the model
     :type model_properties: json file
-    :param param_images_root: Ruta donde se encuentran los recorted de las imágenes
+    :param param_images_root: Path where the cropped images are stored
     :type param_images_root: str
-    :param param_json_root: Ruta donde se encuentra el json con los componentes de la imagen
+    :param param_json_root: Path where the json will all the components is sotred
     :type param_json_root: str
-    :param param_log_path: Ruta donde se encuentra el log que queremos enriquecer con cuántos componentes GUI de cada tipo hay en sus capturas
+    :param param_log_path: Path twhere the log we want to enrich is located
     :type param_log_path: str
-    :param enriched_log_output_path: Ruta donde se desea guardar el log enriquecido
+    :param enriched_log_output_path: Path to save the enriched log
     :type enriched_log_output_path: str
     :param screenshot_colname: Name of the column in the log indicating the images names
     :type screenshot_colname: str
     :param rewrite_log: Rewrite log
     :type rewrite_log: bool
-    :returns: Log enriquecido
+    :returns: Enriched log
     :rtype: DataFrame
     """
     if not os.path.exists(enriched_log_output_path) or rewrite_log:
@@ -511,7 +509,7 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
         print("\n\nLoaded ML model from disk\n")
 
         """
-        Cargamos los recortes de las imagenes calculados en get_gui_components_crops
+        Load the crops calculated in get_(uied)_gui_components_crops
         """
         log = pd.read_csv(param_log_path, sep=",")
 
@@ -527,13 +525,14 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
                 'content': crop_img_aux}
 
         """
-        Una vez cargadas, procedemos a evaluarlas con el modelo correspondiente
+        Once loaded, proceed to evaluate them with the corresponding model
         """
         print("\nLog dictionary length: " + str(len(crop_imgs)))
 
         for i in range(0, len(crop_imgs)):
             """
-            Esta red devuelve como salida el nombre de la clase detectada.
+            This network gives as output the name of the detected class.
+            Additionally, we moddify the json file with the components to add the corresponding classes
             """
             with open(param_json_root + images_names[i] + '.json', 'r') as f:
                 data = json.load(f)
@@ -552,10 +551,9 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
                 json.dump(data, jsonFile)
 
         """
-        Como todas las imágenes no tendrán todas las clases, generarán como salida un dataset que no tendrán siempre las mismas
-        columnas. Dependerá si en la imagen aparecen componentes GUI de todo tipo o solamente un subconjunto de ellos. Por ello, 
-        inicializamos un dataframe con todas las columnas posibles, y vamos incluyendo una fila por cada resultado obtenido de
-        cada imagen pasada por la red.
+        Since not all images have all classes, a dataset with different columns depending on the images will be generated.
+        It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
+        dataframe will all possible columns, and include row by row the results obtained from the predictions
         """
 
         nombre_clases = classifier["Elements"].class_map
@@ -563,7 +561,7 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
 
         for i in range(0, len(images_names)):
             row1 = [0 for i in range(0, len(nombre_clases))]
-            # accedemos a las frecuencias almacenadas anteriormente
+            # Acess the previously stored frequencies
             df1 = crop_imgs[images_names[i]]["result_freq_df"]
             if len(df1.columns.tolist()) > 0:
                 for x in df1.columns.tolist():
@@ -572,19 +570,18 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
                     df.loc[i] = row1
 
         """
-        Una vez obtenido el dataset correspondiente a la cantidad de elementos de cada clase contenidos en cada una de las
-        imágenes. Unimos este con el log completo, añadiendo las características extraídas de las imágenes.
+        Once the dataset corresponding to the ammount of elements of each class contained in each of the images is obtained,
+        we merge it with the complete log, adding the extracted characteristics from the images
         """
 
         log_enriched = log.join(df).fillna(method='ffill')
 
         """
-        Finalmente obtenemos un log enriquecido, que se torna como prueba de concepto de nuestra hipótesis basada en que, si
-        no solamente capturamos eventos de teclado o de ratón en la monitorización a través de un keylogger, sino que obtenemos
-        también capturas de pantalla. Podemos extraer mucha más información útil, pudiendo mejorar la minería de procesos sobre
-        dicho log. Nos ha quedado pendiente validar esta hipótesis mediante la comparación de resultados entre aplicar técnicas
-        de pricess mining aplicadas sobre el log inicial vs. el log enriquecido. Esperamos poder continuar con este proyecto
-        en fases posteriores del máster.
+        Finally we obtain an entiched log, which is turned as proof of concept of our hypothesis based on the premise that if
+        we not only capture keyboard or mouse events on the monitorization through a keylogger, but also screencaptures,
+        we can extract much more useful information, being able to improve the process mining over said log.
+        As a pending task, we need to validate this hypothesis through a results comparison against the non-enriched log.
+        We expect to continue this project in later stages of the master
         """
         log_enriched.to_csv(enriched_log_output_path)
         print("\n\n=========== ENRICHED LOG GENERATED: path=" +
@@ -602,26 +599,26 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
                             param_log_path="resources/log.csv", enriched_log_output_path="resources/enriched_log_feature_extracted.csv", 
                             screenshot_colname="Screenshot", rewrite_log=False):
     """
-    Con esta función clasificamos los componentes recortados de cada una de las capturas para posteriormente añadir al log
-    14 columnas. Estas corresponden a cada una de las clases en las que se puede clasificar un componente GUI. Los valores 
-    indicados en estas columnas añadidas indican cuántos de componentes GUI están presentes en la captura según su tipo, es
-    decir, 2 button, 3 image_view, 1 text_view, etc.
-    
+    With this function we classify the copped component from each of the sreenshots to later add to the log the number of
+    columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
+    The values indicated in these columns added indicate how many GUI components are present with regard to their class.
+    Example. 2 button, 3 image_view, 1 text_view, etc.
+
     :param param_json_file_name:
     :type param_json_file_name: json file
-    :param_model_weights: Pesos de las aristas de la red neuronal que clasifica los componentes GUI 
+    :param_model_weights: Weights of the edges of the classification neural network 
     :type param_model_weights: h5
-    :param param_images_root: Ruta donde se encuentran los recorted de las imágenes
+    :param param_images_root: Path where the cropped images are stored
     :type param_images_root: str
-    :param param_log_path: Ruta donde se encuentra el log que queremos enriquecer con cuántos componentes GUI de cada tipo hay en sus capturas
+    :param param_log_path: Path twhere the log we want to enrich is located
     :type param_log_path: str
-    :param enriched_log_output_path: Ruta donde se desea guardar el log enriquecido
+    :param enriched_log_output_path: Path to save the enriched log
     :type enriched_log_output_path: str
     :param screenshot_colname: Name of the column in the log indicating the images names
     :type screenshot_colname: str
     :param rewrite_log: Rewrite log
     :type rewrite_log: bool
-    :returns: Log enriquecido
+    :returns: Enriched log
     :rtype: DataFrame
     """
     if not os.path.exists(enriched_log_output_path) or rewrite_log:
@@ -645,11 +642,7 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
         print("\n\nLoaded ML model from disk\n")
 
         """
-        Tras comprobar el accuracy obtenido tras la evaluación, vamos a aplicar el modelo a un experimento basado en un log,
-        con imágenes mockeadas a modo de screenchots del proceso, para extraerle las características a estas.
-
-        Cogemos los vectores de numpy correspondientes a cada imagen, obtenidos a través de la aplicación del notebook
-        de Detección y recorte de componentes GUI, que tendrán que ser almacenadas en la ruta "mockups_vector/".
+        Load the crops calculated in get_(uied)_gui_components_crops
         """
         log = pd.read_csv(param_log_path, sep=",")
 
@@ -667,8 +660,7 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
                 'content': crop_img_aux, 'text': text_or_not_text}
 
         """
-        Una vez cargadas, reducimos su tamaño para adecuarlo a la entrada de la red neuronal convolucional producto de este
-        notebook.
+        Once loaded, we reduce their size to adapt them to the neural network entry
         """
         print("\nLog dictionary length: " + str(len(crop_imgs)))
 
@@ -692,8 +684,8 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
                 # print("Cropped: "+str(img_resized.shape))
             crop_imgs[crop_images[i]]["content_preprocessed"] = aux
             """
-            Esta red devuelve como salida un número, indicando una de las clases. Este número tendrá que ser mapeado a su texto
-            (nombre de la clase) correspondiente.
+            This neural network returns as output a number indicating each of its classes. This number must me mapped to its 
+            corresponding class name (str)
             """
             content_preprocessed_aux = crop_imgs[images_names[i]
                                                  ]["content_preprocessed"]
@@ -719,10 +711,9 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
                                                                      ]["result_freq"].to_frame().T
 
         """
-        Como todas las imágenes no tendrán todas las clases, generarán como salida un dataset que no tendrán siempre las mismas
-        columnas. Dependerá si en la imagen aparecen componentes GUI de todo tipo o solamente un subconjunto de ellos. Por ello, 
-        inicializamos un dataframe con todas las columnas posibles, y vamos incluyendo una fila por cada resultado obtenido de
-        cada imagen pasada por la red.
+        Since not all images have all classes, a dataset with different columns depending on the images will be generated.
+        It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
+        dataframe will all possible columns, and include row by row the results obtained from the predictions
         """
 
         nombre_clases = ['x0_RatingBar', 'x0_ToggleButton', 'x0_Spinner', 'x0_Switch', 'x0_CheckBox', 'x0_TextView', 'x0_EditText',
@@ -731,7 +722,7 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
 
         for i in range(0, len(images_names)):
             row1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            # accedemos a las frecuencias almacenadas anteriormente
+            # Acess the previously stored frequencies
             df1 = crop_imgs[images_names[i]]["result_freq_df"]
             if len(df1.columns.tolist()) > 0:
                 for x in df1.columns.tolist():
@@ -740,19 +731,18 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
                     df.loc[i] = row1
 
         """
-        Una vez obtenido el dataset correspondiente a la cantidad de elementos de cada clase contenidos en cada una de las
-        imágenes. Unimos este con el log completo, añadiendo las características extraídas de las imágenes.
+        Once the dataset corresponding to the ammount of elements of each class contained in each of the images is obtained,
+        we merge it with the complete log, adding the extracted characteristics from the images
         """
 
         log_enriched = log.join(df).fillna(method='ffill')
 
         """
-        Finalmente obtenemos un log enriquecido, que se torna como prueba de concepto de nuestra hipótesis basada en que, si
-        no solamente capturamos eventos de teclado o de ratón en la monitorización a través de un keylogger, sino que obtenemos
-        también capturas de pantalla. Podemos extraer mucha más información útil, pudiendo mejorar la minería de procesos sobre
-        dicho log. Nos ha quedado pendiente validar esta hipótesis mediante la comparación de resultados entre aplicar técnicas
-        de pricess mining aplicadas sobre el log inicial vs. el log enriquecido. Esperamos poder continuar con este proyecto
-        en fases posteriores del máster.
+        Finally we obtain an entiched log, which is turned as proof of concept of our hypothesis based on the premise that if
+        we not only capture keyboard or mouse events on the monitorization through a keylogger, but also screencaptures,
+        we can extract much more useful information, being able to improve the process mining over said log.
+        As a pending task, we need to validate this hypothesis through a results comparison against the non-enriched log.
+        We expect to continue this project in later stages of the master
         """
         log_enriched.to_csv(enriched_log_output_path)
         print("\n\n=========== ENRICHED LOG GENERATED: path=" +
@@ -799,36 +789,35 @@ def storage_text_info_as_dataset(words, image_names, log, param_img_root):
 
 
 """
-Detección de componentes GUI
+GUI component detection
 
-El objetivo de esta parte es poder detectar, delimitar y posteriormente recortar,
-cada uno de los componentes gráficos (símbolos, imágenes o cuadros de texto)
-que componen una captura de pantalla.
+The objective of this section is to be able to detect, define and crop each
+of the graphic components (Symbols, images or text boxes) that form constitute
+a screenshot
 
-Importación de Librerías: Nos vamos a servir principalmente de dos librerías,
-keras_ocr y Opencv (Cv2).
-======================================
-Detección de bordes y recortes: OpenCV
+Libraries Import: We will use mainly keras_ocr and Opencv (Cv2).
+=====================================
+Border detection and cropping: OpenCV
 
-Hacemos uso de la libería OpenCV para llevar a cabo las siguientes tareas:
-- Lectura de la imagen.
-- Cálculo de intervalos ocupados por los cuadros de texto obtenidos a través de keras_ocr
-- Tratamiento de la imagen:
-  > Conversión a escala de grises.
-  > Suavizado gaussiano a la imagen.
-  > **Algoritmo de Canny** para la detección de bordes.
-  > Obtención de contornos.
-- Comparación entre contornos y cuadros de texto, otorgando más peso al cuadro de texto en
-  el caso de que se solape espacialmente con algún contorno detectado.
-- Recorte final de cada uno de los componentes.
+We make use of OpenCV to carry out the following tasks:
+- Image read.
+- Calculation of intervals occupied by the text boxes obtained from keras_ocr
+- Image processing:
+    > GreyScale conversion
+    > Gaussian blur
+    > **Canny algorithm** for border detection
+    > Countour detection
+- Comparison betweeen countour and text boxes, giving more importance to text boxes 
+    in case there is overlapping
+- Final crop of each of the components
 
 """
 
 
 def gui_components_detection(param_log_path, param_img_root, special_colnames, eyetracking_log_filename, add_words_columns=False, overwrite_npy=False, algorithm="legacy"):
-    # Leemos el log
+    # Log read
     log = pd.read_csv(param_log_path, sep=",")
-    # Extraemos los nombres de las capturas asociadas a cada fila del log
+    # Extract the names of the screenshots associated to each of the rows in the log
     image_names = log.loc[:, special_colnames["Screenshot"]].values.tolist()
     pipeline = keras_ocr.pipeline.Pipeline()
     file_exists = os.path.exists(param_img_root + "images_ocr_info.txt")
