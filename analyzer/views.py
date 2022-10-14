@@ -147,7 +147,7 @@ def generate_case_study(case_study):
                                 pass
                     elif function_to_exec == "feature_extraction_technique":
                         # Classification can be done with different algorithms
-                        match case_study.classify_image_components.algorithm:
+                        match case_study.feature_extraction_technique.algorithm:
                             case "quantity":
                                 times[n][function_to_exec] = {"start": time.time()}
                                 output = quantity_ui_elements_fe_technique(*to_exec_args[function_to_exec])
