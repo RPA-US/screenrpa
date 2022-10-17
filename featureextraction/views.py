@@ -291,7 +291,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         cont_horizontal = []
         cont_vertical = []
         # Obtain x and y max and min values of the countour
-        for i in range(0, len(contornos[j])-1):
+        for i in range(0, len(contornos[j])):
             cont_horizontal.append(contornos[j][i][0][0])
             cont_vertical.append(contornos[j][i][0][1])
             x = min(cont_horizontal)
