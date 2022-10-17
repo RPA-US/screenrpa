@@ -482,7 +482,7 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
     :type model_properties: json file
     :param param_images_root: Path where the cropped images are stored
     :type param_images_root: str
-    :param param_json_root: Path where the json will all the components is sotred
+    :param param_json_root: Path where the json will all the components is stored
     :type param_json_root: str
     :param param_log_path: Path twhere the log we want to enrich is located
     :type param_log_path: str
@@ -596,8 +596,9 @@ def uied_classify_image_components(model_path="resources/models/model.json", par
 
 def classify_image_components(param_json_file_name="resources/models/model.json", param_model_weights="resources/models/model.h5", 
                             model_properties="resources/models/custom-v2-classes.json", param_images_root="resources/screenshots/components_npy/",
-                            param_log_path="resources/log.csv", enriched_log_output_path="resources/enriched_log_feature_extracted.csv", 
-                            screenshot_colname="Screenshot", rewrite_log=False):
+                            param_json_root="resources/screenshots/components_json/", param_log_path="resources/log.csv", 
+                            enriched_log_output_path="resources/enriched_log_feature_extracted.csv",  screenshot_colname="Screenshot", 
+                            rewrite_log=False):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
@@ -610,6 +611,8 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
     :type param_model_weights: h5
     :param param_images_root: Path where the cropped images are stored
     :type param_images_root: str
+    :param param_json_root: Path where the json will all the components is stored
+    :type param_json_root: str
     :param param_log_path: Path twhere the log we want to enrich is located
     :type param_log_path: str
     :param enriched_log_output_path: Path to save the enriched log
@@ -709,6 +712,14 @@ def classify_image_components(param_json_file_name="resources/models/model.json"
                 result_mapped).value_counts()
             crop_imgs[images_names[i]]["result_freq_df"] = crop_imgs[images_names[i]
                                                                      ]["result_freq"].to_frame().T
+            
+            # Update the json file with components
+            with open(param_json_root + images_names[i] + '.json', 'r') as f:
+                data = json.load(f)
+            for j in range(0, len(result_mapped)):
+                data["compos"][j]["class"] = result_mapped[j]
+            with open(param_json_root + images_names[i] + '.json', "w") as jsonFile:
+                json.dump(data, jsonFile)
 
         """
         Since not all images have all classes, a dataset with different columns depending on the images will be generated.
