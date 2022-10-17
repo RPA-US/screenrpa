@@ -287,7 +287,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     text_or_not_text = []
 
-    comp_json = {"img_shape": [], "compos": []}
+    comp_json = {"img_shape": [img.shape], "compos": []}
 
     for j in range(0, len(contornos)):
         cont_horizontal = []
@@ -463,7 +463,7 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
                 recortes, uicompos = get_uied_gui_components_crops(param_img_root, image_names, img_index)
 
                 utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos)
-                
+
                 aux = np.array(recortes, dtype=object)
                 np.save(screenshot_npy, aux)
 
