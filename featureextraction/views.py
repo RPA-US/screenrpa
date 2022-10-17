@@ -287,6 +287,8 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     text_or_not_text = []
 
+    comp_json = {"img_shape": [], "compos": []}
+
     for j in range(0, len(contornos)):
         cont_horizontal = []
         cont_vertical = []
@@ -338,10 +340,20 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         coincidence_with_attention_point = True
         if (condicion_recorte and coincidence_with_attention_point):
             crop_img = img[y:h, x:w]
+            comp_json["compos"].append({
+                "id": int(j+1),
+                "class": "Compo",
+                "column_min": int(x),
+                "row_min": int(y),
+                "column_max": int(w),
+                "row_max": int(h),
+                "width": int(w - x),
+                "height": int(h - y)
+            })
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))
 
-    return (recortes, text_or_not_text, words)
+    return (recortes, comp_json, text_or_not_text, words)
 
 
 def gaze_events_associated_to_event_time_range(eyetracking_log, colnames, timestamp_start, timestamp_end, last_upper_limit):
@@ -432,21 +444,26 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
             gaze_events[img_index] = interval
 
         if not files_exists or overwrite_npy:
+            path_to_save_components_json = path_to_save_gui_components_npy.replace(
+                "components_npy", "components_json")
+            if not os.path.exists(path_to_save_components_json):
+                os.makedirs(path_to_save_components_json)
+
             if algorithm == "legacy":
-                recortes, text_or_not_text, words = get_gui_components_crops(
+                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(
                     param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, img_index)
+                
+                with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
+                    json.dump(comp_json, outfile)
+                
                 aux = np.array(recortes)
                 np.save(screenshot_texts_npy, text_or_not_text)
                 np.save(screenshot_npy, aux)
             elif algorithm == "uied":
-                path_to_save_components_json = path_to_save_gui_components_npy.replace(
-                    "components_npy", "components_json")
-                recortes, uicompos = get_uied_gui_components_crops(
-                    param_img_root, image_names, img_index)
-                if not os.path.exists(path_to_save_components_json):
-                    os.makedirs(path_to_save_components_json)
-                utils.save_corners_json(
-                    path_to_save_components_json + image_names[img_index] + '.json', uicompos)
+                recortes, uicompos = get_uied_gui_components_crops(param_img_root, image_names, img_index)
+
+                utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos)
+                
                 aux = np.array(recortes, dtype=object)
                 np.save(screenshot_npy, aux)
 
