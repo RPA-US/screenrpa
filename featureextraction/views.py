@@ -294,10 +294,10 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         for i in range(0, len(contornos[j])):
             cont_horizontal.append(contornos[j][i][0][0])
             cont_vertical.append(contornos[j][i][0][1])
-            x = min(cont_horizontal)
-            w = max(cont_horizontal)
-            y = min(cont_vertical)
-            h = max(cont_vertical)
+        x = min(cont_horizontal)
+        w = max(cont_horizontal)
+        y = min(cont_vertical)
+        h = max(cont_vertical)
         #print('Coord x, componente' + str(j+1) + '  ' + str(x) + ' : ' + str(w))
         #print('Coord y, componente' + str(j+1) + '  ' + str(y) + ' : ' + str(h))
 
