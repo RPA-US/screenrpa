@@ -340,7 +340,6 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         coincidence_with_attention_point = True
         if (condicion_recorte and coincidence_with_attention_point):
             crop_img = img[y:h, x:w]
-            text = []
             text = [word for word in words[img_index] if len([coord for coord in words[img_index][word] if x <= coord[0] <= w and y <= coord[1] <= h]) > 0]
             is_text = True if len(text)>0 else False
             comp_json["compos"].append({
