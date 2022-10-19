@@ -3,6 +3,7 @@ import numpy as np
 import keras_ocr
 import cv2
 import pandas as pd
+import matplotlib.pyplot as plt
 from os.path import join as pjoin
 import os
 import featureextraction.utils as utils
@@ -170,13 +171,6 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     words = {}
     words_columns_names = {}
 
-    # if gaze_analysis:
-    #     gaze_point_x = gaze_analysis['gaze_point_x'][img_index]
-    #     gaze_point_y = gaze_analysis['gaze_point_y'][img_index]
-    #     duration = gaze_analysis['duration'][img_index]
-    # else:
-    #     gaze_point_x = False
-
     image_path = param_img_root + image_names[img_index]
     # Read the image
     img = cv2.imread(image_path)
@@ -188,7 +182,6 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     global_y = []
     global_x = []
     words[img_index] = {}
-    res = None
 
     for j in range(0, len(texto_detectado_ocr[img_index])):
         coordenada_y = []
@@ -213,8 +206,8 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
         global_y.append(coordenada_y)
         global_x.append(coordenada_x)
-        #print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
-        #print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+        # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+        # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
 
     # print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
 
@@ -240,15 +233,13 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     # cv2_imshow(canny)
 
     # Countour search in the image
-    (contornos, _) = cv2.findContours(canny.copy(),
-                                      cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    (contornos, _) = cv2.findContours(canny.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # print("Number of GUI components detected: ", len(contornos), "\n")
 
     # draw the countours on the image
     cv2.drawContours(img_copy, contornos, -1, (0, 0, 255), 2)
     # cv2_imshow(img_copy)
-    cv2.imwrite(path_to_save_bordered_images +
-                image_names[img_index] + '_contornos.png', img_copy)
+    cv2.imwrite(path_to_save_bordered_images + image_names[img_index] + '_bordered.png', img_copy)
 
     # We carry out the crops for each detected countour
     recortes = []
@@ -327,7 +318,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, overwrite_npy, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, path_to_save_gui_components_npy, add_words_columns, algorithm):
+def detect_images_components(param_img_root, log, special_colnames, overwrite_npy, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -340,12 +331,11 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
     :type image_names: list
     :texto_detectado_ocr: List of lists corresponding the words identified in the images on the log file
     :type texto_detectado_ocr: list
-    :path_to_save_gui_components_npy: Path where the numpy arrays with the crops must be saved
-    :type path_to_save_gui_components_npy: str
     :path_to_save_bordered_images: Path where the images along with their component borders must be stored
     :type path_to_save_bordered_images: str
     """
-    no_modification = True
+    path_to_save_gui_components_npy = param_img_root+"components_npy/"
+    path_to_save_components_json = param_img_root+"components_json/"
 
     eyetracking_log = False
     if eyetracking_log_filename and os.path.exists(param_img_root + eyetracking_log_filename):
@@ -360,12 +350,16 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
-        screenshot_texts_npy = path_to_save_gui_components_npy + \
-            image_names[img_index] + "_texts.npy"
-        screenshot_npy = path_to_save_gui_components_npy + \
-            image_names[img_index] + ".npy"
-        files_exists = os.path.exists(screenshot_npy)
-        no_modification = no_modification and files_exists
+        screenshot_texts_npy = path_to_save_gui_components_npy + image_names[img_index] + "_texts.npy"
+        screenshot_npy = path_to_save_gui_components_npy + image_names[img_index] + ".npy"
+        exists_screenshot_npy = os.path.exists(screenshot_npy)
+
+        screenshot_json = path_to_save_components_json + image_names[img_index] + ".json"
+        exists_screenshot_json = os.path.exists(screenshot_json)
+        
+        overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or overwrite_npy
+
+        # GAZE ANALYSIS
         if eyetracking_log is not False:
             timestamp_start = log[special_colnames['Timestamp']
                                   ][img_index]-init_value_ui_log_timestamp
@@ -379,7 +373,7 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
                     timestamp_end,
                     None)
             else:
-                print("detect_images_components: LAST SCREENSHOT")
+                print("Function detect_images_components: LAST SCREENSHOT")
                 interval, last_upper_limit = gaze_events_associated_to_event_time_range(
                     eyetracking_log,
                     special_colnames,
@@ -390,27 +384,30 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
             # { row_number: [[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY]]}
             gaze_events[img_index] = interval
 
-        if not files_exists or overwrite_npy:
-            path_to_save_components_json = path_to_save_gui_components_npy.replace(
-                "components_npy", "components_json")
-            if not os.path.exists(path_to_save_components_json):
-                os.makedirs(path_to_save_components_json)
+        if overwrite:
 
             if algorithm == "legacy":
-                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(
-                    param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, img_index)
+                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, img_index)
                 
+                # save metadata json
                 with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
                     json.dump(comp_json, outfile)
-                
+
+                # save ui elements npy
                 aux = np.array(recortes)
-                np.save(screenshot_texts_npy, text_or_not_text)
                 np.save(screenshot_npy, aux)
+
+                # save texts npy
+                np.save(screenshot_texts_npy, text_or_not_text)
+
             elif algorithm == "uied":
+                # this method edit the metadata json with the ui element class and text if corresponds 
                 recortes, uicompos = get_uied_gui_components_crops(param_img_root, image_names, img_index)
 
+                # store all bounding boxes from the ui elements that are in 'uicompos'
                 utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos)
 
+                # save ui elements npy
                 aux = np.array(recortes, dtype=object)
                 np.save(screenshot_npy, aux)
 
@@ -499,14 +496,15 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, eyet
 
     # print(len(text_corners))
 
-    bordered = param_img_root+"contornos/"
+    bordered = param_img_root+"contours/"
     components_npy = param_img_root+"components_npy/"
-    for p in [bordered, components_npy]:
+    components_json = param_img_root+"components_json/"
+    for p in [bordered, components_npy, components_json]:
         if not os.path.exists(p):
             os.mkdir(p)
 
     detect_images_components(param_img_root, log, special_colnames, overwrite_npy, eyetracking_log_filename,
-                             image_names, text_corners, bordered, components_npy, add_words_columns, algorithm)
+                             image_names, text_corners, bordered, add_words_columns, algorithm)
 
 
 

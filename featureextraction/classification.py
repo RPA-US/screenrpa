@@ -102,89 +102,18 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
             model_weights, classes, shape)
         print("\n\nLoaded ML model from disk\n")
 
-        """
-        Load the crops calculated in get_(uied)_gui_components_crops
-        """
-        log = pd.read_csv(ui_log_path, sep=",")
-
-        crop_imgs = {}
-        # images_names = [ x + ".npy" for x in log.loc[:,"Screenshot"].values.tolist()] # os.listdir(ui_elements_crops_npy_root)
-        images_names = log.loc[:, screenshot_colname].values.tolist()
-        # print(images_names)
-        for img_filename in images_names:
-            crop_img_aux = np.load(ui_elements_crops_npy_root+img_filename +
-                                   ".npy", allow_pickle=True)
-            crop_imgs[img_filename] = {
-                'content': crop_img_aux}
-
-        """
-        Once loaded, proceed to evaluate them with the corresponding model
-        """
-        print("\nLog dictionary length: " + str(len(crop_imgs)))
-
-        for i in range(0, len(crop_imgs)):
-            """
-            This network gives as output the name of the detected class.
-            Additionally, we moddify the json file with the components to add the corresponding classes
-            """
-            with open(metadata_json_root + images_names[i] + '.json', 'r') as f:
+        for screenshot_filename in screenshot_filenames:
+            # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
 
-            clips = crop_imgs[images_names[i]]["content"].tolist()
+            clips =  np.load(ui_elements_crops_npy_root+ screenshot_filename + ".npy", allow_pickle=True).tolist()
             result = classifier['Elements'].predict(clips)
 
-            crop_imgs[images_names[i]]["result"] = result
-            crop_imgs[images_names[i]]["result_freq"] = pd.Series(
-                result).value_counts()
-            crop_imgs[images_names[i]]["result_freq_df"] = crop_imgs[images_names[i]
-                                                                     ]["result_freq"].to_frame().T
             for j in range(0, len(result)):
                 data["compos"][j]["class"] = result[j]
-            with open(metadata_json_root + images_names[i] + '.json', "w") as jsonFile:
+            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
                 json.dump(data, jsonFile)
-
-    #     """
-    #     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
-    #     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
-    #     dataframe will all possible columns, and include row by row the results obtained from the predictions
-    #     """
-
-    #     nombre_clases = classifier["Elements"].class_map
-    #     df = pd.DataFrame([], columns=nombre_clases)
-
-    #     for i in range(0, len(images_names)):
-    #         row1 = [0 for i in range(0, len(nombre_clases))]
-    #         # Acess the previously stored frequencies
-    #         df1 = crop_imgs[images_names[i]]["result_freq_df"]
-    #         if len(df1.columns.tolist()) > 0:
-    #             for x in df1.columns.tolist():
-    #                 uiui = nombre_clases.index(x)
-    #                 row1[uiui] = df1[x][0]
-    #                 df.loc[i] = row1
-
-    #     """
-    #     Once the dataset corresponding to the ammount of elements of each class contained in each of the images is obtained,
-    #     we merge it with the complete log, adding the extracted characteristics from the images
-    #     """
-
-    #     log_enriched = log.join(df).fillna(method='ffill')
-
-    #     """
-    #     Finally we obtain an entiched log, which is turned as proof of concept of our hypothesis based on the premise that if
-    #     we not only capture keyboard or mouse events on the monitorization through a keylogger, but also screencaptures,
-    #     we can extract much more useful information, being able to improve the process mining over said log.
-    #     As a pending task, we need to validate this hypothesis through a results comparison against the non-enriched log.
-    #     We expect to continue this project in later stages of the master
-    #     """
-    #     log_enriched.to_csv(enriched_log_output_path)
-    #     print("\n\n=========== ENRICHED LOG GENERATED: path=" +
-    #           enriched_log_output_path)
-    # else:
-    #     log_enriched = pd.read_csv(
-    #         enriched_log_output_path, sep=",", index_col=0)
-    #     print("\n\n=========== ENRICHED LOG ALREADY EXISTS: path=" +
-    #           enriched_log_output_path)
-    # return log_enriched
 
 
 def legacy_ui_elements_classification(model_weights="resources/models/model.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
