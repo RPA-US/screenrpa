@@ -11,15 +11,17 @@ from tqdm import tqdm
 from time import sleep
 from datetime import datetime
 from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername
-from featureextraction.views import check_npy_components_of_capture, quantity_ui_elements_fe_technique, location_ui_elements_fe_technique, location_ui_elements_and_plaintext_fe_technique
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from featureextraction.views import gui_components_detection, classify_image_components, uied_classify_image_components
+from featureextraction.views import ui_elements_classification, feature_extraction
+from featureextraction.detection import ui_elements_detection
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from .models import CaseStudy, DecisionTreeTraining, ExtractTrainingDataset, FeatureExtractionTechnique
-from .serializers import CaseStudySerializer, ClassifyImageComponentsSerializer, DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer, GUIComponentDetectionSerializer
+from .serializers import CaseStudySerializer
+from featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
+from decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
@@ -44,7 +46,7 @@ def generate_case_study(case_study):
         decision_activity (string): activity where decision we want to study is taken. Example: 'B' 
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['gui_components_detection','classify_image_components','extract_training_dataset','decision_tree_training']
+        to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']
     """
     times = {}
     foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
@@ -59,55 +61,33 @@ def generate_case_study(case_study):
         print("\nActual Scenario: " + str(scenario))
         param_path = case_study.exp_folder_complete_path + sep + scenario + sep
         # We check there is at least 1 phase to execute
-        if case_study.gui_components_detection or case_study.classify_image_components or case_study.extract_training_dataset or case_study.decision_tree_training:
+        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.extract_training_dataset or case_study.decision_tree_training:
             for n in foldername_logs_with_different_size_balance:
                 times[n] = {}
-                
-                # decision_tree_library           = to_exec['decision_tree_training']['library'] if (('decision_tree_training' in to_exec) and ('library' in to_exec['decision_tree_training'])) else 'sklearn'
-                # decision_tree_algorithms        = to_exec['decision_tree_training']['algorithms'] if (('decision_tree_training' in to_exec) and ('algorithms' in to_exec['decision_tree_training'])) else None # ['ID3', 'CART', 'CHAID', 'C4.5']
-                # decision_tree_mode              = to_exec['decision_tree_training']['mode'] if (('decision_tree_training' in to_exec) and ('mode' in to_exec['decision_tree_training'])) else 'autogeneration'
-                # decision_columns_to_ignore      = to_exec['decision_tree_training']['columns_to_ignore'] if (('decision_tree_training' in to_exec) and ('columns_to_ignore' in to_exec['decision_tree_training'])) else None
-                # training_columns_to_ignore      = to_exec['extract_training_dataset']['columns_to_ignore'] if (('extract_training_dataset' in to_exec) and ('columns_to_ignore' in to_exec['extract_training_dataset'])) else None
-
-                # to_exec_args = {
-                #     'gui_components_detection': (param_path+n+sep+'log.csv', 
-                #                                  param_path+n+sep,
-                #                                  special_colnames,
-                #                                  to_exec['gui_components_detection']['eyetracking_log_filename'],
-                #                                  to_exec['gui_components_detection']['add_words_columns'],
-                #                                  to_exec['gui_components_detection']['overwrite_npy']),
-                #     'classify_image_components': ('resources'+sep+'models'+sep+'model.json',
-                #                                   'resources'+sep+'models'+sep+'model.h5',
-                #                                   param_path + n + sep + 'components_npy' + sep,
-                #                                   param_path+n+sep + 'log.csv',
-                #                                   param_path+n+sep+'enriched_log.csv',
-                #                                   special_colnames["Screenshot"],
-                #                                   False),
-                #     'extract_training_dataset': (decision_activity, param_path + n + sep + 'enriched_log.csv', param_path + n + sep, training_columns_to_ignore, special_colnames["Variant"], special_colnames["Case"], special_colnames["Screenshot"], special_colnames["Timestamp"], special_colnames["Activity"]),
-                #     'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', param_path+n+sep, decision_tree_library, decision_tree_mode, decision_tree_algorithms, decision_columns_to_ignore) # 'autogeneration' -> to plot tree automatically
-                #     }
 
                 to_exec_args = {
-                    'gui_components_detection': (param_path+n+sep+'log.csv', 
+                    'ui_elements_detection': (param_path+n+sep+'log.csv', 
                                                  param_path+n+sep,
                                                  case_study.special_colnames,
-                                                 case_study.gui_components_detection.eyetracking_log_filename,
-                                                 case_study.gui_components_detection.add_words_columns,
-                                                 case_study.gui_components_detection.overwrite_npy,
-                                                 case_study.gui_components_detection.algorithm) 
+                                                 case_study.ui_elements_detection.eyetracking_log_filename,
+                                                 case_study.ui_elements_detection.add_words_columns,
+                                                 case_study.ui_elements_detection.overwrite_npy,
+                                                 case_study.ui_elements_detection.algorithm) 
                                                  # We check this phase is present in case_study to avoid exceptions 
-                                                 if case_study.gui_components_detection else None,
-                    'classify_image_components': (case_study.classify_image_components.model_json_file_name,
-                                                  case_study.classify_image_components.model_weights,
-                                                  case_study.classify_image_components.model_properties,
+                                                 if case_study.ui_elements_detection else None,
+                    'ui_elements_classification': (case_study.ui_elements_classification.model_weights,
+                                                  case_study.ui_elements_classification.model_properties,
+                                                  param_path + n + sep + 'components_json' + sep,
                                                   param_path + n + sep + 'components_npy' + sep,
                                                   param_path+n+sep + 'log.csv',
-                                                  param_path+n+sep+'enriched_log.csv',
                                                   case_study.special_colnames["Screenshot"],
-                                                  case_study.classify_image_components.overwrite_npy)
+                                                  case_study.ui_elements_classification.overwrite_npy,
+                                                  case_study.ui_elements_classification.ui_elements_classification_classes,
+                                                  case_study.ui_elements_classification.classifier)
                                                  # We check this phase is present in case_study to avoid exceptions 
-                                                  if case_study.classify_image_components else None,
-                    'feature_extraction_technique': (case_study.feature_extraction_technique.name,
+                                                  if case_study.ui_elements_classification else None,
+                    'feature_extraction': (case_study.feature_extraction_technique.name,
+                                                  param_path+n+sep+'enriched_log.csv',
                                                   case_study.feature_extraction_technique.overwrite_npy)
                                                  # We check this phase is present in case_study to avoid exceptions 
                                                   if case_study.feature_extraction_technique else None,
@@ -132,36 +112,6 @@ def generate_case_study(case_study):
                     if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library!='sklearn':
                         res, tree_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
                         times[n][function_to_exec] = tree_times
-                    elif function_to_exec == "classify_image_components":
-                        # Classification can be done with different algorithms
-                        match case_study.classify_image_components.algorithm:
-                            case "legacy":
-                                times[n][function_to_exec] = {"start": time.time()}
-                                output = classify_image_components(*to_exec_args[function_to_exec])
-                                times[n][function_to_exec]["finish"] = time.time()
-                            case "uied":
-                                times[n][function_to_exec] = {"start": time.time()}
-                                output = uied_classify_image_components(*to_exec_args[function_to_exec])
-                                times[n][function_to_exec]["finish"] = time.time()
-                            case _:
-                                pass
-                    elif function_to_exec == "feature_extraction_technique":
-                        # Classification can be done with different algorithms
-                        match case_study.feature_extraction_technique.algorithm:
-                            case "quantity":
-                                times[n][function_to_exec] = {"start": time.time()}
-                                output = quantity_ui_elements_fe_technique(*to_exec_args[function_to_exec])
-                                times[n][function_to_exec]["finish"] = time.time()
-                            case "location":
-                                times[n][function_to_exec] = {"start": time.time()}
-                                output = location_ui_elements_fe_technique(*to_exec_args[function_to_exec])
-                                times[n][function_to_exec]["finish"] = time.time()
-                            case "plaintext":
-                                times[n][function_to_exec] = {"start": time.time()}
-                                output = location_ui_elements_and_plaintext_fe_technique(*to_exec_args[function_to_exec])
-                                times[n][function_to_exec]["finish"] = time.time()
-                            case _:
-                                pass
                     else:
                         times[n][function_to_exec] = {"start": time.time()}
                         output = eval(function_to_exec)(*to_exec_args[function_to_exec])
@@ -340,7 +290,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             # 1 == Balanced, 0 == Imbalanced
             balanced.append(1 if metainfo[2] == "Balanced" else 0)
             
-            phases = [phase for phase in ["gui_components_detection", "classify_image_components", 
+            phases = [phase for phase in ["ui_elements_detection", "ui_elements_classification", 
                       "extract_training_dataset", "decision_tree_training"] if getattr(case_study, phase) is not None]
             for phase in phases:
                 if not (phase == 'decision_tree_training' and decision_tree_algorithms):
@@ -426,8 +376,8 @@ def case_study_generator(data):
     gui_quantity_difference = 1
     drop = None  # Example: ["Advanced_10_Balanced", "Advanced_10_Imbalanced"]
     interactive = False
-    phases_to_execute = {'gui_components_detection': {},
-                   'classify_image_components': {},
+    phases_to_execute = {'ui_elements_detection': {},
+                   'ui_elements_classification': {},
                    'extract_training_dataset': {},
                    'decision_tree_training': {}
                    }
@@ -446,14 +396,14 @@ def case_study_generator(data):
         # For each phase we want to execute, we create a database row for it and relate it with the case study
         for phase in data['phases_to_execute']:
             match phase:
-                case "gui_components_detection":
-                    serializer = GUIComponentDetectionSerializer(data=data['phases_to_execute'][phase])
+                case "ui_elements_detection":
+                    serializer = UIElementsDetectionSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid()
-                    case_study.gui_components_detection = serializer.save()
-                case "classify_image_components":
-                    serializer = ClassifyImageComponentsSerializer(data=data['phases_to_execute'][phase])
+                    case_study.ui_elements_detection = serializer.save()
+                case "ui_elements_classification":
+                    serializer = UIElementsClassificationSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid()
-                    case_study.classify_image_components = serializer.save()
+                    case_study.ui_elements_classification = serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechnique(data=data['phases_to_execute'][phase])
                     serializer.is_valid()
@@ -503,51 +453,6 @@ def case_study_generator(data):
     
     return msg, executed
 
-# ========================================================================
-# RUN CASE STUDY (Legacy terminal mode)
-# ========================================================================
-
-def interactive_terminal(phases_to_execute, gui_class_success_regex, gui_quantity_difference, scenarios_to_study, drop):
-    exp_foldername = input(
-            'Enter the name of the folder generated by RIM with your experiment data (enter "UTILS" to check utilities): ')
-    if exp_foldername != "UTILS":
-        decision_point_activity = input(
-            'Enter the activity immediately preceding the decision point you wish to study: ')
-        mode = input(
-            'Enter if you want to obtain experiment "generation", "results" or "both": ')
-
-        if(mode in 'generation results both'):
-            if mode == "results" or mode == "both":
-                input_exp_path = input(
-                    'Enter path where you want to store experiment results (if nothing typed, it will be stored in "media/"): ')
-                path_to_save_experiment = input_exp_path if input_exp_path != "" else None
-
-            data = {'mode': mode,
-                    'exp_foldername': exp_foldername,
-                    'phases_to_execute': phases_to_execute,
-                    'decision_point_activity': decision_point_activity,
-                    'exp_folder_complete_path': path_to_save_experiment,
-                    'gui_class_success_regex': gui_class_success_regex,
-                    'gui_quantity_difference': gui_quantity_difference,
-                    'scenarios_to_study': scenarios_to_study,
-                    'drop': drop,
-                    'special_colnames': {
-                        "Case": "Case",
-                        "Activity": "Activity",
-                        "Screenshot": "Screenshot",
-                        "Variant": "Variant",
-                        "Timestamp": "Timestamp",
-                        "eyetracking_recording_timestamp": "Recording timestamp",
-                        "eyetracking_gaze_point_x": "Gaze point X",
-                        "eyetracking_gaze_point_y": "Gaze point Y"
-                    }
-                }
-            case_study_generator(data)
-        else:
-            print('Please enter valid input')
-    else:
-        check_npy_components_of_capture(None, None, True)
-        
 class CaseStudyView(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticatedUser]
     serializer_class = CaseStudySerializer
@@ -572,26 +477,26 @@ class CaseStudyView(generics.ListCreateAPIView):
                 #     return Response(response_content, status=st)
                         
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['gui_components_detection','classify_image_components','extract_training_dataset','decision_tree_training']"}
+                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY 
                     execute_case_study = False
                     return Response(response_content, status=st)
 
-                if not case_study_serialized.data['phases_to_execute']['gui_components_detection']['algorithm'] in ["legacy", "uied"]:
+                if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['algorithm'] in ["legacy", "uied"]:
                     response_content = {"message": "Component Detection algorithm must be one of ['legacy', 'uied']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY 
                     execute_case_study = False
                     return Response(response_content, status=st)
 
-                if not case_study_serialized.data['phases_to_execute']['classify_image_components']['algorithm'] in ["legacy", "uied"]:
+                if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['classifier'] in ["legacy", "uied"]:
                     response_content = {"message": "Image Classification algorithm must be one of ['legacy', 'uied']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY 
                     execute_case_study = False
                     return Response(response_content, status=st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in ['gui_components_detection','classify_image_components','extract_training_dataset','decision_tree_training']):
-                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['gui_components_detection','classify_image_components','extract_training_dataset','decision_tree_training']"}
+                    if not(phase in ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']):
+                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']"}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY 
                         execute_case_study = False
                         return Response(response_content, status=st)
