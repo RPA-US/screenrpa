@@ -11,7 +11,8 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from chefboost import Chefboost as chef
-from rim.settings import sep, decision_foldername
+from art import tprint
+from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
 # import json
 # import sys
 # from django.shortcuts import render
@@ -114,6 +115,8 @@ def extract_training_dataset(
     Once the map is generated, for each case, we concatinate the header with the activity to name the columns and assign them the values
     For each case a new row in the dataframe is generated
     """
+    tprint(platform_name + " - " + flattening_phase_name, "fancy60")
+    print(param_log_path+"\n")
 
     log = pd.read_csv(param_log_path, sep=",", index_col=0)
 
@@ -209,7 +212,19 @@ def chefboost_decision_tree(param_preprocessed_log_path, param_path, algorithms,
         df = flattened_dataset
         df.rename(columns = {target_label:'Decision'}, inplace = True)
         df['Decision'] = df['Decision'].astype(object) # which will by default set the length to the max len it encounters
-        config = {'algorithm': alg, 'enableParallelism': True, 'num_cores': 2, 'max_depth': 5}
+        enableParallelism = False
+        config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'num_cores': 2, 'max_depth': 5}
+        # config = {
+		# 		'algorithm' (string): ID3, 'C4.5, CART, CHAID or Regression
+		# 		'enableParallelism' (boolean): False
+		# 		'enableGBM' (boolean): True,
+		# 		'epochs' (int): 7,
+		# 		'learning_rate' (int): 1,
+		# 		'enableRandomForest' (boolean): True,
+		# 		'num_of_trees' (int): 5,
+		# 		'enableAdaboost' (boolean): True,
+		# 		'num_of_weak_classifier' (int): 4
+		# 	}
         times[alg] = {"start": time.time()}
         chef.fit(df, config = config)
         times[alg]["finish"] = time.time()
@@ -228,7 +243,8 @@ def chefboost_decision_tree(param_preprocessed_log_path, param_path, algorithms,
         # TODO: Graphical representation of feature importance
         # fi.plot(kind="barh", title="Feature Importance")
         shutil.move('outputs/rules/rules.py', param_path+alg+'-rules.py')
-        shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
+        if enableParallelism:
+            shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
     accuracy_score = 100
     return accuracy_score, times
 
@@ -317,6 +333,8 @@ def CART_sklearn_decision_tree(param_preprocessed_log_path, param_path, autogene
 
 
 def decision_tree_training(param_preprocessed_log_path="media/preprocessed_dataset.csv", param_path="mdia/", implementation="sklearn", autogeneration="autogeneration", algorithms=['ID3', 'CART', 'CHAID', 'C4.5'], columns_to_ignore=["Timestamp_start", "Timestamp_end"]):
+    tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
+    print(param_preprocessed_log_path+"\n")
     if implementation == 'sklearn':
         return CART_sklearn_decision_tree(param_preprocessed_log_path, param_path, autogeneration, columns_to_ignore)
     else:

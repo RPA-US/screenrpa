@@ -7,6 +7,7 @@ import time
 import csv
 import pandas as pd
 import re
+from art import tprint
 from tqdm import tqdm
 from time import sleep
 from datetime import datetime
@@ -56,6 +57,12 @@ def generate_case_study(case_study):
     if not os.path.exists(metadata_path):
         os.makedirs(metadata_path)
 
+    # year = datetime.now().date().strftime("%Y")
+    # tprint("RPA-US", "rnd-xlarge")
+    tprint("RPA-US     RIM", "tarty1")
+    # tprint("Relevance Information Miner. Copyright " + year + ".", "pepper")
+    tprint("Relevance Information Miner", "cybermedium")
+
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
         sleep(.1)
         print("\nActual Scenario: " + str(scenario))
@@ -71,7 +78,7 @@ def generate_case_study(case_study):
                                                  case_study.special_colnames,
                                                  case_study.ui_elements_detection.eyetracking_log_filename,
                                                  case_study.ui_elements_detection.add_words_columns,
-                                                 case_study.ui_elements_detection.overwrite_npy,
+                                                 case_study.ui_elements_detection.overwrite_info,
                                                  case_study.ui_elements_detection.algorithm) 
                                                  # We check this phase is present in case_study to avoid exceptions 
                                                  if case_study.ui_elements_detection else None,
@@ -81,14 +88,14 @@ def generate_case_study(case_study):
                                                   param_path + n + sep + 'components_json' + sep,
                                                   param_path+n+sep + 'log.csv',
                                                   case_study.special_colnames["Screenshot"],
-                                                  case_study.ui_elements_classification.overwrite_npy,
+                                                  case_study.ui_elements_classification.overwrite_info,
                                                   case_study.ui_elements_classification.ui_elements_classification_classes,
                                                   case_study.ui_elements_classification.classifier)
                                                  # We check this phase is present in case_study to avoid exceptions 
                                                   if case_study.ui_elements_classification else None,
                     'feature_extraction': (case_study.feature_extraction_technique.name,
                                                   param_path+n+sep+'enriched_log.csv',
-                                                  case_study.feature_extraction_technique.overwrite_npy)
+                                                  case_study.feature_extraction_technique.overwrite_info)
                                                  # We check this phase is present in case_study to avoid exceptions 
                                                   if case_study.feature_extraction_technique else None,
                     'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv', 
@@ -477,7 +484,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                 #     return Response(response_content, status=st)
                         
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']"}
+                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY 
                     execute_case_study = False
                     return Response(response_content, status=st)
@@ -495,8 +502,8 @@ class CaseStudyView(generics.ListCreateAPIView):
                     return Response(response_content, status=st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']):
-                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']"}
+                    if not(phase in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']):
+                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY 
                         execute_case_study = False
                         return Response(response_content, status=st)

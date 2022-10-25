@@ -28,16 +28,16 @@ def get_default_algorithms():
 class UIElementsDetection(models.Model):
     eyetracking_log_filename =  models.CharField(max_length=255, default="eyetracking_log.csv")
     add_words_columns = models.BooleanField(default=False)
-    overwrite_npy = models.BooleanField(default=False)
+    overwrite_info = models.BooleanField(default=False)
     algorithm = models.CharField(max_length=25, default='legacy')
 
 class UIElementsClassification(models.Model):
     model_weights = models.CharField(max_length=255, default="resources/models/custom-v2.h5")
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
-    overwrite_npy = models.BooleanField(default=False)
+    overwrite_info = models.BooleanField(default=False)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     classifier = models.CharField(max_length=25, default='legacy')
 
 class FeatureExtractionTechnique(models.Model):
-    name = models.CharField(max_length=255, default='count')
-    overwrite_npy = models.BooleanField(default=False)
+    technique_name = models.CharField(max_length=255, default='count')
+    overwrite_info = models.BooleanField(default=False)

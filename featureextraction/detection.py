@@ -11,7 +11,8 @@ import os
 import cv2
 import pandas as pd
 import numpy as np
-from rim.settings import cropping_threshold
+from rim.settings import cropping_threshold, platform_name, detection_phase_name
+from art import tprint
 import pickle
 from tqdm import tqdm
 from featureextraction.gaze_analysis import gaze_events_associated_to_event_time_range
@@ -318,7 +319,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, overwrite_npy, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
+def detect_images_components(param_img_root, log, special_colnames, overwrite_info, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -357,7 +358,7 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_np
         screenshot_json = path_to_save_components_json + image_names[img_index] + ".json"
         exists_screenshot_json = os.path.exists(screenshot_json)
         
-        overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or overwrite_npy
+        overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or overwrite_info
 
         # GAZE ANALYSIS
         if eyetracking_log is not False:
@@ -474,7 +475,10 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, special_colnames, eyetracking_log_filename, add_words_columns=False, overwrite_npy=False, algorithm="legacy"):
+def ui_elements_detection(param_log_path, param_img_root, special_colnames, eyetracking_log_filename, add_words_columns=False, overwrite_info=False, algorithm="legacy"):
+    tprint(platform_name + " - " + detection_phase_name, "fancy60")
+    print(param_img_root+"\n")
+    
     # Log read
     log = pd.read_csv(param_log_path, sep=",")
     # Extract the names of the screenshots associated to each of the rows in the log
@@ -503,7 +507,7 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, eyet
         if not os.path.exists(p):
             os.mkdir(p)
 
-    detect_images_components(param_img_root, log, special_colnames, overwrite_npy, eyetracking_log_filename,
+    detect_images_components(param_img_root, log, special_colnames, overwrite_info, eyetracking_log_filename,
                              image_names, text_corners, bordered, add_words_columns, algorithm)
 
 

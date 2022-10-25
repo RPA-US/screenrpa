@@ -194,6 +194,12 @@ cropping_threshold =        int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD
 gaze_analysis_threshold =   int(env('GAZE_MINIMUM_TIME_STARING')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 times_calculation_mode =    env('RESULTS_TIMES_FORMAT') # substitute "formatted" -> get times formatted "%H:%M:%S.%fS" 
 metadata_location =         env('METADATA_PATH')
+platform_name =                         "RIM"
+detection_phase_name =                  "detection"
+classification_phase_name =             "classification"
+feature_extraction_phase_name =         "feature extraction"
+flattening_phase_name =                 "flattening"
+decision_model_discovery_phase_name =   "decision model discovery"
 
 
 # OS SEPARATOR 
