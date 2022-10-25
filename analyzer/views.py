@@ -1,3 +1,4 @@
+from multiprocessing.connection import wait
 from django.shortcuts import render
 
 # Create your views here.
@@ -18,16 +19,15 @@ from featureextraction.detection import ui_elements_detection
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from .models import CaseStudy, DecisionTreeTraining, ExtractTrainingDataset, FeatureExtractionTechnique
+# from rest_framework.pagination import PageNumberPagination
+from .models import CaseStudy, ExecutionManager
 from .serializers import CaseStudySerializer
 from featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
 from decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
-from collections import OrderedDict
-
+from asgiref.sync import sync_to_async
 
 def get_foldernames_as_list(path, sep):
     folders_and_files = os.listdir(path)
@@ -38,13 +38,13 @@ def get_foldernames_as_list(path, sep):
     return foldername_logs_with_different_size_balance
 
 def generate_case_study(case_study):
-    """ 
-    Generate case study. This function executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is. 
-    
+    """
+    Generate case study. This function executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
+
     Args:
         exp_foldername (string): name of the folder where all case study data is stored. Example 'case_study_data'
         exp_folder_complete_path (string): complete path to the folder where all case study data is stored, including the name of the folder in this path. Example 'C:\\John\\Desktop\\case_study_data'
-        decision_activity (string): activity where decision we want to study is taken. Example: 'B' 
+        decision_activity (string): activity where decision we want to study is taken. Example: 'B'
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
         to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']
@@ -53,7 +53,7 @@ def generate_case_study(case_study):
     foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
     # DEPRECATED versions: exp_folder_complete_path + sep + "metadata" + sep
     metadata_path = metadata_location + sep + case_study.exp_foldername + "_metadata" + sep # folder to store metadata that will be used in "results" mode
-    
+
     if not os.path.exists(metadata_path):
         os.makedirs(metadata_path)
 
@@ -73,14 +73,14 @@ def generate_case_study(case_study):
                 times[n] = {}
 
                 to_exec_args = {
-                    'ui_elements_detection': (param_path+n+sep+'log.csv', 
+                    'ui_elements_detection': (param_path+n+sep+'log.csv',
                                                  param_path+n+sep,
                                                  case_study.special_colnames,
                                                  case_study.ui_elements_detection.eyetracking_log_filename,
                                                  case_study.ui_elements_detection.add_words_columns,
                                                  case_study.ui_elements_detection.overwrite_info,
-                                                 case_study.ui_elements_detection.algorithm) 
-                                                 # We check this phase is present in case_study to avoid exceptions 
+                                                 case_study.ui_elements_detection.algorithm)
+                                                 # We check this phase is present in case_study to avoid exceptions
                                                  if case_study.ui_elements_detection else None,
                     'ui_elements_classification': (case_study.ui_elements_classification.model_weights,
                                                   case_study.ui_elements_classification.model_properties,
@@ -91,29 +91,29 @@ def generate_case_study(case_study):
                                                   case_study.ui_elements_classification.overwrite_info,
                                                   case_study.ui_elements_classification.ui_elements_classification_classes,
                                                   case_study.ui_elements_classification.classifier)
-                                                 # We check this phase is present in case_study to avoid exceptions 
+                                                 # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
                     'feature_extraction': (case_study.feature_extraction_technique.name,
                                                   param_path+n+sep+'enriched_log.csv',
                                                   case_study.feature_extraction_technique.overwrite_info)
-                                                 # We check this phase is present in case_study to avoid exceptions 
+                                                 # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.feature_extraction_technique else None,
-                    'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv', 
-                                                param_path + n + sep, case_study.extract_training_dataset.columns_to_ignore, 
-                                                case_study.special_colnames["Variant"], case_study.special_colnames["Case"], 
-                                                case_study.special_colnames["Screenshot"], case_study.special_colnames["Timestamp"], 
-                                                case_study.special_colnames["Activity"]) 
-                                                # We check this phase is present in case_study to avoid exceptions 
+                    'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv',
+                                                param_path + n + sep, case_study.extract_training_dataset.columns_to_ignore,
+                                                case_study.special_colnames["Variant"], case_study.special_colnames["Case"],
+                                                case_study.special_colnames["Screenshot"], case_study.special_colnames["Timestamp"],
+                                                case_study.special_colnames["Activity"])
+                                                # We check this phase is present in case_study to avoid exceptions
                                                 if case_study.extract_training_dataset else None,
                     'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', param_path+n+sep,
                                                 case_study.decision_tree_training.library,
                                                 case_study.decision_tree_training.mode,
                                                 case_study.decision_tree_training.algorithms,
-                                                case_study.decision_tree_training.columns_to_ignore) 
-                                                # We check this phase is present in case_study to avoid exceptions 
+                                                case_study.decision_tree_training.columns_to_ignore)
+                                                # We check this phase is present in case_study to avoid exceptions
                                                 if case_study.decision_tree_training  else None # 'autogeneration' -> to plot tree automatically
                     }
-                
+
                 # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
                 for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
                     if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library!='sklearn':
@@ -123,7 +123,7 @@ def generate_case_study(case_study):
                         times[n][function_to_exec] = {"start": time.time()}
                         output = eval(function_to_exec)(*to_exec_args[function_to_exec])
                         times[n][function_to_exec]["finish"] = time.time()
-                        
+
                     # TODO: accurracy_score
                     # if index == len(to_exec)-1:
                     #     times[n][index]["decision_model_accuracy"] = output
@@ -136,6 +136,11 @@ def generate_case_study(case_study):
             # Writing to .json
             with open(metadata_path+scenario+"-metainfo.json", "w") as outfile:
                 outfile.write(json_object)
+
+            msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_path+scenario+"-metainfo.json"
+        else:
+            msg = "None phases were set to be executed"
+    return msg
     # each experiment one csv line
     # store exceution times per each phase and experiment (30 per family)
     # execute only the experiments
@@ -228,9 +233,9 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, quantity_differe
     print(res)
     for gui_component_name_to_find in levels:
         s = s.replace(gui_component_name_to_find, res[gui_component_name_to_find])
-    
+
     res = eval(s)
-        
+
     if not res:
       print("Condition " + str(expression) + " is not fulfilled")
     return int(res)
@@ -262,15 +267,15 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     # flat_time = []
     # tree_training_time = []
     # tree_training_accuracy = []
-    
-    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and 
+
+    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and
                                                                                 case_study.decision_tree_training.algorithms) else None
 
     if decision_tree_algorithms:
         accuracy = {}
     else:
         accuracy = []
-        
+
     for scenario in tqdm(case_study.scenarios_to_study,
                          desc="Experiment results that have been processed"):
         sleep(.1)
@@ -285,7 +290,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             metainfo = n.split("_")
             # path example of decision tree specification: rim\CSV_exit\resources\version1637144717955\scenario_1\Basic_10_Imbalanced\decision_tree.log
             decision_tree_path = scenario_path + sep + n + sep
-            
+
             with open(scenario_path + sep + n + sep + preprocessed_log_filename, newline='') as f:
                 csv_reader = csv.reader(f)
                 csv_headings = next(csv_reader)
@@ -296,8 +301,8 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             scenario_number.append(scenario.split("_")[1])
             # 1 == Balanced, 0 == Imbalanced
             balanced.append(1 if metainfo[2] == "Balanced" else 0)
-            
-            phases = [phase for phase in ["ui_elements_detection", "ui_elements_classification", 
+
+            phases = [phase for phase in ["ui_elements_detection", "ui_elements_classification",
                       "extract_training_dataset", "decision_tree_training"] if getattr(case_study, phase) is not None]
             for phase in phases:
                 if not (phase == 'decision_tree_training' and decision_tree_algorithms):
@@ -305,7 +310,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
                         phases_info[phase].append(times_duration(times[n][phase]))
                     else:
                         phases_info[phase] = [times_duration(times[n][phase])]
-                
+
             # TODO: accurracy_score
             # tree_training_accuracy.append(times[n]["3"]["decision_model_accuracy"])
 
@@ -320,7 +325,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             else:
                 # Calculate level of accuracy
                 accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, None))
-    
+
     dict_results = {
         'family': family,
         'balanced': balanced,
@@ -330,18 +335,18 @@ def experiments_results_collectors(case_study, decision_tree_filename):
         # TODO: accurracy_score
         # 'tree_training_accuracy': tree_training_accuracy,
     }
-    
-    
+
+
     if isinstance(accuracy, dict):
         for sub_entry in accuracy.items():
             dict_results[sub_entry[0]] = sub_entry[1]
-    
+
     for phase in phases_info.keys():
         dict_results[phase] = phases_info[phase]
 
     df = pd.DataFrame(dict_results)
     df.to_csv(csv_filename)
-    
+
     return csv_filename
 
 # ========================================================================
@@ -390,13 +395,15 @@ def case_study_generator(data):
                    }
     scenarios = None # ["scenario_10","scenario_11","scenario_12","scenario_13"]
     '''
+    transaction_works = False
+
     with transaction.atomic():
 
         # Introduce a default value for scencarios_to_study if there is none
         if not data['scenarios_to_study']:
             data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
-                
-        cs_serializer = CaseStudySerializer(data=data) 
+
+        cs_serializer = CaseStudySerializer(data=data)
         cs_serializer.is_valid(raise_exception=True)
         case_study = cs_serializer.save()
 
@@ -412,7 +419,7 @@ def case_study_generator(data):
                     serializer.is_valid()
                     case_study.ui_elements_classification = serializer.save()
                 case "feature_extraction_technique":
-                    serializer = FeatureExtractionTechnique(data=data['phases_to_execute'][phase])
+                    serializer = FeatureExtractionTechniqueSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid()
                     case_study.feature_extraction_technique = serializer.save()
                 case "extract_training_dataset":
@@ -425,40 +432,12 @@ def case_study_generator(data):
                     case_study.decision_tree_training = serializer.save()
                 case _:
                     pass
-        
+
         # Updating the case study with the foreign keys of the phases to execute
         case_study.save()
-    
-    # mode = data['mode']
-    # exp_foldername = data['exp_foldername']
-    # phases_to_execute = data['phases_to_execute']
-    # decision_point_activity = data['decision_point_activity']
-    # exp_folder_complete_path = data['exp_folder_complete_path']
-    # gui_class_success_regex = data['gui_class_success_regex']
-    # gui_quantity_difference = data['gui_quantity_difference']
-    # scenarios_to_study = data['scenarios_to_study']
-    # drop = data['drop']
-    # special_colnames = data['special_colnames'] if ('special_colnames' in data) else None
-    
-    msg = case_study.exp_foldername + ' not executed'
-    executed = False
-        
-    generate_case_study(case_study)
-    msg = case_study.exp_foldername + ' case study generated!'
-    executed = True
-    # if case_study.mode == "generation" or case_study.mode == "both":
-    #     generate_case_study(case_study)
-    #     msg = case_study.exp_foldername + ' case study generated!'
-    #     executed = True
-    # if case_study.mode == "results" or case_study.mode == "both":
-    #     # if exp_folder_complete_path and exp_folder_complete_path.find(sep) == -1:
-    #     #     exp_folder_complete_path = exp_folder_complete_path + sep
-        
-    #     experiments_results_collectors(case_study, "descision_tree.log")
-    #     msg = case_study.exp_foldername + ' case study results collected!'
-    #     executed = True
-    
-    return msg, executed
+        transaction_works = True
+
+    return transaction_works, case_study
 
 class CaseStudyView(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticatedUser]
@@ -467,7 +446,7 @@ class CaseStudyView(generics.ListCreateAPIView):
     def get_queryset(self):
         return CaseStudy.objects.filter(shopper=self.request.user)
 
-    def post(self, request, *args, **kwargs):
+    async def post(self, request, *args, **kwargs):
         case_study_serialized = CaseStudySerializer(data=request.data)
         st = status.HTTP_200_OK
 
@@ -479,45 +458,47 @@ class CaseStudyView(generics.ListCreateAPIView):
             try:
                 # if not (case_study_serialized.data['mode'] in ['generation', 'results', 'both']):
                 #     response_content = {"message": "mode must be one of the following options: generation, results, both."}
-                #     st = status.HTTP_422_UNPROCESSABLE_ENTITY 
+                #     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                 #     execute_case_study = False
                 #     return Response(response_content, status=st)
-                        
+
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
                     response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
-                    st = status.HTTP_422_UNPROCESSABLE_ENTITY 
+                    st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, status=st)
 
                 if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['algorithm'] in ["legacy", "uied"]:
                     response_content = {"message": "Component Detection algorithm must be one of ['legacy', 'uied']"}
-                    st = status.HTTP_422_UNPROCESSABLE_ENTITY 
+                    st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, status=st)
 
                 if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['classifier'] in ["legacy", "uied"]:
                     response_content = {"message": "Image Classification algorithm must be one of ['legacy', 'uied']"}
-                    st = status.HTTP_422_UNPROCESSABLE_ENTITY 
+                    st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, status=st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
                     if not(phase in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']):
                         response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
-                        st = status.HTTP_422_UNPROCESSABLE_ENTITY 
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, status=st)
 
                 if execute_case_study:
-                    generator_msg, generator_success = case_study_generator(case_study_serialized.data)
-                    response_content = {"message": generator_msg}
+                    generator_success, case_study = case_study_generator(case_study_serialized.data)
                     if not generator_success:
-                        st = status.HTTP_422_UNPROCESSABLE_ENTITY 
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                    else:    
+                        response = await sync_to_async(case_studies_manager(case_study), thread_sensitive=False)
+                        response_content = {"message": response, "case_study_id": case_study.id}
 
             except Exception as e:
                 response_content = {"message": "Some of atributes are invalid: " + str(e) }
-                st = status.HTTP_422_UNPROCESSABLE_ENTITY 
-            
+                st = status.HTTP_422_UNPROCESSABLE_ENTITY
+
         # item = CaseStudy.objects.create(serializer)
         # result = CaseStudySerializer(item)
         # return Response(result.data, status=status.HTTP_201_CREATED)
@@ -536,7 +517,7 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
         except Exception as e:
             response = {f"Case Study with id {case_study_id} not found"}
             st = status.HTTP_404_NOT_FOUND
-        
+
         return Response(response, status=st)
 
 class ResultCaseStudyView(generics.ListCreateAPIView):
@@ -550,5 +531,12 @@ class ResultCaseStudyView(generics.ListCreateAPIView):
         except Exception as e:
             response = {f"Case Study with id {case_study_id} not found"}
             st = status.HTTP_404_NOT_FOUND
-        
+
         return Response(response, status=st)
+
+
+def case_studies_manager(case_study):
+    ex_man = ExecutionManager.objects.all()[:1].get()
+    wait(ex_man.active==True and ex_man.last_case_study_priority_executed==(case_study.priority-1))
+
+    return generate_case_study(case_study)
