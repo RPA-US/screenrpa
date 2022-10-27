@@ -1,4 +1,5 @@
 absl-py==1.2.0
+art==5.7
 asgiref==3.5.2
 astunparse==1.6.3
 attrs==22.1.0
