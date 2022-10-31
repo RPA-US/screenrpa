@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 from keras.models import model_from_json
+from tqdm import tqdm
 from featureextraction.CNN.CompDetCNN import CompDetCNN
 
 default_ui_elements_classification_classes = ['x0_Button', 'x0_CheckBox', 'x0_CheckedTextView', 'x0_EditText', 'x0_ImageButton', 'x0_ImageView', 'x0_NumberPicker', 'x0_RadioButton', 'x0_RatingBar', 'x0_SeekBar', 'x0_Spinner', 'x0_Switch', 'x0_TextView', 'x0_ToggleButton']
@@ -102,7 +103,7 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
             model_weights, classes, shape)
         print("\n\nLoaded ML model from disk\n")
 
-        for screenshot_filename in screenshot_filenames:
+        for screenshot_filename in tqdm(screenshot_filenames, desc=f"Classifying images in {ui_elements_crops_npy_root}"):
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
