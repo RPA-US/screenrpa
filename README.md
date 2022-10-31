@@ -42,6 +42,14 @@ To insert initial data in DB.
 
 Runs the app in the debug mode. If you want to init in deploy mode, change in the *rim/settings.py* file, the *DEBUG* mode attribute to False.
 
+**`redis-server`**
+
+Initialize the redis server as your celery broker.
+
+**`python -m celery -A rim worker`**
+
+Starts the celery worker for the rim application. Celery is used to manage tasks asyncronously in django.
+
 ## Learn More
 
 You can learn more about the deploy of the aplication backend in the [Django documentation](https://docs.djangoproject.com/en/4.0/).
