@@ -46,9 +46,9 @@ Runs the app in the debug mode. If you want to init in deploy mode, change in th
 
 Initialize the redis server as your celery broker.
 
-**`python -m celery -A rim worker`**
+**`python -m celery -A rim worker --concurrency 1`**
 
-Starts the celery worker for the rim application. Celery is used to manage tasks asyncronously in django.
+Starts the celery worker for the rim application, with 1 being the number of celery tasks that can be executed simultaneously, putting the rest in a queue. Celery is used to manage tasks asyncronously in django.
 
 ## Learn More
 
