@@ -212,3 +212,7 @@ if "win" in operating_system:
 else:
     sep = "/"
     element_trace = "configuration"+sep+"element_trace_linux.json"
+
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"

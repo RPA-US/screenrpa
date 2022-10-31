@@ -10,18 +10,18 @@ def default_phases_to_execute():
     return {'ui_elements_detection': {}, 'ui_elements_classification': {}, 'extract_training_dataset': {}, 'decision_tree_training': {}}
 
 # Create your models here.
-class ExecutionManager(models.Model):
-    active = models.BooleanField(default=False, editable=False)
-    total_case_studies_in_queue = models.IntegerField(default=0, editable=False)
-    last_case_study_priority_executed = models.IntegerField(default=0, editable=False) # models.ForeignKey(CaseStudy, null=True, on_delete=models.CASCADE)
+# class ExecutionManager(models.Model):
+#     active = models.BooleanField(default=False, editable=False)
+#     total_case_studies_in_queue = models.IntegerField(default=0, editable=False)
+#     last_case_study_priority_executed = models.IntegerField(default=0, editable=False) # models.ForeignKey(CaseStudy, null=True, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.active
+#     def __str__(self):
+#         return self.active
 
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
-    priority = models.IntegerField(default=1, editable=False)
-    executed = models.BooleanField(default=False, editable=False)
+    # priority = models.IntegerField(default=1, editable=False)
+    # executed = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)
@@ -39,11 +39,11 @@ class CaseStudy(models.Model):
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, on_delete=models.CASCADE)
     # user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
     
-    def save(self, *args, **kwargs):
-        ex_man = ExecutionManager.objects.all()[:1].get()
-        self.priority = ex_man.total_case_studies_in_queue + 1
-        self.executed = False
-        super(CaseStudy, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     ex_man = ExecutionManager.objects.all()[:1].get()
+    #     self.priority = ex_man.total_case_studies_in_queue + 1
+    #     self.executed = False
+    #     super(CaseStudy, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.title
