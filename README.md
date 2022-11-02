@@ -2,19 +2,41 @@
 Relevance Information Mining tool
 
 ## Before run
-You need to have [Python](https://www.python.org/downloads/) installed.
+For development in Windows, make sure you have [Docker] (https://docs.docker.com/desktop/install/windows-install/) installed and working. On Linux this is optional, since all Python packages on this project are compatible with it.
+
+If you are going to run this on your local machine (not a container), you need to have [Python](https://www.python.org/downloads/) and [PostgreSQL] (https://www.postgresql.org/download/) installed.
 
 If desired, you can create an isolated installation of the project requirements by creating a [virtual environment](https://docs.python.org/3/library/venv.html#:~:text=A%20virtual%20environment%20is%20a,part%20of%20your%20operating%20system.).
 
+## Create a docker container
+Clone the repository or download the docker image independently.
+
+Open a terminal on the folder you have downloaded the dockerfile.
+
+Run **`docker build -f Dockerfile.dev --build-arg branch=<banch_name> -t <name> .`** to build the image. By default the branch argument is "main".
+
+Open docker desktop and create a container from the image you just build or run **`docker container create --name testsrim rimtests`** from the command line.
+
+## Configure PostgreSQL
+Postgres is not configured by default by the Dockerfile so we will need to do that.
+
+Open your editor or IDE of choice or a terminal and attach the container to it (If you are not using docker just open a terminal).
+
+Run **`service postgresql start`** and **`su postgres`** to start postgres and run a session as the postgres user
+
+Enter psql with **`psql`** and run **`CREATE ROLE "<user>" WITH PASSWORD '<password>' LOGIN CREATEDB;`**. This will be the user you use for the local database
+
+Now create the database you will use with the django application. For that, exit the psql session and run **`psql postgres <user>`** and then **`CREATE DATABASE <database_name>;`** to create the database
+
 ## Configuration DB
-Firstly, you need configure the Database for the proyect. To do this, create an *.env* file in the folder *rim* with the following contents:
+Firstly, you need configure the Database for the project. To do this, create an *.env* file in the folder *rim* with the following contents:
 ```
 -  DB_NAME="Database name"
 -  DB_HOST="Database URL"
 -  DB_PORT="Database access port"
 -  DB_USER="Database user to access. Use a new user with limited credentials"
 -  DB_PASSWORD="Password for the previous user"
--  DJANGO_SETTINGS_MODULE=rim.settings`
+-  DJANGO_SETTINGS_MODULE=rim.settings
 -  METADATA_PATH="results metadata path"
 -  API_VERSION="API prefix"
 -  GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD="GUI components detection cropping threshold as integer"
@@ -22,6 +44,7 @@ Firstly, you need configure the Database for the proyect. To do this, create an 
 -  RESULTS_TIMES_FORMAT="results times format (formatted/seconds)"
 -  DECISION_TREE_TRAINING_FOLDERNAME="decision tree training phase files foldername"
 ```
+
 ## Project initialization
 
 In the project directory, open a terminal and run:
