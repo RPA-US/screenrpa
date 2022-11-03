@@ -2,9 +2,9 @@
 Relevance Information Mining tool
 
 ## Before run
-For development in Windows, make sure you have [Docker] (https://docs.docker.com/desktop/install/windows-install/) installed and working. On Linux this is optional, since all Python packages on this project are compatible with it.
+For development in Windows, make sure you have [Docker](https://docs.docker.com/desktop/install/windows-install/) installed and working. On Linux this is optional, since all Python packages on this project are compatible with it.
 
-If you are going to run this on your local machine (not a container), you need to have [Python](https://www.python.org/downloads/) and [PostgreSQL] (https://www.postgresql.org/download/) installed.
+If you are going to run this on your local machine (not a container), you need to have [Python](https://www.python.org/downloads/) and [PostgreSQL](https://www.postgresql.org/download/) installed.
 
 If desired, you can create an isolated installation of the project requirements by creating a [virtual environment](https://docs.python.org/3/library/venv.html#:~:text=A%20virtual%20environment%20is%20a,part%20of%20your%20operating%20system.).
 
@@ -71,8 +71,12 @@ Initialize the redis server as your celery broker.
 
 **`python -m celery -A rim worker --concurrency 1`**
 
-Starts the celery worker for the rim application, with 1 being the number of celery tasks that can be executed simultaneously, putting the rest in a queue. Celery is used to manage tasks asyncronously in django.
+Starts the celery worker for the rim application, with 1 being the number of celery tasks that can be executed simultaneously.
+
+Celery, on pair with redis, is used on this project to isolate the execution of time and resource intensive tasks in different virtual threads, give the ability to set up a queue for them and limit the amount of simultaneous resource intensive processes executed.
 
 ## Learn More
 
 You can learn more about the deploy of the aplication backend in the [Django documentation](https://docs.djangoproject.com/en/4.0/).
+
+You can learn more about distributed tasks queues in the [Celery documentation](https://docs.celeryq.dev/en/stable/)
