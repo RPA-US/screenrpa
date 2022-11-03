@@ -85,6 +85,8 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
     :type screenshot_colname: str
     :param rewrite_info: Rewrite classification data (json files)
     :type rewrite_info: bool
+    :param ui_elements_classification_classes: Model classes
+    :type ui_elements_classification_classes: list
     
     """
 
@@ -93,7 +95,7 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
     if missing_json_file or rewrite_info:
         # Load the model properties from the json
         f = json.load(open(model_properties,))
-        classes = f["classes"]
+        classes = ui_elements_classification_classes
         shape = tuple(f["shape"])
 
         # Load the ML classifier model for the crops
