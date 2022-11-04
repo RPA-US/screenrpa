@@ -3,7 +3,7 @@ ARG branch=main
 
 RUN apt-get update
 RUN apt-get install -y gcc git postgresql-server-dev-all musl-dev libffi-dev cmake python-tk g++ ffmpeg libsm6 libxext6 redis
-RUN apt-get install -y postgresql postgresql-client
+# RUN apt-get install -y postgresql postgresql-client
 # Allows docker to cache installed dependencies between builds
 
 # Clones the repository
