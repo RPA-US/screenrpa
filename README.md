@@ -8,25 +8,15 @@ If you are going to run this on your local machine (not a container), you need t
 
 If desired, you can create an isolated installation of the project requirements by creating a [virtual environment](https://docs.python.org/3/library/venv.html#:~:text=A%20virtual%20environment%20is%20a,part%20of%20your%20operating%20system.).
 
-## Create a docker container
-Clone the repository or download the docker image independently.
+## Create .env for Docker container
 
-Open a terminal on the folder you have downloaded the dockerfile.
+Using the `.env.sample` file available as a template, set the values for the user, password and database you want to use with PostgreSQL for this project.
 
-Run **`docker build -f Dockerfile.dev --build-arg branch=<banch_name> -t <name> .`** to build the image. By default the branch argument is "main".
+## Create docker container
 
-Open docker desktop and create a container from the image you just build or run **`docker container create --name testsrim rimtests`** from the command line.
-
-## Configure PostgreSQL
-Postgres is not configured by default by the Dockerfile so we will need to do that.
-
-Open your editor or IDE of choice or a terminal and attach the container to it (If you are not using docker just open a terminal).
-
-Run **`service postgresql start`** and **`su postgres`** to start postgres and run a session as the postgres user
-
-Enter psql with **`psql`** and run **`CREATE ROLE "<user>" WITH PASSWORD '<password>' LOGIN CREATEDB;`**. This will be the user you use for the local database
-
-Now create the database you will use with the django application. For that, exit the psql session and run **`psql postgres <user>`** and then **`CREATE DATABASE <database_name>;`** to create the database
+Open a terminal emulator, navigate to the root directory of the project and run **`docker compose up`** from  to create the container. This container will be composed of two images:
+- Rim-dev: Image with the project code and dependencies, mounted in /rim
+- db: PostgreSQL image to store the database
 
 ## Configuration DB
 Firstly, you need configure the Database for the project. To do this, create an *.env* file in the folder *rim* with the following contents:
