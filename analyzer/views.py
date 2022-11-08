@@ -91,6 +91,7 @@ def generate_case_study(case_study):
                                                   case_study.special_colnames["Screenshot"],
                                                   case_study.ui_elements_classification.overwrite_info,
                                                   case_study.ui_elements_classification.ui_elements_classification_classes,
+                                                  case_study.ui_elements_classification.ui_elements_classification_shape,
                                                   case_study.ui_elements_classification.classifier)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
@@ -451,7 +452,7 @@ class CaseStudyView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         # We call the async task, however we wait with .get() until its done to send in the response any error that may arise 
         # during the excecution of the case study
-        response_content, st = init_case_study_task.delay(request.data).get()
+        response_content, st = init_case_study_task(request.data)#.delay(request.data).get()
         # We create the Response object after the function is called instead of inside it to prevent serialization errors
         return Response(response_content, status=st)
 

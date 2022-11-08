@@ -25,6 +25,9 @@ def get_ui_elements_classification_classes():
 def get_default_algorithms():
     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
+def get_ui_elements_classification_shape():
+    return [64, 64, 3]
+
 class UIElementsDetection(models.Model):
     eyetracking_log_filename =  models.CharField(max_length=255, default="eyetracking_log.csv")
     add_words_columns = models.BooleanField(default=False)
@@ -36,6 +39,7 @@ class UIElementsClassification(models.Model):
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
     overwrite_info = models.BooleanField(default=False)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
+    ui_elements_classification_shape = ArrayField(models.IntegerField(), default=get_ui_elements_classification_shape)
     classifier = models.CharField(max_length=25, default='legacy')
 
 class FeatureExtractionTechnique(models.Model):

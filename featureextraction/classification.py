@@ -60,9 +60,10 @@ def check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_ro
 ###################################################################################################
 ###################################################################################################
 
-def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5", model_properties="resources/models/custom-v2-classes.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
+def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
                             metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", 
-                            rewrite_info=False, ui_elements_classification_classes=default_ui_elements_classification_classes):
+                            rewrite_info=False, ui_elements_classification_classes=default_ui_elements_classification_classes, 
+                            ui_elements_classification_shape=[64, 64, 3]):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
@@ -94,9 +95,8 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
 
     if missing_json_file or rewrite_info:
         # Load the model properties from the json
-        f = json.load(open(model_properties,))
         classes = ui_elements_classification_classes
-        shape = tuple(f["shape"])
+        shape = ui_elements_classification_shape
 
         # Load the ML classifier model for the crops
         # Default model is custom-v2, a model creating by using transfer learning from UIED's generalized model
@@ -121,7 +121,8 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
 
 def legacy_ui_elements_classification(model_weights="resources/models/model.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
                             metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", 
-                            rewrite_info=False, ui_elements_classification_classes=default_ui_elements_classification_classes):
+                            rewrite_info=False, ui_elements_classification_classes=default_ui_elements_classification_classes, 
+                            ui_elements_classification_shape=[64, 64, 3]):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
