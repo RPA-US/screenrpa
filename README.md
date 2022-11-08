@@ -39,6 +39,10 @@ Firstly, you need configure the Database for the project. To do this, create an 
 
 In the project directory, open a terminal and run:
 
+**`source ./venv/bin/activate`**
+
+Activate the python virtual environment in which we have all our project dependencies installed.
+
 **`python manage.py makemigrations`**
 
 To create a DB model.
