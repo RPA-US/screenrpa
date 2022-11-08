@@ -22,9 +22,11 @@ Open a terminal emulator, navigate to the root directory of the project and run 
 
 To access the contents of the container, you can use Visual Studio Code or any other IDE with support for it.
 
-For Visual Studio Code, install the [Docker]() extension, navigate to its tab, and inside the container you just created you will see the diferent images that compose it. Right click on the rim image and select Attach to Visual Studio Code.
+For Visual Studio Code, install the [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) extension, navigate to its tab, and inside the container you just created you will see the diferent images that compose it. Right click on the rim image and select Attach to Visual Studio Code.
 
 Once a new window has popped up, wait until the container is fully loaded, then click on open directory and select `/rim` as the target.
+
+Finally, install the [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) extension inside the container.
 
 ## Configuration DB
 Firstly, you need configure the Database for the project. To do this, create an *.env* file in the folder *rim* with the following contents:
