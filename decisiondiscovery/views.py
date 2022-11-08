@@ -11,7 +11,8 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from chefboost import Chefboost as chef
-from rim.settings import sep, decision_foldername
+from art import tprint
+from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
 # import json
 # import sys
 # from django.shortcuts import render
@@ -29,23 +30,27 @@ from sklearn.model_selection import train_test_split
 # Create your views here.
 def flat_dataset_row(data, columns, param_timestamp_column_name, param_variant_column_name, columns_to_drop, param_decision_point_activity, actions_columns):
     """
-    Con esta función convertimos el log en un dataset, de manera que aplanamos todos los registros que existan sobre un mismo caso,
-    resultando una sola fila por cada caso. Para este aplanamiento solamente se tienen en cuenta los registros relativos a las actividades
-    anteriores a la indicada en param_decision_point_activity, incluyendo a esta última. Se concatena el nombre de las columnas de las actividades
-    con su identificación, por ejemplo, timestamp_A, timestamp_B, etc.
+    With this function we convert the log into a dataset, such that we flatten all the existing registers over the same case,
+    resulting on a single row per case. Fot this flattening we only take in account those registers relative to the activities previous
+    to the one indicated in para_decision_point_activity, including this last one. The names of the activities colums are concatinated
+    with their id, for example, timestamp_A, timestamp_B, etc.
 
-    :data: map cuyas claves corresponden con el identificador de cada cado y cuyos valores son cada actividad asociada a dicho caso, con su información asociada
+    :param data: Map which keys correspond to the identification of each case and which values are the activies asociated to said case, along with their information
     :type data: map
-    :columns: nombre de las columnas del dataset que se quieren almacenar para cada actividad
+    :param columns: Names of the dataset colums wanted to be stored for each activity
     :type columns: list
-    :param_timestamp_column_name: nombre de la columna donde se almacena el timestamp
+    :param param_timestamp_column_name: nombre de la columna donde se almacena el timestamp
     :type param_timestamp_column_name: str
-    :param_variant_column_name: nombre de la columna donde se almacena la variante, que será la etiqueta de nuestro problema
+    :param param_variant_column_name: nombre de la columna donde se almacena la variante, que será la etiqueta de nuestro problema
     :type param_variant_column_name: str
-    :columns_to_drop: nombre de las columnas a eliminar del dataset
+    :param columns_to_drop: Names of the colums to remove from the dataset
     :type columns_to_drop: list
-    :param_decision_point_activity: identificador de la actividad inmediatamente anterior al punto de decisión cuyo por qué se quiere descubrir
+    :param param_decision_point_activity: Identificatior of the activity inmediatly previous to the decision point which "why" wants to be discovered
     :type param_decision_point_activity: str
+    :param actions_columns: 
+    :type actions_columns: list
+    :returns: Dataset
+    :rtype: DataFrame
     """
     add_case = False  # Set True to add case column
     df_content = []
@@ -69,7 +74,7 @@ def flat_dataset_row(data, columns, param_timestamp_column_name, param_variant_c
             # case
             # variant_id
             if act != param_decision_point_activity:
-                # A todas las columnas les añado el sufijo con la letra de la actividad correspondiente
+                # Add sufix with the corresponding activity letter to all columns
                 row.extend(data["cases"][case][act].drop(
                     columns_to_drop).values.tolist())
                 for c in columns:
@@ -80,7 +85,7 @@ def flat_dataset_row(data, columns, param_timestamp_column_name, param_variant_c
                 for c in new_list:
                     headers.append(c+"_"+act)
                 break
-        # Introducimos la fila con la información de todas las actividades del caso en el dataset
+        # Introduce the row with the info of all activities of the case in the dataset
         df_content.append(row)
         # print(row)
         # print(headers)
@@ -91,26 +96,27 @@ def flat_dataset_row(data, columns, param_timestamp_column_name, param_variant_c
 def extract_training_dataset(
         param_decision_point_activity, param_log_path="media/enriched_log_feature_extracted.csv", param_path_dataset_saved="media/", actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"], param_variant_column_name="Variant", param_case_column_name="Case", param_screenshot_column_name="Screenshot", param_timestamp_column_name="Timestamp", param_activity_column_name="Activity"):
     """
-    Recorro cada fila del log:
-        Por cada caso:
-            Almaceno en un map todos los atributos de las actividades hasta llegar al punto de decisión
-            Suponiendo que el punto de decisión estuviese en la actividad D,
-            el map tendría la estructura:
+    Iterate for every log row:
+        For each case:
+            Store in a map all the atributes of the activities until reaching the decision point
+            Assuming the decision point is on activity D, the map would have the following structure:
         {
             "headers": ["timestamp", "MOUSE", "clipboard"...],
-            "caso1":
+            "case1":
                 {"A": ["value1","value2","value3",...]}
                 {"B": ["value1","value2","value3",...]}
                 {"C": ["value1","value2","value3",...]},
-            "caso2":
+            "case2":
                 {"A": ["value1","value2","value3",...]}
                 {"B": ["value1","value2","value3",...]}
                 {"C": ["value1","value2","value3",...]},...
         }
 
-    Una vez generado el map, para cada caso, concatenamos el header con la actividad para nombrar las columnas y asignamos los valores
-    Para cada caso se genera una fila nueva en el dataframe
+    Once the map is generated, for each case, we concatinate the header with the activity to name the columns and assign them the values
+    For each case a new row in the dataframe is generated
     """
+    tprint(platform_name + " - " + flattening_phase_name, "fancy60")
+    print(param_log_path+"\n")
 
     log = pd.read_csv(param_log_path, sep=",", index_col=0)
 
@@ -146,7 +152,7 @@ def extract_training_dataset(
     for c in columns_to_drop:
         columns.remove(c)
 
-    # Establecemos columnas comunes y al resto de columnas se le concatena el "_" actividad
+    # Stablish common columns and the rest of the columns are concatinated with "_" + activity
     data_flattened = flat_dataset_row(log_dict, columns, param_timestamp_column_name,
                                       param_variant_column_name, columns_to_drop, param_decision_point_activity, actions_columns)
     # print(data_flattened)
@@ -206,7 +212,19 @@ def chefboost_decision_tree(param_preprocessed_log_path, param_path, algorithms,
         df = flattened_dataset
         df.rename(columns = {target_label:'Decision'}, inplace = True)
         df['Decision'] = df['Decision'].astype(object) # which will by default set the length to the max len it encounters
-        config = {'algorithm': alg, 'enableParallelism': True, 'num_cores': 2, 'max_depth': 5}
+        enableParallelism = False
+        config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'num_cores': 2, 'max_depth': 5}
+        # config = {
+		# 		'algorithm' (string): ID3, 'C4.5, CART, CHAID or Regression
+		# 		'enableParallelism' (boolean): False
+		# 		'enableGBM' (boolean): True,
+		# 		'epochs' (int): 7,
+		# 		'learning_rate' (int): 1,
+		# 		'enableRandomForest' (boolean): True,
+		# 		'num_of_trees' (int): 5,
+		# 		'enableAdaboost' (boolean): True,
+		# 		'num_of_weak_classifier' (int): 4
+		# 	}
         times[alg] = {"start": time.time()}
         chef.fit(df, config = config)
         times[alg]["finish"] = time.time()
@@ -225,7 +243,8 @@ def chefboost_decision_tree(param_preprocessed_log_path, param_path, algorithms,
         # TODO: Graphical representation of feature importance
         # fi.plot(kind="barh", title="Feature Importance")
         shutil.move('outputs/rules/rules.py', param_path+alg+'-rules.py')
-        shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
+        if enableParallelism:
+            shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
     accuracy_score = 100
     return accuracy_score, times
 
@@ -314,6 +333,8 @@ def CART_sklearn_decision_tree(param_preprocessed_log_path, param_path, autogene
 
 
 def decision_tree_training(param_preprocessed_log_path="media/preprocessed_dataset.csv", param_path="mdia/", implementation="sklearn", autogeneration="autogeneration", algorithms=['ID3', 'CART', 'CHAID', 'C4.5'], columns_to_ignore=["Timestamp_start", "Timestamp_end"]):
+    tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
+    print(param_preprocessed_log_path+"\n")
     if implementation == 'sklearn':
         return CART_sklearn_decision_tree(param_preprocessed_log_path, param_path, autogeneration, columns_to_ignore)
     else:

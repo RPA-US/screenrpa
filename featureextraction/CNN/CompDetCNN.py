@@ -24,7 +24,7 @@ class CompDetCNN:
             print("*** No model loaded ***")
             return
         result = []
-        for i in tqdm (range(len(imgs)), desc="Classifing images..."):
+        for i in range(len(imgs)):
             X = self.preprocess_img(imgs[i])
             Y = self.class_map[np.argmax(self.model.predict(X, verbose=0))]
             result.append(Y)
