@@ -27,6 +27,8 @@ services:
   rim:
     command: tail -F anything
     build:
+      context: .
+      dockerfile: ./dev.Dockerfile
       args:
         branch: ${BRANCH_DOCKER}
         target: rim-dev
