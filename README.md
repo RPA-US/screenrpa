@@ -14,7 +14,7 @@ Using the `.env.sample` file available as a template, set the values for the use
 
 ## Create docker container
 
-Open a terminal emulator, navigate to the root directory of the project and run **`docker-compose up`** from  to create the container. This container will be composed of two images:
+Open a terminal emulator, navigate to the root directory of the project and run **`docker-compose -f docker-compose-dev.yml up`** from  to create the container. This container will be composed of two images:
 - Rim-dev: Image with the project code and dependencies, mounted in /rim
 - db: PostgreSQL image to store the database
 
