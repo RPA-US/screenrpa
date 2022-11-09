@@ -28,6 +28,12 @@ Once a new window has popped up, wait until the container is fully loaded, then 
 
 Finally, install the [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) extension inside the container.
 
+## Configure git repository
+
+In the case that the git repository has not been properly configured by default, run the following command while on the project root directory:
+
+**`git checkout -t origin/<branch_name>`**
+
 ## Configuration DB
 Firstly, you need configure the Database for the project. To do this, create an *.env* file in the folder *rim* with the following contents:
 ```
