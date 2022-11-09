@@ -3,7 +3,7 @@ name: Build and publish
 on: 
   push:
     branches:
-    - "master" # Running this workflow only for master branch
+    - "main" # Running this workflow only for master branch
 
 jobs:
   build-and-publish-latest:
