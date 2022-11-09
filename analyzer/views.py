@@ -20,7 +20,7 @@ from featureextraction.detection import ui_elements_detection
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
-from analyzer.tasks import init_case_study_task
+from analyzer.tasks import init_generate_case_study
 # from rest_framework.pagination import PageNumberPagination
 from .models import CaseStudy# , ExecutionManager
 from .serializers import CaseStudySerializer
@@ -29,6 +29,7 @@ from decisiondiscovery.serializers import DecisionTreeTrainingSerializer, Extrac
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
+from django.forms.models import model_to_dict
 from asgiref.sync import sync_to_async
 
 def get_foldernames_as_list(path, sep):
@@ -39,7 +40,7 @@ def get_foldernames_as_list(path, sep):
             foldername_logs_with_different_size_balance.append(f)
     return foldername_logs_with_different_size_balance
 
-def generate_case_study(case_study):
+def generate_case_study(case_study_id):
     """
     Generate case study. This function executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
@@ -51,6 +52,7 @@ def generate_case_study(case_study):
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
         to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']
     """
+    case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
     foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
     # DEPRECATED versions: exp_folder_complete_path + sep + "metadata" + sep
@@ -140,6 +142,8 @@ def generate_case_study(case_study):
                 outfile.write(json_object)
 
             msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_path+scenario+"-metainfo.json"
+            case_study.executed = True
+            case_study.save()
         else:
             msg = "None phases were set to be executed"
     return msg
@@ -414,23 +418,23 @@ def case_study_generator(data):
             match phase:
                 case "ui_elements_detection":
                     serializer = UIElementsDetectionSerializer(data=data['phases_to_execute'][phase])
-                    serializer.is_valid()
+                    serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_detection = serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=data['phases_to_execute'][phase])
-                    serializer.is_valid()
+                    serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=data['phases_to_execute'][phase])
-                    serializer.is_valid()
+                    serializer.is_valid(raise_exception=True)
                     case_study.feature_extraction_technique = serializer.save()
                 case "extract_training_dataset":
                     serializer = ExtractTrainingDatasetSerializer(data=data['phases_to_execute'][phase])
-                    serializer.is_valid()
+                    serializer.is_valid(raise_exception=True)
                     case_study.extract_training_dataset = serializer.save()
                 case "decision_tree_training":
                     serializer = DecisionTreeTrainingSerializer(data=data['phases_to_execute'][phase])
-                    serializer.is_valid()
+                    serializer.is_valid(raise_exception=True)
                     case_study.decision_tree_training = serializer.save()
                 case _:
                     pass
@@ -438,7 +442,7 @@ def case_study_generator(data):
         # Updating the case study with the foreign keys of the phases to execute
         case_study.save()
         transaction_works = True
-    generate_case_study(case_study)
+    init_generate_case_study.delay(case_study.id)
 
     return transaction_works, case_study
 
@@ -448,12 +452,75 @@ class CaseStudyView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return CaseStudy.objects.filter(shopper=self.request.user)
-    
+
     def post(self, request, *args, **kwargs):
-        # We call the async task, however we wait with .get() until its done to send in the response any error that may arise 
-        # during the excecution of the case study
-        response_content, st = init_case_study_task(request.data)#.delay(request.data).get()
-        # We create the Response object after the function is called instead of inside it to prevent serialization errors
+
+        #Before starting the async task we will check if the json fields values are valid
+        case_study_serialized = CaseStudySerializer(data=request.data)
+        st = status.HTTP_200_OK
+
+        if not case_study_serialized.is_valid():
+            response_content = case_study_serialized.errors
+            st=status.HTTP_400_BAD_REQUEST
+        else:
+            execute_case_study = True
+            try:
+                # if not (case_study_serialized.data['mode'] in ['generation', 'results', 'both']):
+                #     response_content = {"message": "mode must be one of the following options: generation, results, both."}
+                #     st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                #     execute_case_study = False
+                #     return Response(response_content, status=st)
+
+                if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
+                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
+                    st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                    execute_case_study = False
+                    return Response(response_content, st)
+
+                if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['algorithm'] in ["legacy", "uied"]:
+                    response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
+                    st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                    execute_case_study = False
+                    return Response(response_content, st)
+
+                if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['classifier'] in ["legacy", "uied"]:
+                    response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                    st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                    execute_case_study = False
+                    return Response(response_content, st)
+
+                for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
+                    if not(phase in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']):
+                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                        execute_case_study = False
+                        return Response(response_content, st)
+
+                for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_weights'],
+                             case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties'],
+                             case_study_serialized.data['exp_folder_complete_path']]:
+                    if not os.path.exists(path):
+                        response_content = {"message": f"The following file or directory does not exists: {path}"}
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                        execute_case_study = False
+                        return Response(response_content, st)
+
+                if execute_case_study:
+                    # init_case_study_task.delay(request.data)
+                    transaction_works, case_study = case_study_generator(case_study_serialized.data)
+                    if not transaction_works:
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                    else:    
+                        response_content = {"message": f"Case study with id:{case_study.id} generated"}
+
+            except Exception as e:
+                response_content = {"message": "Some of atributes are invalid: " + str(e) }
+                st = status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        # # item = CaseStudy.objects.create(serializer)
+        # # result = CaseStudySerializer(item)
+        # # return Response(result.data, status=status.HTTP_201_CREATED)
+
         return Response(response_content, status=st)
 
 class SpecificCaseStudyView(generics.ListCreateAPIView):
@@ -476,11 +543,14 @@ class ResultCaseStudyView(generics.ListCreateAPIView):
         st = status.HTTP_200_OK
         try:
             case_study = CaseStudy.objects.get(id=case_study_id)
-            experiments_results_collectors(case_study, "descision_tree.log")
-            response = case_study.exp_foldername + ' case study results collected!'
+            if case_study.executed:
+                experiments_results_collectors(case_study, "descision_tree.log")
+                response = {"message": case_study.exp_foldername + ' case study results collected!'}
+            else:
+                response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
 
         except Exception as e:
-            response = {f"Case Study with id {case_study_id} not found"}
+            response = {"message": f"Case Study with id {case_study_id} not found"}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
