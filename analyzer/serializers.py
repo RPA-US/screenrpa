@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import CaseStudy
 
 class CaseStudySerializer(serializers.ModelSerializer):
-    phases_to_execute = serializers.JSONField()
+    # phases_to_execute = serializers.JSONField()
     special_colnames = serializers.JSONField()
     class Meta:
         model = CaseStudy
