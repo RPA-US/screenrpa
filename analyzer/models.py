@@ -21,7 +21,7 @@ def default_phases_to_execute():
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
     # priority = models.IntegerField(default=1, editable=False)
-    # executed = models.BooleanField(default=False, editable=False)
+    executed = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)

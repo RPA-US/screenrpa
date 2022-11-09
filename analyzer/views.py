@@ -142,6 +142,8 @@ def generate_case_study(case_study_id):
                 outfile.write(json_object)
 
             msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_path+scenario+"-metainfo.json"
+            case_study.executed = True
+            case_study.save()
         else:
             msg = "None phases were set to be executed"
     return msg
@@ -541,11 +543,14 @@ class ResultCaseStudyView(generics.ListCreateAPIView):
         st = status.HTTP_200_OK
         try:
             case_study = CaseStudy.objects.get(id=case_study_id)
-            experiments_results_collectors(case_study, "descision_tree.log")
-            response = case_study.exp_foldername + ' case study results collected!'
+            if case_study.executed:
+                experiments_results_collectors(case_study, "descision_tree.log")
+                response = {"message": case_study.exp_foldername + ' case study results collected!'}
+            else:
+                response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
 
         except Exception as e:
-            response = {f"Case Study with id {case_study_id} not found"}
+            response = {"message": f"Case Study with id {case_study_id} not found"}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
