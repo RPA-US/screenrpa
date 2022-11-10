@@ -13,7 +13,7 @@ from art import tprint
 from tqdm import tqdm
 from time import sleep
 from datetime import datetime
-from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername
+from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from featureextraction.views import ui_elements_classification, feature_extraction
 from featureextraction.detection import ui_elements_detection
@@ -77,27 +77,34 @@ def generate_case_study(case_study):
                     'ui_elements_detection': (param_path+n+sep+'log.csv',
                                                  param_path+n+sep,
                                                  case_study.special_colnames,
-                                                 case_study.ui_elements_detection.eyetracking_log_filename,
                                                  case_study.ui_elements_detection.add_words_columns,
-                                                 case_study.ui_elements_detection.overwrite_info,
-                                                 case_study.ui_elements_detection.algorithm)
+                                                 case_study.ui_elements_detection.skip,
+                                                 case_study.ui_elements_detection.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                  if case_study.ui_elements_detection else None,
+                    'noise_filtering': (param_path+n+sep+'log.csv',
+                                                 param_path+n+sep,
+                                                 case_study.special_colnames,
+                                                 case_study.noise_filtering.configurations,
+                                                 case_study.noise_filtering.type)
+                                                 # We check this phase is present in case_study to avoid exceptions
+                                                 if case_study.noise_filtering else None,
                     'ui_elements_classification': (case_study.ui_elements_classification.model_weights,
                                                   case_study.ui_elements_classification.model_properties,
                                                   param_path + n + sep + 'components_npy' + sep,
                                                   param_path + n + sep + 'components_json' + sep,
                                                   param_path+n+sep + 'log.csv',
                                                   case_study.special_colnames["Screenshot"],
-                                                  case_study.ui_elements_classification.overwrite_info,
-                                                  case_study.ui_elements_classification.ui_elements_classification_classes,
-                                                  case_study.ui_elements_classification.ui_elements_classification_shape,
+                                                  case_study.text_classes,
+                                                  case_study.ui_elements_classification.skip,
+                                                  case_study.ui_elements_classification_classes,
                                                   case_study.ui_elements_classification.classifier)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
                     'feature_extraction': (case_study.feature_extraction_technique.name,
+                                                case_study.ui_elements_classification_classes,
                                                   param_path+n+sep+'enriched_log.csv',
-                                                  case_study.feature_extraction_technique.overwrite_info)
+                                                  case_study.feature_extraction_technique.skip)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.feature_extraction_technique else None,
                     'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv',
@@ -158,7 +165,7 @@ def times_duration(times_dict):
     return res
 
 
-def calculate_accuracy_per_tree(decision_tree_path, expression, quantity_difference, algorithm):
+def calculate_accuracy_per_tree(decision_tree_path, expression, algorithm):
     res = {}
     # This code is useful if we want to get the expresion like: [["TextView", "B"],["ImageView", "B"]]
     # if not isinstance(levels, list):
@@ -198,7 +205,7 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, quantity_differe
                         for c in '<>= ':
                             quantity = quantity.replace(c, '')
                             res_partial[index] = quantity
-                    if float(res_partial[0])-float(res_partial[1]) > quantity_difference:
+                    if float(res_partial[0])-float(res_partial[1]) > gui_quantity_difference:
                         print("GUI component quantity difference greater than the expected")
                         res[gui_component_name_to_find] = "False"
                     else:
@@ -278,14 +285,15 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     else:
         accuracy = []
 
+    # TODO: new experiment files structure
     for scenario in tqdm(case_study.scenarios_to_study,
                          desc="Experiment results that have been processed"):
         sleep(.1)
         scenario_path = case_study.exp_folder_complete_path + sep + scenario
         family_size_balance_variations = get_foldernames_as_list(
             scenario_path, sep)
-        if case_study.drop and case_study.drop in family_size_balance_variations:
-            family_size_balance_variations.remove(case_study.drop)
+        # if case_study.drop and (case_study.drop in family_size_balance_variations):
+        #     family_size_balance_variations.remove(case_study.drop)
         json_f = open(times_info_path+scenario+"-metainfo.json")
         times = json.load(json_f)
         for n in family_size_balance_variations:
@@ -320,13 +328,13 @@ def experiments_results_collectors(case_study, decision_tree_filename):
                 for alg in decision_tree_algorithms:
                     if (alg+'_accuracy') in accuracy:
                         accuracy[alg+'_tree_training_time'].append(times_duration(times[n]['decision_tree_training'][alg]))
-                        accuracy[alg+'_accuracy'].append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, alg))
+                        accuracy[alg+'_accuracy'].append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg))
                     else:
                         accuracy[alg+'_tree_training_time'] = [times_duration(times[n]['decision_tree_training'][alg])]
-                        accuracy[alg+'_accuracy'] = [calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, alg)]
+                        accuracy[alg+'_accuracy'] = [calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg)]
             else:
                 # Calculate level of accuracy
-                accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, None))
+                accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, None))
 
     dict_results = {
         'family': family,
@@ -452,7 +460,7 @@ class CaseStudyView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         # We call the async task, however we wait with .get() until its done to send in the response any error that may arise 
         # during the excecution of the case study
-        response_content, st = init_case_study_task(request.data)#.delay(request.data).get()
+        response_content, st = init_case_study_task.delay(request.data).get()
         # We create the Response object after the function is called instead of inside it to prevent serialization errors
         return Response(response_content, status=st)
 

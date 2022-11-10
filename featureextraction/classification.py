@@ -60,18 +60,17 @@ def check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_ro
 ###################################################################################################
 ###################################################################################################
 
-def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
-                            metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", 
-                            rewrite_info=False, ui_elements_classification_classes=default_ui_elements_classification_classes, 
-                            ui_elements_classification_shape=[64, 64, 3]):
+def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model_properties="resources/models/custom-v2-classes.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
+                            metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="text",
+                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
     The values indicated in these columns added indicate how many GUI components are present with regard to their class.
     Example. 2 button, 3 image_view, 1 text_view, etc.
     
-    :param_model_weights: Classification model  
-    :type param_model_weights: h5
+    :param_model: Classification model  
+    :type param_model: h5
     :param model_properties:
     :type model_properties: Classes and shape of the model
     :param ui_elements_crops_npy_root: Path where the cropped images are stored
@@ -84,8 +83,10 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
     :type enriched_log_output_path: str
     :param screenshot_colname: Name of the column in the log indicating the images names
     :type screenshot_colname: str
-    :param rewrite_info: Rewrite classification data (json files)
-    :type rewrite_info: bool
+    :param text_classname: Name of the the corresponding class for the texts
+    :type text_classname: str
+    :param skip: Rewrite classification data (json files)
+    :type skip: bool
     :param ui_elements_classification_classes: Model classes
     :type ui_elements_classification_classes: list
     
@@ -93,16 +94,17 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
 
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 
-    if missing_json_file or rewrite_info:
+    if missing_json_file or (not skip):
         # Load the model properties from the json
+        f = json.load(open(model_properties,))
         classes = ui_elements_classification_classes
-        shape = ui_elements_classification_shape
+        shape = tuple(f["shape"])
 
         # Load the ML classifier model for the crops
         # Default model is custom-v2, a model creating by using transfer learning from UIED's generalized model
         classifier = {}
         classifier['Elements'] = CompDetCNN(
-            model_weights, classes, shape)
+            model, classes, shape)
         print("\n\nLoaded ML model from disk\n")
 
         for screenshot_filename in tqdm(screenshot_filenames, desc=f"Classifying images in {ui_elements_crops_npy_root}"):
@@ -119,18 +121,17 @@ def uied_ui_elements_classification(model_weights="resources/models/custom-v2.h5
                 json.dump(data, jsonFile)
 
 
-def legacy_ui_elements_classification(model_weights="resources/models/model.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
-                            metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", 
-                            rewrite_info=False, ui_elements_classification_classes=default_ui_elements_classification_classes, 
-                            ui_elements_classification_shape=[64, 64, 3]):
+def legacy_ui_elements_classification(model="resources/models/model.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
+                            metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="x0_TextView",
+                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
     The values indicated in these columns added indicate how many GUI components are present with regard to their class.
     Example. 2 button, 3 image_view, 1 text_view, etc.
 
-    :param_model_weights: Weights of the edges of the classification neural network 
-    :type param_model_weights: h5
+    :param_model: Weights of the edges of the classification neural network 
+    :type param_model: h5
     :param model_properties:
     :type model_properties: json file
     :param ui_elements_crops_npy_root: Path where the cropped images are stored
@@ -143,15 +144,17 @@ def legacy_ui_elements_classification(model_weights="resources/models/model.h5",
     :type enriched_log_output_path: str
     :param screenshot_colname: Name of the column in the log indicating the images names
     :type screenshot_colname: str
-    :param rewrite_info: Rewrite classification data (json files)
-    :type rewrite_info: bool
+    :param text_classname: Name of the the corresponding class for the texts
+    :type text_classname: str
+    :param skip: Rewrite classification data (json files)
+    :type skip: bool
     :returns: Enriched log
     :rtype: DataFrame
     """
 
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 
-    if missing_json_file or rewrite_info:
+    if missing_json_file or (not skip):
         # load json and create model
         json_file = open(model_properties, 'r')
         loaded_model_json = json_file.read()
@@ -159,7 +162,7 @@ def legacy_ui_elements_classification(model_weights="resources/models/model.h5",
         loaded_model = model_from_json(loaded_model_json)
 
         # load weights into new model
-        loaded_model.load_weights(model_weights)
+        loaded_model.load_weights(model)
 
         crops_info = {}
         
@@ -196,7 +199,7 @@ def legacy_ui_elements_classification(model_weights="resources/models/model.h5",
 
             # This neural network returns as output a integer indicating each of its classes. This number must me mapped to its corresponding class name (str)
             result = np.argmax(predict_x, axis=1)
-            result_mapped = ["x0_TextView" if crops_info[screenshot_filenames[i]]["text"][index] else ui_elements_classification_classes[x] for index, x in enumerate(result)]
+            result_mapped = [text_classname if crops_info[screenshot_filenames[i]]["text"][index] else ui_elements_classification_classes[x] for index, x in enumerate(result)]
 
             crops_info[screenshot_filenames[i]]["result"] = result_mapped
             # crop_imgs[screenshot_filenames[i]]["result_freq"] = pd.Series(result_mapped).value_counts()

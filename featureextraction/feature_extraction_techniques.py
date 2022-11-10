@@ -1,8 +1,7 @@
 
+import pandas as pd
 
-
-
-def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwrite_info): #enriched_log_output_path="resources/enriched_log_feature_extracted.csv"
+def quantity_ui_elements_fe_technique(feature_extraction_technique_name, skip, screenshot_colname, ui_log_path, ui_elements_classification_classes): #enriched_log_output_path="resources/enriched_log_feature_extracted.csv"
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -12,19 +11,19 @@ def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwri
     :type feature_extraction_technique_name: str
     :param enriched_log_output_path: Path to save the enriched log
     :type enriched_log_output_path: str
-    :param overwrite_info: Rewrite log
-    :type overwrite_info: bool
+    :param skip: Rewrite log
+    :type skip: bool
 
     """
     print("TODO")
-    log = pd.read_csv(param_log_path, sep=",")
+    log = pd.read_csv(ui_log_path, sep=",")
     # screenshot_filenames = [ x + ".npy" for x in log.loc[:,"Screenshot"].values.tolist()]
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
-    df = pd.DataFrame([], columns=default_ui_elements_classification_classes)
+    df = pd.DataFrame([], columns=ui_elements_classification_classes)
 
     for i in range(0, len(images_names)):
-        row1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        row1 = [0] * len(ui_elements_classification_classes)
         # Acess the previously stored frequencies
         df1 = crop_imgs[images_names[i]]["result_freq_df"]
         if len(df1.columns.tolist()) > 0:
@@ -53,10 +52,10 @@ def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwri
 
 
 
-def location_ui_elements_fe_technique(feature_extraction_technique_name, overwrite_info):
+def location_ui_elements_fe_technique(feature_extraction_technique_name, skip):
     print("TODO") # TODO: 
 
-def location_ui_elements_and_plaintext_fe_technique(feature_extraction_technique_name, overwrite_info):
+def location_ui_elements_and_plaintext_fe_technique(feature_extraction_technique_name, skip):
     print("TODO") # TODO: 
 
 

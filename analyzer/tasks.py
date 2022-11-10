@@ -28,14 +28,14 @@ def init_case_study_task(request_data, *args, **kwargs):
                 execute_case_study = False
                 return (response_content, st)
 
-            if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['algorithm'] in ["legacy", "uied"]:
-                response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
+            if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["rpa-us", "uied"]:
+                response_content = {"message": "Elements Detection type must be one of ['rpa-us', 'uied']"}
                 st = status.HTTP_422_UNPROCESSABLE_ENTITY
                 execute_case_study = False
                 return (response_content, st)
 
-            if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['classifier'] in ["legacy", "uied"]:
-                response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+            if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["rpa-us", "uied"]:
+                response_content = {"message": "Elements Classification type must be one of ['rpa-us', 'uied']"}
                 st = status.HTTP_422_UNPROCESSABLE_ENTITY
                 execute_case_study = False
                 return (response_content, st)

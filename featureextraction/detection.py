@@ -87,7 +87,7 @@ def nesting_inspection(org, grey, compos, ffl_block):
 
 def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
     '''
-    Analyzes an image and extracts its UI components with an alternative algorithm
+    Analyzes an image and extracts its UI components with an alternative algorithm type
 
     :param param_img_root: Path to the image
     :type param_img_root: str
@@ -333,7 +333,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, overwrite_info, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
+def detect_images_components(param_img_root, log, special_colnames, skip, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -372,36 +372,13 @@ def detect_images_components(param_img_root, log, special_colnames, overwrite_in
         screenshot_json = path_to_save_components_json + image_names[img_index] + ".json"
         exists_screenshot_json = os.path.exists(screenshot_json)
         
-        overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or overwrite_info
+        overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or (not skip)
 
-        # GAZE ANALYSIS
-        if eyetracking_log is not False:
-            timestamp_start = log[special_colnames['Timestamp']
-                                  ][img_index]-init_value_ui_log_timestamp
-            if img_index < len(image_names)-1:
-                timestamp_end = log[special_colnames['Timestamp']
-                                    ][img_index+1]-init_value_ui_log_timestamp
-                interval, last_upper_limit = gaze_events_associated_to_event_time_range(
-                    eyetracking_log,
-                    special_colnames,
-                    timestamp_start,
-                    timestamp_end,
-                    None)
-            else:
-                print("Function detect_images_components: LAST SCREENSHOT")
-                interval, last_upper_limit = gaze_events_associated_to_event_time_range(
-                    eyetracking_log,
-                    special_colnames,
-                    timestamp_start,
-                    "LAST",
-                    last_upper_limit)
-
-            # { row_number: [[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY]]}
-            gaze_events[img_index] = interval
+        # Gaze analysis?
 
         if overwrite:
 
-            if algorithm == "legacy":
+            if algorithm == "rpa-us":
                 recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, img_index)
                 
                 # save metadata json
@@ -489,7 +466,7 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, special_colnames, eyetracking_log_filename, add_words_columns=False, overwrite_info=False, algorithm="legacy"):
+def ui_elements_detection(param_log_path, param_img_root, special_colnames, add_words_columns=False, skip=False, algorithm="legacy"):
     tprint(platform_name + " - " + detection_phase_name, "fancy60")
     print(param_img_root+"\n")
     
@@ -521,7 +498,7 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, eyet
         if not os.path.exists(p):
             os.mkdir(p)
 
-    detect_images_components(param_img_root, log, special_colnames, overwrite_info, eyetracking_log_filename,
+    detect_images_components(param_img_root, log, special_colnames, skip,
                              image_names, text_corners, bordered, add_words_columns, algorithm)
 
 

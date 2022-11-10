@@ -6,14 +6,14 @@ from rim.settings import platform_name, classification_phase_name, feature_extra
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
     data_list = list(data)
-    classifier = data_list.pop()
+    classifier_type = data_list.pop()
     data = tuple(data_list)
 
     tprint(platform_name + " - " + classification_phase_name, "fancy60")
     print(data_list[4]+"\n")
     
-    match classifier:
-        case "legacy":
+    match classifier_type:
+        case "rpa-us":
             output = legacy_ui_elements_classification(*data)
         case "uied":
             output = uied_ui_elements_classification(*data)
