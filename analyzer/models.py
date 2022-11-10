@@ -9,9 +9,13 @@ from featureextraction.models import UIElementsDetection, UIElementsClassificati
 def default_phases_to_execute():
     return {'ui_elements_detection': {}, 'ui_elements_classification': {}, 'extract_training_dataset': {}, 'decision_tree_training': {}}
 
+def get_ui_elements_classification_image_shape():
+    return [64, 64, 3]
+
 def get_ui_elements_classification_classes():
     return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
 'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
+
 
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
@@ -27,6 +31,7 @@ class CaseStudy(models.Model):
     # phases_to_execute = JSONField()
     decision_point_activity = models.CharField(max_length=255)
     gui_class_success_regex = models.CharField(max_length=255)
+    ui_elements_classification_image_shape = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_image_shape)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, on_delete=models.CASCADE)
     noise_filtering = models.ForeignKey(NoiseFiltering, null=True, on_delete=models.CASCADE)

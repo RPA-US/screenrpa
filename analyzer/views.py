@@ -24,7 +24,7 @@ from analyzer.tasks import init_generate_case_study
 # from rest_framework.pagination import PageNumberPagination
 from .models import CaseStudy# , ExecutionManager
 from .serializers import CaseStudySerializer
-from featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
+from featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer, NoiseFilteringSerializer
 from decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -50,7 +50,7 @@ def generate_case_study(case_study_id):
         decision_activity (string): activity where decision we want to study is taken. Example: 'B'
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']
+        to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','noise_filtering','extract_training_dataset','decision_tree_training']
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
@@ -100,6 +100,7 @@ def generate_case_study(case_study_id):
                                                   case_study.text_classes,
                                                   case_study.ui_elements_classification.skip,
                                                   case_study.ui_elements_classification_classes,
+                                                  case_study.ui_elements_classification_image_shape,
                                                   case_study.ui_elements_classification.classifier)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
@@ -428,6 +429,10 @@ def case_study_generator(data):
                     serializer = UIElementsDetectionSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_detection = serializer.save()
+                case "noise_filtering":
+                    serializer = NoiseFilteringSerializer(data=data['phases_to_execute'][phase])
+                    serializer.is_valid(raise_exception=True)
+                    case_study.noise_filtering = serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid(raise_exception=True)
@@ -473,38 +478,32 @@ class CaseStudyView(generics.ListCreateAPIView):
         else:
             execute_case_study = True
             try:
-                # if not (case_study_serialized.data['mode'] in ['generation', 'results', 'both']):
-                #     response_content = {"message": "mode must be one of the following options: generation, results, both."}
-                #     st = status.HTTP_422_UNPROCESSABLE_ENTITY
-                #     execute_case_study = False
-                #     return Response(response_content, status=st)
-
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
+                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','noise_filtering', 'feature_extraction_technique','extract_training_dataset','decision_tree_training']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
-                if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['algorithm'] in ["legacy", "uied"]:
+                if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["legacy", "uied"]:
                     response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
-                if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['classifier'] in ["legacy", "uied"]:
+                if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["legacy", "uied"]:
                     response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']):
-                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
+                    if not(phase in ['ui_elements_detection','ui_elements_classification','noise_filtering','feature_extraction_technique','extract_training_dataset','decision_tree_training']):
+                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','noise_filtering','feature_extraction_technique','extract_training_dataset','decision_tree_training']"}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
 
-                for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_weights'],
+                for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model'],
                              case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties'],
                              case_study_serialized.data['exp_folder_complete_path']]:
                     if not os.path.exists(path):
@@ -522,7 +521,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                         response_content = {"message": f"Case study with id:{case_study.id} generated"}
 
             except Exception as e:
-                response_content = {"message": "Some of atributes are invalid: " + str(e) }
+                response_content = {"message": "Some of the attributes are invalid: " + str(e) }
                 st = status.HTTP_422_UNPROCESSABLE_ENTITY
 
         # # item = CaseStudy.objects.create(serializer)

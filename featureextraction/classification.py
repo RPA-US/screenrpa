@@ -13,7 +13,7 @@ from tqdm import tqdm
 from featureextraction.CNN.CompDetCNN import CompDetCNN
 
 default_ui_elements_classification_classes = ['x0_Button', 'x0_CheckBox', 'x0_CheckedTextView', 'x0_EditText', 'x0_ImageButton', 'x0_ImageView', 'x0_NumberPicker', 'x0_RadioButton', 'x0_RatingBar', 'x0_SeekBar', 'x0_Spinner', 'x0_Switch', 'x0_TextView', 'x0_ToggleButton']
-
+default_ui_elements_classification_image_shape = [64, 64, 3]
 
 ###################################################################################################
 ######################################       UTILS        #########################################
@@ -62,7 +62,7 @@ def check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_ro
 
 def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model_properties="resources/models/custom-v2-classes.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
                             metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="text",
-                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes):
+                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes, ui_elements_classification_image_shape=default_ui_elements_classification_image_shape):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
@@ -98,7 +98,7 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model
         # Load the model properties from the json
         f = json.load(open(model_properties,))
         classes = ui_elements_classification_classes
-        shape = tuple(f["shape"])
+        shape = tuple(ui_elements_classification_image_shape)
 
         # Load the ML classifier model for the crops
         # Default model is custom-v2, a model creating by using transfer learning from UIED's generalized model
@@ -123,7 +123,7 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model
 
 def legacy_ui_elements_classification(model="resources/models/model.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
                             metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="x0_TextView",
-                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes):
+                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes, ui_elements_classification_image_shape=default_ui_elements_classification_image_shape):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
@@ -177,13 +177,15 @@ def legacy_ui_elements_classification(model="resources/models/model.h5", model_p
             preprocessed_crops_exists = os.path.exists(preprocessed_crops_filename)
             
             if not preprocessed_crops_exists:
+                x = ui_elements_classification_image_shape[0]
+                y = ui_elements_classification_image_shape[1]
                 preprocessed_crops = []
                 for img in crops_info[screenshot_filenames[i]]["content"]:
-                    if img.shape[1] > 150:
-                        img = img[0:img.shape[0], 0:150]
-                    if img.shape[0] > 150:
-                        img = img[0:150, 0:img.shape[1]]
-                    crop_padded = pad(img, 150, 150)
+                    if img.shape[1] > y:
+                        img = img[0:img.shape[0], 0:y]
+                    if img.shape[0] > x:
+                        img = img[0:x, 0:img.shape[1]]
+                    crop_padded = pad(img, x, y)
                     crop_resized = tf.image.resize(crop_padded, [50, 50], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=True, antialias=True)
                     preprocessed_crops.append(crop_resized)
                     # print("Cropped: "+str(img_resized.shape))
