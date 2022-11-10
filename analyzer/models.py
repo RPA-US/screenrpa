@@ -22,7 +22,6 @@ class CaseStudy(models.Model):
     # priority = models.IntegerField(default=1, editable=False)
     executed = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    complete_execution = models.BooleanField(default=False, editable=False)
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True)

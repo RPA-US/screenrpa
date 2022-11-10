@@ -91,20 +91,20 @@ def generate_case_study(case_study_id):
                                                  case_study.noise_filtering.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                  if case_study.noise_filtering else None,
-                    'ui_elements_classification': (case_study.ui_elements_classification.model_weights,
+                    'ui_elements_classification': (case_study.ui_elements_classification.model,
                                                   case_study.ui_elements_classification.model_properties,
                                                   param_path + n + sep + 'components_npy' + sep,
                                                   param_path + n + sep + 'components_json' + sep,
                                                   param_path+n+sep + 'log.csv',
                                                   case_study.special_colnames["Screenshot"],
-                                                  case_study.text_classes,
+                                                  case_study.text_classname,
                                                   case_study.ui_elements_classification.skip,
                                                   case_study.ui_elements_classification_classes,
                                                   case_study.ui_elements_classification_image_shape,
-                                                  case_study.ui_elements_classification.classifier)
+                                                  case_study.ui_elements_classification.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
-                    'feature_extraction': (case_study.feature_extraction_technique.name,
+                    'feature_extraction': (case_study.feature_extraction_technique.technique_name,
                                                 case_study.ui_elements_classification_classes,
                                                   param_path+n+sep+'enriched_log.csv',
                                                   case_study.feature_extraction_technique.skip)
