@@ -9,7 +9,7 @@ RUN apt-get install -y gcc git postgresql-server-dev-all musl-dev libffi-dev cma
 # Clones the repository
 RUN git clone https://github.com/RPA-US/rim.git
 WORKDIR /rim
-RUN git checkout origin/$branch
+RUN git checkout -t origin/$branch
 
 # Installs python dependencies
 RUN /usr/local/bin/python -m venv venv

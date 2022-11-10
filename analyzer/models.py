@@ -15,6 +15,8 @@ def get_ui_elements_classification_classes():
 
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
+    # priority = models.IntegerField(default=1, editable=False)
+    executed = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     complete_execution = models.BooleanField(default=False, editable=False)
     exp_foldername = models.CharField(max_length=255)
