@@ -333,7 +333,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, eyetracking_log_filename, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
+def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -351,17 +351,6 @@ def detect_images_components(param_img_root, log, special_colnames, skip, eyetra
     """
     path_to_save_gui_components_npy = param_img_root+"components_npy/"
     path_to_save_components_json = param_img_root+"components_json/"
-
-    eyetracking_log = False
-    if eyetracking_log_filename and os.path.exists(param_img_root + eyetracking_log_filename):
-        eyetracking_log = pd.read_csv(
-            param_img_root + eyetracking_log_filename, sep=";")
-    init_value_ui_log_timestamp = log[special_colnames['Timestamp']][0]
-
-    gaze_events = {}  # key: row number,
-    #value: { tuple: [coorX, coorY], gui_component_coordinate: [[corners_of_crop]]}
-
-    last_upper_limit = 0
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
@@ -498,10 +487,7 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, add_
         if not os.path.exists(p):
             os.mkdir(p)
 
-    detect_images_components(param_img_root, log, special_colnames, skip,
-                             image_names, text_corners, bordered, add_words_columns, algorithm)
-
-
+    detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, add_words_columns, algorithm)
 
 
 

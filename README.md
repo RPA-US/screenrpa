@@ -48,7 +48,6 @@ API_VERSION=<api/v1/>                               "API prefix"
 GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD=<2>     "GUI components detection cropping threshold as integer"
 GAZE_MINIMUM_TIME_STARING=<10>                      "Minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot"
 RESULTS_TIMES_FORMAT=<seconds>                      "Results times format (formatted/seconds)"
-GUI_QUANTITY_DIFFERENCE=1
 DECISION_TREE_TRAINING_FOLDERNAME=<decision-tree>   "Decision tree training phase files foldername"
 ```
 

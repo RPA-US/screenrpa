@@ -17,6 +17,7 @@ from rim.settings import times_calculation_mode, metadata_location, sep, decisio
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from featureextraction.views import ui_elements_classification, feature_extraction
 from featureextraction.detection import ui_elements_detection
+from featureextraction.gaze_analysis import noise_filtering
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -87,8 +88,8 @@ def generate_case_study(case_study_id):
                     'noise_filtering': (param_path+n+sep+'log.csv',
                                                  param_path+n+sep,
                                                  case_study.special_colnames,
-                                                 case_study.noise_filtering.configurations,
-                                                 case_study.noise_filtering.type)
+                                                 case_study.noise_filtering.type,
+                                                 case_study.noise_filtering.configurations)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                  if case_study.noise_filtering else None,
                     'ui_elements_classification': (case_study.ui_elements_classification.model,
