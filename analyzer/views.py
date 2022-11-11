@@ -105,10 +105,13 @@ def generate_case_study(case_study_id):
                                                   case_study.ui_elements_classification.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
-                    'feature_extraction': (case_study.feature_extraction_technique.technique_name,
-                                                case_study.ui_elements_classification_classes,
+                    'feature_extraction': (case_study.ui_elements_classification_classes,
+                                                  case_study.special_colnames["Screenshot"],
+                                                  param_path + n + sep + 'components_json' + sep,
+                                                  param_path+n+sep + 'log.csv',
                                                   param_path+n+sep+'enriched_log.csv',
-                                                  case_study.feature_extraction_technique.skip)
+                                                  case_study.feature_extraction_technique.skip,
+                                                  case_study.feature_extraction_technique.technique_name)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.feature_extraction_technique else None,
                     'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv',
@@ -485,14 +488,29 @@ class CaseStudyView(generics.ListCreateAPIView):
                     execute_case_study = False
                     return Response(response_content, st)
 
-                if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["legacy", "uied"]:
+                if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_detection') and (not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["legacy", "uied"]):
                     response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
-                if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["legacy", "uied"]:
-                    response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_classification'):
+                    if (not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["legacy", "uied"]):
+                        response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                        execute_case_study = False
+                        return Response(response_content, st)
+
+                    for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model'],
+                             case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties']]:
+                        if not os.path.exists(path):
+                            response_content = {"message": f"The following file or directory does not exists: {path}"}
+                            st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                            execute_case_study = False
+                            return Response(response_content, st)
+
+                if not os.path.exists(case_study_serialized.data['exp_folder_complete_path']):
+                    response_content = {"message": f"The following file or directory does not exists: {path}"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
@@ -504,14 +522,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                         execute_case_study = False
                         return Response(response_content, st)
 
-                for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model'],
-                             case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties'],
-                             case_study_serialized.data['exp_folder_complete_path']]:
-                    if not os.path.exists(path):
-                        response_content = {"message": f"The following file or directory does not exists: {path}"}
-                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
-                        execute_case_study = False
-                        return Response(response_content, st)
+                
 
                 if execute_case_study:
                     # init_case_study_task.delay(request.data)
