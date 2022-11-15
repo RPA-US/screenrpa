@@ -9,11 +9,12 @@ import time
 import csv
 import pandas as pd
 import re
+from django.core.exceptions import ValidationError
 from art import tprint
 from tqdm import tqdm
-from time import sleep
+import time
 from datetime import datetime
-from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference
+from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from featureextraction.views import ui_elements_classification, feature_extraction
 from featureextraction.detection import ui_elements_detection
@@ -32,6 +33,11 @@ from django.utils import timezone
 from django.db import transaction
 from django.forms.models import model_to_dict
 from asgiref.sync import sync_to_async
+import csv
+import codecs
+from django.contrib.auth import get_user_model
+from django.views import View
+from django.http import HttpResponse
 
 def get_foldernames_as_list(path, sep):
     folders_and_files = os.listdir(path)
@@ -51,16 +57,18 @@ def generate_case_study(case_study_id):
         decision_activity (string): activity where decision we want to study is taken. Example: 'B'
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','noise_filtering','extract_training_dataset','decision_tree_training']
+        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: default_phases
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
     foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
     # DEPRECATED versions: exp_folder_complete_path + sep + "metadata" + sep
-    metadata_path = metadata_location + sep + case_study.exp_foldername + "_metadata" + sep # folder to store metadata that will be used in "results" mode
+    metadata_path = metadata_location + sep + case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","") + "_metadata" + sep # folder to store metadata that will be used in "results" mode
 
     if not os.path.exists(metadata_path):
         os.makedirs(metadata_path)
+    else:
+        raise ValidationError("Case study already executed!")
 
     # year = datetime.now().date().strftime("%Y")
     # tprint("RPA-US", "rnd-xlarge")
@@ -69,7 +77,7 @@ def generate_case_study(case_study_id):
     tprint("Relevance Information Miner", "cybermedium")
 
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
-        sleep(.1)
+        time.sleep(.1)
         print("\nActual Scenario: " + str(scenario))
         param_path = case_study.exp_folder_complete_path + sep + scenario + sep
         # We check there is at least 1 phase to execute
@@ -150,10 +158,11 @@ def generate_case_study(case_study_id):
             # Serializing json
             json_object = json.dumps(times, indent=4)
             # Writing to .json
-            with open(metadata_path+scenario+"-metainfo.json", "w") as outfile:
+            metadata_final_path = metadata_path+scenario+"-metainfo.json"
+            with open(metadata_final_path, "w") as outfile:
                 outfile.write(json_object)
 
-            msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_path+scenario+"-metainfo.json"
+            msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_final_path
             case_study.executed = True
             case_study.save()
         else:
@@ -270,7 +279,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     """
     csv_filename = case_study.exp_folder_complete_path + sep + case_study.exp_foldername + "_results.csv"
 
-    times_info_path = metadata_location + sep + case_study.exp_foldername + "_metadata" + sep
+    times_info_path = metadata_location + sep + case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","") + "_metadata" + sep
     preprocessed_log_filename = "preprocessed_dataset.csv"
 
     # print("Scenarios: " + str(scenarios))
@@ -297,7 +306,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     # TODO: new experiment files structure
     for scenario in tqdm(case_study.scenarios_to_study,
                          desc="Experiment results that have been processed"):
-        sleep(.1)
+        time.sleep(.1)
         scenario_path = case_study.exp_folder_complete_path + sep + scenario
         family_size_balance_variations = get_foldernames_as_list(
             scenario_path, sep)
@@ -321,8 +330,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             # 1 == Balanced, 0 == Imbalanced
             balanced.append(1 if metainfo[2] == "Balanced" else 0)
 
-            phases = [phase for phase in ["ui_elements_detection", "ui_elements_classification",
-                      "extract_training_dataset", "decision_tree_training"] if getattr(case_study, phase) is not None]
+            phases = [phase for phase in default_phases if getattr(case_study, phase) is not None]
             for phase in phases:
                 if not (phase == 'decision_tree_training' and decision_tree_algorithms):
                     if phase in phases_info:
@@ -366,7 +374,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     df = pd.DataFrame(dict_results)
     df.to_csv(csv_filename)
 
-    return csv_filename
+    return df, csv_filename
 
 # ========================================================================
 # RUN CASE STUDY
@@ -483,7 +491,7 @@ class CaseStudyView(generics.ListCreateAPIView):
             execute_case_study = True
             try:
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','noise_filtering', 'feature_extraction_technique','extract_training_dataset','decision_tree_training']"}
+                    response_content = {"message": f"phases_to_execute must be of type dict!!!!! and must be composed by phases contained in {default_phases}"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
@@ -516,8 +524,8 @@ class CaseStudyView(generics.ListCreateAPIView):
                     return Response(response_content, st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in ['ui_elements_detection','ui_elements_classification','noise_filtering','feature_extraction_technique','extract_training_dataset','decision_tree_training']):
-                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','noise_filtering','feature_extraction_technique','extract_training_dataset','decision_tree_training']"}
+                    if not(phase in default_phases):
+                        response_content = {"message": f"phases_to_execute must be composed by phases contained in {default_phases}"}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
@@ -560,11 +568,15 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
 class ResultCaseStudyView(generics.ListCreateAPIView):
     def get(self, request, case_study_id, *args, **kwargs):
         st = status.HTTP_200_OK
+        
         try:
             case_study = CaseStudy.objects.get(id=case_study_id)
             if case_study.executed:
-                experiments_results_collectors(case_study, "descision_tree.log")
-                response = {"message": case_study.exp_foldername + ' case study results collected!'}
+                csv_data, csv_filename = experiments_results_collectors(case_study, "descision_tree.log")
+                response = HttpResponse(content_type="text/csv")
+                response["Content-Disposition"] = 'attachment; filename="'+case_study.title+'.csv"'
+                csv_data.to_csv(response, index=False)
+                return response
             else:
                 response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
 

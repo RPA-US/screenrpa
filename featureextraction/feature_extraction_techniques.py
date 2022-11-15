@@ -39,7 +39,7 @@ def quantity_ui_elements_fe_technique(
                     counter+=1
             quantity_ui_elements[c] = counter
 
-        data["features"]["quantity"] = quantity_ui_elements
+        data["features"] = { "quantity": quantity_ui_elements }
         with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
             json.dump(data, jsonFile)
 
