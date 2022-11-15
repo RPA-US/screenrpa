@@ -1,8 +1,13 @@
 
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+import json
 
-
-
-def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwrite_info): #enriched_log_output_path="resources/enriched_log_feature_extracted.csv"
+def quantity_ui_elements_fe_technique(
+    ui_elements_classification_classes, 
+    screenshot_colname, metadata_json_root, ui_log_path,
+    enriched_log_output_path):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -12,26 +17,35 @@ def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwri
     :type feature_extraction_technique_name: str
     :param enriched_log_output_path: Path to save the enriched log
     :type enriched_log_output_path: str
-    :param overwrite_info: Rewrite log
-    :type overwrite_info: bool
+    :param skip: Rewrite log
+    :type skip: bool
 
     """
-    print("TODO")
-    log = pd.read_csv(param_log_path, sep=",")
-    # screenshot_filenames = [ x + ".npy" for x in log.loc[:,"Screenshot"].values.tolist()]
+    log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
-    df = pd.DataFrame([], columns=default_ui_elements_classification_classes)
+    quantity_ui_elements = {}
 
-    for i in range(0, len(images_names)):
-        row1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        # Acess the previously stored frequencies
-        df1 = crop_imgs[images_names[i]]["result_freq_df"]
-        if len(df1.columns.tolist()) > 0:
-            for x in df1.columns.tolist():
-                uiui = nombre_clases.index(x)
-                row1[uiui] = df1[x][0]
-                df.loc[i] = row1
+    for screenshot_filename in screenshot_filenames:
+        print("holaa")
+        # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+            data = json.load(f)
+
+        for c in ui_elements_classification_classes:
+            counter = 0
+            for j in range(0, len(data["compos"])):
+                if data["compos"][j]["class"] == c:
+                    counter+=1
+            quantity_ui_elements[c] = counter
+
+        data["features"] = { "quantity": quantity_ui_elements }
+        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+            json.dump(data, jsonFile)
+
+    df = pd.DataFrame([], columns=ui_elements_classification_classes)
+    for i in range(0, len(screenshot_filenames)):
+        df.loc[i] = quantity_ui_elements.values()
 
     """
     Once the dataset corresponding to the ammount of elements of each class contained in each of the images is obtained,
@@ -48,15 +62,17 @@ def quantity_ui_elements_fe_technique(feature_extraction_technique_name, overwri
     We expect to continue this project in later stages of the master
     """
     log_enriched.to_csv(enriched_log_output_path)
-    print("\n\n=========== ENRICHED LOG GENERATED: path=" +
-          enriched_log_output_path)
+    print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output_path)
 
 
 
-def location_ui_elements_fe_technique(feature_extraction_technique_name, overwrite_info):
+def location_ui_elements_fe_technique(
+    ui_elements_classification_classes, 
+    screenshot_colname, metadata_json_root, ui_log_path,
+    enriched_log_output_path):
     print("TODO") # TODO: 
 
-def location_ui_elements_and_plaintext_fe_technique(feature_extraction_technique_name, overwrite_info):
+def location_ui_elements_and_plaintext_fe_technique(feature_extraction_technique_name, skip):
     print("TODO") # TODO: 
 
 

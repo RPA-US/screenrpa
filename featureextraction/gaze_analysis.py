@@ -1,29 +1,56 @@
 # Components detection
-from genericpath import exists
-import json
-import numpy as np
-import keras_ocr
-import cv2
-import pandas as pd
 from os.path import join as pjoin
-import os
-from PIL import Image
-import featureextraction.utils as utils
 # Classification
-import os
-import cv2
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.linear_model import enet_path
-import tensorflow as tf
 from keras.models import model_from_json
 from django.core.exceptions import ValidationError
-from rim.settings import cropping_threshold, sep
 from rim.settings import gaze_analysis_threshold
 import pickle
 from featureextraction.CNN.CompDetCNN import CompDetCNN
 from tqdm import tqdm
+
+
+def noise_filtering(log_path, root_path, special_colnames, noise_filtering_type, noise_filtering_configurations):
+    # eyetracking_log , log, img_index, image_names, special_colnames, timestamp_start, timestamp_end, last_upper_limit, init_value_ui_log_timestamp):
+    
+    # eyetracking_log = False
+    # if eyetracking_log_filename and os.path.exists(param_img_root + eyetracking_log_filename):
+    #     eyetracking_log = pd.read_csv(
+    #         param_img_root + eyetracking_log_filename, sep=";")
+    # init_value_ui_log_timestamp = log[special_colnames['Timestamp']][0]
+
+    gaze_events = {}  # key: row number,
+    #value: { tuple: [coorX, coorY], gui_component_coordinate: [[corners_of_crop]]}
+
+    last_upper_limit = 0
+    
+    gaze_events = {}
+    # GAZE ANALYSIS
+    if eyetracking_log is not False:
+        timestamp_start = log[special_colnames['Timestamp']
+                                ][img_index]-init_value_ui_log_timestamp
+        if img_index < len(image_names)-1:
+            timestamp_end = log[special_colnames['Timestamp']
+                                ][img_index+1]-init_value_ui_log_timestamp
+            interval, last_upper_limit = gaze_events_associated_to_event_time_range(
+                eyetracking_log,
+                special_colnames,
+                timestamp_start,
+                timestamp_end,
+                None)
+        else:
+            print("Function detect_images_components: LAST SCREENSHOT")
+            interval, last_upper_limit = gaze_events_associated_to_event_time_range(
+                eyetracking_log,
+                special_colnames,
+                timestamp_start,
+                "LAST",
+                last_upper_limit)
+
+        # { row_number: [[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY]]}
+        gaze_events[img_index] = interval
+
+    return gaze_events
 
 
 def gaze_events_associated_to_event_time_range(eyetracking_log, colnames, timestamp_start, timestamp_end, last_upper_limit):

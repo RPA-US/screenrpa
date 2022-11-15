@@ -1,10 +1,15 @@
 from rest_framework import serializers
-from .models import UIElementsClassification, FeatureExtractionTechnique, UIElementsDetection
+from .models import UIElementsClassification, FeatureExtractionTechnique, UIElementsDetection, NoiseFiltering
 
 class UIElementsDetectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UIElementsDetection
-        fields = '__all__' # ['eyetracking_log_filename', 'add_words_columns', 'overwrite_info', 'algorithm']
+        fields = '__all__' # ['eyetracking_log_filename', 'add_words_columns', 'skip', 'type']
+
+class NoiseFilteringSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NoiseFiltering
+        fields = '__all__'
 
 class UIElementsClassificationSerializer(serializers.ModelSerializer):
     class Meta:

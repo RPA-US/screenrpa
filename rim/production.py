@@ -21,9 +21,9 @@ env = environ.Env()
 environ.Env.read_env()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '150.214.188.176', 'canela.lsi.us.es']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -215,8 +215,8 @@ else:
     element_trace = "configuration"+sep+"element_trace_linux.json"
 
 # Celery settings
-CELERY_BROKER_URL = "redis://localhost:6379"
-CELERY_RESULT_BACKEND = "redis://localhost:6379"
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
 
 # System Default Phases
 default_phases = ['ui_elements_detection','noise_filtering','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']

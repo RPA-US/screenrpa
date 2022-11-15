@@ -152,3 +152,5 @@ migrations/
 outputs/
 staticfiles/
 landing/
+
+dump.rdb

@@ -9,14 +9,16 @@ import time
 import csv
 import pandas as pd
 import re
+from django.core.exceptions import ValidationError
 from art import tprint
 from tqdm import tqdm
-from time import sleep
+import time
 from datetime import datetime
-from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername
+from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from featureextraction.views import ui_elements_classification, feature_extraction
 from featureextraction.detection import ui_elements_detection
+from featureextraction.gaze_analysis import noise_filtering
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -24,13 +26,18 @@ from analyzer.tasks import init_generate_case_study
 # from rest_framework.pagination import PageNumberPagination
 from .models import CaseStudy# , ExecutionManager
 from .serializers import CaseStudySerializer
-from featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
+from featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer, NoiseFilteringSerializer
 from decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
 from django.forms.models import model_to_dict
 from asgiref.sync import sync_to_async
+import csv
+import codecs
+from django.contrib.auth import get_user_model
+from django.views import View
+from django.http import HttpResponse
 
 def get_foldernames_as_list(path, sep):
     folders_and_files = os.listdir(path)
@@ -50,16 +57,18 @@ def generate_case_study(case_study_id):
         decision_activity (string): activity where decision we want to study is taken. Example: 'B'
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include in this list are ['ui_elements_detection','ui_elements_classification','extract_training_dataset','decision_tree_training']
+        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: default_phases
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
     foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
     # DEPRECATED versions: exp_folder_complete_path + sep + "metadata" + sep
-    metadata_path = metadata_location + sep + case_study.exp_foldername + "_metadata" + sep # folder to store metadata that will be used in "results" mode
+    metadata_path = metadata_location + sep + case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","") + "_metadata" + sep # folder to store metadata that will be used in "results" mode
 
     if not os.path.exists(metadata_path):
         os.makedirs(metadata_path)
+    else:
+        raise ValidationError("Case study already executed!")
 
     # year = datetime.now().date().strftime("%Y")
     # tprint("RPA-US", "rnd-xlarge")
@@ -68,7 +77,7 @@ def generate_case_study(case_study_id):
     tprint("Relevance Information Miner", "cybermedium")
 
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
-        sleep(.1)
+        time.sleep(.1)
         print("\nActual Scenario: " + str(scenario))
         param_path = case_study.exp_folder_complete_path + sep + scenario + sep
         # We check there is at least 1 phase to execute
@@ -79,27 +88,38 @@ def generate_case_study(case_study_id):
                     'ui_elements_detection': (param_path+n+sep+'log.csv',
                                                  param_path+n+sep,
                                                  case_study.special_colnames,
-                                                 case_study.ui_elements_detection.eyetracking_log_filename,
                                                  case_study.ui_elements_detection.add_words_columns,
-                                                 case_study.ui_elements_detection.overwrite_info,
-                                                 case_study.ui_elements_detection.algorithm)
+                                                 case_study.ui_elements_detection.skip,
+                                                 case_study.ui_elements_detection.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                  if case_study.ui_elements_detection else None,
-                    'ui_elements_classification': (case_study.ui_elements_classification.model_weights,
+                    'noise_filtering': (param_path+n+sep+'log.csv',
+                                                 param_path+n+sep,
+                                                 case_study.special_colnames,
+                                                 case_study.noise_filtering.type,
+                                                 case_study.noise_filtering.configurations)
+                                                 # We check this phase is present in case_study to avoid exceptions
+                                                 if case_study.noise_filtering else None,
+                    'ui_elements_classification': (case_study.ui_elements_classification.model,
                                                   case_study.ui_elements_classification.model_properties,
                                                   param_path + n + sep + 'components_npy' + sep,
                                                   param_path + n + sep + 'components_json' + sep,
                                                   param_path+n+sep + 'log.csv',
                                                   case_study.special_colnames["Screenshot"],
-                                                  case_study.ui_elements_classification.overwrite_info,
-                                                  case_study.ui_elements_classification.ui_elements_classification_classes,
-                                                  case_study.ui_elements_classification.ui_elements_classification_shape,
-                                                  case_study.ui_elements_classification.classifier)
+                                                  case_study.text_classname,
+                                                  case_study.ui_elements_classification.skip,
+                                                  case_study.ui_elements_classification_classes,
+                                                  case_study.ui_elements_classification_image_shape,
+                                                  case_study.ui_elements_classification.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
-                    'feature_extraction': (case_study.feature_extraction_technique.name,
+                    'feature_extraction': (case_study.ui_elements_classification_classes,
+                                                  case_study.special_colnames["Screenshot"],
+                                                  param_path + n + sep + 'components_json' + sep,
+                                                  param_path+n+sep + 'log.csv',
                                                   param_path+n+sep+'enriched_log.csv',
-                                                  case_study.feature_extraction_technique.overwrite_info)
+                                                  case_study.feature_extraction_technique.skip,
+                                                  case_study.feature_extraction_technique.technique_name)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.feature_extraction_technique else None,
                     'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv',
@@ -138,10 +158,11 @@ def generate_case_study(case_study_id):
             # Serializing json
             json_object = json.dumps(times, indent=4)
             # Writing to .json
-            with open(metadata_path+scenario+"-metainfo.json", "w") as outfile:
+            metadata_final_path = metadata_path+scenario+"-metainfo.json"
+            with open(metadata_final_path, "w") as outfile:
                 outfile.write(json_object)
 
-            msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_path+scenario+"-metainfo.json"
+            msg = "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_final_path
             case_study.executed = True
             case_study.save()
         else:
@@ -162,7 +183,7 @@ def times_duration(times_dict):
     return res
 
 
-def calculate_accuracy_per_tree(decision_tree_path, expression, quantity_difference, algorithm):
+def calculate_accuracy_per_tree(decision_tree_path, expression, algorithm):
     res = {}
     # This code is useful if we want to get the expresion like: [["TextView", "B"],["ImageView", "B"]]
     # if not isinstance(levels, list):
@@ -202,7 +223,7 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, quantity_differe
                         for c in '<>= ':
                             quantity = quantity.replace(c, '')
                             res_partial[index] = quantity
-                    if float(res_partial[0])-float(res_partial[1]) > quantity_difference:
+                    if float(res_partial[0])-float(res_partial[1]) > gui_quantity_difference:
                         print("GUI component quantity difference greater than the expected")
                         res[gui_component_name_to_find] = "False"
                     else:
@@ -258,7 +279,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     """
     csv_filename = case_study.exp_folder_complete_path + sep + case_study.exp_foldername + "_results.csv"
 
-    times_info_path = metadata_location + sep + case_study.exp_foldername + "_metadata" + sep
+    times_info_path = metadata_location + sep + case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","") + "_metadata" + sep
     preprocessed_log_filename = "preprocessed_dataset.csv"
 
     # print("Scenarios: " + str(scenarios))
@@ -282,14 +303,15 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     else:
         accuracy = []
 
+    # TODO: new experiment files structure
     for scenario in tqdm(case_study.scenarios_to_study,
                          desc="Experiment results that have been processed"):
-        sleep(.1)
+        time.sleep(.1)
         scenario_path = case_study.exp_folder_complete_path + sep + scenario
         family_size_balance_variations = get_foldernames_as_list(
             scenario_path, sep)
-        if case_study.drop and case_study.drop in family_size_balance_variations:
-            family_size_balance_variations.remove(case_study.drop)
+        # if case_study.drop and (case_study.drop in family_size_balance_variations):
+        #     family_size_balance_variations.remove(case_study.drop)
         json_f = open(times_info_path+scenario+"-metainfo.json")
         times = json.load(json_f)
         for n in family_size_balance_variations:
@@ -308,8 +330,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             # 1 == Balanced, 0 == Imbalanced
             balanced.append(1 if metainfo[2] == "Balanced" else 0)
 
-            phases = [phase for phase in ["ui_elements_detection", "ui_elements_classification",
-                      "extract_training_dataset", "decision_tree_training"] if getattr(case_study, phase) is not None]
+            phases = [phase for phase in default_phases if getattr(case_study, phase) is not None]
             for phase in phases:
                 if not (phase == 'decision_tree_training' and decision_tree_algorithms):
                     if phase in phases_info:
@@ -324,13 +345,13 @@ def experiments_results_collectors(case_study, decision_tree_filename):
                 for alg in decision_tree_algorithms:
                     if (alg+'_accuracy') in accuracy:
                         accuracy[alg+'_tree_training_time'].append(times_duration(times[n]['decision_tree_training'][alg]))
-                        accuracy[alg+'_accuracy'].append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, alg))
+                        accuracy[alg+'_accuracy'].append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg))
                     else:
                         accuracy[alg+'_tree_training_time'] = [times_duration(times[n]['decision_tree_training'][alg])]
-                        accuracy[alg+'_accuracy'] = [calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, alg)]
+                        accuracy[alg+'_accuracy'] = [calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg)]
             else:
                 # Calculate level of accuracy
-                accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, case_study.gui_quantity_difference, None))
+                accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, None))
 
     dict_results = {
         'family': family,
@@ -353,7 +374,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     df = pd.DataFrame(dict_results)
     df.to_csv(csv_filename)
 
-    return csv_filename
+    return df, csv_filename
 
 # ========================================================================
 # RUN CASE STUDY
@@ -420,6 +441,10 @@ def case_study_generator(data):
                     serializer = UIElementsDetectionSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_detection = serializer.save()
+                case "noise_filtering":
+                    serializer = NoiseFilteringSerializer(data=data['phases_to_execute'][phase])
+                    serializer.is_valid(raise_exception=True)
+                    case_study.noise_filtering = serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=data['phases_to_execute'][phase])
                     serializer.is_valid(raise_exception=True)
@@ -465,45 +490,47 @@ class CaseStudyView(generics.ListCreateAPIView):
         else:
             execute_case_study = True
             try:
-                # if not (case_study_serialized.data['mode'] in ['generation', 'results', 'both']):
-                #     response_content = {"message": "mode must be one of the following options: generation, results, both."}
-                #     st = status.HTTP_422_UNPROCESSABLE_ENTITY
-                #     execute_case_study = False
-                #     return Response(response_content, status=st)
-
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": "phases_to_execute must be of type dict!!!!! and must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
+                    response_content = {"message": f"phases_to_execute must be of type dict!!!!! and must be composed by phases contained in {default_phases}"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
-                if not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['algorithm'] in ["legacy", "uied"]:
+                if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_detection') and (not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["legacy", "uied"]):
                     response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
-                if not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['classifier'] in ["legacy", "uied"]:
-                    response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_classification'):
+                    if (not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["legacy", "uied"]):
+                        response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                        execute_case_study = False
+                        return Response(response_content, st)
+
+                    for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model'],
+                             case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties']]:
+                        if not os.path.exists(path):
+                            response_content = {"message": f"The following file or directory does not exists: {path}"}
+                            st = status.HTTP_422_UNPROCESSABLE_ENTITY
+                            execute_case_study = False
+                            return Response(response_content, st)
+
+                if not os.path.exists(case_study_serialized.data['exp_folder_complete_path']):
+                    response_content = {"message": f"The following file or directory does not exists: {path}"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']):
-                        response_content = {"message": "phases_to_execute must be composed by phases contained in ['ui_elements_detection','ui_elements_classification','feature_extraction','extract_training_dataset','decision_tree_training']"}
+                    if not(phase in default_phases):
+                        response_content = {"message": f"phases_to_execute must be composed by phases contained in {default_phases}"}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
 
-                for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_weights'],
-                             case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties'],
-                             case_study_serialized.data['exp_folder_complete_path']]:
-                    if not os.path.exists(path):
-                        response_content = {"message": f"The following file or directory does not exists: {path}"}
-                        st = status.HTTP_422_UNPROCESSABLE_ENTITY
-                        execute_case_study = False
-                        return Response(response_content, st)
+                
 
                 if execute_case_study:
                     # init_case_study_task.delay(request.data)
@@ -514,7 +541,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                         response_content = {"message": f"Case study with id:{case_study.id} generated"}
 
             except Exception as e:
-                response_content = {"message": "Some of atributes are invalid: " + str(e) }
+                response_content = {"message": "Some of the attributes are invalid: " + str(e) }
                 st = status.HTTP_422_UNPROCESSABLE_ENTITY
 
         # # item = CaseStudy.objects.create(serializer)
@@ -541,11 +568,15 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
 class ResultCaseStudyView(generics.ListCreateAPIView):
     def get(self, request, case_study_id, *args, **kwargs):
         st = status.HTTP_200_OK
+        
         try:
             case_study = CaseStudy.objects.get(id=case_study_id)
             if case_study.executed:
-                experiments_results_collectors(case_study, "descision_tree.log")
-                response = {"message": case_study.exp_foldername + ' case study results collected!'}
+                csv_data, csv_filename = experiments_results_collectors(case_study, "descision_tree.log")
+                response = HttpResponse(content_type="text/csv")
+                response["Content-Disposition"] = 'attachment; filename="'+case_study.title+'.csv"'
+                csv_data.to_csv(response, index=False)
+                return response
             else:
                 response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
 
