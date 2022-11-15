@@ -88,9 +88,9 @@ def generate_case_study(case_study_id):
                     'ui_elements_detection': (param_path+n+sep+'log.csv',
                                                  param_path+n+sep,
                                                  case_study.special_colnames,
-                                                 case_study.ui_elements_detection.add_words_columns,
                                                  case_study.ui_elements_detection.skip,
-                                                 case_study.ui_elements_detection.type)
+                                                 case_study.ui_elements_detection.type,
+                                                 case_study.text_classname)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                  if case_study.ui_elements_detection else None,
                     'noise_filtering': (param_path+n+sep+'log.csv',
@@ -117,7 +117,8 @@ def generate_case_study(case_study_id):
                                                   case_study.special_colnames["Screenshot"],
                                                   param_path + n + sep + 'components_json' + sep,
                                                   param_path+n+sep+'log.csv',
-                                                  param_path+n+sep,
+                                                  param_path+n+sep+case_study.feature_extraction_technique.technique_name+'_enriched_log.csv',
+                                                  case_study.text_classname,
                                                   case_study.feature_extraction_technique.skip,
                                                   case_study.feature_extraction_technique.technique_name)
                                                  # We check this phase is present in case_study to avoid exceptions
@@ -379,30 +380,6 @@ def experiments_results_collectors(case_study, decision_tree_filename):
 # ========================================================================
 # RUN CASE STUDY
 # ========================================================================
-
-# EXAMPLE JSON REQUEST BODY
-# {
-#     "title": "Test Case Study",
-#     "mode": "results",
-#     "exp_foldername": "Advanced_10_30",
-#     "phases_to_execute": {
-#         "extract_training_dataset": {
-#             "columns_to_ignore": ["Coor_X", "Coor_Y"]
-#         },
-#         "decision_tree_training": {
-#             "library": "chefboost",
-#             "algorithms": ["ID3", "CART", "CHAID", "C4.5"],
-#             "mode": "autogeneration",
-#             "columns_to_ignore": ["Timestamp_start", "Timestamp_end"]
-#         }
-#     },
-#     "decision_point_activity": "B",
-#     "exp_folder_complete_path": "C:\\Users\\Antonio\\Desktop\\caise data\\Advanced_10_30",
-#     "gui_class_success_regex": "CheckBox_B or ImageView_B or TextView_B",
-#     "gui_quantity_difference": 1,
-#     "scenarios_to_study": null,
-#     "drop": null
-# }
 
 def case_study_generator(data):
     '''

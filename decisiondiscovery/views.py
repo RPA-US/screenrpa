@@ -197,6 +197,7 @@ def chefboost_decision_tree(param_preprocessed_log_path, param_path, algorithms,
     one_hot_cols = []
 
     for c in flattened_dataset.columns:
+        # TODO: remove hardcoded column names
         if "NameApp" in c:
             one_hot_cols.append(c)
         elif "TextInput" in c:
@@ -254,6 +255,7 @@ def CART_sklearn_decision_tree(param_preprocessed_log_path, param_path, autogene
     one_hot_cols = []
     text_cols = []
     for c in df.columns:
+        # TODO: remove hardcoded column names
         if "NameApp" in c:
             one_hot_cols.append(c)
         elif "TextInput" in c:

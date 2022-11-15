@@ -164,7 +164,7 @@ def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
     return clips, uicompos
 
 
-def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, add_words_columns, img_index):
+def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, img_index, text_classname):
     '''
     Analyzes an image and extracts its UI components
 
@@ -176,15 +176,12 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     :type texto_detectado_ocr: list
     :param path_to_save_bordered_images: Path to save the image along with the components detected
     :type path_to_save_bordered_images: str
-    :param add_words_columns: Save words detected by OCR
-    :type add_words_columns: bool
     :param img_index: Index of the image we want to analyze in images_names
     :type img_index: int
     :return: Crops and text inside components
     :rtype: Tuple
     '''
     words = {}
-    words_columns_names = {}
 
     image_path = param_img_root + image_names[img_index]
     # Read the image
@@ -206,18 +203,12 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
             coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
 
-        if add_words_columns:
-            word = texto_detectado_ocr[img_index][j][0]
-            centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
-            if word in words[img_index]:
-                words[img_index][word] += [centroid]
-            else:
-                words[img_index][word] = [centroid]
-
-            if word in words_columns_names:
-                words_columns_names[word] += 1
-            else:
-                words_columns_names[word] = 1
+        word = texto_detectado_ocr[img_index][j][0]
+        centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+        if word in words[img_index]:
+            words[img_index][word] += [centroid]
+        else:
+            words[img_index][word] = [centroid]
 
         global_y.append(coordenada_y)
         global_x.append(coordenada_x)
@@ -232,20 +223,15 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     for j in range(0, len(global_y)):
         intervalo_y.append([int(max(global_y[j])), int(min(global_y[j]))])
         intervalo_x.append([int(max(global_x[j])), int(min(global_x[j]))])
-    # print("Intervalo y", intervalo_y)
-    # print("Intervalo x", intervalo_x)
 
     # Conversion to grey Scale
     gris = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # cv2_imshow(gris)
 
     # Gaussian blur
     gauss = cv2.GaussianBlur(gris, (5, 5), 0)
-    # cv2_imshow(gauss)
 
     # Border detection with Canny
     canny = cv2.Canny(gauss, 50, 150)
-    # cv2_imshow(canny)
 
     # Countour search in the image
     (contornos, _) = cv2.findContours(canny.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -253,7 +239,6 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     # draw the countours on the image
     cv2.drawContours(img_copy, contornos, -1, (0, 0, 255), 2)
-    # cv2_imshow(img_copy)
     cv2.imwrite(path_to_save_bordered_images + image_names[img_index] + '_bordered.png', img_copy)
 
     # We carry out the crops for each detected countour
@@ -312,15 +297,16 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         # else:
         # If the GUI component overlaps with the textbox, cut the later one
         # gaze_point_x and gaze_point_x >= x and gaze_point_x <= w and gaze_point_y >= y and gaze_point_y <= h and duration >= gaze_analysis_threshold
-        coincidence_with_attention_point = True
+        coincidence_with_attention_point = True # TODO: gaze analysis phase
+
         if (condicion_recorte and coincidence_with_attention_point):
             crop_img = img[y:h, x:w]
             text = [word for word in words[img_index] if len([coord for coord in words[img_index][word] if x <= coord[0] <= w and y <= coord[1] <= h]) > 0]
             is_text = True if len(text)>0 else False
             comp_json["compos"].append({
                 "id": int(j+1),
-                "class": "Text" if is_text else "Compo",
-                "Text": text[0] if is_text else None,
+                "class": text_classname if is_text else "Compo",
+                text_classname: text[0] if is_text else None,
                 "column_min": int(x),
                 "row_min": int(y),
                 "column_max": int(w),
@@ -333,7 +319,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, algorithm):
+def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -368,7 +354,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
         if overwrite:
 
             if algorithm == "rpa-us":
-                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, add_words_columns, img_index)
+                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname)
                 
                 # save metadata json
                 with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
@@ -455,7 +441,7 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, special_colnames, add_words_columns=False, skip=False, algorithm="legacy"):
+def ui_elements_detection(param_log_path, param_img_root, special_colnames, skip=False, algorithm="legacy", text_classname="text"):
     tprint(platform_name + " - " + detection_phase_name, "fancy60")
     print(param_img_root+"\n")
     
@@ -480,14 +466,14 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, add_
 
     # print(len(text_corners))
 
-    bordered = param_img_root+"contours/"
+    bordered = param_img_root+"borders/"
     components_npy = param_img_root+"components_npy/"
     components_json = param_img_root+"components_json/"
     for p in [bordered, components_npy, components_json]:
         if not os.path.exists(p):
             os.mkdir(p)
 
-    detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, add_words_columns, algorithm)
+    detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname)
 
 
 
