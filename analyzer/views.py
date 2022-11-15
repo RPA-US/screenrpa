@@ -81,7 +81,7 @@ def generate_case_study(case_study_id):
         print("\nActual Scenario: " + str(scenario))
         param_path = case_study.exp_folder_complete_path + sep + scenario + sep
         # We check there is at least 1 phase to execute
-        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.extract_training_dataset or case_study.decision_tree_training:
+        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.noise_filtering or case_study.extract_training_dataset or case_study.decision_tree_training:
             for n in foldername_logs_with_different_size_balance:
                 times[n] = {}
                 to_exec_args = {
@@ -116,8 +116,8 @@ def generate_case_study(case_study_id):
                     'feature_extraction_technique': (case_study.ui_elements_classification_classes,
                                                   case_study.special_colnames["Screenshot"],
                                                   param_path + n + sep + 'components_json' + sep,
-                                                  param_path+n+sep + 'log.csv',
-                                                  param_path+n+sep+'enriched_log.csv',
+                                                  param_path+n+sep+'log.csv',
+                                                  param_path+n+sep,
                                                   case_study.feature_extraction_technique.skip,
                                                   case_study.feature_extraction_technique.technique_name)
                                                  # We check this phase is present in case_study to avoid exceptions
