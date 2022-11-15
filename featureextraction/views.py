@@ -21,7 +21,7 @@ def ui_elements_classification(*data):
             pass
     return output
 
-def feature_extraction(*data):
+def feature_extraction_technique(*data):
     tprint(platform_name + " - " + feature_extraction_phase_name, "fancy60")
 
     data_list = list(data)

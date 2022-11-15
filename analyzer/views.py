@@ -16,7 +16,7 @@ import time
 from datetime import datetime
 from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from featureextraction.views import ui_elements_classification, feature_extraction
+from featureextraction.views import ui_elements_classification, feature_extraction_technique
 from featureextraction.detection import ui_elements_detection
 from featureextraction.gaze_analysis import noise_filtering
 # CaseStudyView
@@ -113,7 +113,7 @@ def generate_case_study(case_study_id):
                                                   case_study.ui_elements_classification.type)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.ui_elements_classification else None,
-                    'feature_extraction': (case_study.ui_elements_classification_classes,
+                    'feature_extraction_technique': (case_study.ui_elements_classification_classes,
                                                   case_study.special_colnames["Screenshot"],
                                                   param_path + n + sep + 'components_json' + sep,
                                                   param_path+n+sep + 'log.csv',
@@ -277,9 +277,9 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     :returns: Path leading to the csv containing the results
     :rtype: str
     """
-    csv_filename = case_study.exp_folder_complete_path + sep + case_study.exp_foldername + "_results.csv"
-
-    times_info_path = metadata_location + sep + case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","") + "_metadata" + sep
+    exp_foldername_timestamp = case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","")
+    csv_filename = case_study.exp_folder_complete_path + sep + exp_foldername_timestamp + "_results.csv"
+    times_info_path = metadata_location + sep + exp_foldername_timestamp + "_metadata" + sep
     preprocessed_log_filename = "preprocessed_dataset.csv"
 
     # print("Scenarios: " + str(scenarios))
