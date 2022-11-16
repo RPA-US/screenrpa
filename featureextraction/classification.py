@@ -98,7 +98,7 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model
         # Load the model properties from the json
         f = json.load(open(model_properties,))
         classes = ui_elements_classification_classes
-        shape = tuple(ui_elements_classification_image_shape)
+        shape = tuple([int(n) for n in ui_elements_classification_image_shape])
 
         # Load the ML classifier model for the crops
         # Default model is custom-v2, a model creating by using transfer learning from UIED's generalized model
