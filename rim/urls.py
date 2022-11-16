@@ -1,7 +1,7 @@
 """
 RIM URL Configuration
 """
-from .settings import API_VERSION
+from .production import API_VERSION
 from django.contrib import admin
 from django.urls import include, path
 import analyzer
