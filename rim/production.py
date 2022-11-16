@@ -23,7 +23,7 @@ environ.Env.read_env()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '150.214.188.176', 'canela.lsi.us.es']
+ALLOWED_HOSTS = ['150.214.188.176', 'canela.lsi.us.es']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,6 +33,9 @@ DB_HOST =       env('DB_HOST')
 DB_PORT =       env('DB_PORT')
 DB_USER =       env('DB_USER')
 DB_PASSWORD =   env('DB_PASSWORD')
+
+# RIM API version
+FRONTEND_PREFIX = env('FRONTEND_PREFIX')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -143,7 +146,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = FRONTEND_PREFIX + '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
@@ -178,6 +181,14 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
+CORS_ALLOWED_ORIGINS = [    
+'http://localhost:3000',
+'http://localhost',
+'http://0.0.0.0:8000',
+'http://canela.lsi.us.es',
+'https://canela.lsi.us.es'
+]
+
 # Django All Auth config. Add all of this.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -188,7 +199,7 @@ AUTHENTICATION_BACKENDS = (
 
 
 # RIM CONFIGURATION
-API_VERSION =               env('API_VERSION')
+API_VERSION = FRONTEND_PREFIX + env('API_VERSION')
 decision_foldername =       env('DECISION_TREE_TRAINING_FOLDERNAME')
 cropping_threshold =        int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
 gaze_analysis_threshold =   int(env('GAZE_MINIMUM_TIME_STARING')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
