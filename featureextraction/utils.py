@@ -108,14 +108,54 @@ def compos_update(compos, org_shape):
 # FILE
 # #######################
 
-def save_corners_json(file_path, compos):
+def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_classname):
     img_shape = compos[0].image_shape
     output = {'img_shape': img_shape, 'compos': []}
     f_out = open(file_path, 'w')
 
+    # Store on global_y all the "y" coordinates and text boxes
+    # Each row is a different text box, much more friendly than the format returned by keras_ocr 
+    global_y = []
+    global_x = []
+    words = {}
+    words[img_index] = {}
+
+    for j in range(0, len(texto_detectado_ocr[img_index])):
+        coordenada_y = []
+        coordenada_x = []
+
+        for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
+            coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
+            coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
+
+        word = texto_detectado_ocr[img_index][j][0]
+        centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+        if word in words[img_index]:
+            words[img_index][word] += [centroid]
+        else:
+            words[img_index][word] = [centroid]
+
+        global_y.append(coordenada_y)
+        global_x.append(coordenada_x)
+        # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+        # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+
+    print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
+
+    # Interval calculation of the text boxes
+    intervalo_y = []
+    intervalo_x = []
+    for j in range(0, len(global_y)):
+        intervalo_y.append([int(max(global_y[j])), int(min(global_y[j]))])
+        intervalo_x.append([int(max(global_x[j])), int(min(global_x[j]))])
+
     for compo in compos:
+        (x, y, w, h) = compo.put_bbox()
+        text = [word for word in words[img_index] if len([coord for coord in words[img_index][word] if x <= coord[0] <= w and y <= coord[1] <= h]) > 0]
+        is_text = True if len(text)>0 else False
         c = {'id': compo.id, 'class': compo.category}
-        (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = compo.put_bbox()
+        c[text_classname] = str(' '.join(text)) if is_text else None
+        (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
         c['width'] = compo.width
         c['height'] = compo.height
         output['compos'].append(c)

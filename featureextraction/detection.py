@@ -372,7 +372,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 recortes, uicompos = get_uied_gui_components_crops(param_img_root, image_names, img_index)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
-                utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos)
+                utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)
 
                 # save ui elements npy
                 aux = np.array(recortes, dtype=object)
