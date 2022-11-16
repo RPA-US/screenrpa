@@ -4,8 +4,8 @@ from .models import UIElementsClassification, FeatureExtractionTechnique, UIElem
 class UIElementsDetectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UIElementsDetection
-        fields = '__all__' # ['eyetracking_log_filename', 'add_words_columns', 'skip', 'type']
-
+        fields = '__all__' 
+        
 class NoiseFilteringSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoiseFiltering

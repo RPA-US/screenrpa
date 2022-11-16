@@ -8,7 +8,6 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 
 class UIElementsDetection(models.Model):
-    add_words_columns = models.BooleanField(default=False)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
 
