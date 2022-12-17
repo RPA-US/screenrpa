@@ -130,11 +130,13 @@ def generate_case_study(case_study_id):
                                                 case_study.special_colnames["Activity"])
                                                 # We check this phase is present in case_study to avoid exceptions
                                                 if case_study.extract_training_dataset else None,
-                    'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', param_path+n+sep,
+                    'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', 
+                                               param_path+n+sep,
                                                 case_study.decision_tree_training.library,
-                                                case_study.decision_tree_training.mode,
                                                 case_study.decision_tree_training.algorithms,
-                                                case_study.decision_tree_training.columns_to_ignore)
+                                                case_study.decision_tree_training.columns_to_ignore,
+                                                case_study.decision_tree_training.target_label,
+                                                case_study.decision_tree_training.one_hot_columns)
                                                 # We check this phase is present in case_study to avoid exceptions
                                                 if case_study.decision_tree_training  else None # 'autogeneration' -> to plot tree automatically
                     }

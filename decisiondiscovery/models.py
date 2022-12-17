@@ -23,5 +23,6 @@ class ExtractTrainingDataset(models.Model):
 class DecisionTreeTraining(models.Model):
     library = models.CharField(max_length=255, default='chefboost') # 'sklearn'
     algorithms = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
-    mode = models.CharField(max_length=25, default='autogeneration')
+    target_label = models.CharField(max_length=50, default='autogeneration')
+    one_hot_columns = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
     columns_to_ignore = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
