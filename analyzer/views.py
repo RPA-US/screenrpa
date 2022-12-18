@@ -123,19 +123,22 @@ def generate_case_study(case_study_id):
                                                   case_study.feature_extraction_technique.technique_name)
                                                  # We check this phase is present in case_study to avoid exceptions
                                                   if case_study.feature_extraction_technique else None,
-                    'extract_training_dataset': (case_study.decision_point_activity, param_path + n + sep + 'enriched_log.csv',
-                                                param_path + n + sep, case_study.extract_training_dataset.columns_to_ignore,
-                                                case_study.special_colnames["Variant"], case_study.special_colnames["Case"],
-                                                case_study.special_colnames["Screenshot"], case_study.special_colnames["Timestamp"],
-                                                case_study.special_colnames["Activity"])
+                    'extract_training_dataset': (case_study.decision_point_activity, 
+                                                 case_study.target_label,
+                                                 case_study.special_colnames,
+                                                 case_study.extract_training_dataset.columns_to_drop,
+                                                 param_path + n + sep + 'enriched_log.csv',
+                                                 param_path + n + sep, 
+                                                 case_study.extract_training_dataset.columns_to_drop_before_decision_point,
+                                                )
                                                 # We check this phase is present in case_study to avoid exceptions
                                                 if case_study.extract_training_dataset else None,
                     'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', 
                                                param_path+n+sep,
                                                 case_study.decision_tree_training.library,
                                                 case_study.decision_tree_training.algorithms,
-                                                case_study.decision_tree_training.columns_to_ignore,
-                                                case_study.decision_tree_training.target_label,
+                                                case_study.decision_tree_training.columns_to_drop,
+                                                case_study.target_label,
                                                 case_study.decision_tree_training.one_hot_columns)
                                                 # We check this phase is present in case_study to avoid exceptions
                                                 if case_study.decision_tree_training  else None # 'autogeneration' -> to plot tree automatically

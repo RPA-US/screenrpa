@@ -14,6 +14,7 @@ from chefboost import Chefboost as chef
 from art import tprint
 from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
+from .flattening import flat_dataset_row
 # import json
 # import sys
 # from django.shortcuts import render
@@ -28,138 +29,65 @@ from sklearn.model_selection import train_test_split
 #     return df[indices_to_keep].astype(np.float64)
 
 
-# Create your views here.
-def flat_dataset_row(data, columns, param_timestamp_column_name, param_variant_column_name, columns_to_drop, param_decision_point_activity, actions_columns):
+def extract_training_dataset(decision_point_activity,
+        target_label,
+        special_colnames,
+        columns_to_drop,
+        log_path="media/enriched_log_feature_extracted.csv", 
+        path_dataset_saved="media/", 
+        actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"]):
     """
-    With this function we convert the log into a dataset, such that we flatten all the existing registers over the same case,
-    resulting on a single row per case. Fot this flattening we only take in account those registers relative to the activities previous
-    to the one indicated in para_decision_point_activity, including this last one. The names of the activities colums are concatinated
-    with their id, for example, timestamp_A, timestamp_B, etc.
-
-    :param data: Map which keys correspond to the identification of each case and which values are the activies asociated to said case, along with their information
-    :type data: map
-    :param columns: Names of the dataset colums wanted to be stored for each activity
-    :type columns: list
-    :param param_timestamp_column_name: nombre de la columna donde se almacena el timestamp
-    :type param_timestamp_column_name: str
-    :param param_variant_column_name: nombre de la columna donde se almacena la variante, que será la etiqueta de nuestro problema
-    :type param_variant_column_name: str
-    :param columns_to_drop: Names of the colums to remove from the dataset
-    :type columns_to_drop: list
-    :param param_decision_point_activity: Identificatior of the activity inmediatly previous to the decision point which "why" wants to be discovered
-    :type param_decision_point_activity: str
-    :param actions_columns: 
-    :type actions_columns: list
-    :returns: Dataset
-    :rtype: DataFrame
-    """
-    add_case = False  # Set True to add case column
-    df_content = []
-    new_list = [col_name for col_name in columns if col_name not in actions_columns]
-    for case in data["cases"]:
-        # print(case)
-        timestamp_start = data["cases"][case]["A"].get(
-            key=param_timestamp_column_name)
-        timestamp_end = data["cases"][case][param_decision_point_activity].get(
-            param_timestamp_column_name)
-        variant = data["cases"][case]["A"].get(key=param_variant_column_name)
-        if add_case:
-            row = [variant, case, timestamp_start,
-                   timestamp_end]  # ADDING CASE COLUMN
-            headers = ["Variant", "Case", "Timestamp_start", "Timestamp_end"]
-        else:
-            # WITHOUT CASE COLUMN
-            row = [variant, timestamp_start, timestamp_end]
-            headers = ["Variant", "Timestamp_start", "Timestamp_end"]
-        for act in data["cases"][case]:
-            # case
-            # variant_id
-            if act != param_decision_point_activity:
-                # Add sufix with the corresponding activity letter to all columns
-                row.extend(data["cases"][case][act].drop(
-                    columns_to_drop).values.tolist())
-                for c in columns:
-                    headers.append(c+"_"+act)
-            else:
-                row.extend(data["cases"][case][act].drop(
-                    columns_to_drop).drop(actions_columns).values.tolist())
-                for c in new_list:
-                    headers.append(c+"_"+act)
-                break
-        # Introduce the row with the info of all activities of the case in the dataset
-        df_content.append(row)
-        # print(row)
-        # print(headers)
-    df = pd.DataFrame(df_content, columns=headers)
-    return df
-
-
-def extract_training_dataset(
-        param_decision_point_activity, param_log_path="media/enriched_log_feature_extracted.csv", param_path_dataset_saved="media/", actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"], param_variant_column_name="Variant", param_case_column_name="Case", param_screenshot_column_name="Screenshot", param_timestamp_column_name="Timestamp", param_activity_column_name="Activity"):
-    """
-    Iterate for every log row:
+    Iterate for every UI log row:
         For each case:
-            Store in a map all the atributes of the activities until reaching the decision point
+            Store in a map all the attributes of the activities until reaching the decision point
             Assuming the decision point is on activity D, the map would have the following structure:
         {
             "headers": ["timestamp", "MOUSE", "clipboard"...],
-            "case1":
-                {"A": ["value1","value2","value3",...]}
-                {"B": ["value1","value2","value3",...]}
-                {"C": ["value1","value2","value3",...]},
-            "case2":
-                {"A": ["value1","value2","value3",...]}
-                {"B": ["value1","value2","value3",...]}
-                {"C": ["value1","value2","value3",...]},...
+            "case1": {"CoorX_A": "value1", "CoorY_A": "value2", ..., "Checkbox_A: "value3",
+                        "CoorX_B": "value1", "CoorY_B": "value2", ..., "Checkbox_B: "value3"
+                        "CoorX_C": "value1", "CoorY_C": "value2", ..., "Checkbox_C: "value3"
+                },
+            ...
+            
+            "caseN": {"CoorX_A": "value1", "CoorY_A": "value2", ..., "Checkbox_A: "value3",
+                        "CoorX_B": "value1", "CoorY_B": "value2", ..., "Checkbox_B: "value3"
+                        "CoorX_C": "value1", "CoorY_C": "value2", ..., "Checkbox_C: "value3"
+                },
         }
 
     Once the map is generated, for each case, we concatinate the header with the activity to name the columns and assign them the values
     For each case a new row in the dataframe is generated
+    
+    :param decision_point_activity: id of the activity inmediatly previous to the decision point which "why" wants to be discovered
+    :type decision_point_activity: str
+    :param target_label: name of the column where classification target label is stored
+    :type target_label: str
+    :param special_colnames: dict that contains the column names that refers to special columns: "Screenshot", "Variant", "Case"...
+    :type special_colnames: dict
+    :param columns_to_drop: Names of the colums to remove from the dataset
+    :type columns_to_drop: list
+    :param log_path: path where ui log to be processed is stored
+    :type log_path: str
+    :param path_dataset_saved: path where files that results from the flattening are stored
+    :type path_dataset_saved: str
+    :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
+    :type actions_columns: list
     """
     tprint(platform_name + " - " + flattening_phase_name, "fancy60")
-    print(param_log_path+"\n")
+    print(log_path+"\n")
 
-    log = pd.read_csv(param_log_path, sep=",", index_col=0)
+    log = pd.read_csv(log_path, sep=",", index_col=0)
 
-    cases = log.loc[:, param_case_column_name].values.tolist()
-    actual_case = 0
-
-    log_dict = {"headers": list(log.columns), "cases": {}}
-    for index, c in enumerate(cases, start=0):
-        if c == actual_case:
-            activity = log.at[index, param_activity_column_name]
-            if c in log_dict["cases"]:
-                log_dict["cases"][c][activity] = log.loc[index, :]
-            else:
-                log_dict["cases"][c] = {activity: log.loc[index, :]}
-        else:
-            activity = log.at[index, param_activity_column_name]
-            log_dict["cases"][c] = {activity: log.loc[index, :]}
-            actual_case = c
-
-    # import p#print
-    # pprint.pprint(log_dict)
-
-    # Serializing json
-    # json_object = json.dumps(log_dict, indent = 4)
-
-    # Writing to sample.json
-    # with open(param_path_dataset_saved + "preprocessed_log.json", "w") as outfile:
-    #     outfile.write(json_object)
-
-    columns_to_drop = [param_case_column_name, param_activity_column_name,
-                       param_timestamp_column_name, param_screenshot_column_name, param_variant_column_name]
+    # columns_to_drop = [special_colnames["Case"], special_colnames["Activity"], special_colnames["Timestamp"], special_colnames["Screenshot"], special_colnames["Variant"]]
     columns = list(log.columns)
     for c in columns_to_drop:
         columns.remove(c)
-
+        
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    data_flattened = flat_dataset_row(log_dict, columns, param_timestamp_column_name,
-                                      param_variant_column_name, columns_to_drop, param_decision_point_activity, actions_columns)
-    # print(data_flattened)
-    data_flattened.to_csv(param_path_dataset_saved +
-                          "preprocessed_dataset.csv")
+    flat_dataset_row(log, columns, target_label, path_dataset_saved, special_colnames["Case"], special_colnames["Activity"], 
+                     special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
+                     
 def decision_tree_training(param_preprocessed_log_path="media/preprocessed_dataset.csv",
                            param_path="media/", 
                            implementation="sklearn",

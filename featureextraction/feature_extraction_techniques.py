@@ -51,7 +51,7 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes,
     we merge it with the complete log, adding the extracted characteristics from the images
     """
 
-    log_enriched = log.join(df).fillna(method='ffill')
+    # log_enriched = log.join(df).fillna(method='ffill')
 
     """
     Finally we obtain an entiched log, which is turned as proof of concept of our hypothesis based on the premise that if
@@ -60,7 +60,7 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes,
     As a pending task, we need to validate this hypothesis through a results comparison against the non-enriched log.
     We expect to continue this project in later stages of the master
     """
-    log_enriched.to_csv(enriched_log_output)
+    # log_enriched.to_csv(enriched_log_output)
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
 
 
