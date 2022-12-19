@@ -4,8 +4,8 @@ import pandas as pd
 from tqdm import tqdm
 import json
 
-def quantity_ui_elements_fe_technique(ui_elements_classification_classes, 
-    screenshot_colname, metadata_json_root, ui_log_path, enriched_log_output, text_classname):
+def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -19,33 +19,56 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes,
     :type skip: bool
 
     """
+    id = "quantity"
+    with open(flattened_log, 'r') as f:
+        ui_log_data = json.load(f)
+    
     log = pd.read_csv(ui_log_path, sep=",")
-    df = pd.DataFrame([], columns=ui_elements_classification_classes)
+    # df = pd.DataFrame([], columns=ui_elements_classification_classes)
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     quantity_ui_elements = {}
+    before_DP = True
+    aux_case = -1    
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
-        # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
-            data = json.load(f)
-
-        for c in ui_elements_classification_classes:
-            counter = 0
-            for j in range(0, len(data["compos"])):
-                if data["compos"][j]["class"] == c:
-                    counter+=1
-            quantity_ui_elements[c] = counter
-
-        if "features" in data:
-            data["features"]["quantity"] = quantity_ui_elements
-        else:
-            data["features"] = { "quantity": quantity_ui_elements }
+        case = log.at[i, case_colname]
+        activity = log.at[i, activity_colname]
         
-        df.loc[i] = quantity_ui_elements.values()
-        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
-            json.dump(data, jsonFile)
+        if case != aux_case:
+            before_DP = True
+        
+        if before_DP:
+            # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+                data = json.load(f)
 
+            for c in ui_elements_classification_classes:
+                counter = 0
+                for j in range(0, len(data["compos"])):
+                    if data["compos"][j]["class"] == c:
+                        counter+=1
+                quantity_ui_elements[c] = counter
+                ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
+
+            if "features" in data:
+                data["features"][id] = quantity_ui_elements
+            else:
+                data["features"] = { id: quantity_ui_elements }
+            
+            # df.loc[i] = quantity_ui_elements.values()
+    
+                
+            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+                json.dump(data, jsonFile, indent=4)
+                
+            if activity == decision_point:
+                aux_case = case
+                before_DP = False
+
+    with open(flattened_log, 'w') as f:
+        json.dump(ui_log_data, f, indent=4)
+        
     """
     Once the dataset corresponding to the ammount of elements of each class contained in each of the images is obtained,
     we merge it with the complete log, adding the extracted characteristics from the images
@@ -65,8 +88,8 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes,
 
 
 
-def location_ui_elements_fe_technique(ui_elements_classification_classes, 
-    screenshot_colname, metadata_json_root, ui_log_path, enriched_log_output, text_classname):
+def location_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, 
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -133,8 +156,8 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes,
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
 
-def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, 
-    screenshot_colname, metadata_json_root, ui_log_path, enriched_log_output_path, text_classname):
+def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, decision_point, 
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()

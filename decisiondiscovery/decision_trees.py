@@ -15,9 +15,6 @@ from art import tprint
 from rim.settings import plot_decision_trees
 from sklearn.model_selection import train_test_split
 
-
-
-
 def chefboost_decision_tree(df, param_path, algorithms, target_label):
     """
     

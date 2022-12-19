@@ -196,6 +196,7 @@ gui_quantity_difference =   int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time u
 times_calculation_mode =    env('RESULTS_TIMES_FORMAT') # substitute "formatted" -> get times formatted "%H:%M:%S.%fS" 
 metadata_location =         env('METADATA_PATH')
 plot_decision_trees =         env('PLOT_DECISION_TREES')
+scenario_nested_folder =         env('SCENARIO_NESTED_FOLDER')
 platform_name =                         "RIM"
 detection_phase_name =                  "detection"
 classification_phase_name =             "classification"

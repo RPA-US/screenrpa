@@ -1,33 +1,6 @@
-from asyncore import write
-from typing import List
 import pandas as pd
-import os
 import json
-import time
-import shutil
-import graphviz
-import matplotlib.image as plt_img
-import numpy as np
-from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from chefboost import Chefboost as chef
-from art import tprint
-from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
-from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
-# import json
-# import sys
-# from django.shortcuts import render
-# import seaborn as sns
-# from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-
-# def clean_dataset(df):
-#     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
-#     df.dropna(inplace=True)
-#     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
-#     return df[indices_to_keep].astype(np.float64)
-
+from numpyencoder import NumpyEncoder
 
 def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
                           decision_point_activity, actions_columns):
@@ -59,40 +32,45 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
     :rtype: DataFrame
     """
     cases = log.loc[:, case_column_name].values.tolist()
-    columns.drop(actions_columns)
 
-    last_case = None
-    log_dict = {"headers": columns, "cases": {}}
+    last_case = cases[0]
+    before_DP = True
+    log_dict = {}
     for index, c in enumerate(cases, start=0):
             activity = log.at[index, activity_column_name]
 
             # Set the timestamp for the last event associated to the case
             if c != last_case:
-                log_dict["cases"][cases[index-1]]["Timestamp_end"] = log_dict["cases"][cases[index-1]][decision_point_activity].get(timestamp_column_name)
+                log_dict[cases[index-1]]["Timestamp_end"] = log.at[index-1, timestamp_column_name]
+                before_DP = True
 
-            if not (c in log_dict["cases"]):
-                last_case = c
-                log_dict["cases"][c] = {
-                        "Timestamp_start": log.at[index, timestamp_column_name],
-                        target_label: log.at[index, target_label]
-                    }
-            if activity != decision_point_activity:
-                for h in columns:
-                    log_dict["cases"][c][h+"_"+activity] = log.at[index, h]
-            else:
-                for h in columns:
-                    if h not in actions_columns:
-                        log_dict["cases"][c][h+"_"+activity] = log.at[index, h]
-                
+            if before_DP:
+                if not (c in log_dict):
+                    last_case = c
+                    log_dict[c] = {
+                            "Timestamp_start": log.at[index, timestamp_column_name],
+                            target_label: log.at[index, target_label]
+                        }
+                if activity != decision_point_activity:
+                    for h in columns:
+                        log_dict[c][h+"_"+activity] = log.at[index, h]
+                else:
+                    for h in columns:
+                        if h not in actions_columns:
+                            log_dict[c][h+"_"+activity] = log.at[index, h]
+                    before_DP = False
+    
+    log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
+        
 
     # Serializing json
-    json_object = json.dumps(log_dict, indent = 4)
+    json_object = json.dumps(log_dict, cls=NumpyEncoder, indent=4)
 
     # Writing to one_row_per_case.json
     with open(path_dataset_saved + "flattened_dataset.json", "w") as outfile:
         outfile.write(json_object)
     
-    df = pd.read_json(json.dumps(log_dict["cases"]), orient ='case')    
-    df.to_csv(path_dataset_saved + "flattened_dataset.csv")
+    # df = pd.read_json(json.dumps(log_dict, cls=NumpyEncoder), orient ='index')    
+    # df.to_csv(path_dataset_saved + "flattened_dataset.csv")
 
     return log_dict

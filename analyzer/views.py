@@ -14,7 +14,7 @@ from art import tprint
 from tqdm import tqdm
 import time
 from datetime import datetime
-from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases
+from rim.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder
 from decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from featureextraction.views import ui_elements_classification, feature_extraction_technique
 from featureextraction.detection import ui_elements_detection
@@ -47,9 +47,91 @@ def get_foldernames_as_list(path, sep):
             foldername_logs_with_different_size_balance.append(f)
     return foldername_logs_with_different_size_balance
 
-def generate_case_study(case_study_id):
+def generate_case_study(case_study, path_scenario, times, n):
+    times[n] = {}
+    to_exec_args = {
+        'ui_elements_detection': (path_scenario + 'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        case_study.ui_elements_detection.skip,
+                                        case_study.ui_elements_detection.type,
+                                        case_study.text_classname)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.ui_elements_detection else None,
+        'noise_filtering': (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        case_study.noise_filtering.type,
+                                        case_study.noise_filtering.configurations)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.noise_filtering else None,
+        'ui_elements_classification': (case_study.ui_elements_classification.model,
+                                        case_study.ui_elements_classification.model_properties,
+                                        path_scenario + 'components_npy' + sep,
+                                        path_scenario + 'components_json' + sep,
+                                        path_scenario + 'log.csv',
+                                        case_study.special_colnames["Screenshot"],
+                                        case_study.text_classname,
+                                        case_study.ui_elements_classification.skip,
+                                        case_study.ui_elements_classification_classes,
+                                        case_study.ui_elements_classification_image_shape,
+                                        case_study.ui_elements_classification.type)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.ui_elements_classification else None,
+        'extract_training_dataset': (case_study.decision_point_activity, 
+                                        case_study.target_label,
+                                        case_study.special_colnames,
+                                        case_study.extract_training_dataset.columns_to_drop,
+                                        path_scenario + 'log.csv',
+                                        path_scenario, 
+                                        case_study.extract_training_dataset.columns_to_drop_before_decision_point,
+                                    )
+                                    # We check this phase is present in case_study to avoid exceptions
+                                    if case_study.extract_training_dataset else None,
+        'feature_extraction_technique': (case_study.ui_elements_classification_classes,
+                                        case_study.decision_point_activity,
+                                        case_study.special_colnames["Case"],
+                                        case_study.special_colnames["Activity"],
+                                        case_study.special_colnames["Screenshot"],
+                                        path_scenario + 'components_json' + sep,
+                                        path_scenario + 'flattened_dataset.json',
+                                        path_scenario + 'log.csv',
+                                        path_scenario + case_study.feature_extraction_technique.technique_name+'_enriched_log.csv',
+                                        case_study.text_classname,
+                                        case_study.feature_extraction_technique.skip,
+                                        case_study.feature_extraction_technique.technique_name)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.feature_extraction_technique else None,
+        'decision_tree_training': (path_scenario + 'flattened_dataset.json', 
+                                    path_scenario,
+                                    case_study.decision_tree_training.library,
+                                    case_study.decision_tree_training.algorithms,
+                                    case_study.decision_tree_training.columns_to_drop,
+                                    case_study.target_label,
+                                    case_study.decision_tree_training.one_hot_columns)
+                                    # We check this phase is present in case_study to avoid exceptions
+                                    if case_study.decision_tree_training  else None
+        }
+
+    # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
+    for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
+        if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library !='sklearn':
+            res, tree_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
+            times[n][function_to_exec] = tree_times
+        else:
+            times[n][function_to_exec] = {"start": time.time()}
+            output = eval(function_to_exec)(*to_exec_args[function_to_exec])
+            times[n][function_to_exec]["finish"] = time.time()
+
+        # TODO: accurracy_score
+        # if index == len(to_exec)-1:
+        #     times[n][index]["decision_model_accuracy"] = output
+        
+    return times
+
+def case_study_process_data(case_study_id):
     """
-    Generate case study. This function executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
+    This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
     Args:
         exp_foldername (string): name of the folder where all case study data is stored. Example 'case_study_data'
@@ -61,8 +143,6 @@ def generate_case_study(case_study_id):
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
-    foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
-    # DEPRECATED versions: exp_folder_complete_path + sep + "metadata" + sep
     metadata_path = metadata_location + sep + case_study.exp_foldername + str(case_study.created_at.timestamp()).replace(".","") + "_metadata" + sep # folder to store metadata that will be used in "results" mode
 
     if not os.path.exists(metadata_path):
@@ -71,95 +151,24 @@ def generate_case_study(case_study_id):
         raise ValidationError("Case study already executed!")
 
     # year = datetime.now().date().strftime("%Y")
-    # tprint("RPA-US", "rnd-xlarge")
     tprint("RPA-US     RIM", "tarty1")
-    # tprint("Relevance Information Miner. Copyright " + year + ".", "pepper")
-    tprint("Relevance Information Miner", "cybermedium")
+    # tprint("Relevance Information Miner", "pepper")
 
+    foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
+    
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
         time.sleep(.1)
         print("\nActual Scenario: " + str(scenario))
-        param_path = case_study.exp_folder_complete_path + sep + scenario + sep
         # We check there is at least 1 phase to execute
         if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.noise_filtering or case_study.extract_training_dataset or case_study.decision_tree_training:
-            for n in foldername_logs_with_different_size_balance:
-                times[n] = {}
-                to_exec_args = {
-                    'ui_elements_detection': (param_path+n+sep+'log.csv',
-                                                 param_path+n+sep,
-                                                 case_study.special_colnames,
-                                                 case_study.ui_elements_detection.skip,
-                                                 case_study.ui_elements_detection.type,
-                                                 case_study.text_classname)
-                                                 # We check this phase is present in case_study to avoid exceptions
-                                                 if case_study.ui_elements_detection else None,
-                    'noise_filtering': (param_path+n+sep+'log.csv',
-                                                 param_path+n+sep,
-                                                 case_study.special_colnames,
-                                                 case_study.noise_filtering.type,
-                                                 case_study.noise_filtering.configurations)
-                                                 # We check this phase is present in case_study to avoid exceptions
-                                                 if case_study.noise_filtering else None,
-                    'ui_elements_classification': (case_study.ui_elements_classification.model,
-                                                  case_study.ui_elements_classification.model_properties,
-                                                  param_path + n + sep + 'components_npy' + sep,
-                                                  param_path + n + sep + 'components_json' + sep,
-                                                  param_path+n+sep + 'log.csv',
-                                                  case_study.special_colnames["Screenshot"],
-                                                  case_study.text_classname,
-                                                  case_study.ui_elements_classification.skip,
-                                                  case_study.ui_elements_classification_classes,
-                                                  case_study.ui_elements_classification_image_shape,
-                                                  case_study.ui_elements_classification.type)
-                                                 # We check this phase is present in case_study to avoid exceptions
-                                                  if case_study.ui_elements_classification else None,
-                    'feature_extraction_technique': (case_study.ui_elements_classification_classes,
-                                                  case_study.special_colnames["Screenshot"],
-                                                  param_path + n + sep + 'components_json' + sep,
-                                                  param_path+n+sep+'log.csv',
-                                                  param_path+n+sep+case_study.feature_extraction_technique.technique_name+'_enriched_log.csv',
-                                                  case_study.text_classname,
-                                                  case_study.feature_extraction_technique.skip,
-                                                  case_study.feature_extraction_technique.technique_name)
-                                                 # We check this phase is present in case_study to avoid exceptions
-                                                  if case_study.feature_extraction_technique else None,
-                    'extract_training_dataset': (case_study.decision_point_activity, 
-                                                 case_study.target_label,
-                                                 case_study.special_colnames,
-                                                 case_study.extract_training_dataset.columns_to_drop,
-                                                 param_path + n + sep + 'enriched_log.csv',
-                                                 param_path + n + sep, 
-                                                 case_study.extract_training_dataset.columns_to_drop_before_decision_point,
-                                                )
-                                                # We check this phase is present in case_study to avoid exceptions
-                                                if case_study.extract_training_dataset else None,
-                    'decision_tree_training': (param_path+n+sep + 'preprocessed_dataset.csv', 
-                                               param_path+n+sep,
-                                                case_study.decision_tree_training.library,
-                                                case_study.decision_tree_training.algorithms,
-                                                case_study.decision_tree_training.columns_to_drop,
-                                                case_study.target_label,
-                                                case_study.decision_tree_training.one_hot_columns)
-                                                # We check this phase is present in case_study to avoid exceptions
-                                                if case_study.decision_tree_training  else None # 'autogeneration' -> to plot tree automatically
-                    }
-
-                # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
-                for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
-                    if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library!='sklearn':
-                        res, tree_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
-                        times[n][function_to_exec] = tree_times
-                    else:
-                        times[n][function_to_exec] = {"start": time.time()}
-                        output = eval(function_to_exec)(*to_exec_args[function_to_exec])
-                        times[n][function_to_exec]["finish"] = time.time()
-
-                    # TODO: accurracy_score
-                    # if index == len(to_exec)-1:
-                    #     times[n][index]["decision_model_accuracy"] = output
-
-            # if not os.path.exists(scenario+sep):
-            #     os.makedirs(scenario+sep)
+            if scenario_nested_folder:
+                path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
+                for n in foldername_logs_with_different_size_balance:
+                    generate_case_study(case_study, path_scenario, times, n)
+            else:
+                path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep
+                generate_case_study(case_study, path_scenario, times, scenario)
+                
 
             # Serializing json
             json_object = json.dumps(times, indent=4)

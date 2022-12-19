@@ -1,33 +1,27 @@
-from asyncore import write
-from typing import List
 import pandas as pd
+import json
 import os
-import time
-import shutil
-import graphviz
-import matplotlib.image as plt_img
-import numpy as np
-from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from chefboost import Chefboost as chef
 from art import tprint
 from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
+from chefboost import Chefboost as chef
 # import json
 # import sys
 # from django.shortcuts import render
 # import seaborn as sns
 # from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+# import graphviz
+# import matplotlib.pyplot as plt
+# import matplotlib.image as plt_img
+# from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
+# from sklearn.metrics import accuracy_score
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
 #     df.dropna(inplace=True)
 #     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
 #     return df[indices_to_keep].astype(np.float64)
-
 
 def extract_training_dataset(decision_point_activity,
         target_label,
@@ -76,20 +70,21 @@ def extract_training_dataset(decision_point_activity,
     tprint(platform_name + " - " + flattening_phase_name, "fancy60")
     print(log_path+"\n")
 
-    log = pd.read_csv(log_path, sep=",", index_col=0)
+    log = pd.read_csv(log_path, sep=",")#, index_col=0)
 
     # columns_to_drop = [special_colnames["Case"], special_colnames["Activity"], special_colnames["Timestamp"], special_colnames["Screenshot"], special_colnames["Variant"]]
     columns = list(log.columns)
     for c in columns_to_drop:
-        columns.remove(c)
+        if c in columns:
+            columns.remove(c)
         
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
     flat_dataset_row(log, columns, target_label, path_dataset_saved, special_colnames["Case"], special_colnames["Activity"], 
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      
-def decision_tree_training(param_preprocessed_log_path="media/preprocessed_dataset.csv",
-                           param_path="media/", 
+def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json",
+                           path="media/", 
                            implementation="sklearn",
                            algorithms=['ID3', 'CART', 'CHAID', 'C4.5'],
                            columns_to_ignore=["Timestamp_start", "Timestamp_end"],
@@ -97,32 +92,35 @@ def decision_tree_training(param_preprocessed_log_path="media/preprocessed_datas
                            one_hot_columns=['NameApp']):
     
     tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
-    print(param_preprocessed_log_path+"\n")
+    print(flattened_json_log_path+"\n")
     
-    flattened_dataset = pd.read_csv(param_preprocessed_log_path, index_col=0, sep=',')
-    param_path += decision_foldername + sep
-    if not os.path.exists(param_path):
-        os.mkdir(param_path)
-    one_hot_cols = []
-    for c in flattened_dataset.columns:
-        for item in one_hot_columns:
-            if item in c:
-                one_hot_cols.append(item)
+    
+    flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
+    flattened_dataset.to_csv(path + "flattened_dataset.csv")    
+    # flattened_dataset = pd.read_csv(flattened_json_log_path, index_col=0, sep=',')
+    
+    path += decision_foldername + sep
+    if not os.path.exists(path):
+        os.mkdir(path)
+    # one_hot_cols = []
+    # for c in flattened_dataset.columns:
+    #     for item in one_hot_columns:
+    #         if item in c:
+    #             one_hot_cols.append(item)
         
         # if "TextInput" in c:
         #     columns_to_ignore.append(c)  # TODO: get type of field using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
-            
-    flattened_dataset = pd.get_dummies(flattened_dataset, columns=one_hot_cols)
+    if all(elem in flattened_dataset.columns for elem in one_hot_columns):
+        flattened_dataset = pd.get_dummies(flattened_dataset, columns=one_hot_columns)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
     flattened_dataset = flattened_dataset.fillna(0.)
     # Splitting dataset
     # X_train, X_test = train_test_split(flattened_dataset, test_size=0.2, random_state=42, stratify=flattened_dataset[target_label])
     
-    
     if implementation == 'sklearn':
-        return CART_sklearn_decision_tree(flattened_dataset, param_path, target_label)
+        return CART_sklearn_decision_tree(flattened_dataset, path, target_label)
     else:
-        return chefboost_decision_tree(flattened_dataset, param_path, algorithms)
+        return chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
 
 def decision_tree_predict(module_path, instance):
     """
