@@ -1,7 +1,5 @@
 
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
 import json
 
 def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
@@ -221,5 +219,45 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
     log_enriched.to_csv(enriched_log_output_path+"location_enriched_log.csv")
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output_path + "location_enriched_log.csv")
+
+
+def caption_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+    return None
+
+def state_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+    """
+    Only Leaf UI Elements or Simple UI Elements can have an associated state. Composed UI Elements (forms, dialogs, sheets...) have another information associated
+    like caption, or key-value pairs...
+    
+    States communicate the status of UI elements to the user. Each state should be visually similar and not drastically alter a component, but must have clear affordances that distinguish it from other states and the surrounding layout.
+    States must have clear affordances that distinguish them from one other.
+
+    Types of states
+
+    Enabled: An enabled state communicates an interactive component or element.
+    Disabled: A disabled state communicates a noninteractive component or element.
+    Hover: A hover state communicates when a user has placed a cursor above an interactive element.
+    Focused: A focused state communicates when a user has highlighted an element, using an input method such as a keyboard or voice.
+    Selected: A selected state communicates a user choice.
+    Activated: An activated state communicates a highlighted destination, whether initiated by the user or by default.
+    Pressed: A pressed state communicates a user tap.
+    Dragged: A dragged state communicates when a user presses and moves an element.
+    
+    Ref. https://m2.material.io/design/interaction/states.html#usage
+    
+    Restrictions:
+    (1) FABs (2) bottom sheets and (3) app bars cannot inherit a disabled state.
+    Disabled components cannot be (1) hovered, (2) focused, (3) dragged or (4) pressed.
+    (1) Sheets, (2) app bars or (3) dialogs cannot inherit a hover state
+    Components that can’t inherit a focus state include: (1) whole sheets, (2) whole app bars or (3) whole dialogs.
+    (1) Buttons, (2) text fields, (3) app bars, and (4) dialogs can’t inherit a selected state.
+    (1) Buttons and (2) dialogs cannot inherit an activated state.
+    Components such as (1) sheets, (2) app bars, or (3) dialogs cannot inherit a pressed state
+    Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
+    """
+    return None
+
 
 
