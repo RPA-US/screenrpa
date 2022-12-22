@@ -1,91 +1,21 @@
-from typing import List
 import pandas as pd
+import json
 import os
-import time
-import shutil
-import graphviz
-import matplotlib.image as plt_img
-import numpy as np
-from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from chefboost import Chefboost as chef
 from art import tprint
 from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
+from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
-
-
-def extract_training_dataset(param_decision_point_activity, 
-                             param_log_path="media/enriched_log_feature_extracted.csv", 
-                             param_path_dataset_saved="media/", 
-                             actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"], 
-                             param_variant_column_name="Variant", 
-                             param_case_column_name="Case", 
-                             param_screenshot_column_name="Screenshot", 
-                             param_timestamp_column_name="Timestamp", 
-                             param_activity_column_name="Activity"):
-    """
-    Iterate for every log row:
-        For each case:
-            Store in a map all the atributes of the activities until reaching the decision point
-            Assuming the decision point is on activity D, the map would have the following structure:
-        {
-            "headers": ["timestamp", "MOUSE", "clipboard"...],
-            "case1":
-                {"A": ["value1","value2","value3",...]}
-                {"B": ["value1","value2","value3",...]}
-                {"C": ["value1","value2","value3",...]},
-            "case2":
-                {"A": ["value1","value2","value3",...]}
-                {"B": ["value1","value2","value3",...]}
-                {"C": ["value1","value2","value3",...]},...
-        }
-
-    Once the map is generated, for each case, we concatinate the header with the activity to name the columns and assign them the values
-    For each case a new row in the dataframe is generated
-    """
-    tprint(platform_name + " - " + flattening_phase_name, "fancy60")
-    print(param_log_path+"\n")
-
-    log = pd.read_csv(param_log_path, sep=",", index_col=0)
-
-    cases = log.loc[:, param_case_column_name].values.tolist()
-    actual_case = 0
-
-    log_dict = {"headers": list(log.columns), "cases": {}}
-    for index, c in enumerate(cases, start=0):
-        if c == actual_case:
-            activity = log.at[index, param_activity_column_name]
-            if c in log_dict["cases"]:
-                log_dict["cases"][c][activity] = log.loc[index, :]
-            else:
-                log_dict["cases"][c] = {activity: log.loc[index, :]}
-        else:
-            activity = log.at[index, param_activity_column_name]
-            log_dict["cases"][c] = {activity: log.loc[index, :]}
-            actual_case = c
-
-    # import p#print
-    # pprint.pprint(log_dict)
-
-    # Serializing json
-    # json_object = json.dumps(log_dict, indent = 4)
-
-    # Writing to sample.json
-    # with open(param_path_dataset_saved + "preprocessed_log.json", "w") as outfile:
-    #     outfile.write(json_object)
-
-    columns_to_drop = [param_case_column_name, param_activity_column_name,
-                       param_timestamp_column_name, param_screenshot_column_name, param_variant_column_name]
-    columns = list(log.columns)
-    for c in columns_to_drop:
-        columns.remove(c)
-
-    # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    data_flattened = flat_dataset_row(log_dict, columns, param_timestamp_column_name,
-                                      param_variant_column_name, columns_to_drop, param_decision_point_activity, actions_columns)
-    # print(data_flattened)
-    data_flattened.to_csv(param_path_dataset_saved + "preprocessed_dataset.csv")
+from chefboost import Chefboost as chef
+# import json
+# import sys
+# from django.shortcuts import render
+# import seaborn as sns
+# from sklearn.ensemble import RandomForestClassifier
+# import graphviz
+# import matplotlib.pyplot as plt
+# import matplotlib.image as plt_img
+# from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
+# from sklearn.metrics import accuracy_score
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -93,133 +23,103 @@ def extract_training_dataset(param_decision_point_activity,
 #     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
 #     return df[indices_to_keep].astype(np.float64)
 
-
-# Ref. https://gist.github.com/j-adamczyk/dc82f7b54d49f81cb48ac87329dba95e#file-graphviz_disk_op-py
-def plot_decision_tree(path: str,
-                       clf: DecisionTreeClassifier,
-                       feature_names: List[str],
-                       class_names: List[str]) -> np.ndarray:
-    # 1st disk operation: write DOT
-    export_graphviz(clf, out_file=path+".dot",
-                    feature_names=feature_names,
-                    class_names=class_names,
-                    label="all", filled=True, impurity=False,
-                    proportion=True, rounded=True, precision=2)
-
-    # 2nd disk operation: read DOT
-    graph = graphviz.Source.from_file(path + ".dot")
-
-    # 3rd disk operation: write image
-    graph.render(path, format="png")
-
-    # 4th disk operation: read image
-    image = plt_img.imread(path + ".png")
-
-    # 5th and 6th disk operations: delete files
-    os.remove(path + ".dot")
-    # os.remove("decision_tree.png")
-
-    return image
-
-
-def CART_sklearn_decision_tree(df, param_path, algorithms, target_label='Variant', implementation):
-    times = {}
-    # Training set
-    X = df.drop(target_label, axis=1)
-    # Test set
-    y = df[[target_label]]
+def extract_training_dataset(decision_point_activity,
+        target_label,
+        special_colnames,
+        columns_to_drop,
+        log_path="media/enriched_log_feature_extracted.csv", 
+        path_dataset_saved="media/", 
+        actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"]):
+    """
+    Iterate for every UI log row:
+        For each case:
+            Store in a map all the attributes of the activities until reaching the decision point
+            Assuming the decision point is on activity D, the map would have the following structure:
+        {
+            "headers": ["timestamp", "MOUSE", "clipboard"...],
+            "case1": {"CoorX_A": "value1", "CoorY_A": "value2", ..., "Checkbox_A: "value3",
+                        "CoorX_B": "value1", "CoorY_B": "value2", ..., "Checkbox_B: "value3"
+                        "CoorX_C": "value1", "CoorY_C": "value2", ..., "Checkbox_C: "value3"
+                },
+            ...
+            
+            "caseN": {"CoorX_A": "value1", "CoorY_A": "value2", ..., "Checkbox_A: "value3",
+                        "CoorX_B": "value1", "CoorY_B": "value2", ..., "Checkbox_B: "value3"
+                        "CoorX_C": "value1", "CoorY_C": "value2", ..., "Checkbox_C: "value3"
+                },
+        }
+    Once the map is generated, for each case, we concatinate the header with the activity to name the columns and assign them the values
+    For each case a new row in the dataframe is generated
     
-    # from sklearn.model_selection import train_test_split
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1,random_state=42)
+    :param decision_point_activity: id of the activity inmediatly previous to the decision point which "why" wants to be discovered
+    :type decision_point_activity: str
+    :param target_label: name of the column where classification target label is stored
+    :type target_label: str
+    :param special_colnames: dict that contains the column names that refers to special columns: "Screenshot", "Variant", "Case"...
+    :type special_colnames: dict
+    :param columns_to_drop: Names of the colums to remove from the dataset
+    :type columns_to_drop: list
+    :param log_path: path where ui log to be processed is stored
+    :type log_path: str
+    :param path_dataset_saved: path where files that results from the flattening are stored
+    :type path_dataset_saved: str
+    :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
+    :type actions_columns: list
+    """
+    tprint(platform_name + " - " + flattening_phase_name, "fancy60")
+    print(log_path+"\n")
 
-    # criterion="gini", 
-    # splitter="best", 
-    # random_state=42, 
-    # max_depth=3, 
-    # min_samples_split=3,
-    # min_samples_leaf=5)
-    clf_model = DecisionTreeClassifier()
-    # clf_model = RandomForestClassifier(n_estimators=100)
-    
-    times[implementation] = {"start": time.time()}
-    clf_model.fit(X, y)  # change train set. X_train, y_train
-    times[implementation]["finish"] = time.time()
-    
-    # Test dataset predictions
-    y_predict = clf_model.predict(X)  # X_test
+    log = pd.read_csv(log_path, sep=",")#, index_col=0)
 
-    # accuracy_score(y_test,y_predict))
+    # columns_to_drop = [special_colnames["Case"], special_colnames["Activity"], special_colnames["Timestamp"], special_colnames["Screenshot"], special_colnames["Variant"]]
+    columns = list(log.columns)
+    for c in columns_to_drop:
+        if c in columns:
+            columns.remove(c)
+        
+    # Stablish common columns and the rest of the columns are concatinated with "_" + activity
+    flat_dataset_row(log, columns, target_label, path_dataset_saved, special_colnames["Case"], special_colnames["Activity"], 
+                     special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
-    target = list(df[target_label].unique())
-    feature_names = list(X.columns)
-
-    target_casted = [str(t) for t in target]
-
-    # estimator = clf_model.estimators_[5]
-
-    # export_graphviz(estimator, out_file='tree.dot',
-    #                 feature_names = feature_names,
-    #                 class_names = target_casted,
-    #                 rounded = True, proportion = False,
-    #                 precision = 2, filled = True)
-
-    # # Convert to png using system command (requires Graphviz)
-    # from subprocess import call
-    # call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png', '-Gdpi=600'])
-
-    text_representation = export_text(clf_model, feature_names=feature_names)
-    print("\n\nDecision Tree Text Representation")
-    print(text_representation)
-
-    with open(param_path + "decision_tree.log", "w") as fout:
-        fout.write(text_representation)
-
-    # type(target_casted[0])
-
-    if not autogeneration == 'autogeneration':
-        img = plot_decision_tree(
-            param_path + "decision_tree", clf_model, feature_names, target_casted)
-        plt.imshow(img)
-        plt.show()
-
-    return accuracy_score(y, y_predict), times
-
-
-def decision_tree_training(param_preprocessed_log_path="media/preprocessed_dataset.csv",
-                           param_path="media/", 
-                           implementation="sklearn", 
-                           autogeneration="autogeneration", 
-                           algorithms=['ID3', 'CART', 'CHAID', 'C4.5'], 
-                           columns_one_hot_encoding=["NameApp"],
+                     
+def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json",
+                           path="media/", 
+                           implementation="sklearn",
+                           algorithms=['ID3', 'CART', 'CHAID', 'C4.5'],
+                           columns_to_ignore=["Timestamp_start", "Timestamp_end"],
                            target_label='Variant',
-                           columns_to_ignore=["Timestamp_start", "Timestamp_end", "TextInput"]):
+                           one_hot_columns=['NameApp']):
+    
     tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
-    print(param_preprocessed_log_path+"\n")
+    print(flattened_json_log_path+"\n")
     
     
-    df = pd.read_csv(param_preprocessed_log_path, index_col=0, sep=',')
-    param_path += decision_foldername + sep
-    if not os.path.exists(param_path):
-        os.mkdir(param_path)
-    one_hot_cols = []
-
-    for c in df.columns:
-        # TODO: remove hardcoded column names
-        if all([item in c for item in columns_one_hot_encoding]):
-            one_hot_cols.append(c)
+    flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
+    flattened_dataset.to_csv(path + "flattened_dataset.csv")    
+    # flattened_dataset = pd.read_csv(flattened_json_log_path, index_col=0, sep=',')
+    
+    path += decision_foldername + sep
+    if not os.path.exists(path):
+        os.mkdir(path)
+    # one_hot_cols = []
+    # for c in flattened_dataset.columns:
+    #     for item in one_hot_columns:
+    #         if item in c:
+    #             one_hot_cols.append(item)
         
         # if "TextInput" in c:
         #     columns_to_ignore.append(c)  # TODO: get type of field using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
-            
-    df = pd.get_dummies(df, columns=one_hot_cols)
-    df = df.drop(columns_to_ignore, axis=1)
-    df = df.fillna(0.)
-    
+    if all(elem in flattened_dataset.columns for elem in one_hot_columns):
+        flattened_dataset = pd.get_dummies(flattened_dataset, columns=one_hot_columns)
+    flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
+    flattened_dataset = flattened_dataset.fillna(0.)
+    # Splitting dataset
+    # X_train, X_test = train_test_split(flattened_dataset, test_size=0.2, random_state=42, stratify=flattened_dataset[target_label])
     
     if implementation == 'sklearn':
-        return CART_sklearn_decision_tree(param_preprocessed_log_path, param_path, autogeneration, columns_to_ignore)
+        return CART_sklearn_decision_tree(flattened_dataset, path, target_label)
     else:
-        return chefboost_decision_tree(param_preprocessed_log_path, param_path, algorithms, columns_to_ignore)
+        return chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
 
 def decision_tree_predict(module_path, instance):
     """

@@ -1,11 +1,9 @@
 
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
 import json
 
-def quantity_ui_elements_fe_technique(ui_elements_classification_classes, 
-    screenshot_colname, metadata_json_root, ui_log_path, enriched_log_output, text_classname):
+def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -19,39 +17,62 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes,
     :type skip: bool
 
     """
+    id = "quantity"
+    with open(flattened_log, 'r') as f:
+        ui_log_data = json.load(f)
+    
     log = pd.read_csv(ui_log_path, sep=",")
-    df = pd.DataFrame([], columns=ui_elements_classification_classes)
+    # df = pd.DataFrame([], columns=ui_elements_classification_classes)
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     quantity_ui_elements = {}
+    before_DP = True
+    aux_case = -1    
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
-        # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
-            data = json.load(f)
-
-        for c in ui_elements_classification_classes:
-            counter = 0
-            for j in range(0, len(data["compos"])):
-                if data["compos"][j]["class"] == c:
-                    counter+=1
-            quantity_ui_elements[c] = counter
-
-        if "features" in data:
-            data["features"]["quantity"] = quantity_ui_elements
-        else:
-            data["features"] = { "quantity": quantity_ui_elements }
+        case = log.at[i, case_colname]
+        activity = log.at[i, activity_colname]
         
-        df.loc[i] = quantity_ui_elements.values()
-        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
-            json.dump(data, jsonFile)
+        if case != aux_case:
+            before_DP = True
+        
+        if before_DP:
+            # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+                data = json.load(f)
 
+            for c in ui_elements_classification_classes:
+                counter = 0
+                for j in range(0, len(data["compos"])):
+                    if data["compos"][j]["class"] == c:
+                        counter+=1
+                quantity_ui_elements[c] = counter
+                ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
+
+            if "features" in data:
+                data["features"][id] = quantity_ui_elements
+            else:
+                data["features"] = { id: quantity_ui_elements }
+            
+            # df.loc[i] = quantity_ui_elements.values()
+    
+                
+            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+                json.dump(data, jsonFile, indent=4)
+                
+            if activity == decision_point:
+                aux_case = case
+                before_DP = False
+
+    with open(flattened_log, 'w') as f:
+        json.dump(ui_log_data, f, indent=4)
+        
     """
     Once the dataset corresponding to the ammount of elements of each class contained in each of the images is obtained,
     we merge it with the complete log, adding the extracted characteristics from the images
     """
 
-    log_enriched = log.join(df).fillna(method='ffill')
+    # log_enriched = log.join(df).fillna(method='ffill')
 
     """
     Finally we obtain an entiched log, which is turned as proof of concept of our hypothesis based on the premise that if
@@ -60,13 +81,13 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes,
     As a pending task, we need to validate this hypothesis through a results comparison against the non-enriched log.
     We expect to continue this project in later stages of the master
     """
-    log_enriched.to_csv(enriched_log_output)
+    # log_enriched.to_csv(enriched_log_output)
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
 
 
 
-def location_ui_elements_fe_technique(ui_elements_classification_classes, 
-    screenshot_colname, metadata_json_root, ui_log_path, enriched_log_output, text_classname):
+def location_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, 
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -133,8 +154,8 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes,
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
 
-def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, 
-    screenshot_colname, metadata_json_root, ui_log_path, enriched_log_output_path, text_classname):
+def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, decision_point, 
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -198,5 +219,45 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
     log_enriched.to_csv(enriched_log_output_path+"location_enriched_log.csv")
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output_path + "location_enriched_log.csv")
+
+
+def caption_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+    return None
+
+def state_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+    """
+    Only Leaf UI Elements or Simple UI Elements can have an associated state. Composed UI Elements (forms, dialogs, sheets...) have another information associated
+    like caption, or key-value pairs...
+    
+    States communicate the status of UI elements to the user. Each state should be visually similar and not drastically alter a component, but must have clear affordances that distinguish it from other states and the surrounding layout.
+    States must have clear affordances that distinguish them from one other.
+
+    Types of states
+
+    Enabled: An enabled state communicates an interactive component or element.
+    Disabled: A disabled state communicates a noninteractive component or element.
+    Hover: A hover state communicates when a user has placed a cursor above an interactive element.
+    Focused: A focused state communicates when a user has highlighted an element, using an input method such as a keyboard or voice.
+    Selected: A selected state communicates a user choice.
+    Activated: An activated state communicates a highlighted destination, whether initiated by the user or by default.
+    Pressed: A pressed state communicates a user tap.
+    Dragged: A dragged state communicates when a user presses and moves an element.
+    
+    Ref. https://m2.material.io/design/interaction/states.html#usage
+    
+    Restrictions:
+    (1) FABs (2) bottom sheets and (3) app bars cannot inherit a disabled state.
+    Disabled components cannot be (1) hovered, (2) focused, (3) dragged or (4) pressed.
+    (1) Sheets, (2) app bars or (3) dialogs cannot inherit a hover state
+    Components that can’t inherit a focus state include: (1) whole sheets, (2) whole app bars or (3) whole dialogs.
+    (1) Buttons, (2) text fields, (3) app bars, and (4) dialogs can’t inherit a selected state.
+    (1) Buttons and (2) dialogs cannot inherit an activated state.
+    Components such as (1) sheets, (2) app bars, or (3) dialogs cannot inherit a pressed state
+    Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
+    """
+    return None
+
 
 

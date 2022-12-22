@@ -32,6 +32,7 @@ class CaseStudy(models.Model):
     gui_class_success_regex = models.CharField(max_length=255)
     ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
+    target_label = models.CharField(max_length=50, default='Variant')
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, on_delete=models.CASCADE)
     noise_filtering = models.ForeignKey(NoiseFiltering, null=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, on_delete=models.CASCADE)

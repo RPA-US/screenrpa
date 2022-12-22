@@ -5,4 +5,4 @@ import analyzer.views as analyzer
 
 @shared_task()
 def init_generate_case_study(case_study_id):
-    analyzer.generate_case_study(case_study_id)
+    analyzer.case_study_process_data(case_study_id)
