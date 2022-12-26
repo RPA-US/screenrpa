@@ -1,7 +1,7 @@
 from featureextraction.classification import legacy_ui_elements_classification, uied_ui_elements_classification
-from featureextraction.feature_extraction_techniques import quantity_ui_elements_fe_technique, location_ui_elements_and_plaintext_fe_technique, location_ui_elements_fe_technique
 from art import tprint
 from rim.settings import platform_name, classification_phase_name, feature_extraction_phase_name
+from rim.utils import detect_fe_function
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -33,13 +33,5 @@ def feature_extraction_technique(*data):
     print(feature_extraction_technique_name+"\n")
     
     if not skip:
-        match feature_extraction_technique_name:
-            case "quantity":
-                output = quantity_ui_elements_fe_technique(*data)
-            case "location":
-                output = location_ui_elements_fe_technique(*data)
-            case "plaintext":
-                output = location_ui_elements_and_plaintext_fe_technique(*data)
-            case _:
-                pass
+        detect_fe_function(feature_extraction_technique_name)(*data)
     return output

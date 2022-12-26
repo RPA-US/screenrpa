@@ -509,7 +509,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                             return Response(response_content, st)
 
                 if not os.path.exists(case_study_serialized.data['exp_folder_complete_path']):
-                    response_content = {"message": f"The following file or directory does not exists: {path}"}
+                    response_content = {"message": f"The following file or directory does not exists: {case_study_serialized.data['exp_folder_complete_path']}"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)

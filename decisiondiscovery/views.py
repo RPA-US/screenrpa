@@ -93,28 +93,18 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
     print(flattened_json_log_path+"\n")
     
-    
     flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
-    flattened_dataset.to_csv(path + "flattened_dataset.csv")    
-    # flattened_dataset = pd.read_csv(flattened_json_log_path, index_col=0, sep=',')
+    # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
     
     path += decision_foldername + sep
     if not os.path.exists(path):
         os.mkdir(path)
-    # one_hot_cols = []
-    # for c in flattened_dataset.columns:
-    #     for item in one_hot_columns:
-    #         if item in c:
-    #             one_hot_cols.append(item)
-        
-        # if "TextInput" in c:
-        #     columns_to_ignore.append(c)  # TODO: get type of field using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     if all(elem in flattened_dataset.columns for elem in one_hot_columns):
         flattened_dataset = pd.get_dummies(flattened_dataset, columns=one_hot_columns)
+    # if "TextInput" in c:
+    #     columns_to_ignore.append(c)  # TODO: get type of field using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
     flattened_dataset = flattened_dataset.fillna(0.)
-    # Splitting dataset
-    # X_train, X_test = train_test_split(flattened_dataset, test_size=0.2, random_state=42, stratify=flattened_dataset[target_label])
     
     if implementation == 'sklearn':
         return CART_sklearn_decision_tree(flattened_dataset, path, target_label)

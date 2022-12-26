@@ -251,12 +251,25 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
     (1) FABs (2) bottom sheets and (3) app bars cannot inherit a disabled state.
     Disabled components cannot be (1) hovered, (2) focused, (3) dragged or (4) pressed.
     (1) Sheets, (2) app bars or (3) dialogs cannot inherit a hover state
-    Components that can’t inherit a focus state include: (1) whole sheets, (2) whole app bars or (3) whole dialogs.
-    (1) Buttons, (2) text fields, (3) app bars, and (4) dialogs can’t inherit a selected state.
+    Components that can't inherit a focus state include: (1) whole sheets, (2) whole app bars or (3) whole dialogs.
+    (1) Buttons, (2) text fields, (3) app bars, and (4) dialogs can't inherit a selected state.
     (1) Buttons and (2) dialogs cannot inherit an activated state.
     Components such as (1) sheets, (2) app bars, or (3) dialogs cannot inherit a pressed state
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
+    
+    with open(flattened_log, 'r') as f:
+        ui_log_data = json.load(f)
+    
+    log = pd.read_csv(ui_log_path, sep=",")
+    # df = pd.DataFrame([], columns=ui_elements_classification_classes)
+    screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
+
+   
+    with open(flattened_log, 'w') as f:
+        json.dump(ui_log_data, f, indent=4)
+        
+    print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
     return None
 
 
