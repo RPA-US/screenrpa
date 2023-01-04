@@ -17,7 +17,7 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     :type skip: bool
 
     """
-    id = "quantity"
+    id = "qua"
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     
@@ -258,6 +258,7 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
     
+    id = "sta"
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     
@@ -265,12 +266,44 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
     # df = pd.DataFrame([], columns=ui_elements_classification_classes)
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
-   
+    before_DP = True
+    aux_case = -1    
+
+    for i, screenshot_filename in enumerate(screenshot_filenames):
+        case = log.at[i, case_colname]
+        activity = log.at[i, activity_colname]
+        
+        if case != aux_case:
+            before_DP = True
+        
+        if before_DP:
+            # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+                data = json.load(f)
+
+            for j in range(0, len(data["compos"])):
+                compo_x1 = data["compos"][j]["column_min"]
+                compo_y1 = data["compos"][j]["row_min"]
+                compo_x2 = data["compos"][j]["column_max"]
+                compo_y2 = data["compos"][j]["row_max"]
+                centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
+                centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
+                # Status columns 
+                status_columns = [i for i in dict(data["compos"][j]).keys() if "status_" in i]
+                for status_col in status_columns:
+                    status = data["compos"][j][status_col]
+                    sub_id = str(status_col).split("_")[1]
+                    ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid_x)+"-"+str(centroid_y)+"_"+activity] = status
+                
+            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+                json.dump(data, jsonFile, indent=4)
+                
+            if activity == decision_point:
+                aux_case = case
+                before_DP = False
+
     with open(flattened_log, 'w') as f:
         json.dump(ui_log_data, f, indent=4)
         
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
     return None
-
-
-

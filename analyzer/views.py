@@ -118,6 +118,7 @@ def generate_case_study(case_study, path_scenario, times, n):
         if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library !='sklearn':
             res, tree_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times
+            times[n][function_to_exec]['accuracy'] = res
         else:
             times[n][function_to_exec] = {"start": time.time()}
             output = eval(function_to_exec)(*to_exec_args[function_to_exec])

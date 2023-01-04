@@ -99,15 +99,15 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     path += decision_foldername + sep
     if not os.path.exists(path):
         os.mkdir(path)
-    if all(elem in flattened_dataset.columns for elem in one_hot_columns):
-        flattened_dataset = pd.get_dummies(flattened_dataset, columns=one_hot_columns)
+        
     # if "TextInput" in c:
     #     columns_to_ignore.append(c)  # TODO: get type of field using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset = flattened_dataset.fillna(0.)
+    flattened_dataset.to_csv(path + "flattened_dataset_preprocessed.csv")    
+    flattened_dataset = flattened_dataset.fillna('NaN')
     
     if implementation == 'sklearn':
-        return CART_sklearn_decision_tree(flattened_dataset, path, target_label)
+        return CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
     else:
         return chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
 

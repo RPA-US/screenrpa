@@ -68,8 +68,5 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
     # Writing to one_row_per_case.json
     with open(path_dataset_saved + "flattened_dataset.json", "w") as outfile:
         outfile.write(json_object)
-    
-    # df = pd.read_json(json.dumps(log_dict, cls=NumpyEncoder), orient ='index')    
-    # df.to_csv(path_dataset_saved + "flattened_dataset.csv")
 
     return log_dict

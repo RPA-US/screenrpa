@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_spectacular',
     'drf_spectacular_sidecar',  # required for Django collectstatic discovery
+    'chefboost',
     'analyzer', # Local App
     'featureextraction', # Local App
     'decisiondiscovery', # Local App

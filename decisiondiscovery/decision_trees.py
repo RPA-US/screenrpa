@@ -3,6 +3,7 @@ import os
 import time
 import shutil
 import graphviz
+import pandas as pd
 import matplotlib.image as plt_img
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
@@ -28,15 +29,17 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
     	}
     """
     times = {}
+
     for alg in list(algorithms):
         df.rename(columns = {target_label:'Decision'}, inplace = True)
-        df['Decision'] = df['Decision'].astype(object) # which will by default set the length to the max len it encounters
+        df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
         enableParallelism = False
         config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'num_cores': 2, 'max_depth': 5}
         times[alg] = {"start": time.time()}
-        chef.fit(df, config = config)
+        model, accuracy_score = chef.fit(df, config = config)
         times[alg]["finish"] = time.time()
         # TODO: accurracy_score -> store evaluate terminar output
+        # accuracy_score = chef.evaluate(model, df, "Decision")
         # model = chef.fit(df, config = config)
         # output = subprocess.Popen( [chef.evaluate(model,df)], stdout=subprocess.PIPE ).communicate()[0]
         # file = open(param_path+alg+'-results.txt','w')
@@ -46,14 +49,13 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
         # model = chef.fit(df, config = config, target_label = 'Variant')
         # chef.save_model(model, alg+'model.pkl')
         # TODO: feature importance
-        # fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
-        # fi.to_csv(param_path+alg+"-tree-feature-importance.csv")
+        fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
+        fi.to_csv(param_path+alg+"-tree-feature-importance.csv")
         # TODO: Graphical representation of feature importance
         # fi.plot(kind="barh", title="Feature Importance")
         shutil.move('outputs/rules/rules.py', param_path+alg+'-rules.py')
         if enableParallelism:
             shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
-    accuracy_score = 100
     return accuracy_score, times
 
 
@@ -84,7 +86,18 @@ def plot_decision_tree(path: str,
 
     return image
 
-def CART_sklearn_decision_tree(df, param_path, target_label):
+def CART_sklearn_decision_tree(df, param_path, one_hot_columns, target_label):
+    
+    columns_to_encode_one_hot = []
+    
+    for elem in one_hot_columns:
+        for column_name in list(df.columns):
+            if elem in column_name:
+                columns_to_encode_one_hot.append(column_name)
+    if columns_to_encode_one_hot:
+        df = pd.get_dummies(df, columns=columns_to_encode_one_hot)
+
+    
     times = {}
     X = df.drop(target_label, axis=1)
     y = df[[target_label]]
