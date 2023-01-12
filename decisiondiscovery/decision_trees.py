@@ -149,4 +149,4 @@ def CART_sklearn_decision_tree(df, param_path, one_hot_columns, target_label):
         plt.imshow(img)
         plt.show()
 
-    return accuracy_score(y, y_predict)
+    return accuracy_score(y, y_predict), times

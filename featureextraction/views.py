@@ -33,5 +33,5 @@ def feature_extraction_technique(*data):
     print("Feature extraction selected: " + feature_extraction_technique_name+"\n")
     
     if not skip:
-        detect_fe_function(feature_extraction_technique_name)(*data)
+        output = detect_fe_function(feature_extraction_technique_name)(*data)
     return output

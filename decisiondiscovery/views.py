@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import os
 from art import tprint
-from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name
+from rim.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, FLATTENED_DATASET_NAME
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from chefboost import Chefboost as chef
@@ -99,18 +99,23 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     path += decision_foldername + sep
     if not os.path.exists(path):
         os.mkdir(path)
-        
-    # if "TextInput" in c:
-    #     columns_to_ignore.append(c)  # TODO: get type of field using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
+    
+    # for col in flattened_dataset.columns:
+    #     if "Coor" in col:
+    #         columns_to_ignore.append(col)  
+    
+    # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset.to_csv(path + "flattened_dataset_preprocessed.csv")    
+    flattened_dataset.to_csv(path + FLATTENED_DATASET_NAME)
+    columns_len = flattened_dataset.shape[1]
     flattened_dataset = flattened_dataset.fillna('NaN')
     
     if implementation == 'sklearn':
-        return CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
+        res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
     else:
-        return chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
-
+        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
+    return res, times, columns_len
+    
 def decision_tree_predict(module_path, instance):
     """
     moduleName = "outputs/rules/rules" #this will load outputs/rules/rules.py

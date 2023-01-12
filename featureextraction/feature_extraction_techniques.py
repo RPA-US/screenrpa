@@ -29,6 +29,9 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     before_DP = True
     aux_case = -1    
 
+    num_events = len(screenshot_filenames)
+    num_UI_elements = 0
+
     for i, screenshot_filename in enumerate(screenshot_filenames):
         case = log.at[i, case_colname]
         activity = log.at[i, activity_colname]
@@ -41,6 +44,8 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
 
+            num_UI_elements += len(data["compos"])
+            
             for c in ui_elements_classification_classes:
                 counter = 0
                 for j in range(0, len(data["compos"])):
@@ -84,6 +89,7 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     # log_enriched.to_csv(enriched_log_output)
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
 
+    return num_UI_elements/num_events
 
 
 def location_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, 
@@ -97,6 +103,9 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
+
+    num_events = len(screenshot_filenames)
+    num_UI_elements = 0
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
@@ -129,6 +138,7 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
                     column_as_vector.append("")
                 column_as_vector.append(data["compos"][j]["centroid"])
                 info_to_join[column_name] = column_as_vector
+            # num_UI_elements += 1
                 
         if "features" in data:
             data["features"]["location"] = info_to_join
@@ -153,6 +163,8 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     log_enriched.to_csv(enriched_log_output)
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
+    
+    return num_UI_elements/num_events
 
 def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, decision_point, 
     case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname):
@@ -165,6 +177,9 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
+        
+    num_events = len(screenshot_filenames)
+    num_UI_elements = 0
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
@@ -200,6 +215,7 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
                     column_as_vector.append("")
                 column_as_vector.append(data["compos"][j]["centroid"])
                 info_to_join[column_name] = column_as_vector
+            # num_UI_elements += 1
                 
         with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
             json.dump(data, jsonFile)
@@ -220,6 +236,7 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output_path + "location_enriched_log.csv")
 
+    return num_UI_elements/num_events
 
 def caption_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
                                       metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
@@ -269,6 +286,9 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
     before_DP = True
     aux_case = -1    
 
+    num_events = 0
+    num_UI_elements = 0
+    
     for i, screenshot_filename in enumerate(screenshot_filenames):
         case = log.at[i, case_colname]
         activity = log.at[i, activity_colname]
@@ -289,11 +309,13 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
                 centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
                 centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
                 # Status columns 
-                status_columns = [i for i in dict(data["compos"][j]).keys() if "status_" in i]
+                status_columns = [i for i in dict(data["compos"][j]).keys() if "st_" in i]
                 for status_col in status_columns:
                     status = data["compos"][j][status_col]
                     sub_id = str(status_col).split("_")[1]
                     ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid_x)+"-"+str(centroid_y)+"_"+activity] = status
+                num_UI_elements += 1
+            num_events += 1
                 
             with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
@@ -306,4 +328,4 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
         json.dump(ui_log_data, f, indent=4)
         
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
-    return None
+    return num_UI_elements/num_events

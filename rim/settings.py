@@ -204,6 +204,7 @@ classification_phase_name =             "classification"
 feature_extraction_phase_name =         "feature extraction"
 flattening_phase_name =                 "flattening"
 decision_model_discovery_phase_name =   "decision model discovery"
+FLATTENED_DATASET_NAME =                "flattened_dataset_preprocessed.csv"
 
 
 # OS SEPARATOR 
