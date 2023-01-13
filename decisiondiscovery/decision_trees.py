@@ -34,7 +34,7 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
         df.rename(columns = {target_label:'Decision'}, inplace = True)
         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
         enableParallelism = False
-        config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'num_cores': 2, 'max_depth': 5}
+        config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'max_depth': 4}# 'num_cores': 2, 
         times[alg] = {"start": time.time()}
         model, accuracy_score = chef.fit(df, config = config)
         times[alg]["finish"] = time.time()

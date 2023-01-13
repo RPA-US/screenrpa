@@ -231,8 +231,13 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     log_size = []
     scenario_number = []
     phases_info = {}
-    density = []
+    num_UI_elements = []
+    num_screenshots = []
+    max_ui_elements_number = []
+    min_ui_elements_number = []
     columns_len = []
+    density = []
+    tree_levels = []
     # detection_time = []
     # classification_time = []
     # flat_time = []
@@ -263,8 +268,12 @@ def experiments_results_collectors(case_study, decision_tree_filename):
         balanced.append(1 if metainfo[3] == "Balanced" else 0)
 
         if case_study.feature_extraction_technique:
-            density.append(times[scenario]["feature_extraction_technique"]["density"])
-        if case_study.extract_training_dataset:
+            num_UI_elements.append(times[scenario]["feature_extraction_technique"]["num_UI_elements"])
+            num_screenshots.append(times[scenario]["feature_extraction_technique"]["num_screenshots"])
+            max_ui_elements_number.append(times[scenario]["feature_extraction_technique"]["max_#UI_elements"])
+            min_ui_elements_number.append(times[scenario]["feature_extraction_technique"]["min_#UI_elements"])
+            density.append(times[scenario]["feature_extraction_technique"]["num_UI_elements"]/times[scenario]["feature_extraction_technique"]["num_screenshots"])
+        if case_study.decision_tree_training:
             columns_len.append(times[scenario]["decision_tree_training"]["columns_len"])
             
         phases = [phase for phase in default_phases if getattr(case_study, phase) is not None]
@@ -280,21 +289,29 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             for alg in decision_tree_algorithms:
                 if (alg+'_tree_training_time') in accuracy:
                     accuracy[alg+'_tree_training_time'].append(times_duration(times[scenario]['decision_tree_training'][alg]))
+                    # accuracy[alg+'_tree_training_time'].append(times[scenario]['decision_tree_training'][alg]["tree_levels"])
                     # accuracy[alg+'_accuracy'].append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg))
                 else:
                     accuracy[alg+'_tree_training_time'] = [times_duration(times[scenario]['decision_tree_training'][alg])]
+                    # accuracy[alg+'_tree_training_time'] = [times[scenario]['decision_tree_training'][alg]["tree_levels"]]
                     # accuracy[alg+'_accuracy'] = [calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg)]
         else:
             print("DECISION TREE results collection fail! :(")
             # Calculate level of accuracy
             # accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, None))
-
+    
+    family_id = 'cs_' + str(case_study.id) + '_' + case_study.exp_foldername
+    
     dict_results = {
+        family_id: scenarios,
         'scenario_number': scenario_number,
-        'family': scenarios,
         'balanced': balanced,
         'log_size': log_size,
+        'num_UI_elements': num_UI_elements,
+        'num_screenshots': num_screenshots,
         'density': density,
+        'max_#UI_elements': max_ui_elements_number,
+        'min_#UI_elements': min_ui_elements_number,
         'columns_len': columns_len
         # 'tree_training_accuracy': tree_training_accuracy,
     }

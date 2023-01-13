@@ -113,12 +113,16 @@ def generate_case_study(case_study, path_scenario, times, n):
             res, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times
             times[n][function_to_exec]["columns_len"] = columns_len
+            # times[n][function_to_exec]["tree_levels"] = tree_levels
             times[n][function_to_exec]["accuracy"] = res
         elif function_to_exec == "feature_extraction_technique":
             times[n][function_to_exec] = {"start": time.time()}
-            density = eval(function_to_exec)(*to_exec_args[function_to_exec])
+            num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec]["finish"] = time.time()
-            times[n][function_to_exec]["density"] = density
+            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+            times[n][function_to_exec]["num_screenshots"] = num_screenshots
+            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
         else:
             times[n][function_to_exec] = {"start": time.time()}
             output = eval(function_to_exec)(*to_exec_args[function_to_exec])

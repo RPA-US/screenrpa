@@ -109,12 +109,19 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     flattened_dataset.to_csv(path + FLATTENED_DATASET_NAME)
     columns_len = flattened_dataset.shape[1]
     flattened_dataset = flattened_dataset.fillna('NaN')
+    # tree_levels = {}
     
     if implementation == 'sklearn':
         res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
     else:
         res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
-    return res, times, columns_len
+        # TODO: caculate number of tree levels automatically
+        # for alg in algorithms:
+            # rules_info = open(path+alg+'-rules.json')
+            # rules_info_json = json.load(rules_info)
+            # tree_levels[alg] = len(rules_info_json.keys())            
+        
+    return res, times, columns_len#, tree_levels
     
 def decision_tree_predict(module_path, instance):
     """
