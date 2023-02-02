@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from chefboost import Chefboost as chef
-from rim.settings import plot_decision_trees
+from rim.settings import plot_decision_trees, several_iterations
 from sklearn.model_selection import train_test_split
 
 def chefboost_decision_tree(df, param_path, algorithms, target_label):
@@ -35,9 +35,20 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
         enableParallelism = False
         config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'max_depth': 4}# 'num_cores': 2, 
-        times[alg] = {"start": time.time()}
-        model, accuracy_score = chef.fit(df, config = config)
-        times[alg]["finish"] = time.time()
+        if several_iterations:
+            durations = []
+            for i in range(0, int(several_iterations)):
+                start_t = time.time()
+                model, accuracy_score = chef.fit(df, config = config)
+                durations.append(float(time.time()) - float(start_t))
+            durations_total = 0
+            for d in durations:
+                durations_total+=d
+            times[alg] = { "duration": durations_total/len(durations) }
+        else:
+            start_t = time.time()
+            model, accuracy_score = chef.fit(df, config = config)
+            times[alg] = { "duration": float(time.time()) - float(start_t) }
         # TODO: accurracy_score -> store evaluate terminar output
         # accuracy_score = chef.evaluate(model, df, "Decision")
         # model = chef.fit(df, config = config)
@@ -106,9 +117,9 @@ def CART_sklearn_decision_tree(df, param_path, one_hot_columns, target_label):
     # criterion="gini", random_state=42,max_depth=3, min_samples_leaf=5)
     clf_model = DecisionTreeClassifier()
     # clf_model = RandomForestClassifier(n_estimators=100)
-    times["sklearn"] = {"start": time.time()}
+    start_t = time.time()
     clf_model.fit(X, y)  # change train set. X_train, y_train
-    times["sklearn"]["finish"] = time.time()
+    times["sklearn"] = {"duration": float(time.time()) - float(start_t) }
 
     y_predict = clf_model.predict(X)  # X_test
     # print(accuracy_score(y_test,y_predict))

@@ -92,6 +92,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         path_scenario + 'log.csv',
                                         path_scenario + case_study.feature_extraction_technique.technique_name+'_enriched_log.csv',
                                         case_study.text_classname,
+                                        case_study.feature_extraction_technique.identifier,
                                         case_study.feature_extraction_technique.skip,
                                         case_study.feature_extraction_technique.technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
@@ -116,17 +117,17 @@ def generate_case_study(case_study, path_scenario, times, n):
             # times[n][function_to_exec]["tree_levels"] = tree_levels
             times[n][function_to_exec]["accuracy"] = res
         elif function_to_exec == "feature_extraction_technique":
-            times[n][function_to_exec] = {"start": time.time()}
+            start_t = time.time()
             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec]["finish"] = time.time()
+            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
             times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
             times[n][function_to_exec]["num_screenshots"] = num_screenshots
             times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
             times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
         else:
-            times[n][function_to_exec] = {"start": time.time()}
+            start_t = time.time()
             output = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec]["finish"] = time.time()
+            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
 
         # TODO: accurracy_score
         # if index == len(to_exec)-1:
@@ -372,7 +373,7 @@ class ResultCaseStudyView(generics.ListCreateAPIView):
                 response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
 
         except Exception as e:
-            response = {"message": f"Case Study with id {case_study_id} not found"}
+            response = {"message": f"Case Study with id {case_study_id} raise an exception: " + str(e)}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)

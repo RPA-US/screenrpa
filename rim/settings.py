@@ -196,8 +196,9 @@ gaze_analysis_threshold =   int(env('GAZE_MINIMUM_TIME_STARING')) # minimum time
 gui_quantity_difference =   int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 times_calculation_mode =    env('RESULTS_TIMES_FORMAT') # substitute "formatted" -> get times formatted "%H:%M:%S.%fS" 
 metadata_location =         env('METADATA_PATH')
-plot_decision_trees =         env('PLOT_DECISION_TREES')
-scenario_nested_folder =         env('SCENARIO_NESTED_FOLDER')
+plot_decision_trees =       env('PLOT_DECISION_TREES')
+scenario_nested_folder =    env('SCENARIO_NESTED_FOLDER')
+several_iterations =        env('SEVERAL_ITERATIONS')
 platform_name =                         "RIM"
 detection_phase_name =                  "detection"
 classification_phase_name =             "classification"
@@ -224,6 +225,7 @@ CELERY_RESULT_BACKEND = "redis://localhost:6379"
 
 # Detect function json conf
 FE_EXTRACTORS_FILEPATH = "configuration" + sep + "feature_extractors.json"
+STATUS_VALUES_ID = "configuration" + sep + "status_values_id.json"
 
 # System Default Phases
 default_phases = ['ui_elements_detection','noise_filtering','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']

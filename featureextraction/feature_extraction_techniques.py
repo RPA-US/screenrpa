@@ -1,9 +1,20 @@
 
 import pandas as pd
 import json
+from rim.settings import STATUS_VALUES_ID
+
+def find_st_id(st_value):
+    res = None
+    f = open(STATUS_VALUES_ID)
+    statuses = json.load(f)
+    for k in statuses.keys():
+        if st_value in statuses[k]:
+            res = k
+            break
+    return res
 
 def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id="qua"):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -17,7 +28,6 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     :type skip: bool
 
     """
-    id = "qua"
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     
@@ -55,11 +65,21 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
             
             for c in ui_elements_classification_classes:
                 counter = 0
-                for j in range(0, len(data["compos"])):
-                    if data["compos"][j]["class"] == c:
-                        counter+=1
-                quantity_ui_elements[c] = counter
-                ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
+                if "_" in c:
+                    st = c.split("_")
+                    for j in range(0, len(data["compos"])):
+                        ui_elem = data["compos"][j]
+                        st_key = find_st_id(st[1])
+                        if (ui_elem["class"] == st[0]) and (st_key in ui_elem) and (ui_elem[st_key] == st[1]):
+                            counter+=1
+                    quantity_ui_elements[c] = counter
+                    ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
+                else:
+                    for j in range(0, len(data["compos"])):
+                        if data["compos"][j]["class"] == c:
+                            counter+=1
+                    quantity_ui_elements[c] = counter
+                    ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
 
             if "features" in data:
                 data["features"][id] = quantity_ui_elements
@@ -100,7 +120,7 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
 
 
 def location_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id="loc"):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -176,7 +196,7 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
 def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname):
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname, id="loc"):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -250,11 +270,11 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
 def caption_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id):
     return None
 
 def state_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname):
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id="sta"):
     """
     Only Leaf UI Elements or Simple UI Elements can have an associated state. Composed UI Elements (forms, dialogs, sheets...) have another information associated
     like caption, or key-value pairs...
@@ -286,7 +306,6 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
     
-    id = "sta"
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     

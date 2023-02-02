@@ -25,3 +25,4 @@ class UIElementsClassification(models.Model):
 class FeatureExtractionTechnique(models.Model):
     technique_name = models.CharField(max_length=255, default='count')
     skip = models.BooleanField(default=False)
+    identifier = models.CharField(max_length=25)
