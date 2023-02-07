@@ -1,5 +1,11 @@
-# RIM tool
-Relevance Information Mining tool
+<h1 style="text-align: center;">ScreenRPM</h1>
+
+</br>
+<img alt="ScreenRPM-logo" src="https://i.imgur.com/3ZVqgws.png" width="200" style="display: block; margin: 0 auto">
+</br>
+
+# 
+**ScreenRPM** is a Task Mining framework that uses a combination of UI Logs and screenshots (i.e. screen captures) as inputs to extract features, which are then processed using supervised machine learning algorithms, to generate decision models that capture the _why_ behind decision points in a machine-and-human-readable form for improved Robotic Process Automation (RPA) tasks.
 
 ## Before run
 For development in Windows, make sure you have [Docker](https://docs.docker.com/desktop/install/windows-install/) installed and working. On Linux this is optional, since all Python packages on this project are compatible with it.
@@ -37,6 +43,13 @@ In the case that the git repository has not been properly configured by default,
 ## Configuration DB
 Firstly, you need configure the Database for the project. To do this, create an *.env* file in the folder *rim* with the following contents:
 ```
+DOCKERNAME=IS_                                          "Docker container name"
+DOCKERFILE=dev.nvidia                                   "Dockerfile name to use to build the docker container"
+BRANCH_DOCKER=develop                                   "Branch of the repository to be clone during the build of the docker container"
+POSTGRES_DB=<rim>                                       "Postgres container DB name"
+POSTGRES_PASSWORD=<localhost>                           "Postgres container DB URL"
+POSTGRES_USER=<user>                                    "Database user to access to postgres container DB. Use a new user with limited credentials"
+
 DB_NAME=<rim>                                       "Database name"
 DB_HOST=<localhost>                                 "Database URL"
 DB_PORT=<5432>                                      "Database access port"
