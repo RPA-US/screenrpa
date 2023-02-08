@@ -1,0 +1,63 @@
+version: '3.7'
+
+# Volumes
+volumes:
+  db_data:
+    name: ${DOCKERNAME}db_data
+  rim_data:
+    name: ${DOCKERNAME}rim_data
+
+services:
+  db:
+    image: postgres
+    container_name: ${DOCKERNAME}db
+    restart: always
+    env_file: .env
+    hostname: db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - db_network
+
+  screen-rpm:
+    container_name: ${DOCKERNAME}rim
+    restart: unless-stopped
+    env_file: .env
+    command: tail -F anything
+    build:
+      context: .
+      dockerfile: ./docker/dev.Dockerfile
+      args:
+        branch: ${BRANCH_DOCKER}
+        target: dev
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - rim_data:/rim
+    networks:
+      - db_network
+      - web_network
+
+  nginx:
+    container_name: nginx
+    restart: always
+    image: "nginx:latest"
+    ports:
+      - "85:85"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on: 
+      - screen-rpm
+networks:
+  db_network:
+    driver: bridge
+  web_network:
+    driver: bridge
+ 

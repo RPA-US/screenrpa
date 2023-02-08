@@ -1,0 +1,21 @@
+{
+    "name": "screen-rpm",
+    "mastertemplate": "boilerplate-code-django-dashboard",
+    "version": "1.0.2",
+    "description": "ScreenRPM - a RPA-US platform",
+    "scripts": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/RPA-US/rim"
+    },
+    "bugs": {
+        "url": "https://github.com/RPA-US/rim/issues",
+        "email": "amrojas@us.es"
+    },
+    "author": "RPA-US / Antonio Martínez Rojas",
+    "engines": {
+        "node": ">=10.0.0"
+    },
+    "dependencies": {},
+    "devDependencies": {}
+}

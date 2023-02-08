@@ -1,92 +1,259 @@
-# RIM tool
-Relevance Information Mining tool
+# [ScreenRPM](https://canela.lsi.us.es/rim/api/v1/docs)
 
-## Before run
-For development in Windows, make sure you have [Docker](https://docs.docker.com/desktop/install/windows-install/) installed and working. On Linux this is optional, since all Python packages on this project are compatible with it.
 
-If you are going to run this on your local machine (not a container), you need to have [Python](https://www.python.org/downloads/) and [PostgreSQL](https://www.postgresql.org/download/) installed.
+## Table of Contents
 
-If desired, you can create an isolated installation of the project requirements by creating a [virtual environment](https://docs.python.org/3/library/venv.html#:~:text=A%20virtual%20environment%20is%20a,part%20of%20your%20operating%20system.).
+* [Demo](#demo)
+* [Quick Start](#quick-start)
+* [Documentation](#documentation)
+* [File Structure](#file-structure)
+* [Browser Support](#browser-support)
+* [Resources](#resources)
+* [Reporting Issues](#reporting-issues)
+* [Technical Support or Questions](#technical-support-or-questions)
+* [Licensing](#licensing)
+* [Useful Links](#useful-links)
 
-## Create .env for Docker container
+<br />
 
-Using the `.env.sample` file available as a template, set the values for the user, password and database you want to use with PostgreSQL for this project.
+## Demo
 
-## Create docker container
+> To authenticate use the default credentials ***test / ApS12_ZZs8*** or create a new user on the **registration page**.
 
-Open a terminal emulator, navigate to the root directory of the project and run **`docker-compose -f docker-compose-dev.yml up`** from  to create the container. This container will be composed of two images:
-- Rim-dev: Image with the project code and dependencies, mounted in /rim
-- db: PostgreSQL image to store the database
+- **Screen RPM** [Login Page](https://canela.lsi.us.es/rim)
+- **[Screen RPM Public Samples](https://canela.lsi.us.es/rim/results)** - sample experiments that show app funtionality 
 
-## Open the project
+<br />
 
-To access the contents of the container, you can use Visual Studio Code or any other IDE with support for it.
+## Quick start
 
-For Visual Studio Code, install the [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) extension, navigate to its tab, and inside the container you just created you will see the diferent images that compose it. Right click on the rim image and select Attach to Visual Studio Code.
+> UNZIP the sources or clone the private repository. After getting the code, open a terminal and navigate to the working directory, with product source code.
 
-Once a new window has popped up, wait until the container is fully loaded, then click on open directory and select `/rim` as the target.
-
-Finally, install the [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) extension inside the container.
-
-## Configure git repository
-
-In the case that the git repository has not been properly configured by default, run the following command while on the project root directory:
-
-**`git checkout -t origin/<branch_name>`**
-
-## Configuration DB
-Firstly, you need configure the Database for the project. To do this, create an *.env* file in the folder *rim* with the following contents:
+```bash
+$ # Get the code
+$ git clone https://github.com/RPA-US/rim.git
+$ cd rim
+$
+$ # Virtualenv modules installation (Unix based systems)
+$ virtualenv env
+$ source env/bin/activate
+$
+$ # Virtualenv modules installation (Windows based systems)
+$ # virtualenv env
+$ # .\env\Scripts\activate
+$
+$ # Install modules - SQLite Storage
+$ pip3 install -r requirements.txt
+$
+$ # Create tables
+$ python manage.py makemigrations
+$ python manage.py migrate
+$
+$ # Start the application (development mode)
+$ python manage.py runserver # default port 8000
+$
+$ # Start the app - custom port
+$ # python manage.py runserver 0.0.0.0:<your_port>
+$
+$ # Access the web app in browser: http://127.0.0.1:8000/
 ```
-DB_NAME=<rim>                                       "Database name"
-DB_HOST=<localhost>                                 "Database URL"
-DB_PORT=<5432>                                      "Database access port"
-DB_USER=<user>                                      "Database user to access. Use a new user with limited credentials"
-DB_PASSWORD=<password>                              "Password for the previous user"
-DJANGO_SETTINGS_MODULE=rim.settings
-METADATA_PATH=</rim/resources/metadata>             "Results metadata path"
-API_VERSION=<api/v1/>                               "API prefix"
-GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD=<2>     "GUI components detection cropping threshold as integer"
-GAZE_MINIMUM_TIME_STARING=<10>                      "Minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot"
-RESULTS_TIMES_FORMAT=<seconds>                      "Results times format (formatted/seconds)"
-DECISION_TREE_TRAINING_FOLDERNAME=<decision-tree>   "Decision tree training phase files foldername"
+
+> Note: To use the app, please access the registration page and create a new user. After authentication, the app will unlock the private pages.
+
+<br />
+
+## Documentation
+The documentation of this project can be found in the [Wiki](https://github.com/RPA-US/rim/wiki/Deployment-instruction-of-RIM-for-a-local-development-environment) associated to this Github Repository.
+
+<br />
+
+## Code-base structure
+
+The project is coded using a simple and intuitive structure presented bellow:
+
+```bash
+< PROJECT ROOT >
+   |
+   |-- core/                               # Implements app configuration
+   |    |-- settings.py                    # Defines Global Settings
+   |    |-- wsgi.py                        # Start the app in production
+   |    |-- urls.py                        # Define URLs served by all apps/nodes
+   |
+   |-- apps/
+   |    |
+   |    |-- home/                          # A simple app that serve HTML files
+   |    |    |-- views.py                  # Serve HTML pages for authenticated users
+   |    |    |-- urls.py                   # Define some super simple routes  
+   |    |
+   |    |-- authentication/                # Handles auth routes (login and register)
+   |    |    |-- urls.py                   # Define authentication routes  
+   |    |    |-- views.py                  # Handles login and registration  
+   |    |    |-- forms.py                  # Define auth forms (login and register) 
+   |    |
+   |    |-- static/
+   |    |    |-- <css, JS, images>         # CSS files, Javascripts files
+   |    |
+   |    |-- templates/                     # Templates used to render pages
+   |         |-- includes/                 # HTML chunks and components
+   |         |    |-- navigation.html      # Top menu component
+   |         |    |-- sidebar.html         # Sidebar component
+   |         |    |-- footer.html          # App Footer
+   |         |    |-- scripts.html         # Scripts common to all pages
+   |         |
+   |         |-- layouts/                   # Master pages
+   |         |    |-- base-fullscreen.html  # Used by Authentication pages
+   |         |    |-- base.html             # Used by common pages
+   |         |
+   |         |-- accounts/                  # Authentication pages
+   |         |    |-- login.html            # Login page
+   |         |    |-- register.html         # Register page
+   |         |
+   |         |-- home/                      # UI Kit Pages
+   |              |-- index.html            # Index page
+   |              |-- 404-page.html         # 404 page
+   |              |-- *.html                # All other pages
+   |
+   |-- requirements.txt                     # Development modules - SQLite storage
+   |
+   |-- .env                                 # Inject Configuration via Environment
+   |-- manage.py                            # Start the app - Django default start script
+   |
+   |-- ************************************************************************
 ```
 
-## Project initialization
+<br />
 
-In the project directory, open a terminal and run:
+> The bootstrap flow
 
-**`source ./venv/bin/activate`**
+- Django bootstrapper `manage.py` uses `core/settings.py` as the main configuration file
+- `core/settings.py` loads the app magic from `.env` file
+- Redirect the guest users to Login page
+- Unlock the pages served by *app* node for authenticated users
 
-Activate the python virtual environment in which we have all our project dependencies installed.
+<br />
 
-**`python manage.py makemigrations`**
+## Recompile CSS
 
-To create a DB model.
+To recompile SCSS files, follow this setup:
 
-**`python manage.py migrate`**
+<br />
 
-To create the tables in the DB based on project models.
+**Step #1** - Install tools
 
-**`python manage.py loaddata configuration/db_populate.json`**
+- [NodeJS](https://nodejs.org/en/) 12.x or higher
+- [Gulp](https://gulpjs.com/) - globally 
+    - `npm install -g gulp-cli`
+- [Yarn](https://yarnpkg.com/) (optional) 
 
-To insert initial data in DB.
+<br />
 
-**`python manage.py runserver`**
+**Step #2** - Change the working directory to `assets` folder
 
-Runs the app in the debug mode. If you want to init in deploy mode, change in the *rim/settings.py* file, the *DEBUG* mode attribute to False.
+```bash
+$ cd apps/static/assets
+```
 
-**`redis-server`**
+<br />
 
-Initialize the redis server as your celery broker.
+**Step #3** - Install modules (this will create a classic `node_modules` directory)
 
-**`python -m celery -A rim worker --concurrency 1`**
+```bash
+$ npm install
+// OR
+$ yarn
+```
 
-Starts the celery worker for the rim application, with 1 being the number of celery tasks that can be executed simultaneously.
+<br />
 
-Celery, on pair with redis, is used on this project to isolate the execution of time and resource intensive tasks in different virtual threads, give the ability to set up a queue for them and limit the amount of simultaneous resource intensive processes executed.
+**Step #4** - Edit & Recompile SCSS files 
 
-## Learn More
+```bash
+$ gulp scss
+```
 
-You can learn more about the deploy of the aplication backend in the [Django documentation](https://docs.djangoproject.com/en/4.0/).
+The generated file is saved in `static/assets/css` directory.
 
-You can learn more about distributed tasks queues in the [Celery documentation](https://docs.celeryq.dev/en/stable/)
+<br /> 
+
+## Deployment
+
+The app is provided with a basic configuration to be executed in [Docker](https://www.docker.com/), [Gunicorn](https://gunicorn.org/), and [Waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/).
+
+### [Docker](https://www.docker.com/) execution
+---
+
+The application can be easily executed in a docker container. The steps:
+
+> Get the code
+
+```bash
+$ git clone https://github.com/RPA-US/rim.git
+$ cd rim
+```
+
+> Start the app in Docker
+
+```bash
+$ sudo docker-compose pull && sudo docker-compose build && sudo docker-compose up -d
+```
+
+Visit `http://localhost:85` in your browser. The app should be up & running.
+
+<br />
+
+## Browser Support
+
+At present, we officially aim to support the last two versions of the following browsers:
+
+<img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/chrome.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/firefox.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/edge.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/safari.png" width="64" height="64"> <img src="https://s3.amazonaws.com/creativetim_bucket/github/browser/opera.png" width="64" height="64">
+
+<br />
+
+## Resources
+
+- Demo: <https://canela.lsi.us.es/rim>
+- Documentation: <https://canela.lsi.us.es/rim/api/v1/redoc>
+- License Agreement: <https://creativecommons.org/licenses/by-nc/4.0/>
+- Support: <https://es3.us.es>
+- Issues: [Github Issues Page](https://github.com/RPA-US/rim/issues)
+
+<br />
+
+## Reporting Issues
+
+We use GitHub Issues as the official bug tracker for the **Screen RPM**. Here are some advices for our users that want to report an issue:
+
+1. Make sure that you are using the latest version of the **Screen RPM**.
+2. Providing us reproducible steps for the issue will shorten the time it takes for it to be fixed.
+3. Some issues may be browser-specific, so specifying in what browser you encountered the issue might help.
+
+<br />
+
+## Technical Support or Questions
+
+If you have questions or need help integrating the product please [contact us](mailto:amrojas@us.es) instead of opening an issue.
+
+<br />
+
+## Licensing
+
+- Copyright [RPA-US](https://github.com/RPA-US)
+- Licensed under [CC BY-NC](https://creativecommons.org/licenses/by-nc/4.0/)
+
+<br />
+
+## Useful Links
+
+- [More solutions](https://canela.lsi.us.es/) from RPA-US
+- [Tutorials](https://www.youtube.com/channel/UCq9H-Yj-C9nFifDsH5JwoeA)
+
+<br />
+
+## Social Media
+
+- Twitter: <https://twitter.com/rpa_us>
+
+<br />
+
+---
+This platform templates are based on the [ones](https://www.creative-tim.com/product/argon-dashboard-django) provided by [Creative Tim](https://www.creative-tim.com/) and [AppSeed](https://appseed.us)
