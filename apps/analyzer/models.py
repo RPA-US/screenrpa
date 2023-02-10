@@ -6,6 +6,7 @@ from django.db.models import JSONField
 from django.contrib.auth.models import User
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
 from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, NoiseFiltering
+from django.core.exceptions import ValidationError
 
 def default_phases_to_execute():
     return {'ui_elements_detection': {}, 'ui_elements_classification': {}, 'extract_training_dataset': {}, 'decision_tree_training': {}}
@@ -17,9 +18,26 @@ def get_ui_elements_classification_classes():
     return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
 'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
 
+def get_exp_foldername(exp_folder_complete_path):
+    count = 0
+    if "/" in exp_folder_complete_path:
+        count+=1
+        aux = "/"
+    if "\\\\" in exp_folder_complete_path:
+        count+=1
+        aux = "\\\\"
+    elif "\\" in exp_folder_complete_path:
+        count+=1
+        aux = "\\"
+    if count>1:
+         raise ValidationError("exp_folder_complete_path separators not coherent")
+    splitted_s = exp_folder_complete_path.split(aux)
+    return splitted_s[len(splitted_s) - 1]
 
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    featured = models.BooleanField(default=False, editable=False)
     # priority = models.IntegerField(default=1, editable=False)
     executed = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -42,5 +60,26 @@ class CaseStudy(models.Model):
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
+
+    def create(self, validated_data):
+        CaseStudy.term_unique(self, validated_data.get("title"))
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        validated_data.update({"user": self.request.user})
+        exp_fol = get_exp_foldername(validated_data.pop("exp_folder_complete_path", None))
+        # items = validated_data.pop("formats_supported", None)
+        case_study = CaseStudy.objects.create(**validated_data)
+        case_study.exp_foldername = exp_fol
+        # if items is not None:
+        #     # items = [InputFormatSupported.objects.create(**item) for item in items]
+        #     # '*' is the "splat" operator: It takes a list as input, and expands it into actual positional arguments in the function call.
+        #     action.formats_supported.add(*items)
+        return case_study
+    
+    def term_unique(self, title):
+        if CaseStudy.objects.filter(term=title).exists():
+            raise ValidationError('The title of the case study already exists')
+
+    
     def __str__(self):
         return self.title + ' - id:' + str(self.id)

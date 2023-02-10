@@ -115,5 +115,6 @@ validators==0.20.0
 vine==5.0.0
 wcwidth==0.2.5
 Werkzeug==2.2.2
+wheel==0.38.4
 whitenoise==6.2.0
 wrapt==1.14.1
