@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- bootstrap cdn -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css" integrity="sha256-Nfu23DiRqsrx/6B6vsI0T9vEVKq1M6KgO8+TV363g3s=" crossorigin="anonymous" />
+
+    <title>Webgazer</title>
+</head>
+
+<body>
+
+    <style>
+        body{
+            background-image: url('/static/assets/img/theme/test.png');
+        }
+        
+        button {
+            float: right !important;
+            margin: 3px;
+        }
+
+    </style>
+
+    <div onclick="saveGaze()" class="ml-auto">
+        <button class="btn btn-light">Save</button>
+    </div>
+
+    <div onclick="webgazer.resume()">
+        <button class="btn btn-light">Resume</button>
+    </div>
+
+    <div onclick="webgazer.pause()">
+        <button class="btn btn-light">Pause</button>
+    </div>
+
+    <div onclick="recordGaze()">
+        <button class="btn btn-light">Start</button>
+    </div>
+
+    <script>
+        // this array will store all the eye movements
+        var x = [];
+
+        // start recording
+        function recordGaze() {
+            webgazer.setGazeListener(function (data, elapsedTime) {
+                if (data == null) {
+                    return;
+                }
+                var xprediction = data.x; 
+                var yprediction = data.y;
+
+                var save_url = "http://127.0.0.1:8000/"+"?x="+xprediction+";y="+yprediction;
+
+                var temp_image = new Image();
+
+                temp_image.src= save_url;
+                x.push([xprediction, yprediction]);
+                console.log(xprediction + "," + yprediction);
+            }).begin();
+        }
+
+        // exporting data to .csv file
+        function saveGaze() {
+            console.log(x);
+
+            var csv = '';
+            x.forEach(function (row) {
+                csv += row.join(',');
+                csv += "\n";
+            });
+
+
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'gazeData.csv';
+            hiddenElement.click();
+        }
+    </script>
+    
+</body>
+
+
+<script src="/static/assets/js/webgazer/webgazer.js" type="text/javascript">
+</script>
+
+</html>
