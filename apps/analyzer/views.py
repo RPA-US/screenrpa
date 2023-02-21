@@ -166,7 +166,7 @@ def case_study_process_data(case_study_id):
         print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
         if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.noise_filtering or case_study.extract_training_dataset or case_study.decision_tree_training:
-            if scenario_nested_folder:
+            if scenario_nested_folder == "TRUE":
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
                     generate_case_study(case_study, path_scenario, times, n)
