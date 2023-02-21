@@ -2,7 +2,7 @@ import numpy as np
 
 import math
 
-from chefboost.training import Training
+from apps.chefboost.training import Training
 #from training import Training
 
 def processContinuousFeatures(algorithm, df, column_name, entropy, config):

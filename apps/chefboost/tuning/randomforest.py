@@ -3,9 +3,9 @@ import numpy as np
 from multiprocessing import Pool
 import multiprocessing
 from contextlib import closing
-from chefboost.commons import functions, evaluate
-from chefboost.training import Training
-from chefboost import Chefboost as cb
+from apps.chefboost.commons import functions, evaluate
+from apps.chefboost.training import Training
+from apps.chefboost import Chefboost as cb
 from tqdm import tqdm
 import imp
 import os

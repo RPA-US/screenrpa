@@ -3,9 +3,9 @@ import numpy as np
 
 import imp
 
-from chefboost.commons import functions, evaluate
-from chefboost.training import Preprocess, Training
-from chefboost import Chefboost as cb
+from apps.chefboost.commons import functions, evaluate
+from apps.chefboost.training import Preprocess, Training
+from apps.chefboost import Chefboost as cb
 
 from tqdm import tqdm
 

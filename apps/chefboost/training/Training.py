@@ -14,8 +14,8 @@ import gc
 import sys
 import tqdm
 
-from chefboost.training import Preprocess
-from chefboost.commons import functions, evaluate
+from apps.chefboost.training import Preprocess
+from apps.chefboost.commons import functions, evaluate
 
 #----------------------------------------
 

@@ -5,7 +5,7 @@ from art import tprint
 from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, FLATTENED_DATASET_NAME
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
-from chefboost import Chefboost as chef
+from apps.chefboost import Chefboost as chef
 # import json
 # import sys
 # from django.shortcuts import render
@@ -114,7 +114,7 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     if implementation == 'sklearn':
         res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
     else:
-        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
+        res, times = apps.chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
         # TODO: caculate number of tree levels automatically
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')

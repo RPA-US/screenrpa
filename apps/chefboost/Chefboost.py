@@ -9,9 +9,9 @@ from os import path
 import json
 
 
-from chefboost.commons import functions, evaluate as eval
-from chefboost.training import Preprocess, Training
-from chefboost.tuning import gbm, adaboost, randomforest
+from apps.chefboost.commons import functions, evaluate as eval
+from apps.chefboost.training import Preprocess, Training
+from apps.chefboost.tuning import gbm, adaboost, randomforest
 
 #------------------------
 

@@ -4,7 +4,7 @@ import imp
 import os
 from os import path
 import multiprocessing
-from chefboost import Chefboost as cb
+from apps.chefboost import Chefboost as cb
 
 def bulk_prediction(df, model):
 

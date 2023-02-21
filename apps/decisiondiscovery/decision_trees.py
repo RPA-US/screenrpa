@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
-from chefboost import Chefboost as chef
+from apps.chefboost import Chefboost as chef
 from core.settings import plot_decision_trees, several_iterations
 from sklearn.model_selection import train_test_split
 
