@@ -114,7 +114,7 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     if implementation == 'sklearn':
         res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
     else:
-        res, times = apps.chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
+        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
         # TODO: caculate number of tree levels automatically
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')

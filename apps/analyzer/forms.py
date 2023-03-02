@@ -11,12 +11,14 @@ class CaseStudyForm(forms.ModelForm):
     class Meta:
         model = CaseStudy
         exclude = (
-            "executed",
+            "active",
             "created_at",
+            "executed",
+            "user"
             )
         fields = (
             "title",
-            "description"
+            "description",
             "exp_foldername",
             "exp_folder_complete_path",
             "scenarios_to_study",
@@ -33,35 +35,36 @@ class CaseStudyForm(forms.ModelForm):
             "feature_extraction_technique",
             "extract_training_dataset",
             "decision_tree_training",
+            "executed"
         )
 
         widgets = {
             "title": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Title"
+                    "placeholder": "Nice experiment title!"
                     }
             ),
             "description": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Description"
+                    "placeholder": "Short experiment description..."
                     }
             ),
             "exp_foldername": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Experiment foldername"
+                    "placeholder": "exp_folder"
                     }
             ),
             "exp_folder_complete_path": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "exp_folder_complete_path"
+                    "placeholder": "/rim/resources/exp_folder"
                     }
             ),
             "scenarios_to_study": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Scenarios to study"}
+                attrs={"class": "form-control", "placeholder": "['scenario_1', 'scenario_2']"}
             ),
             "special_colnames": forms.Textarea(
                 attrs={
@@ -102,13 +105,7 @@ class CaseStudyForm(forms.ModelForm):
             "target_label": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "target_label"
-                    }
-            ),
-            "featured": forms.CheckboxInput(
-                attrs={
-                    "class": "primary-checkbox",
-                    "checked": "checked"
+                    "placeholder": "Variant"
                     }
             )
         }
@@ -129,5 +126,4 @@ class CaseStudyForm(forms.ModelForm):
         return cats
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user")
         super(CaseStudyForm, self).__init__(*args, **kwargs)

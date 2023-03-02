@@ -6,14 +6,10 @@ from django.shortcuts import render
 import os
 import json
 import time
-import csv
-import pandas as pd
-import re
 from django.core.exceptions import ValidationError
 from art import tprint
 from tqdm import tqdm
 import time
-from datetime import datetime
 from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, FLATTENED_DATASET_NAME
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
@@ -22,6 +18,7 @@ from apps.featureextraction.gaze_analysis import noise_filtering
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
+from apps.analyzer.forms import CaseStudyForm
 from apps.analyzer.tasks import init_generate_case_study
 # from rest_framework.pagination import PageNumberPagination
 from .models import CaseStudy# , ExecutionManager
@@ -30,16 +27,11 @@ from apps.featureextraction.serializers import UIElementsClassificationSerialize
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from .collect_results import experiments_results_collectors
 from apps.analyzer.utils import get_foldernames_as_list
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.db import transaction
-from django.forms.models import model_to_dict
-from asgiref.sync import sync_to_async
-import csv
-import codecs
 from django.contrib.auth import get_user_model
 from django.views import View
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
 
 def generate_case_study(case_study, path_scenario, times, n):
     times[n] = {}
@@ -179,7 +171,7 @@ def case_study_process_data(case_study_id):
     json_object = json.dumps(times, indent=4)
     # Writing to .json
 
-    case_study.executed = True
+    case_study.executed = 100
     case_study.save()
     
     metadata_final_path = metadata_path + str(case_study.id) + "-metainfo.json"
@@ -263,6 +255,28 @@ def case_study_generator(data):
 
     return transaction_works, case_study
 
+class CaseStudyCreateView(CreateView):
+    model = CaseStudy
+    form_class = CaseStudyForm
+    template_name = "case_studies/create.html"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class CaseStudyListView(ListView):
+    model = CaseStudy
+    template_name = "case_studies/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return CaseStudy.objects.all()
+
+
 class CaseStudyView(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticatedUser]
     serializer_class = CaseStudySerializer
@@ -330,7 +344,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                     if not transaction_works:
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     else:    
-                        response_content = {"message": f"Case study with id:{case_study.id} generated"}
+                        response_content = {"message": f"Case study with id:{case_study.id} is being generated ..."}
 
             except Exception as e:
                 response_content = {"message": "Some of the attributes are invalid: " + str(e) }

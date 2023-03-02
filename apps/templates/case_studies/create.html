@@ -1,0 +1,89 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} New case study {% endblock title %}
+
+{% block content %}
+
+{% load static %}
+<div class="container">
+    <h3 class="mb-30">New Case Study</h3>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="POST" enctype="multipart/form-data">{% csrf_token %}
+        <div>
+            <label for="id_title">Title:</label>
+            {{ form.title }}
+            <div class="form-validation">{{ form.title.errors }}</div>
+        </div>
+        <div>
+            <label for="id_description">Description:</label>
+            {{ form.description }}
+            <div class="form-validation">{{ form.description.errors }}</div>
+        </div>
+        <div>
+            <label for="id_exp_foldername">Experiment foldername:</label>
+            {{ form.exp_foldername }}
+            <div class="form-validation">{{ form.exp_foldername.errors }}</div>
+        </div>
+        <div>
+            <label for="id_exp_folder_complete_path">Experiment foldername complete path:</label>
+            {{ form.exp_folder_complete_path }}
+            <div class="form-validation">{{ form.exp_folder_complete_path.errors }}</div>
+        </div>
+        <div>
+            <label for="id_scenarios_to_study">Scenarios to study:</label>
+            {{ form.scenarios_to_study }}
+            <div class="form-validation">{{ form.scenarios_to_study.errors }}</div>
+        </div>
+        <div>
+            <label for="id_special_colnames">Special column names:</label>
+            {{ form.special_colnames }}
+            <div class="form-validation">{{ form.special_colnames.errors }}</div>
+        </div>
+        <div>
+            <label for="id_text_classname">Text class name:</label>
+            {{ form.text_classname }}
+            <div class="form-validation">{{ form.text_classname.errors }}</div>
+        </div>
+        <div>
+            <label for="id_decision_point_activity">Activity just before decision point to be studied:</label>
+            {{ form.decision_point_activity }}
+            <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
+        </div>
+        <div>
+            <label for="id_gui_class_success_regex">Regular Expression to calculate well discovered cases:</label>
+            {{ form.gui_class_success_regex }}
+            <div class="form-validation">{{ form.gui_class_success_regex.errors }}</div>
+        </div>
+        <div>
+            <label for="id_ui_elements_classification_image_shape">Image shape used by UI Elements classification model:</label>
+            {{ form.ui_elements_classification_image_shape }}
+            <div class="form-validation">{{ form.ui_elements_classification_image_shape.errors }}</div>
+        </div>
+        <div>
+            <label for="ui_elements_classification_classes">Classes used by UI Elements classification model:</label>
+            {{ form.ui_elements_classification_classes }}
+            <div class="form-validation">{{ form.ui_elements_classification_classes.errors }}</div>
+        </div>
+        <div>
+            <label for="target_label">TARGET LABEL - Column name of branch id to be predicted:</label>
+            {{ form.target_label }}
+            <div class="form-validation">{{ form.target_label.errors }}</div>
+        </div>
+        <button type="submit" value="submit" class="btn_3">
+            Save
+        </button>
+    </form>
+</div>
+{% endblock %}

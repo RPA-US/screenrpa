@@ -6,6 +6,7 @@ from django.db.models import JSONField
 from django.contrib.auth.models import User
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
 from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, NoiseFiltering
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 
 def default_phases_to_execute():
@@ -37,9 +38,8 @@ def get_exp_foldername(exp_folder_complete_path):
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
-    featured = models.BooleanField(default=False, editable=False)
-    # priority = models.IntegerField(default=1, editable=False)
-    executed = models.BooleanField(default=False, editable=False)
+    executed = models.IntegerField(default=0, editable=True)
+    active = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)
@@ -60,6 +60,12 @@ class CaseStudy(models.Model):
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
+    class Meta:
+        verbose_name = "Case study"
+        verbose_name_plural = "Case studies"
+
+    def get_absolute_url(self):
+        return reverse("apps_analyzer:casestudy_create")
 
     def create(self, validated_data):
         CaseStudy.term_unique(self, validated_data.get("title"))
@@ -83,3 +89,4 @@ class CaseStudy(models.Model):
     
     def __str__(self):
         return self.title + ' - id:' + str(self.id)
+    

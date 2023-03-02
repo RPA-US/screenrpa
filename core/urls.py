@@ -12,7 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),          # Django admin route
     path("", include("apps.authentication.urls")), # Auth routes - login / register
     path("", include("apps.home.urls")),             # UI Kits Html files
-    path(API_VERSION+'analyzer/', include("apps.analyzer.urls")),
+    path('case-study/', include("apps.analyzer.urls")),
     # path("", include("apps.featureextraction.urls")),
     # path("", include("apps.decisiondiscovery.urls")),
     path(API_VERSION+'schema/', SpectacularAPIView.as_view(), name="schema"),
