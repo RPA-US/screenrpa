@@ -166,6 +166,9 @@ dump.rdb
 # javascript
 package-lock.json
 
+# database backup
+backup.json
+
 staticfiles/*
 !staticfiles/.gitkeep 
 .vscode/symbols.json
