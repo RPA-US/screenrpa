@@ -279,8 +279,8 @@ class CaseStudyListView(ListView):
 
 class CaseStudyDetailView(DetailView):
     def get(self, request, *args, **kwargs):
-        case_study = get_object_or_404(CaseStudy, tax_categ=kwargs["case_study_id"], active=True)
-        context = {"case-study": case_study}
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        context = {"case_study": case_study}
         return render(request, "case_studies/detail.html", context)
 
 
