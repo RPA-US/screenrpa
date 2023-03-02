@@ -31,6 +31,8 @@ def pages(request):
             return HttpResponseRedirect(reverse('admin:index'))
         context['segment'] = load_template
 
+        # if ".html" not in load_template:
+        #     load_template += ".html"
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 

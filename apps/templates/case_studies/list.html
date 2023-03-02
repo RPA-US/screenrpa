@@ -42,7 +42,7 @@
                   <th scope="col" class="sort" data-sort="id">Id</th>
                   <th scope="col" class="sort" data-sort="title">Title</th>
                   <th scope="col" class="sort" data-sort="created_at">Created at</th>
-                  <th scope="col">User  </th>
+                  <th scope="col">Foldername  </th>
                   <th scope="col" class="sort" data-sort="status">Status</th>
                   <th scope="col"></th>
                 </tr>
@@ -60,7 +60,9 @@
                     </div>
                   </th>
                   <td class="title">
-                    {{ case_study.title }}
+                    <a href="/case-study/detail/{{ case_study.id }}/">
+                      {{ case_study.title }}
+                    </a>
                   </td>
                   <td class="created_at">
                     {{ case_study.created_at }}
@@ -70,17 +72,35 @@
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
+                      {% if case_study.executed == 0 %}
+                      <i class="bg-danger"></i>
+                      <span class="status">not executed</span>
+                      {% elif case_study.executed == 100 %}
+                      <i class="bg-success"></i>
+                      <span class="status">executed</span>
+                      {% elif case_study.executed > 0 %}
                       <i class="bg-warning"></i>
                       <span class="status">pending</span>
+                      {% endif %}
                     </span>
                   </td>
                   <td>
                     <div class="d-flex align-items-center">
                       <span class="completion mr-2">{{ case_study.executed }}</span>
                       <div>
+                        {% if case_study.executed == 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                        </div>
+                        {% elif case_study.executed == 100 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+                        </div>
+                        {% elif case_study.executed > 0 %}
                         <div class="progress">
                           <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
                         </div>
+                        {% endif %}
                       </div>
                     </div>
                   </td>

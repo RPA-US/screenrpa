@@ -39,7 +39,7 @@ class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     executed = models.IntegerField(default=0, editable=True)
-    active = models.BooleanField(default=False, editable=False)
+    active = models.BooleanField(default=True, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)

@@ -1,6 +1,6 @@
 from multiprocessing.connection import wait
 from celery import shared_task
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
 import os
@@ -274,7 +274,15 @@ class CaseStudyListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
+        # return CaseStudy.objects.filter(active=True)
         return CaseStudy.objects.all()
+
+class CaseStudyDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        case_study = get_object_or_404(CaseStudy, tax_categ=kwargs["case_study_id"], active=True)
+        context = {"case-study": case_study}
+        return render(request, "case_studies/detail.html", context)
+
 
 
 class CaseStudyView(generics.ListCreateAPIView):
