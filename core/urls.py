@@ -13,8 +13,8 @@ urlpatterns = [
     path("", include("apps.authentication.urls")), # Auth routes - login / register
     path("", include("apps.home.urls")),             # UI Kits Html files
     path('case-study/', include("apps.analyzer.urls")),
-    # path("", include("apps.featureextraction.urls")),
-    # path("", include("apps.decisiondiscovery.urls")),
+    path('fe/', include("apps.featureextraction.urls")),
+    path('dd/', include("apps.decisiondiscovery.urls")),
     path(API_VERSION+'schema/', SpectacularAPIView.as_view(), name="schema"),
     path(API_VERSION+'docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path(API_VERSION+'redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc')

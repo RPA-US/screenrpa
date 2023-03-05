@@ -34,8 +34,7 @@ class CaseStudyForm(forms.ModelForm):
             "ui_elements_classification",
             "feature_extraction_technique",
             "extract_training_dataset",
-            "decision_tree_training",
-            "executed"
+            "decision_tree_training"
         )
 
         widgets = {
@@ -92,7 +91,7 @@ class CaseStudyForm(forms.ModelForm):
             ),
             "ui_elements_classification_image_shape": forms.TextInput(
                 attrs={
-                    "class": "form-control",
+                    "class": "custom-select",
                     "placeholder": "ui_elements_classification_image_shape"
                     }
             ),
@@ -107,6 +106,36 @@ class CaseStudyForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": "Variant"
                     }
+            ),
+            "ui_elements_detection": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
+            ),
+            "noise_filtering": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
+            ),
+            "ui_elements_classification": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
+            ),
+            "feature_extraction_technique": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
+            ),
+            "extract_training_dataset": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
+            ),
+            "decision_tree_training": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
             )
         }
 
@@ -116,14 +145,7 @@ class CaseStudyForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("Title is taken")
         return title
-    
-    def clean_categories(self):
-        cats = self.cleaned_data["categories"]
-        if len(cats) < 1:
-            raise forms.ValidationError(
-                "A product term cannot have less than one associated category"
-            )
-        return cats
+
 
     def __init__(self, *args, **kwargs):
         super(CaseStudyForm, self).__init__(*args, **kwargs)

@@ -6,6 +6,11 @@ from core.settings import sep, decision_foldername, platform_name, flattening_ph
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from apps.chefboost import Chefboost as chef
+from django.http import HttpResponseRedirect
+from django.views.generic import ListView, DetailView, CreateView
+from django.core.exceptions import ValidationError
+from .models import DecisionTreeTraining, ExtractTrainingDataset
+from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 # import json
 # import sys
 # from django.shortcuts import render
@@ -131,3 +136,45 @@ def decision_tree_predict(module_path, instance):
     tree = chef.restoreTree(module_path)
     prediction = tree.findDecision(instance)
     return prediction
+
+class ExtractTrainingDatasetCreateView(CreateView):
+    model = ExtractTrainingDataset
+    form_class = ExtractTrainingDatasetForm
+    template_name = "extract_training_dataset/create.html"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class ExtractTrainingDatasetListView(ListView):
+    model = ExtractTrainingDataset
+    template_name = "extract_training_dataset/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return ExtractTrainingDataset.objects.all()
+    
+class DecisionTreeTrainingCreateView(CreateView):
+    model = DecisionTreeTraining
+    form_class = DecisionTreeTrainingForm
+    template_name = "decision_tree_training/create.html"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class DecisionTreeTrainingListView(ListView):
+    model = DecisionTreeTraining
+    template_name = "decision_tree_training/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return DecisionTreeTraining.objects.all()

@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load extras %}
 
 {% block title %} Case studies {% endblock title %}
 
@@ -35,7 +36,7 @@
             <h3 class="mb-0">Case study details</h3>
           </div>
           <div class="card-body">
-            <form>
+            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
               <!-- General information -->
               <h6 class="heading-small text-muted mb-4">General information</h6>
               <div class="pl-lg-4">
@@ -175,7 +176,46 @@
               <div class="pl-lg-4">
                 <div class="form-group">
                   <label class="form-control-label">UI Elements detection</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">A beautiful Dashboard for Bootstrap 4. It is Free and Open Source.</textarea>
+                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.ui_elements_detection | pretty_json  }}</textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-control-label">Noise filtering</label>
+                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.noise_filtering | pretty_json  }}</textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-control-label">UI Elements classification</label>
+                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.ui_elements_classification | pretty_json  }}</textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-control-label">Feature extraction technique</label>
+                  <textarea rows="4" class="form-control" 
+                    placeholder="{
+                      'technique_name': 'status',
+                      'gui_quantity_difference': 1,
+                      'identifier': 'sta_'
+                    }">
+                    {{ case_study.feature_extraction_technique | pretty_json  }}</textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-control-label">Extract training dataset</label>
+                  <textarea rows="4" class="form-control" 
+                    placeholder="{
+                    'columns_to_drop': ['Case','Activity','Timestamp','Screenshot','Variant'],
+                    'columns_to_drop_before_decision_point': ['Coor_X', 'Coor_Y', 'MorKeyb', 'TextInput', 'Click']
+                    }">
+                    {{ case_study.extract_training_dataset | pretty_json  }}</textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-control-label">Decision tree training</label>
+                  <textarea rows="4" class="form-control" 
+                    placeholder="{
+                      'library': 'chefboost',
+                      'algorithms': ['CHAID'],
+                      'target_label': 'Variant',
+                      'one_hot_columns': ['NameApp'],
+                      'columns_to_drop': ['Timestamp_start', 'Timestamp_end']
+                    }">
+                  {{ case_study.decision_tree_training | pretty_json  }}</textarea>
                 </div>
               </div>
             </form>

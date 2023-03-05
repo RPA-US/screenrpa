@@ -93,7 +93,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                     path_scenario,
                                     case_study.decision_tree_training.library,
                                     case_study.decision_tree_training.algorithms,
-                                    case_study.decision_tree_training.columns_to_drop,
+                                    case_study.decision_tree_training.columns_to_drop_before_decision_point,
                                     case_study.target_label,
                                     case_study.decision_tree_training.one_hot_columns)
                                     # We check this phase is present in case_study to avoid exceptions
@@ -290,7 +290,7 @@ class CaseStudyView(generics.ListCreateAPIView):
     serializer_class = CaseStudySerializer
 
     def get_queryset(self):
-        return CaseStudy.objects.filter(shopper=self.request.user)
+        return CaseStudy.objects.filter(user=self.request.user)
 
     def post(self, request, *args, **kwargs):
 

@@ -1,89 +1,206 @@
 {% extends 'layouts/base.html' %}
+{% load extras %}
 
-{% block title %} New case study {% endblock title %}
+{% block title %} Case studies {% endblock title %}
 
 {% block content %}
 
-{% load static %}
-<div class="container">
-    <h3 class="mb-30">New Case Study</h3>
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show"
-            role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-lg-6 col-7">
+            <h6 class="h2 text-white d-inline-block mb-0">Case studies</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="#">New case study</a></li>
+              </ol>
+            </nav>
+          </div>
+          <div class="col-lg-6 col-5 text-right">
+            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
+          </div>
         </div>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    <form method="POST" enctype="multipart/form-data">{% csrf_token %}
-        <div>
-            <label for="id_title">Title:</label>
-            {{ form.title }}
-            <div class="form-validation">{{ form.title.errors }}</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">Case study details</h3>
+          </div>
+          <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
+              <!-- General information -->
+              <h6 class="heading-small text-muted mb-4">General information</h6>
+              <div class="pl-lg-4">
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.title.label_tag }}
+                      {{ form.title }}
+                      <div class="form-validation">{{ form.title.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="form-group">
+                      {{ form.description.label_tag }}
+                      {{ form.description }}
+                      <div class="form-validation">{{ form.description.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.exp_foldername.label_tag }}
+                      {{ form.exp_foldername }}
+                      <div class="form-validation">{{ form.exp_foldername.errors }}</div>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.exp_folder_complete_path.label_tag }}
+                      {{ form.exp_folder_complete_path }}
+                      <div class="form-validation">{{ form.exp_folder_complete_path.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.decision_point_activity.label_tag }}
+                      {{ form.decision_point_activity }}
+                      <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.gui_class_success_regex.label_tag }}
+                      {{ form.gui_class_success_regex }}
+                      <div class="form-validation">{{ form.gui_class_success_regex.errors }}</div>  
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr class="my-4" />
+              <!-- Configuration -->
+              <h6 class="heading-small text-muted mb-4">Configuration</h6>
+              <div class="pl-lg-4">
+                <div class="form-group">
+                  {{ form.special_colnames.label_tag }}
+                  {{ form.special_colnames }}
+                  <div class="form-validation">{{ form.special_colnames.errors }}</div>
+                </div>
+              </div>
+              <div class="pl-lg-4">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      {{ form.ui_elements_classification_image_shape.label_tag }}
+                      {{ form.ui_elements_classification_image_shape }}
+                      <div class="form-validation">{{ form.ui_elements_classification_image_shape.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      {{ form.ui_elements_classification_classes.label_tag }}
+                      {{ form.ui_elements_classification_classes }}
+                      <div class="form-validation">{{ form.ui_elements_classification_classes.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.text_classname.label_tag }}
+                      {{ form.text_classname }}
+                      <div class="form-validation">{{ form.text_classname.errors }}</div>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      {{ form.target_label.label_tag }}
+                      {{ form.target_label }}
+                      <div class="form-validation">{{ form.target_label.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="form-group">
+                      {{ form.scenarios_to_study.label_tag }}
+                      {{ form.scenarios_to_study }}
+                      <div class="form-validation">{{ form.scenarios_to_study.errors }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr class="my-4" />
+              <!-- Phases to execute -->
+              <h6 class="heading-small text-muted mb-4">Phases to execute</h6>
+              <div class="pl-lg-4">
+                <div class="form-group">
+                  {{ form.ui_elements_detection.label_tag }}
+                  {{ form.ui_elements_detection }}
+                  <div class="form-validation">{{ form.ui_elements_detection.errors }}</div>
+                </div>
+                <div class="form-group">
+                  
+                  {{ form.noise_filtering.label_tag }}
+                  {{ form.noise_filtering }}
+                  <div class="form-validation">{{ form.noise_filtering.errors }}</div>
+                </div>
+                <div class="form-group">
+                  {{ form.ui_elements_classification.label_tag }}
+                  {{ form.ui_elements_classification }}
+                  <div class="form-validation">{{ form.ui_elements_classification.errors }}</div>                 
+                </div>
+
+                <div class="form-group">
+                  {{ form.feature_extraction_technique.label_tag }}
+                  {{ form.feature_extraction_technique }}
+                  <div class="form-validation">{{ form.feature_extraction_technique.errors }}</div>
+                </div>
+                <div class="form-group">
+                  <div class="form-group">
+                    {{ form.extract_training_dataset.label_tag }}
+                    {{ form.extract_training_dataset }}
+                    <div class="form-validation">{{ form.extract_training_dataset.errors }}</div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="form-group">
+                    {{ form.decision_tree_training.label_tag }}
+                    {{ form.decision_tree_training }}
+                    <div class="form-validation">{{ form.decision_tree_training.errors }}</div>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" value="submit" class="close">
+                Save
+              </button>
+            </form>
+          </div>
         </div>
-        <div>
-            <label for="id_description">Description:</label>
-            {{ form.description }}
-            <div class="form-validation">{{ form.description.errors }}</div>
-        </div>
-        <div>
-            <label for="id_exp_foldername">Experiment foldername:</label>
-            {{ form.exp_foldername }}
-            <div class="form-validation">{{ form.exp_foldername.errors }}</div>
-        </div>
-        <div>
-            <label for="id_exp_folder_complete_path">Experiment foldername complete path:</label>
-            {{ form.exp_folder_complete_path }}
-            <div class="form-validation">{{ form.exp_folder_complete_path.errors }}</div>
-        </div>
-        <div>
-            <label for="id_scenarios_to_study">Scenarios to study:</label>
-            {{ form.scenarios_to_study }}
-            <div class="form-validation">{{ form.scenarios_to_study.errors }}</div>
-        </div>
-        <div>
-            <label for="id_special_colnames">Special column names:</label>
-            {{ form.special_colnames }}
-            <div class="form-validation">{{ form.special_colnames.errors }}</div>
-        </div>
-        <div>
-            <label for="id_text_classname">Text class name:</label>
-            {{ form.text_classname }}
-            <div class="form-validation">{{ form.text_classname.errors }}</div>
-        </div>
-        <div>
-            <label for="id_decision_point_activity">Activity just before decision point to be studied:</label>
-            {{ form.decision_point_activity }}
-            <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
-        </div>
-        <div>
-            <label for="id_gui_class_success_regex">Regular Expression to calculate well discovered cases:</label>
-            {{ form.gui_class_success_regex }}
-            <div class="form-validation">{{ form.gui_class_success_regex.errors }}</div>
-        </div>
-        <div>
-            <label for="id_ui_elements_classification_image_shape">Image shape used by UI Elements classification model:</label>
-            {{ form.ui_elements_classification_image_shape }}
-            <div class="form-validation">{{ form.ui_elements_classification_image_shape.errors }}</div>
-        </div>
-        <div>
-            <label for="ui_elements_classification_classes">Classes used by UI Elements classification model:</label>
-            {{ form.ui_elements_classification_classes }}
-            <div class="form-validation">{{ form.ui_elements_classification_classes.errors }}</div>
-        </div>
-        <div>
-            <label for="target_label">TARGET LABEL - Column name of branch id to be predicted:</label>
-            {{ form.target_label }}
-            <div class="form-validation">{{ form.target_label.errors }}</div>
-        </div>
-        <button type="submit" value="submit" class="btn_3">
-            Save
-        </button>
-    </form>
-</div>
-{% endblock %}
+      </div>
+    </div>
+
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
