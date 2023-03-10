@@ -12,6 +12,7 @@ urlpatterns = [
     path('list/', views.CaseStudyListView.as_view(), name='casestudy_list'),
     path('new/', views.CaseStudyCreateView.as_view(), name='casestudy_create'),
     path('detail/<int:case_study_id>/', views.CaseStudyDetailView.as_view(), name='casestudy_detail'),
+    path('execute/<int:case_study_id>/', views.ExecuteCaseStudyView.as_view(), name='casestudy_execute'),
     path('', views.CaseStudyView.as_view(), name='run-case-study'),
     path('<int:case_study_id>', views.SpecificCaseStudyView.as_view(), name='get-case-study'),
     path('<int:case_study_id>/result', views.ResultCaseStudyView.as_view(), name='get-case-study-result'),

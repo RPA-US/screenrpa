@@ -9,6 +9,7 @@ import time
 from django.core.exceptions import ValidationError
 from art import tprint
 from tqdm import tqdm
+from django.contrib.auth.models import User 
 import time
 from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, FLATTENED_DATASET_NAME
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
@@ -25,6 +26,8 @@ from .models import CaseStudy# , ExecutionManager
 from .serializers import CaseStudySerializer
 from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer, NoiseFilteringSerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
+from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, NoiseFiltering
+from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
 from .collect_results import experiments_results_collectors
 from apps.analyzer.utils import get_foldernames_as_list
 from django.db import transaction
@@ -32,6 +35,7 @@ from django.contrib.auth import get_user_model
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from django.contrib.auth.decorators import login_required
 
 def generate_case_study(case_study, path_scenario, times, n):
     times[n] = {}
@@ -214,35 +218,37 @@ def case_study_generator(data):
         if not data['scenarios_to_study']:
             data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
 
+        phases = data["phases_to_execute"]
+        data.pop("phases_to_execute")
         cs_serializer = CaseStudySerializer(data=data)
         cs_serializer.is_valid(raise_exception=True)
         case_study = cs_serializer.save()
 
         # For each phase we want to execute, we create a database row for it and relate it with the case study
-        for phase in data['phases_to_execute']:
+        for phase in phases:
             match phase:
                 case "ui_elements_detection":
-                    serializer = UIElementsDetectionSerializer(data=data['phases_to_execute'][phase])
+                    serializer = UIElementsDetectionSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_detection = serializer.save()
                 case "noise_filtering":
-                    serializer = NoiseFilteringSerializer(data=data['phases_to_execute'][phase])
+                    serializer = NoiseFilteringSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.noise_filtering = serializer.save()
                 case "ui_elements_classification":
-                    serializer = UIElementsClassificationSerializer(data=data['phases_to_execute'][phase])
+                    serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
                 case "feature_extraction_technique":
-                    serializer = FeatureExtractionTechniqueSerializer(data=data['phases_to_execute'][phase])
+                    serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.feature_extraction_technique = serializer.save()
                 case "extract_training_dataset":
-                    serializer = ExtractTrainingDatasetSerializer(data=data['phases_to_execute'][phase])
+                    serializer = ExtractTrainingDatasetSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.extract_training_dataset = serializer.save()
                 case "decision_tree_training":
-                    serializer = DecisionTreeTrainingSerializer(data=data['phases_to_execute'][phase])
+                    serializer = DecisionTreeTrainingSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.decision_tree_training = serializer.save()
                 case _:
@@ -277,13 +283,34 @@ class CaseStudyListView(ListView):
         # return CaseStudy.objects.filter(active=True)
         return CaseStudy.objects.all()
 
+class ExecuteCaseStudyView(ListView):
+    model = CaseStudy
+    template_name = "case_studies/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        cs = CaseStudy.objects.get(id=self.kwargs["case_study_id"])
+        aux = cs.__dict__
+        aux["user"] = cs.user.id
+        aux["phases_to_execute"] = {}
+        if "ui_elements_detection_id" in cs.__dict__  and cs.__dict__["ui_elements_detection_id"] :
+            aux["phases_to_execute"]["ui_elements_detection"] = cs.ui_elements_detection.__dict__
+        if "noise_filtering_id" in cs.__dict__ and cs.__dict__["noise_filtering_id"]:
+            aux["phases_to_execute"]["noise_filtering"] = cs.noise_filtering.__dict__
+        if "feature_extraction_technique_id" in cs.__dict__ and cs.__dict__["feature_extraction_technique_id"]:
+            aux["phases_to_execute"]["feature_extraction_technique"] = cs.feature_extraction_technique.__dict__
+        if "extract_training_dataset_id" in cs.__dict__ and cs.__dict__["extract_training_dataset_id"]:
+            aux["phases_to_execute"]["extract_training_dataset"] = cs.extract_training_dataset.__dict__
+        if "decision_tree_training_id" in cs.__dict__ and cs.__dict__["decision_tree_training_id"]:
+            aux["phases_to_execute"]["decision_tree_training"] = cs.decision_tree_training.__dict__
+        case_study_generator(aux)
+        return CaseStudy.objects.all()
+    
 class CaseStudyDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         context = {"case_study": case_study}
         return render(request, "case_studies/detail.html", context)
-
-
 
 class CaseStudyView(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticatedUser]

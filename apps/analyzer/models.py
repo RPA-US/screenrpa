@@ -15,9 +15,12 @@ def default_phases_to_execute():
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
-def get_ui_elements_classification_classes():
+def get_ui_elements_classification_old_classes():
     return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
 'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
+
+def get_ui_elements_classification_classes():
+    return "Button, Checkbox, CheckedTextView, EditText, ImageButton, ImageView, NumberPicker, RadioButton, RatingBar, SeekBar, Spinner, Switch, TextView, ToggleButton".split(', ') # this returns a list
 
 def get_exp_foldername(exp_folder_complete_path):
     count = 0
@@ -43,21 +46,30 @@ class CaseStudy(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)
-    scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True)
-    special_colnames = JSONField()
+    scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+    special_colnames = JSONField(default=dict({
+        "Case": "Case",
+        "Activity": "Activity",
+        "Screenshot": "Screenshot", 
+        "Variant": "Variant",
+        "Timestamp": "Timestamp",
+        "eyetracking_recording_timestamp": "Recording timestamp",
+        "eyetracking_gaze_point_x": "Gaze point X",
+        "eyetracking_gaze_point_y": "Gaze point Y"
+    }))
     text_classname = models.CharField(max_length=50)
     # phases_to_execute = JSONField()
     decision_point_activity = models.CharField(max_length=255)
-    gui_class_success_regex = models.CharField(max_length=255)
+    gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
     ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     target_label = models.CharField(max_length=50, default='Variant')
-    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, on_delete=models.CASCADE)
-    noise_filtering = models.ForeignKey(NoiseFiltering, null=True, on_delete=models.CASCADE)
-    ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, on_delete=models.CASCADE)
-    feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, on_delete=models.CASCADE)
-    extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, on_delete=models.CASCADE)
-    decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, on_delete=models.CASCADE)
+    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
+    noise_filtering = models.ForeignKey(NoiseFiltering, null=True, blank=True, on_delete=models.CASCADE)
+    ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
+    feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+    extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
+    decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
     class Meta:
@@ -65,7 +77,7 @@ class CaseStudy(models.Model):
         verbose_name_plural = "Case studies"
 
     def get_absolute_url(self):
-        return reverse("apps_analyzer:casestudy_create")
+        return reverse("analyzer:casestudy_create")
 
     def create(self, validated_data):
         CaseStudy.term_unique(self, validated_data.get("title"))
