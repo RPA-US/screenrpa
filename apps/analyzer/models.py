@@ -58,7 +58,7 @@ class CaseStudy(models.Model):
         "eyetracking_gaze_point_y": "Gaze point Y"
     }))
     text_classname = models.CharField(max_length=50)
-    # phases_to_execute = JSONField()
+    phases_to_execute = JSONField(null=True, blank=True)
     decision_point_activity = models.CharField(max_length=255)
     gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
     ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)

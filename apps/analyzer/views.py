@@ -218,8 +218,19 @@ def case_study_generator(data):
         if not data['scenarios_to_study']:
             data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
 
-        phases = data["phases_to_execute"]
-        data.pop("phases_to_execute")
+        # if "ui_elements_detection_id" in data  and data["ui_elements_detection_id"] :
+        #     aux["phases_to_execute"]["ui_elements_detection"] = cs.ui_elements_detection.__dict__
+        # if "noise_filtering_id" in data and data["noise_filtering_id"]:
+        #     aux["phases_to_execute"]["noise_filtering"] = cs.noise_filtering.__dict__
+        # if "feature_extraction_technique_id" in data and data["feature_extraction_technique_id"]:
+        #     aux["phases_to_execute"]["feature_extraction_technique"] = cs.feature_extraction_technique.__dict__
+        # if "extract_training_dataset_id" in data and data["extract_training_dataset_id"]:
+        #     aux["phases_to_execute"]["extract_training_dataset"] = cs.extract_training_dataset.__dict__
+        # if "decision_tree_training_id" in data and data["decision_tree_training_id"]:
+        #     aux["phases_to_execute"]["decision_tree_training"] = cs.decision_tree_training.__dict__
+
+
+        phases = data["phases_to_execute"].copy()
         cs_serializer = CaseStudySerializer(data=data)
         cs_serializer.is_valid(raise_exception=True)
         case_study = cs_serializer.save()
@@ -292,17 +303,6 @@ class ExecuteCaseStudyView(ListView):
         cs = CaseStudy.objects.get(id=self.kwargs["case_study_id"])
         aux = cs.__dict__
         aux["user"] = cs.user.id
-        aux["phases_to_execute"] = {}
-        if "ui_elements_detection_id" in cs.__dict__  and cs.__dict__["ui_elements_detection_id"] :
-            aux["phases_to_execute"]["ui_elements_detection"] = cs.ui_elements_detection.__dict__
-        if "noise_filtering_id" in cs.__dict__ and cs.__dict__["noise_filtering_id"]:
-            aux["phases_to_execute"]["noise_filtering"] = cs.noise_filtering.__dict__
-        if "feature_extraction_technique_id" in cs.__dict__ and cs.__dict__["feature_extraction_technique_id"]:
-            aux["phases_to_execute"]["feature_extraction_technique"] = cs.feature_extraction_technique.__dict__
-        if "extract_training_dataset_id" in cs.__dict__ and cs.__dict__["extract_training_dataset_id"]:
-            aux["phases_to_execute"]["extract_training_dataset"] = cs.extract_training_dataset.__dict__
-        if "decision_tree_training_id" in cs.__dict__ and cs.__dict__["decision_tree_training_id"]:
-            aux["phases_to_execute"]["decision_tree_training"] = cs.decision_tree_training.__dict__
         case_study_generator(aux)
         return CaseStudy.objects.all()
     
