@@ -20,6 +20,7 @@ def get_default_algorithms():
     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
 class ExtractTrainingDataset(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
     columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -31,6 +32,7 @@ class ExtractTrainingDataset(models.Model):
         return 'col to drop: ' + str(self.columns_to_drop)
     
 class DecisionTreeTraining(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
     library = models.CharField(max_length=255, default='chefboost') # 'sklearn'
     algorithms = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
     one_hot_columns = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
