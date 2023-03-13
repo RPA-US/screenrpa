@@ -40,6 +40,7 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">Id</th>
+                  <th scope="col" class="sort" data-sort="created_at">Created at</th>
                   <th scope="col">Model</th>
                   <th scope="col">Model properties</th>
                   <th scope="col">Type</th>
@@ -58,6 +59,9 @@
                       </div>
                     </div>
                   </th>
+                  <td>
+                    {{ dtt.created_at }}
+                  </td>
                   <td>
                     {{ dtt.model }}
                   </td>

@@ -40,6 +40,7 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">Id</th>
+                  <th scope="col" class="sort" data-sort="created_at">Created at</th>
                   <th scope="col">Columns to drop</th>
                   <th scope="col">Columns to drop before decision point</th>
                 </tr>
@@ -56,6 +57,9 @@
                       </div>
                     </div>
                   </th>
+                  <td>
+                    {{ dtt.created_at }}
+                  </td>
                   <td>
                     {{ dtt.columns_to_drop }}
                   </td>
