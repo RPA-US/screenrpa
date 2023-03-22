@@ -77,7 +77,7 @@ class CaseStudy(models.Model):
         verbose_name_plural = "Case studies"
 
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_create")
+        return reverse("analyzer:home")
 
     def create(self, validated_data):
         CaseStudy.term_unique(self, validated_data.get("title"))

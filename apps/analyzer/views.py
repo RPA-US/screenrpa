@@ -154,8 +154,11 @@ def case_study_process_data(case_study_id):
     # year = datetime.now().date().strftime("%Y")
     tprint("RPA-US     RIM", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
-
-    foldername_logs_with_different_size_balance = get_foldernames_as_list(case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0], sep)
+    if case_study.scenarios_to_study:
+        aux_path = case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0]
+    else:
+        aux_path = case_study.exp_folder_complete_path
+    foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
     
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
         time.sleep(.1)
@@ -300,10 +303,11 @@ class ExecuteCaseStudyView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        cs = CaseStudy.objects.get(id=self.kwargs["case_study_id"])
-        aux = cs.__dict__
-        aux["user"] = cs.user.id
-        case_study_generator(aux)
+        case_study_id = self.kwargs["case_study_id"]
+        cs = CaseStudy.objects.get(id=case_study_id)
+        if self.request.user.id != cs.user.id:
+            raise Exception("This case study doesn't belong to the authenticated user")
+        init_generate_case_study.delay(case_study_id)
         return CaseStudy.objects.all()
     
 class CaseStudyDetailView(DetailView):
