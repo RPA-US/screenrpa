@@ -1,6 +1,8 @@
 from multiprocessing.connection import wait
 from celery import shared_task
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+
 
 # Create your views here.
 import os
@@ -294,21 +296,24 @@ class CaseStudyListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        # return CaseStudy.objects.filter(active=True)
-        return CaseStudy.objects.all()
+        return CaseStudy.objects.filter(active=True, user=self.request.user)
 
-class ExecuteCaseStudyView(ListView):
-    model = CaseStudy
-    template_name = "case_studies/list.html"
-    paginate_by = 50
-
-    def get_queryset(self):
-        case_study_id = self.kwargs["case_study_id"]
-        cs = CaseStudy.objects.get(id=case_study_id)
-        if self.request.user.id != cs.user.id:
-            raise Exception("This case study doesn't belong to the authenticated user")
-        init_generate_case_study.delay(case_study_id)
-        return CaseStudy.objects.all()
+    
+def executeCaseStudy(request):
+    case_study_id = request.GET.get("id")
+    cs = CaseStudy.objects.get(id=case_study_id)
+    if request.user.id != cs.user.id:
+        raise Exception("This case study doesn't belong to the authenticated user")
+    init_generate_case_study.delay(case_study_id)
+    return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+def deleteCaseStudy(request):
+    case_study_id = request.GET.get("id")
+    cs = CaseStudy.objects.get(id=case_study_id)
+    if request.user.id != cs.user.id:
+        raise Exception("This case study doesn't belong to the authenticated user")
+    cs.delete()
+    return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
 class CaseStudyDetailView(DetailView):
     def get(self, request, *args, **kwargs):

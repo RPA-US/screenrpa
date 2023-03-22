@@ -25,7 +25,7 @@
                 {% if msg %}
                   <small>{{ msg | safe }}</small>
                 {% else %}
-                  Add your credentials
+                  Add your information
                 {% endif %}  
               
               </div>
@@ -36,6 +36,26 @@
 
                   {% csrf_token %}
             
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-single-02"></i></span>
+                      </div>
+                      {{ form.firstname }}
+                    </div>
+                  </div>
+                  <span class="text-error">{{ form.firstname.errors }}</span>
+
+                  <div class="form-group">
+                    <div class="input-group input-group-alternative mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="ni ni-badge"></i></span>
+                      </div>
+                      {{ form.lastname }}
+                    </div>
+                  </div>
+                  <span class="text-error">{{ form.lastname.errors }}</span>
+
                   <div class="form-group">
                     <div class="input-group input-group-alternative mb-3">
                       <div class="input-group-prepend">
