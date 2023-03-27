@@ -234,7 +234,7 @@ FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extra
 STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
 
 # System Default Phases
-default_phases = ['ui_elements_detection','noise_filtering','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['ui_elements_detection','gaze_fixation','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################

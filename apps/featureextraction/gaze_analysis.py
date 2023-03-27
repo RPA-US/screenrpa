@@ -10,7 +10,7 @@ from apps.featureextraction.CNN.CompDetCNN import CompDetCNN
 from tqdm import tqdm
 
 
-def noise_filtering(log_path, root_path, special_colnames, noise_filtering_type, noise_filtering_configurations):
+def gaze_fixation(log_path, root_path, special_colnames, gaze_fixation_type, gaze_fixation_configurations):
     # eyetracking_log , log, img_index, image_names, special_colnames, timestamp_start, timestamp_end, last_upper_limit, init_value_ui_log_timestamp):
     
     # eyetracking_log = False

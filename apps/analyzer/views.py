@@ -17,7 +17,7 @@ from core.settings import times_calculation_mode, metadata_location, sep, decisi
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.detection import ui_elements_detection
-from apps.featureextraction.gaze_analysis import noise_filtering
+from apps.featureextraction.gaze_analysis import gaze_fixation
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -50,14 +50,14 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.text_classname)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_detection else None,
-        'noise_filtering': (path_scenario +'log.csv',
+        'gaze_fixation': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.noise_filtering.type,
-                                        case_study.noise_filtering.configurations)
+                                        case_study.gaze_fixation.type,
+                                        case_study.gaze_fixation.configurations)
                                         # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.noise_filtering else None,
-        'ui_elements_classification': (case_study.ui_elements_classification.model,
+                                        if case_study.gaze_fixation else None,
+        'ui_elements_classification': (case_study.ui_elements_classification.model, # specific extractors
                                         case_study.ui_elements_classification.model_properties,
                                         path_scenario + 'components_npy' + sep,
                                         path_scenario + 'components_json' + sep,
@@ -166,7 +166,7 @@ def case_study_process_data(case_study_id):
         time.sleep(.1)
         print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
-        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.noise_filtering or case_study.extract_training_dataset or case_study.decision_tree_training:
+        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.gaze_fixation or case_study.extract_training_dataset or case_study.decision_tree_training:
             if scenario_nested_folder == "TRUE":
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
@@ -225,8 +225,8 @@ def case_study_generator(data):
 
         # if "ui_elements_detection_id" in data  and data["ui_elements_detection_id"] :
         #     aux["phases_to_execute"]["ui_elements_detection"] = cs.ui_elements_detection.__dict__
-        # if "noise_filtering_id" in data and data["noise_filtering_id"]:
-        #     aux["phases_to_execute"]["noise_filtering"] = cs.noise_filtering.__dict__
+        # if "gaze_fixation_id" in data and data["gaze_fixation_id"]:
+        #     aux["phases_to_execute"]["gaze_fixation"] = cs.gaze_fixation.__dict__
         # if "feature_extraction_technique_id" in data and data["feature_extraction_technique_id"]:
         #     aux["phases_to_execute"]["feature_extraction_technique"] = cs.feature_extraction_technique.__dict__
         # if "extract_training_dataset_id" in data and data["extract_training_dataset_id"]:
@@ -247,10 +247,10 @@ def case_study_generator(data):
                     serializer = UIElementsDetectionSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_detection = serializer.save()
-                case "noise_filtering":
+                case "gaze_fixation":
                     serializer = NoiseFilteringSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.noise_filtering = serializer.save()
+                    case_study.gaze_fixation = serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)

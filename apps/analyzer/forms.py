@@ -30,7 +30,7 @@ class CaseStudyForm(forms.ModelForm):
             "ui_elements_classification_classes",
             "target_label",
             "ui_elements_detection",
-            "noise_filtering",
+            "gaze_fixation",
             "ui_elements_classification",
             "feature_extraction_technique",
             "extract_training_dataset",
@@ -112,7 +112,7 @@ class CaseStudyForm(forms.ModelForm):
                     "class": "custom-select"
                     }
             ),
-            "noise_filtering": forms.Select(
+            "gaze_fixation": forms.Select(
                 attrs={
                     "class": "custom-select"
                     }

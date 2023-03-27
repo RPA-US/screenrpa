@@ -107,7 +107,7 @@ class UIElementsDetectionListView(ListView):
 class NoiseFilteringCreateView(CreateView):
     model = NoiseFiltering
     form_class = NoiseFilteringForm
-    template_name = "noise_filtering/create.html"
+    template_name = "gaze_fixation/create.html"
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -119,7 +119,7 @@ class NoiseFilteringCreateView(CreateView):
 
 class NoiseFilteringListView(ListView):
     model = NoiseFiltering
-    template_name = "noise_filtering/list.html"
+    template_name = "gaze_fixation/list.html"
     paginate_by = 50
 
     def get_queryset(self):
