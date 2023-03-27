@@ -5,6 +5,11 @@ import json
 
 from apps.featureextraction.Component import Component
 
+NESTED_MIN_COMPO_HEIGHT = 10
+NESTED_SHARED_AREA_PERCENTAGE = 0.9
+NESTED_SHARED_AREA_TO_BE_REDUNDANT_PERCENTAGE = 0.7
+NESTED_IGNORE_NON_RECTANGLE_BLOCKS = False
+
 # #######################
 # CONFIG
 # #######################
@@ -86,18 +91,8 @@ def binarization(org, grad_min, show=False, write_path=None, wait_key=0):
 
 
 # #######################
-# COMPONENT
-# #######################
-
-def compos_containment(compos):
-    for i in range(len(compos) - 1):
-        for j in range(i + 1, len(compos)):
-            relation = compos[i].compo_relation(compos[j])
-            if relation == -1:
-                compos[j].contain.append(i)
-            if relation == 1:
-                compos[i].contain.append(j)
-
+# COMPONENT functions copy
+# ######################
 
 def compos_update(compos, org_shape):
     for i, compo in enumerate(compos):
@@ -158,7 +153,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
         c['width'] = compo.width
         c['height'] = compo.height
-        c['contain'] = [c.id for c in compo.contain]
+        c['contain'] = [contain_compo.id for contain_compo in compo.contain]
         output['compos'].append(c)
 
     json.dump(output, f_out, indent=4)
@@ -191,7 +186,6 @@ def nested_components_detection(grey, org, grad_thresh,
         for y in range(0, column, step_v):
             if mask[x, y] == 0:
                 # region = flood_fill_bfs(grey, x, y, mask)
-
                 # flood fill algorithm to get background (layout block)
                 mask_copy = mask.copy()
                 ff = cv2.floodFill(grey, mask, (y, x), None, grad_thresh, grad_thresh, cv2.FLOODFILL_MASK_ONLY)
@@ -205,13 +199,13 @@ def nested_components_detection(grey, org, grad_thresh,
                 # draw.draw_region(region, broad_all)
                 # if block.height < 40 and block.width < 40:
                 #     continue
-                if compo.height < 30:
+                if compo.height < NESTED_MIN_COMPO_HEIGHT:
                     continue
 
                 # print(block.area / (row * column))
-                if compo.area / (row * column) > 0.9:
+                if compo.area / (row * column) > NESTED_SHARED_AREA_PERCENTAGE:
                     continue
-                elif compo.area / (row * column) > 0.7:
+                elif compo.area / (row * column) > NESTED_SHARED_AREA_TO_BE_REDUNDANT_PERCENTAGE:
                     compo.redundant = True
 
                 # get the boundary of this region
@@ -219,10 +213,12 @@ def nested_components_detection(grey, org, grad_thresh,
                 if compo.compo_is_line(line_thickness):
                     continue
                 # ignore non-rectangle as blocks must be rectangular
-                if not compo.compo_is_rectangle(min_rec_evenness, max_dent_ratio):
+                if NESTED_IGNORE_NON_RECTANGLE_BLOCKS or (not compo.compo_is_rectangle(min_rec_evenness, max_dent_ratio)):
                     continue
+                
                 # if block.height/row < min_block_height_ratio:
                 #     continue
+                
                 compos.append(compo)
                 # draw.draw_region(region, broad)
     if show:
@@ -323,7 +319,6 @@ def component_detection(binary, min_obj_area,
             if binary[i, j] == 255 and mask[i, j] == 0:
                 # get connected area
                 # region = util.boundary_bfs_connected_area(binary, i, j, mask)
-
                 mask_copy = mask.copy()
                 ff = cv2.floodFill(binary, mask, (j, i), None, 0, 0, cv2.FLOODFILL_MASK_ONLY)
                 if ff[0] < min_obj_area: continue

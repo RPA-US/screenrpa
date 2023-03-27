@@ -64,25 +64,41 @@ def nesting_inspection(org, grey, compos, ffl_block):
     '''
     nesting_compos = []
     for i, compo in enumerate(compos):
-        if compo.height > 50:
+        # compos containment
+        for j in range(i + 1, len(compos)):
+            relation = compos[i].compo_relation(compos[j])
+            if relation == -1:
+                compos[j].contain+=[compos[i]]
+                compos[j] = compos[j]
+            if relation == 1:
+                compos[i].contain+=[compos[j]]
+                compos[i] = compos[i]
+        
+        if compo.height > 30:
             replace = False
             clip_grey = compo.compo_clipping(grey)
             n_compos = utils.nested_components_detection(
                 clip_grey, org, grad_thresh=ffl_block, show=False)
-
+            
+            if n_compos:
+                compos[i].contain+=n_compos
+                compos[i] = compos[i]
+            
             for comp in n_compos:
                 comp.compo_relative_position(
                     compo.bbox.col_min, compo.bbox.row_min)
 
-            for n_compo in n_compos:
-                if n_compo.redundant:
-                    compos[i] = n_compo
-                    replace = True
-                    break
+            # for n_compo in n_compos:
+            #     if n_compo.redundant:
+            #         compos[i] = n_compo
+            #         replace = True
+            #         break
             if not replace:
                 nesting_compos += n_compos
-                compo.contain = n_compos
-    return nesting_compos
+        
+    return compos + nesting_compos
+
+
 
 
 def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images, image_names, img_index):
@@ -118,7 +134,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     uied_params = {
         'min-grad': 3,
         'ffl-block': 5,
-        'min-ele-area': 25,
+        'min-ele-area': 20,
         'merge-contained-ele': True,
         'max-word-inline-gap': 4,
         'max-line-gap': 4
@@ -141,6 +157,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     utils.rm_line(binary, show=False, wait_key=0)
     uicompos = utils.component_detection(
         binary, min_obj_area=int(uied_params['min-ele-area']))
+    
 
     # *** Step 3 *** results refinement
     uicompos = utils.compo_filter(uicompos, min_area=int(
@@ -149,14 +166,16 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     utils.compo_block_recognition(binary, uicompos)
     if uied_params['merge-contained-ele']:
         uicompos = utils.rm_contained_compos_not_in_block(uicompos)
-    utils.compos_update(uicompos, org.shape)
-    utils.compos_containment(uicompos)
+    
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
-    uicompos += nesting_inspection(org, grey,
-                                   uicompos, ffl_block=uied_params['ffl-block'])
-    utils.compos_update(uicompos, org.shape)
+    if name == "4_img":
+        print("hola")
+    uicompos = nesting_inspection(org, grey,
+                                uicompos, ffl_block=uied_params['ffl-block'])
 
+    # *** Step 5 *** save detection result
+    utils.compos_update(uicompos, org.shape)
 
     draw.draw_bounding_box(org, uicompos, show=False, name='merged compo', 
                            write_path=pjoin(ip_root, name + '.jpg'), 
@@ -165,9 +184,6 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     # ##########################
     # RESULTS
     # ##########################
-
-    # *** Step 5 *** save detection result
-    utils.compos_update(uicompos, org.shape)
 
     clips = [compo.compo_clipping(org) for compo in uicompos]
 

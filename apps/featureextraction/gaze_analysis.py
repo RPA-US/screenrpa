@@ -4,6 +4,8 @@ from os.path import join as pjoin
 from sklearn.linear_model import enet_path
 from keras.models import model_from_json
 from django.core.exceptions import ValidationError
+import os
+import pandas as pd
 from core.settings import gaze_analysis_threshold
 import pickle
 from apps.featureextraction.CNN.CompDetCNN import CompDetCNN
@@ -13,42 +15,48 @@ from tqdm import tqdm
 def gaze_fixation(log_path, root_path, special_colnames, gaze_fixation_type, gaze_fixation_configurations):
     # eyetracking_log , log, img_index, image_names, special_colnames, timestamp_start, timestamp_end, last_upper_limit, init_value_ui_log_timestamp):
     
-    # eyetracking_log = False
-    # if eyetracking_log_filename and os.path.exists(param_img_root + eyetracking_log_filename):
-    #     eyetracking_log = pd.read_csv(
-    #         param_img_root + eyetracking_log_filename, sep=";")
-    # init_value_ui_log_timestamp = log[special_colnames['Timestamp']][0]
-
-    gaze_events = {}  # key: row number,
-    #value: { tuple: [coorX, coorY], gui_component_coordinate: [[corners_of_crop]]}
-
-    last_upper_limit = 0
+    log = pd.read_csv(log_path, sep=",")
     
-    gaze_events = {}
-    # GAZE ANALYSIS
-    if eyetracking_log is not False:
-        timestamp_start = log[special_colnames['Timestamp']
-                                ][img_index]-init_value_ui_log_timestamp
-        if img_index < len(image_names)-1:
-            timestamp_end = log[special_colnames['Timestamp']
-                                ][img_index+1]-init_value_ui_log_timestamp
-            interval, last_upper_limit = gaze_events_associated_to_event_time_range(
-                eyetracking_log,
-                special_colnames,
-                timestamp_start,
-                timestamp_end,
-                None)
-        else:
-            print("Function detect_images_components: LAST SCREENSHOT")
-            interval, last_upper_limit = gaze_events_associated_to_event_time_range(
-                eyetracking_log,
-                special_colnames,
-                timestamp_start,
-                "LAST",
-                last_upper_limit)
+    eyetracking_log_filename = gaze_fixation_configurations["eyetracking_log_filename"]
+    uilog_eyetrack_timestamps_difference = float(gaze_fixation_configurations["uilog_eyetrack_timestamps_difference"])
+    
+    if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
+        eyetracking_log = pd.read_csv(root_path + eyetracking_log_filename, sep=",")
+    else:
+        raise Exception("Eyetracking log cannot be read")
+    
+    if gaze_fixation_type == "attention-points":
+        init_value_ui_log_timestamp = log[special_colnames['Timestamp']][0]
 
-        # { row_number: [[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY]]}
-        gaze_events[img_index] = interval
+        gaze_events = {}  # key: row number,
+        #value: { tuple: [coorX, coorY], gui_component_coordinate: [[corners_of_crop]]}
+
+        last_upper_limit = 0
+        
+        # GAZE ANALYSIS
+        if eyetracking_log is not False:
+            timestamp_start = log[special_colnames['Timestamp']
+                                    ][img_index]-init_value_ui_log_timestamp
+            if img_index < len(image_names)-1:
+                timestamp_end = log[special_colnames['Timestamp']
+                                    ][img_index+1]-init_value_ui_log_timestamp
+                interval, last_upper_limit = gaze_events_associated_to_event_time_range(
+                    eyetracking_log,
+                    special_colnames,
+                    timestamp_start,
+                    timestamp_end,
+                    None)
+            else:
+                print("Function detect_images_components: LAST SCREENSHOT")
+                interval, last_upper_limit = gaze_events_associated_to_event_time_range(
+                    eyetracking_log,
+                    special_colnames,
+                    timestamp_start,
+                    "LAST",
+                    last_upper_limit)
+
+            # { row_number: [[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY],[gaze_coorX, gaze_coorY]]}
+            gaze_events[img_index] = interval
 
     return gaze_events
 
