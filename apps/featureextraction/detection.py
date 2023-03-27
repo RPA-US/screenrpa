@@ -1,9 +1,11 @@
 import json
+import time
 import keras_ocr
 import cv2
 import matplotlib.pyplot as plt
 from os.path import join as pjoin
 import apps.featureextraction.utils as utils
+import apps.featureextraction.ip_draw as draw
 import os
 import cv2
 import pandas as pd
@@ -79,10 +81,11 @@ def nesting_inspection(org, grey, compos, ffl_block):
                     break
             if not replace:
                 nesting_compos += n_compos
+                compo.contain = n_compos
     return nesting_compos
 
 
-def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
+def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images, image_names, img_index):
     '''
     Analyzes an image and extracts its UI components with an alternative algorithm type
 
@@ -120,6 +123,11 @@ def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
         'max-word-inline-gap': 4,
         'max-line-gap': 4
     }
+    
+    name = input_img_path.split('/')[-1][:-4] if '/' in input_img_path else input_img_path.split('\\')[-1][:-4]
+    ip_root = pjoin(path_to_save_bordered_images, "ip")
+    if not os.path.exists(ip_root):
+        os.mkdir(ip_root)
 
     # ##########################
     # COMPONENT DETECTION
@@ -148,6 +156,11 @@ def get_uied_gui_components_crops(input_imgs_path, image_names, img_index):
     uicompos += nesting_inspection(org, grey,
                                    uicompos, ffl_block=uied_params['ffl-block'])
     utils.compos_update(uicompos, org.shape)
+
+
+    draw.draw_bounding_box(org, uicompos, show=False, name='merged compo', 
+                           write_path=pjoin(ip_root, name + '.jpg'), 
+                           wait_key=0)
 
     # ##########################
     # RESULTS
@@ -366,7 +379,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
 
             elif algorithm == "uied":
                 # this method edit the metadata json with the ui element class and text if corresponds 
-                recortes, uicompos = get_uied_gui_components_crops(param_img_root, image_names, img_index)
+                recortes, uicompos = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
                 utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)

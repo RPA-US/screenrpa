@@ -10,7 +10,7 @@ from apps.home import views as home
 app_name = 'analyzer'
 
 urlpatterns = [
-    path('', home.index, name='home'),
+    # path('', home.index, name='home'),
     path('list/', views.CaseStudyListView.as_view(), name='casestudy_list'),
     path('new/', views.CaseStudyCreateView.as_view(), name='casestudy_create'),
     path('detail/<int:case_study_id>/', views.CaseStudyDetailView.as_view(), name='casestudy_detail'),

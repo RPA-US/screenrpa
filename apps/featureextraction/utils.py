@@ -158,6 +158,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
         c['width'] = compo.width
         c['height'] = compo.height
+        c['contain'] = [c.id for c in compo.contain]
         output['compos'].append(c)
 
     json.dump(output, f_out, indent=4)
