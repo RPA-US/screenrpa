@@ -15,6 +15,7 @@ from art import tprint
 import pickle
 from tqdm import tqdm
 from apps.featureextraction.gaze_analysis import gaze_events_associated_to_event_time_range
+from apps.analyzer.utils import format_mht_file
 
 """
 Text boxes detection: KERAS_OCR
@@ -169,8 +170,6 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
-    if name == "4_img":
-        print("hola")
     uicompos = nesting_inspection(org, grey,
                                 uicompos, ffl_block=uied_params['ffl-block'])
 
@@ -404,6 +403,8 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 aux = np.array(recortes, dtype=object)
                 np.save(screenshot_npy, aux)
 
+            else:
+                raise Exception("You select a type of UI element detection that doesnt exists")
             # if (add_words_columns and (not no_modification)) or (add_words_columns and (not os.path.exists(param_img_root+"text_colums.csv"))):
             #     storage_text_info_as_dataset(words, image_names, log, param_img_root)
 
@@ -467,9 +468,16 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, special_colnames, skip=False, algorithm="legacy", text_classname="text"):
+def ui_elements_detection(param_log_path, param_img_root, special_colnames, configurations, skip=False, algorithm="legacy", text_classname="text"):
     tprint(platform_name + " - " + detection_phase_name, "fancy60")
     print(param_img_root+"\n")
+    
+    if "format" in configurations:
+        if "formatted_log_name" in configurations:
+            log_filename = configurations["formatted_log_name"]
+        else:
+            log_filename = "log"
+        param_log_path = format_mht_file(param_log_path, configurations["format"], param_img_root, log_filename)
     
     # Log read
     log = pd.read_csv(param_log_path, sep=",")

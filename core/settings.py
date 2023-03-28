@@ -201,7 +201,6 @@ gaze_analysis_threshold =   int(env('GAZE_MINIMUM_TIME_STARING')) # minimum time
 gui_quantity_difference =   int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 times_calculation_mode =    env('RESULTS_TIMES_FORMAT') # substitute "formatted" -> get times formatted "%H:%M:%S.%fS" 
 metadata_location =         env('METADATA_PATH')
-formatter_path =            env('FORMATTER_PATH')
 plot_decision_trees =       env('PLOT_DECISION_TREES')
 scenario_nested_folder =    env('SCENARIO_NESTED_FOLDER')
 several_iterations =        env('SEVERAL_ITERATIONS')
@@ -234,7 +233,7 @@ FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extra
 STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
 
 # System Default Phases
-default_phases = ['ui_elements_detection','gaze_fixation','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['ui_elements_detection','gaze_analysis','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################

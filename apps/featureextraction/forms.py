@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from .models import UIElementsDetection, NoiseFiltering, UIElementsClassification, FeatureExtractionTechnique
+from .models import UIElementsDetection, GazeAnalysis, UIElementsClassification, FeatureExtractionTechnique
 from django.core.exceptions import ValidationError
 
 class UIElementsDetectionForm(forms .ModelForm):
@@ -34,9 +34,9 @@ class UIElementsDetectionForm(forms .ModelForm):
         super(UIElementsDetectionForm, self).__init__(*args, **kwargs)
     
 
-class NoiseFilteringForm(forms .ModelForm):
+class GazeAnalysisForm(forms .ModelForm):
     class Meta:
-        model = NoiseFiltering
+        model = GazeAnalysis
         exclude = (
             "user",
             )
@@ -61,7 +61,7 @@ class NoiseFilteringForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(NoiseFilteringForm, self).__init__(*args, **kwargs)
+        super(GazeAnalysisForm, self).__init__(*args, **kwargs)
 
 class UIElementsClassificationForm(forms .ModelForm):
     class Meta:

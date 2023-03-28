@@ -9,7 +9,6 @@ from lxml import html
 import base64
 import pandas as pd
 from django.shortcuts import render
-from core.settings import formatter_path
 
 def detect_fe_function(text):
     '''
@@ -52,12 +51,15 @@ def store_screenshots(payload, path_to_store_screenshots):
     # Decode the image data from base64 encoding
     image_data_decoded = base64.b64decode(image_data)
 
+    if not os.path.exists(path_to_store_screenshots):
+        os.mkdir(path_to_store_screenshots)
+
     # Save the image to a file
     with open(path_to_store_screenshots + filename, 'wb') as f:
         f.write(image_data_decoded)
         print(f"Saved image file {filename}")
 
-def from_html_to_xes(myhtml, root_file_path, mht_filename):
+def from_html_to_xes(myhtml, root_file_path, output_filename):
     root = html.fromstring(myhtml)
     myxml = root.xpath("//script[@id='myXML']")[0].text_content()
     myxml = myxml.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
@@ -98,13 +100,15 @@ def from_html_to_xes(myhtml, root_file_path, mht_filename):
       ET.SubElement(event, 'string', {'key': 'FileId'}).text = each_action.get("FileId")
       ET.SubElement(event, 'string', {'key': 'FileVersion'}).text = each_action.get("FileVersion")
 
-
+    res_path = root_file_path + output_filename + '.xes'
     # Write the XES document to a file
-    with open(root_file_path + mht_filename + '.xes', 'wb') as f:
+    with open(res_path, 'wb') as f:
         f.write(ET.tostring(xes, pretty_print=True))
         
+    return res_path
+        
 
-def from_html_to_csv(myhtml, root_file_path, mht_filename):
+def from_html_to_csv(myhtml, root_file_path, output_filename):
     root = html.fromstring(myhtml)
     myxml = root.xpath("//script[@id='myXML']")[0].text_content()
     myxml = myxml.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
@@ -140,21 +144,30 @@ def from_html_to_csv(myhtml, root_file_path, mht_filename):
         event['FileVersion'] = each_action.get("FileVersion")
         events.append(event)
 
+    res_path = root_file_path + output_filename + '.csv'
+
     # Write the events to a CSV file
     df = pd.DataFrame(events)
-    df.to_csv(root_file_path + mht_filename + '.csv', index=False)
+    df.to_csv(res_path, index=False)
+    
+    return res_path
     
 ###########################################################################################################################
 ###########################################################################################################################
 ###########################################################################################################################
 
-def format_mht_file(mht_file, mht_filename, output_format):
-  msg = email.message_from_file(mht_file)
-  myhtml = msg.get_payload()[0].get_payload()
+def format_mht_file(mht_file_path, output_format, output_path, output_filename):
+  with open(mht_file_path) as mht_file: 
+    msg = email.message_from_file(mht_file)
+    myhtml = msg.get_payload()[0].get_payload()
     
-  store_screenshots(msg.get_payload(), formatter_path + "screenshots/")
+  store_screenshots(msg.get_payload(), output_path + "screenshots/")
   
-  if output_format == "XES":
-    from_html_to_xes(myhtml, formatter_path, mht_filename)
+  if output_format == "mht_xes":
+    res_path = from_html_to_xes(myhtml, output_path, output_filename)
+  elif output_format == "mht_csv":
+    res_path = from_html_to_csv(myhtml, output_path, output_filename)
   else:
-    from_html_to_csv(myhtml, formatter_path, mht_filename)
+    raise Exception("You select a format mht file that doesnt exists")
+  
+  return res_path

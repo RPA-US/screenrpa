@@ -10,23 +10,30 @@ from core.settings import gaze_analysis_threshold
 import pickle
 from apps.featureextraction.CNN.CompDetCNN import CompDetCNN
 from tqdm import tqdm
+import urllib.parse
+import json
 
 
-def gaze_fixation(log_path, root_path, special_colnames, gaze_fixation_type, gaze_fixation_configurations):
+def gaze_analysis(log_path, root_path, special_colnames, gaze_analysis_type, gaze_analysis_configurations):
     # eyetracking_log , log, img_index, image_names, special_colnames, timestamp_start, timestamp_end, last_upper_limit, init_value_ui_log_timestamp):
     
     log = pd.read_csv(log_path, sep=",")
     
-    eyetracking_log_filename = gaze_fixation_configurations["eyetracking_log_filename"]
-    uilog_eyetrack_timestamps_difference = float(gaze_fixation_configurations["uilog_eyetrack_timestamps_difference"])
+    sep = gaze_analysis_configurations["separator"]
+    
+    eyetracking_log_filename = gaze_analysis_configurations["eyetracking_log_filename"]
+    uilog_starttime = float(gaze_analysis_configurations["uilog_startdatetime"])
     
     if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
-        eyetracking_log = pd.read_csv(root_path + eyetracking_log_filename, sep=",")
+        gazeanalysis_log = pd.read_csv(root_path + eyetracking_log_filename, sep=sep)
     else:
         raise Exception("Eyetracking log cannot be read")
     
-    if gaze_fixation_type == "attention-points":
-        init_value_ui_log_timestamp = log[special_colnames['Timestamp']][0]
+
+    if gaze_analysis_type == "imotions":
+        data, metadata = decode_imotions_gaze_analysis(gazeanalysis_log)
+        absolute_starttime = decode_imotions_native_slideevents(root_path, gaze_analysis_configurations["native_slide_events"], sep)
+        
 
         gaze_events = {}  # key: row number,
         #value: { tuple: [coorX, coorY], gui_component_coordinate: [[corners_of_crop]]}
@@ -83,3 +90,33 @@ def gaze_events_associated_to_event_time_range(eyetracking_log, colnames, timest
         lower_limit = last_upper_limit
 
     return eyetracking_log.loc[lower_limit:upper_limit, [colnames['eyetracking_gaze_point_x'], colnames['eyetracking_gaze_point_y']]], upper_limit
+
+
+def decode_imotions_gaze_analysis(gazeanalysis_log):
+    # Find row index where "#DATA" is located
+    data_index = gazeanalysis_log.index[gazeanalysis_log.iloc[:, 0] == '#DATA'][0]
+
+    # Split dataframe into two separate dataframes
+    metadata_df = gazeanalysis_log.iloc[:data_index, :]
+    data_df = gazeanalysis_log.iloc[data_index:, :]
+    
+    return data_df, metadata_df
+
+def decode_imotions_native_slideevents(native_slideevents_path, native_slideevents_filename, sep):
+    # Leer el archivo completo
+    with open(native_slideevents_path + native_slideevents_filename, 'r') as file:
+        data = file.readlines()
+    # Encontrar los índices donde están las etiquetas #METADATA y #DATA
+    metadata_index = data.index('#METADATA\n')
+    encodedStr = data[metadata_index-1:metadata_index][0]
+    native_properties= urllib.parse.unquote(encodedStr)
+    native_properties= json.loads(native_properties)
+    with open(native_slideevents_path + "native_properties.json", 'w') as f:
+            json.dump(native_properties, f, indent=4)
+    # data_index = data.index('#DATA\n')
+    # # Crear dos listas separadas para los metadatos y los datos
+    # metadata = [line.strip().split(sep) for line in data[metadata_index+1:data_index]]
+    # data_csv = [line.strip().split(sep) for line in data[data_index+1:]]
+    # # Convertir la lista de datos en un dataframe de pandas
+    # df = pd.DataFrame(data_csv[1:], columns=data_csv[0])
+    return native_properties["SlideShowStartDateTime"]

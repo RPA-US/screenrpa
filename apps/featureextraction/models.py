@@ -12,6 +12,8 @@ from django.urls import reverse
 class UIElementsDetection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='rpa-us')
+    input_filename = models.CharField(max_length=50, default='log.csv')
+    configurations = JSONField()
     skip = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -21,7 +23,7 @@ class UIElementsDetection(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
 
-class NoiseFiltering(models.Model):
+class GazeAnalysis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='attention-points')
     configurations = JSONField()

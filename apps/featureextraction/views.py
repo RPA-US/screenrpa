@@ -5,8 +5,8 @@ from apps.analyzer.utils import detect_fe_function
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
-from .models import FeatureExtractionTechnique, UIElementsClassification, UIElementsDetection, NoiseFiltering
-from .forms import FeatureExtractionTechniqueForm, UIElementsClassificationForm, UIElementsDetectionForm, NoiseFilteringForm
+from .models import FeatureExtractionTechnique, UIElementsClassification, UIElementsDetection, GazeAnalysis
+from .forms import FeatureExtractionTechniqueForm, UIElementsClassificationForm, UIElementsDetectionForm, GazeAnalysisForm
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -104,10 +104,10 @@ class UIElementsDetectionListView(ListView):
     def get_queryset(self):
         return UIElementsDetection.objects.all()
     
-class NoiseFilteringCreateView(CreateView):
-    model = NoiseFiltering
-    form_class = NoiseFilteringForm
-    template_name = "gaze_fixation/create.html"
+class GazeAnalysisCreateView(CreateView):
+    model = GazeAnalysis
+    form_class = GazeAnalysisForm
+    template_name = "gaze_analysis/create.html"
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -117,10 +117,10 @@ class NoiseFilteringCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class NoiseFilteringListView(ListView):
-    model = NoiseFiltering
-    template_name = "gaze_fixation/list.html"
+class GazeAnalysisListView(ListView):
+    model = GazeAnalysis
+    template_name = "gaze_analysis/list.html"
     paginate_by = 50
 
     def get_queryset(self):
-        return NoiseFiltering.objects.all()
+        return GazeAnalysis.objects.all()
