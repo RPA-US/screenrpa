@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.contrib.auth.models import User
+from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
 from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, GazeAnalysis
 from django.urls import reverse
@@ -68,6 +69,7 @@ class CaseStudy(models.Model):
     gaze_analysis = models.ForeignKey(GazeAnalysis, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+    process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')

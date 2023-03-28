@@ -16,7 +16,6 @@ import json
 
 def gaze_analysis(log_path, root_path, special_colnames, gaze_analysis_type, gaze_analysis_configurations):
     # eyetracking_log , log, img_index, image_names, special_colnames, timestamp_start, timestamp_end, last_upper_limit, init_value_ui_log_timestamp):
-    
     log = pd.read_csv(log_path, sep=",")
     
     sep = gaze_analysis_configurations["separator"]

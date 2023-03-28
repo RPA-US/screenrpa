@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'apps.chefboost',
     'apps.analyzer', # Local App
     'apps.featureextraction', # Local App
+    'apps.processdiscovery', # Local App
     'apps.decisiondiscovery', # Local App
     'drf_spectacular',
     'drf_spectacular_sidecar',  # required for Django collectstatic discovery
@@ -233,7 +234,7 @@ FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extra
 STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
 
 # System Default Phases
-default_phases = ['ui_elements_detection','gaze_analysis','ui_elements_classification','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['ui_elements_detection','gaze_analysis','ui_elements_classification','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################

@@ -13,7 +13,7 @@ class UIElementsDetection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
-    configurations = JSONField()
+    configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -26,8 +26,7 @@ class UIElementsDetection(models.Model):
 class GazeAnalysis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='attention-points')
-    configurations = JSONField()
-    # eyetracking_log_filename =  models.CharField(max_length=255, default="eyetracking_log.csv")
+    configurations = JSONField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):

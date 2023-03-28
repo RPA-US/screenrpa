@@ -17,6 +17,7 @@ from core.settings import times_calculation_mode, metadata_location, sep, decisi
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.detection import ui_elements_detection
+from apps.processdiscovery.views import process_discovery
 from apps.featureextraction.gaze_analysis import gaze_analysis
 # CaseStudyView
 from rest_framework import generics, status, viewsets #, permissions
@@ -27,6 +28,7 @@ from apps.analyzer.tasks import init_generate_case_study
 from .models import CaseStudy# , ExecutionManager
 from .serializers import CaseStudySerializer
 from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer, GazeAnalysisSerializer
+from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, GazeAnalysis
 from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
@@ -38,6 +40,12 @@ from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
 from django.contrib.auth.decorators import login_required
+
+
+
+#============================================================================================================================
+#============================================================================================================================
+#============================================================================================================================
 
 def generate_case_study(case_study, path_scenario, times, n):
     times[n] = {}
@@ -71,6 +79,14 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
+        'process_discovery': (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        case_study.process_discovery.configurations,
+                                        case_study.process_discovery.skip,
+                                        case_study.process_discovery.type)
+                                    # We check this phase is present in case_study to avoid exceptions
+                                    if case_study.process_discovery else None,
         'extract_training_dataset': (case_study.decision_point_activity, 
                                         case_study.target_label,
                                         case_study.special_colnames,
@@ -134,7 +150,11 @@ def generate_case_study(case_study, path_scenario, times, n):
         
     return times
 
-def case_study_process_data(case_study_id):
+#============================================================================================================================
+#============================================================================================================================
+#============================================================================================================================
+
+def celery_task_process_case_study(case_study_id):
     """
     This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
@@ -167,7 +187,7 @@ def case_study_process_data(case_study_id):
         time.sleep(.1)
         print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
-        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.gaze_analysis or case_study.extract_training_dataset or case_study.decision_tree_training:
+        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.gaze_analysis or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery:
             if scenario_nested_folder == "TRUE":
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
@@ -175,6 +195,8 @@ def case_study_process_data(case_study_id):
             else:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep
                 generate_case_study(case_study, path_scenario, times, scenario)
+        else:
+            raise Exception("There's no phase to execute or the specified phase doesnt corresponds to a supported one")
                 
 
     # Serializing json
@@ -189,14 +211,10 @@ def case_study_process_data(case_study_id):
         outfile.write(json_object)
         
     return "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_final_path
-     
-    # each experiment one csv line
-    # store exceution times per each phase and experiment (30 per family)
-    # execute only the experiments
 
-# ========================================================================
-# RUN CASE STUDY
-# ========================================================================
+#============================================================================================================================
+#============================================================================================================================
+#============================================================================================================================
 
 def case_study_generator(data):
     '''
@@ -224,18 +242,6 @@ def case_study_generator(data):
         if not data['scenarios_to_study']:
             data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
 
-        # if "ui_elements_detection_id" in data  and data["ui_elements_detection_id"] :
-        #     aux["phases_to_execute"]["ui_elements_detection"] = cs.ui_elements_detection.__dict__
-        # if "gaze_analysis_id" in data and data["gaze_analysis_id"]:
-        #     aux["phases_to_execute"]["gaze_analysis"] = cs.gaze_analysis.__dict__
-        # if "feature_extraction_technique_id" in data and data["feature_extraction_technique_id"]:
-        #     aux["phases_to_execute"]["feature_extraction_technique"] = cs.feature_extraction_technique.__dict__
-        # if "extract_training_dataset_id" in data and data["extract_training_dataset_id"]:
-        #     aux["phases_to_execute"]["extract_training_dataset"] = cs.extract_training_dataset.__dict__
-        # if "decision_tree_training_id" in data and data["decision_tree_training_id"]:
-        #     aux["phases_to_execute"]["decision_tree_training"] = cs.decision_tree_training.__dict__
-
-
         phases = data["phases_to_execute"].copy()
         cs_serializer = CaseStudySerializer(data=data)
         cs_serializer.is_valid(raise_exception=True)
@@ -260,6 +266,10 @@ def case_study_generator(data):
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.feature_extraction_technique = serializer.save()
+                case "process_discovery":
+                    serializer = ProcessDiscoverySerializer(data=phases[phase])
+                    serializer.is_valid(raise_exception=True)
+                    case_study.process_discovery = serializer.save()
                 case "extract_training_dataset":
                     serializer = ExtractTrainingDatasetSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
@@ -277,6 +287,14 @@ def case_study_generator(data):
     init_generate_case_study.delay(case_study.id)
 
     return transaction_works, case_study
+
+#============================================================================================================================
+#============================================================================================================================
+#============================================================================================================================
+# Views themself
+#============================================================================================================================
+#============================================================================================================================
+#============================================================================================================================
 
 class CaseStudyCreateView(CreateView):
     model = CaseStudy
