@@ -5,7 +5,6 @@ import urllib.parse
 import json
 from dateutil.parser import parse
 from lxml import html
-import lxml.etree as ET
 import email
 import re
 import pandas as pd
