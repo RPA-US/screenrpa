@@ -14,7 +14,7 @@ from core.settings import cropping_threshold, platform_name, detection_phase_nam
 from art import tprint
 import pickle
 from tqdm import tqdm
-from apps.featureextraction.gaze_analysis import gaze_events_associated_to_event_time_range
+# from apps.featureextraction.gaze_analysis import gaze_events_associated_to_event_time_range
 from apps.analyzer.utils import format_mht_file
 
 """
@@ -161,8 +161,9 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     
 
     # *** Step 3 *** results refinement
-    uicompos = utils.compo_filter(uicompos, min_area=int(
-        uied_params['min-ele-area']), img_shape=binary.shape)
+    # DESKTOP: doesnt detect navbars
+    # uicompos = utils.compo_filter(uicompos, min_area=int(
+    #     uied_params['min-ele-area']), img_shape=binary.shape)
     uicompos = utils.merge_intersected_compos(uicompos)
     utils.compo_block_recognition(binary, uicompos)
     if uied_params['merge-contained-ele']:
@@ -344,7 +345,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname):
+def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, configurations):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -393,7 +394,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "uied":
-                # this method edit the metadata json with the ui element class and text if corresponds 
+                # this method edit the metadata json with the ui element class and text if corresponds
                 recortes, uicompos = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
@@ -507,7 +508,7 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, conf
         if not os.path.exists(p):
             os.mkdir(p)
 
-    detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname)
+    detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, configurations)
 
 
 

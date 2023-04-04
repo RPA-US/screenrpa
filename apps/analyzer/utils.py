@@ -161,7 +161,7 @@ def format_mht_file(mht_file_path, output_format, output_path, output_filename):
     msg = email.message_from_file(mht_file)
     myhtml = msg.get_payload()[0].get_payload()
     
-  store_screenshots(msg.get_payload(), output_path + "screenshots/")
+  store_screenshots(msg.get_payload(), output_path)
   
   if output_format == "mht_xes":
     res_path = from_html_to_xes(myhtml, output_path, output_filename)

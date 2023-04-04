@@ -359,19 +359,21 @@ def component_detection(binary, min_obj_area,
     else:
         return compos_all
 
-def compo_filter(compos, min_area, img_shape):
-    max_height = img_shape[0] * 0.8
+def compo_filter(compos, min_area, img_shape):# TODO: Pablo check filter
+    # max_height = img_shape[0] * 0.8
     compos_new = []
     for compo in compos:
         if compo.area < min_area:
             continue
-        if compo.height > max_height:
-            continue
-        ratio_h = compo.width / compo.height
-        ratio_w = compo.height / compo.width
-        if ratio_h > 50 or ratio_w > 40 or \
-                (min(compo.height, compo.width) < 8 and max(ratio_h, ratio_w) > 10):
-            continue
+        # DESKTOP: doesnt detect navbars
+        # if compo.height > max_height:
+        #     continue
+        
+        # ratio_h = compo.width / compo.height
+        # ratio_w = compo.height / compo.width
+        # if ratio_h > 50 or ratio_w > 40 or \
+        #         (min(compo.height, compo.width) < 8 and max(ratio_h, ratio_w) > 10):
+        #     continue
         compos_new.append(compo)
     return compos_new
 
