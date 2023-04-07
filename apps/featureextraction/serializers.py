@@ -1,15 +1,10 @@
 from rest_framework import serializers
-from .models import UIElementsClassification, FeatureExtractionTechnique, UIElementsDetection, GazeAnalysis
+from .models import UIElementsClassification, FeatureExtractionTechnique, UIElementsDetection
 
 class UIElementsDetectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UIElementsDetection
         fields = '__all__' 
-        
-class GazeAnalysisSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GazeAnalysis
-        fields = '__all__'
 
 class UIElementsClassificationSerializer(serializers.ModelSerializer):
     class Meta:

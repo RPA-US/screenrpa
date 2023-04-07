@@ -1,8 +1,6 @@
-import json
-
 from django import template
-from apps.featureextraction.models import FeatureExtractionTechnique, UIElementsDetection, UIElementsClassification, GazeAnalysis
-from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
+# from apps.featureextraction.models import FeatureExtractionTechnique, UIElementsDetection, UIElementsClassification
+# from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 
 register = template.Library()
 

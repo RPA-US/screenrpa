@@ -1,47 +1,38 @@
-from multiprocessing.connection import wait
-from celery import shared_task
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
-
-
-# Create your views here.
 import os
 import json
 import time
-from django.core.exceptions import ValidationError
-from art import tprint
 from tqdm import tqdm
+from art import tprint
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User 
-import time
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+from django.db import transaction
+from django.http import HttpResponse, HttpResponseRedirect
+from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from rest_framework import generics, status, viewsets #, permissions
+from rest_framework.response import Response
+# Settings variables
 from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, FLATTENED_DATASET_NAME
+# Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.detection import ui_elements_detection
 from apps.processdiscovery.views import process_discovery
-from apps.featureextraction.gaze_analysis import gaze_analysis
-# CaseStudyView
-from rest_framework import generics, status, viewsets #, permissions
-from rest_framework.response import Response
+from apps.relevantinfoselection.gaze_analysis import gaze_analysis
+from apps.analyzer.models import CaseStudy
+from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique
+from apps.relevantinfoselection.models import GazeAnalysis
+from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
 from apps.analyzer.forms import CaseStudyForm
-from apps.analyzer.tasks import init_generate_case_study
-# from rest_framework.pagination import PageNumberPagination
-from .models import CaseStudy# , ExecutionManager
-from .serializers import CaseStudySerializer
-from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer, GazeAnalysisSerializer
+from apps.analyzer.serializers import CaseStudySerializer
+from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
+from apps.relevantinfoselection.serializers import GazeAnalysisSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
-from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, GazeAnalysis
-from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
-from .collect_results import experiments_results_collectors
+from apps.analyzer.tasks import init_generate_case_study
 from apps.analyzer.utils import get_foldernames_as_list
-from django.db import transaction
-from django.contrib.auth import get_user_model
-from django.views import View
-from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
-from django.contrib.auth.decorators import login_required
-
-
+from apps.analyzer.collect_results import experiments_results_collectors
 
 #============================================================================================================================
 #============================================================================================================================

@@ -478,7 +478,7 @@ def ui_elements_detection(param_log_path, param_img_root, special_colnames, conf
             log_filename = configurations["formatted_log_name"]
         else:
             log_filename = "log"
-        param_log_path = format_mht_file(param_log_path, configurations["format"], param_img_root, log_filename)
+        param_log_path = format_mht_file(param_log_path, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
     
     # Log read
     log = pd.read_csv(param_log_path, sep=",")

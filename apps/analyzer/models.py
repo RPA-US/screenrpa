@@ -6,7 +6,8 @@ from django.db.models import JSONField
 from django.contrib.auth.models import User
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, GazeAnalysis
+from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique
+from apps.relevantinfoselection.models import GazeAnalysis
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 

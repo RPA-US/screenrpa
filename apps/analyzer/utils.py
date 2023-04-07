@@ -1,14 +1,15 @@
-import json
 import os
-from core.settings import FE_EXTRACTORS_FILEPATH
-from apps.featureextraction.feature_extraction_techniques import *
-
+import json
+import pandas as pd
+import logging
+import re
+import datetime
 import email
+import base64
 import lxml.etree as ET
 from lxml import html
-import base64
-import pandas as pd
-from django.shortcuts import render
+from core.settings import FE_EXTRACTORS_FILEPATH
+from apps.featureextraction.feature_extraction_techniques import *
 
 def detect_fe_function(text):
     '''
@@ -45,6 +46,7 @@ def store_screenshots(payload, path_to_store_screenshots):
     if "Content-Location" in payload[i]:
       filename = part["Content-Location"]
     else:
+      logging.exception("analyzer/utils/store_screenshots. line 49. MIME Html format not contains Content-Location header in screenshots")
       raise Exception("MIME Html format not contains Content-Location header in screenshots")
     image_data = part.get_payload()
 
@@ -59,7 +61,7 @@ def store_screenshots(payload, path_to_store_screenshots):
         f.write(image_data_decoded)
         print(f"Saved image file {filename}")
 
-def from_html_to_xes(myhtml, root_file_path, output_filename):
+def from_html_to_xes(org_resource, myhtml, root_file_path, output_filename):
     root = html.fromstring(myhtml)
     myxml = root.xpath("//script[@id='myXML']")[0].text_content()
     myxml = myxml.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
@@ -67,29 +69,43 @@ def from_html_to_xes(myhtml, root_file_path, output_filename):
     my_xml_doc = ET.fromstring(myxml)
 
     # Create an XES document
-    xes = ET.Element('log', {'xes.version': '2.0'})
+    xes = ET.Element('log', {'ocel.version': '0.1'})
     trace = ET.SubElement(xes, 'trace')
-    ET.SubElement(trace, 'string', {'key': 'concept:name'}).text = 'Example event'
-    ET.SubElement(trace, 'string', {'key': 'description'}).text = 'Process instance from MHT file'
+    ET.SubElement(trace, 'string', {'key': 'concept:name'}).text = 'Object Centric Event Log'
+    ET.SubElement(trace, 'string', {'key': 'ocel:ordering'}).text = 'timestamp'
+    global_log = ET.SubElement(trace, 'global', {'scope': 'log'})
+    obj_types = ET.SubElement(global_log, 'list', {'key': 'ocel:object-types'})
+    ET.SubElement(obj_types, 'string', {'key': 'object-type'}).text = 'customers'
+    att_names = ET.SubElement(global_log, 'list', {'key': 'ocel:attribute-names'})
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'FileName'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'FileCompany'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'FileDescription'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'CommandLine'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'ActionNumber'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'Pid'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'ProgramId'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'FileId'
+    ET.SubElement(att_names, 'string', {'key': 'attribute-name'}).text = 'FileVersion'
 
     recorded_session = my_xml_doc.find("UserActionData").find("RecordSession")
-    for each_action in recorded_session.getchildren():
+    for i, each_action in enumerate(recorded_session.getchildren()):
       event = ET.SubElement(trace, 'event')
       children = each_action.getchildren()
-      ET.SubElement(event, 'string', {'key': 'org:resource'}).text = 'User1'
-      ET.SubElement(event, 'string', {'key': 'description'}).text = children[0].text
-      ET.SubElement(event, 'string', {'key': 'concept:name'}).text = children[1].text
+      ET.SubElement(event, 'string', {'key': 'ocel:eid'}).text = str(i)
+      ET.SubElement(event, 'string', {'key': 'ocel:org:resource'}).text = org_resource
+      ET.SubElement(event, 'string', {'key': 'ocel:concept:name'}).text = children[0].text
+      ET.SubElement(event, 'string', {'key': 'ocel:type:click'}).text = children[1].text
       coords = children[2].text.strip().split(",")
-      ET.SubElement(event, 'float', {'key': 'coorX'}).text = coords[0]
-      ET.SubElement(event, 'float', {'key': 'coorY'}).text = coords[1]
+      ET.SubElement(event, 'float', {'key': 'ocel:click:coorX'}).text = coords[0]
+      ET.SubElement(event, 'float', {'key': 'ocel:click:coorY'}).text = coords[1]
       screen_coords = children[3].text.strip().split(",")
-      ET.SubElement(event, 'float', {'key': 'screenW'}).text = screen_coords[2]
-      ET.SubElement(event, 'float', {'key': 'screenH'}).text = screen_coords[3]
+      ET.SubElement(event, 'float', {'key': 'ocel:screenshot:screenW'}).text = screen_coords[2]
+      ET.SubElement(event, 'float', {'key': 'ocel:screenshot:screenH'}).text = screen_coords[3]
       if len(children) > 5:
-        ET.SubElement(event, 'string', {'key': 'screenshot'}).text = children[5].text
+        ET.SubElement(event, 'string', {'key': 'ocel:screenshot:name'}).text = children[5].text
       else:
-        ET.SubElement(event, 'string', {'key': 'screenshot'}).text = "None"
-      ET.SubElement(event, 'date', {'key': 'time:timestamp'}).text = each_action.get("Time")
+        ET.SubElement(event, 'string', {'key': 'ocel:screenshot:name'}).text = "None"
+      ET.SubElement(event, 'date', {'key': 'ocel:timestamp'}).text = each_action.get("Time")
       ET.SubElement(event, 'string', {'key': 'FileName'}).text = each_action.get("FileName")
       ET.SubElement(event, 'string', {'key': 'FileCompany'}).text = each_action.get("FileCompany")
       ET.SubElement(event, 'string', {'key': 'FileDescription'}).text = each_action.get("FileDescription")
@@ -108,7 +124,7 @@ def from_html_to_xes(myhtml, root_file_path, output_filename):
     return res_path
         
 
-def from_html_to_csv(myhtml, root_file_path, output_filename):
+def from_html_to_csv(org_resource, myhtml, root_file_path, output_filename):
     root = html.fromstring(myhtml)
     myxml = root.xpath("//script[@id='myXML']")[0].text_content()
     myxml = myxml.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
@@ -117,22 +133,23 @@ def from_html_to_csv(myhtml, root_file_path, output_filename):
 
     events = []
     recorded_session = my_xml_doc.find("UserActionData").find("RecordSession")
-    for each_action in recorded_session.getchildren():
+    for i, each_action in enumerate(recorded_session.getchildren()):
         event = {}
-        event['org:resource'] = 'User1'
-        event['description'] = each_action[0].text
-        event['concept:name'] = each_action[1].text
+        event['ocel:eid'] = str(i)
+        event['ocel:org:resource'] = org_resource
+        event['ocel:concept:name'] = each_action[0].text
+        event['ocel:type:click'] = each_action[1].text
         coords = each_action[2].text.strip().split(",")
-        event['coorX'] = coords[0]
-        event['coorY'] = coords[1]
+        event['ocel:click:coorX'] = coords[0]
+        event['ocel:click:coorY'] = coords[1]
         screen_coords = each_action[3].text.strip().split(",")
-        event['screenW'] = screen_coords[2]
-        event['screenH'] = screen_coords[3]
+        event['ocel:screenshot:screenW'] = screen_coords[2]
+        event['ocel:screenshot:screenH'] = screen_coords[3]
         if len(each_action) > 5:
-            event['screenshot'] = each_action[5].text
+            event['ocel:screenshot:name'] = each_action[5].text
         else:
-            event['screenshot'] = "None"
-        event['time:timestamp'] = each_action.get("Time")
+            event['ocel:screenshot:name'] = "None"
+        event['ocel:timestamp'] = each_action.get("Time")
         event['FileName'] = each_action.get("FileName")
         event['FileCompany'] = each_action.get("FileCompany")
         event['FileDescription'] = each_action.get("FileDescription")
@@ -156,7 +173,7 @@ def from_html_to_csv(myhtml, root_file_path, output_filename):
 ###########################################################################################################################
 ###########################################################################################################################
 
-def format_mht_file(mht_file_path, output_format, output_path, output_filename):
+def format_mht_file(mht_file_path, output_format, output_path, output_filename, org_resource):
   with open(mht_file_path) as mht_file: 
     msg = email.message_from_file(mht_file)
     myhtml = msg.get_payload()[0].get_payload()
@@ -164,10 +181,39 @@ def format_mht_file(mht_file_path, output_format, output_path, output_filename):
   store_screenshots(msg.get_payload(), output_path)
   
   if output_format == "mht_xes":
-    res_path = from_html_to_xes(myhtml, output_path, output_filename)
+    res_path = from_html_to_xes(org_resource, myhtml, output_path, output_filename)
   elif output_format == "mht_csv":
-    res_path = from_html_to_csv(myhtml, output_path, output_filename)
+    res_path = from_html_to_csv(org_resource, myhtml, output_path, output_filename)
   else:
+    logging.exception("analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt exists")
     raise Exception("You select a format mht file that doesnt exists")
   
   return res_path
+###########################################################################################################################
+###########################################################################################################################
+###########################################################################################################################
+
+def get_mht_log_start_datetime(mht_file_path):
+    with open(mht_file_path) as mht_file: 
+        msg = email.message_from_file(mht_file)
+        myhtml = msg.get_payload()[0].get_payload()
+
+    root = html.fromstring(myhtml)
+    myxml = root.xpath("//div[@id='Step1']")[0].text_content()
+
+    patron = r'Step 1:\s*\((.*?)\)'
+
+    dateRegistered = re.search(patron, myxml)
+
+    if dateRegistered:
+        datetime_parenthesis = dateRegistered.group(1)
+    else:
+        logging.exception("analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the format:'Step 1: (datetime)'")
+        raise Exception("The MHT file doesnt have '(datetime)' after 'Step 1:'")
+      
+    if "/" in datetime_parenthesis:
+      format_pattern = '\u200e%d/\u200e%m/\u200e%Y %H:%M:%S'
+    else: 
+      format_pattern = '\u200e%d-\u200e%m-\u200e%Y %H:%M:%S'
+
+    return datetime.datetime.strptime(datetime_parenthesis, format_pattern)

@@ -10,6 +10,7 @@ from unipath import Path
 import sys
 import environ
 from django.core.management.utils import get_random_secret_key
+import logging.config
 
 # Initialise environment variables
 env = environ.Env()
@@ -45,11 +46,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'rest_framework.authtoken',
     'apps.home',  # Enable the inner home (home)
     'apps.chefboost',
     'apps.analyzer', # Local App
     'apps.featureextraction', # Local App
+    'apps.relevantinfoselection', # Local App
     'apps.processdiscovery', # Local App
     'apps.decisiondiscovery', # Local App
     'drf_spectacular',
@@ -220,10 +223,10 @@ print("Operating system detected: " + operating_system)
 # Element specification filename and path separator (depends on OS)
 if "win" in operating_system:
     sep = "\\"
-    element_trace = "configuration"+sep+"element_trace.json"
+    element_trace = CORE_DIR + sep + "configuration"+sep+"element_trace.json"
 else:
     sep = "/"
-    element_trace = "configuration"+sep+"element_trace_linux.json"
+    element_trace = CORE_DIR + sep + "configuration"+sep+"element_trace_linux.json"
 
 # Celery settings
 CELERY_BROKER_URL = "redis://localhost:6379"
@@ -232,9 +235,32 @@ CELERY_RESULT_BACKEND = "redis://localhost:6379"
 # Detect function json conf
 FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
 STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
+CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
 
 # System Default Phases
 default_phases = ['ui_elements_detection','gaze_analysis','ui_elements_classification','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################
+
+# Configure logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'rim.log',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    },
+}
+
+# Apply the logging configuration
+logging.config.dictConfig(LOGGING)
