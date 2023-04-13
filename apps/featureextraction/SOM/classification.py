@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from keras.models import model_from_json
 from tqdm import tqdm
-from apps.featureextraction.CNN.CompDetCNN import CompDetCNN
+from apps.featureextraction.SOM.CNN.CompDetCNN import CompDetCNN
 
 default_ui_elements_classification_classes = ['x0_Button', 'x0_CheckBox', 'x0_CheckedTextView', 'x0_EditText', 'x0_ImageButton', 'x0_ImageView', 'x0_NumberPicker', 'x0_RadioButton', 'x0_RatingBar', 'x0_SeekBar', 'x0_Spinner', 'x0_Switch', 'x0_TextView', 'x0_ToggleButton']
 default_ui_elements_classification_image_shape = [64, 64, 3]

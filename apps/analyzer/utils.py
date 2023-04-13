@@ -9,7 +9,7 @@ import base64
 import lxml.etree as ET
 from lxml import html
 from core.settings import FE_EXTRACTORS_FILEPATH
-from apps.featureextraction.feature_extraction_techniques import *
+from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 
 def detect_fe_function(text):
     '''

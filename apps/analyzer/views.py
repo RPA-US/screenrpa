@@ -12,22 +12,26 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
+# Home pages imports
+from django import template
+from django.contrib.auth.decorators import login_required
+from django.template import loader
 # Settings variables
 from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, FLATTENED_DATASET_NAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
-from apps.featureextraction.detection import ui_elements_detection
+from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.processdiscovery.views import process_discovery
-from apps.relevantinfoselection.gaze_analysis import gaze_analysis
+from apps.behaviourmonitoring.log_mapping.gaze_analysis import gaze_analysis
 from apps.analyzer.models import CaseStudy
 from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique
-from apps.relevantinfoselection.models import GazeAnalysis
+from apps.behaviourmonitoring.models import GazeAnalysis
 from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
 from apps.analyzer.forms import CaseStudyForm
 from apps.analyzer.serializers import CaseStudySerializer
 from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
-from apps.relevantinfoselection.serializers import GazeAnalysisSerializer
+from apps.behaviourmonitoring.serializers import GazeAnalysisSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.analyzer.tasks import init_generate_case_study
@@ -445,3 +449,37 @@ class ResultCaseStudyView(generics.ListCreateAPIView):
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
+    
+# Home
+
+@login_required(login_url="/login/")
+def index(request):
+    return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
+
+@login_required(login_url="/login/")
+def pages(request):
+    context = {}
+    # All resource paths end in .html.
+    # Pick out the html file name from the url. And load that template.
+    try:
+
+        load_template = request.path.split('/')[-1]
+
+        if load_template == 'admin':
+            return HttpResponseRedirect(reverse('admin:index'))
+        context['segment'] = load_template
+
+        # if ".html" not in load_template:
+        #     load_template += ".html"
+        html_template = loader.get_template('home/' + load_template)
+        return HttpResponse(html_template.render(context, request))
+
+    except template.TemplateDoesNotExist:
+
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))

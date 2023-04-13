@@ -5,12 +5,13 @@ Copyright (c) RPA-US
 
 from django.urls import path, re_path
 from apps.analyzer import views
-from apps.home import views as home
 
 app_name = 'analyzer'
 
 urlpatterns = [
-    path('', home.index, name='home'),
+    # The home page
+    # Matches any html file
+    re_path(r'^.*\.html*', views.pages, name='pages'),
     path('list/', views.CaseStudyListView.as_view(), name='casestudy_list'),
     path('new/', views.CaseStudyCreateView.as_view(), name='casestudy_create'),
     path('detail/<int:case_study_id>/', views.CaseStudyDetailView.as_view(), name='casestudy_detail'),

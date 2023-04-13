@@ -5,7 +5,7 @@ import cv2
 import matplotlib.pyplot as plt
 from os.path import join as pjoin
 import apps.featureextraction.utils as utils
-import apps.featureextraction.ip_draw as draw
+import apps.featureextraction.SOM.ip_draw as draw
 import os
 import cv2
 import pandas as pd

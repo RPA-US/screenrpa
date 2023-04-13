@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import json
 
-from apps.featureextraction.Component import Component
+from apps.featureextraction.SOM.Component import Component
 
 NESTED_MIN_COMPO_HEIGHT = 10
 NESTED_SHARED_AREA_PERCENTAGE = 0.9
@@ -185,7 +185,7 @@ def nested_components_detection(grey, org, grad_thresh,
     for x in range(0, row, step_h):
         for y in range(0, column, step_v):
             if mask[x, y] == 0:
-                # region = flood_fill_bfs(grey, x, y, mask)
+                # regio1n = flood_fill_bfs(grey, x, y, mask)
                 # flood fill algorithm to get background (layout block)
                 mask_copy = mask.copy()
                 ff = cv2.floodFill(grey, mask, (y, x), None, grad_thresh, grad_thresh, cv2.FLOODFILL_MASK_ONLY)
@@ -318,7 +318,7 @@ def component_detection(binary, min_obj_area,
         for j in range(i % 2, column, step_v):
             if binary[i, j] == 255 and mask[i, j] == 0:
                 # get connected area
-                # region = util.boundary_bfs_connected_area(binary, i, j, mask)
+                # regio1n = util.boundary_bfs_connected_area(binary, i, j, mask)
                 mask_copy = mask.copy()
                 ff = cv2.floodFill(binary, mask, (j, i), None, 0, 0, cv2.FLOODFILL_MASK_ONLY)
                 if ff[0] < min_obj_area: continue

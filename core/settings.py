@@ -48,11 +48,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'rest_framework.authtoken',
-    'apps.home',  # Enable the inner home (home)
     'apps.chefboost',
+    'apps.authentication',
     'apps.analyzer', # Local App
+    'apps.behaviourmonitoring', # Local App
     'apps.featureextraction', # Local App
-    'apps.relevantinfoselection', # Local App
     'apps.processdiscovery', # Local App
     'apps.decisiondiscovery', # Local App
     'drf_spectacular',
@@ -71,8 +71,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
-LOGIN_REDIRECT_URL = "home"  # Route defined in home/urls.py
-LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
+LOGIN_REDIRECT_URL = "analyzer"  # Route defined in analyzer/urls.py
+LOGOUT_REDIRECT_URL = "analyzer"  # Route defined in analyzer/urls.py
 TEMPLATE_DIR = os.path.join(CORE_DIR, "apps/templates")  # ROOT dir for templates
 
 TEMPLATES = [

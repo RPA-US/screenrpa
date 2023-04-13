@@ -43,6 +43,7 @@ class FeatureExtractionTechnique(models.Model):
     technique_name = models.CharField(max_length=255, default='count')
     skip = models.BooleanField(default=False)
     identifier = models.CharField(max_length=25)
+    configurations = JSONField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):

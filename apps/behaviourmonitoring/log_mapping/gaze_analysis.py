@@ -7,7 +7,8 @@ import pandas as pd
 import datetime
 from dateutil import tz
 from apps.analyzer.utils import get_mht_log_start_datetime
-from apps.relevantinfoselection.eyetracker_log_decoders import decode_imotions_gaze_analysis, decode_imotions_native_slideevents
+from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_gaze_analysis, decode_imotions_native_slideevents
+from apps.featureextraction.relevantinfoselection.preselectors import rectangle_preselector, attention_preselector
 
 def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
   if pattern == "ms":
@@ -64,7 +65,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
     "fixation_points" in fixation_points[ui_log.iloc[j-1][special_colnames["Screenshot"]]] and \
     key in fixation_points[ui_log.iloc[j-1][special_colnames["Screenshot"]]]["fixation_points"]) and \
       ui_log.iloc[j][special_colnames["Screenshot"]] != ui_log.iloc[j-1][special_colnames["Screenshot"]]:
-      logging.exception("relevantinfoselection/gaze_analysis/update_fixation_points line:65. UI Log row " + str(j) + ". Fixation cluster splitted by two UI Log event!")
+      logging.exception("behaviourmonitoring/gaze_analysis/update_fixation_points line:65. UI Log row " + str(j) + ". Fixation cluster splitted by two UI Log event!")
       raise Exception("Fixation cluster splitted by two UI Log event!")
   else:
     fixation_start = gaze_log.iloc[i]["Fixation Start"]
@@ -76,7 +77,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
       
       while last_timestamp == current_timestamp:
         last_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[j-last_counter][special_colnames["Timestamp"]], '%H:%M:%S')
-        logging.info("relevantinfoselection/gaze_analysis/update_fixation_points line:76. UI Log row " + str(j) + ". Finding the last timestamp change: " + str(last_counter) + " event before")
+        logging.info("behaviourmonitoring/gaze_analysis/update_fixation_points line:76. UI Log row " + str(j) + ". Finding the last timestamp change: " + str(last_counter) + " event before")
         last_counter+=1
       
       if gaze_fixation_start >= current_timestamp:
@@ -87,7 +88,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
       elif (last_timestamp <= gaze_fixation_start) and (gaze_fixation_start < current_timestamp):
         fixation_points = update_previous_screenshots_in_splitted_events(fixation_points, j, key, init, ui_log, last_counter, special_colnames)
       else:
-        logging.info("relevantinfoselection/gaze_analysis/update_fixation_points line:87. Gaze log event PREVIOUS to UI log capture, gaze log row number:" + str(gaze_log.iloc[i]["RowNumber"]))
+        logging.info("behaviourmonitoring/gaze_analysis/update_fixation_points line:87. Gaze log event PREVIOUS to UI log capture, gaze log row number:" + str(gaze_log.iloc[i]["RowNumber"]))
         
         if key and (key in fixation_points["previous"]):
           fixation_points["previous"][key]["#events"] += 1
@@ -103,7 +104,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
       print(msg)
   return fixation_points, key
 
-def gaze_screenshot_mapper(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, gaze_analysis_configurations):
+def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, gaze_analysis_configurations):
   # https://imotions.com/release-notes/imotions-9-1-7/
   startDateTime_gaze_tz = startDateTime_gaze_tz.replace(tzinfo=None)
 
@@ -113,7 +114,7 @@ def gaze_screenshot_mapper(ui_log, gaze_log, special_colnames, startDateTime_ui_
     starting_point = startDateTime_ui_log
   else:
     starting_point = startDateTime_gaze_tz
-    logging.info("relevantinfoselection/gaze_analysis/gaze_screenshot_mapper line:109. Gaze Log and UI Log already synchronized!")
+    logging.info("behaviourmonitoring/gaze_analysis/gaze_log_mapping line:109. Gaze Log and UI Log already synchronized!")
 
   # TODO: we suppose that dataframe timestamps are ordered
   # ui_log = ui_log.sort_values(special_colnames["Timestamp"])
@@ -156,17 +157,17 @@ def gaze_screenshot_mapper(ui_log, gaze_log, special_colnames, startDateTime_ui_
         if i == len(gaze_log)-2:
           break
       elif next_timestamp < current_timestamp:
-        logging.exception("relevantinfoselection/gaze_analysis/gaze_screenshot_mapper line:152. UI and Gaze Logs Timestamps are not well synchronized, next_timestamp (row " + str(j+1) + ") < current_timestamp (row " + str(j) + "): UI Log Current Screenshot " + ui_log.iloc[j][special_colnames["Screenshot"]])
+        logging.exception("behaviourmonitoring/gaze_analysis/gaze_log_mapping line:152. UI and Gaze Logs Timestamps are not well synchronized, next_timestamp (row " + str(j+1) + ") < current_timestamp (row " + str(j) + "): UI Log Current Screenshot " + ui_log.iloc[j][special_colnames["Screenshot"]])
         raise Exception("UI and Gaze Logs Timestamps are not well synchronized")
       else:
-        logging.info("relevantinfoselection/gaze_analysis/gaze_screenshot_mapper line:155. UI Logs events with the same timestamps: next_timestamp (row " + str(j+1) + ") == current_timestamp (row " + str(j) + ")")
+        logging.info("behaviourmonitoring/gaze_analysis/gaze_log_mapping line:155. UI Logs events with the same timestamps: next_timestamp (row " + str(j+1) + ") == current_timestamp (row " + str(j) + ")")
   
   last_ui_log_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[len(ui_log)-1][special_colnames["Timestamp"]], '%H:%M:%S')        
   last_gaze_timestamp = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[len(gaze_log)-1]["Timestamp"], "ms")# + gaze_log_timedelta
   
   # Store gaze logs that takes place after last UI log event
   if last_gaze_timestamp > last_ui_log_timestamp:
-    logging.info("relevantinfoselection/gaze_analysis/gaze_screenshot_mapper line:161. Gaze log events after UI Log last event")
+    logging.info("behaviourmonitoring/gaze_analysis/gaze_log_mapping line:161. Gaze log events after UI Log last event")
     for i in range(last_gaze_log_row, len(gaze_log)-1):
       key, init = gaze_log_get_key(i, gaze_log)
       if key and (key in fixation_points["subsequent"]):
@@ -184,7 +185,7 @@ def gaze_analysis(log_path, root_path, special_colnames, gaze_analysis_type, gaz
     if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
         gazeanalysis_log = pd.read_csv(root_path + eyetracking_log_filename, sep=sep)
     else:
-        logging.exception("relevantinfoselection/gaze_analysis/gaze_analysis line:180. Eyetracking log cannot be read")
+        logging.exception("behaviourmonitoring/gaze_analysis/gaze_analysis line:180. Eyetracking log cannot be read")
         raise Exception("Eyetracking log cannot be read")
 
     if gaze_analysis_type == "imotions":
@@ -192,14 +193,27 @@ def gaze_analysis(log_path, root_path, special_colnames, gaze_analysis_type, gaz
         startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, gaze_analysis_configurations["native_slide_events"], sep)
         startDateTime_ui_log = get_mht_log_start_datetime(root_path + gaze_analysis_configurations["mht_log_filename"])
 
-        fixation_p = gaze_screenshot_mapper(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, gaze_analysis_configurations)
+        fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, gaze_analysis_configurations)
         
         # Serializing json
         json_object = json.dumps(fixation_p, indent=4)
         with open(root_path + "fixation.json", "w") as outfile:
             outfile.write(json_object)
+        logging.info("behaviourmonitoring/gaze_analysis/gaze_analysis. fixation.json saved!")
+        
     else:
-        logging.exception("relevantinfoselection/gaze_analysis/gaze_analysis line:195. Gaze analysis selected is not available in the system")
+        logging.exception("behaviourmonitoring/gaze_analysis/gaze_analysis line:195. Gaze analysis selected is not available in the system")
         raise Exception("You select a gaze analysis that is not available in the system")
         
+    # TODO: Applying pre-selectors
+    if "preselectors" in gaze_analysis_configurations:
+      msg = "behaviourmonitoring/gaze_analysis/gaze_analysis. preselector you choose is not implemented yet! :)"
+      preselectors = gaze_analysis_configurations["preselectors"]
+      for p in preselectors:
+        if gaze_analysis_configurations["preselectors"][p] == "rectangle_preselection":
+          rectangle_preselector()
+        elif gaze_analysis_configurations["preselectors"][p] == "attention+zeros_preselection":
+          attention_preselector()
+      logging.info(msg)
+      print(msg)
     return root_path + "fixation.json"

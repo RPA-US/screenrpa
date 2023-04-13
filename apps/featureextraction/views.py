@@ -1,4 +1,4 @@
-from apps.featureextraction.classification import legacy_ui_elements_classification, uied_ui_elements_classification
+from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
 from art import tprint
 from core.settings import platform_name, classification_phase_name, feature_extraction_phase_name
 from apps.analyzer.utils import detect_fe_function

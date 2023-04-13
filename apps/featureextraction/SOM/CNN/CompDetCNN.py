@@ -2,7 +2,7 @@ from tensorflow.keras.models import Model,load_model
 import numpy as np
 import cv2
 
-from apps.featureextraction.CNN.ConfigCNN import Config
+from apps.featureextraction.SOM.CNN.ConfigCNN import Config
 
 from tqdm import tqdm
 
