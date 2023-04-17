@@ -72,7 +72,7 @@ def edit_user(request):
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse("analyzer:home"))
+            return HttpResponseRedirect(reverse("home"))
     else:
         form = UserForm(instance=user)
     return render(request, 'home/profile.html', {'form': form, 'executed_experiments': executed_experiments, 'total_experiments': total_experiments})
