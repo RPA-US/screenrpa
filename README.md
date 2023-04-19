@@ -113,7 +113,11 @@ The project is coded using a simple and intuitive structure presented bellow:
    |              |-- 404-page.html         # 404 page
    |              |-- *.html                # All other pages
    |
-   |-- requirements.txt                     # Development modules - SQLite storage
+   |-- resources/
+   |         |--models/                     # Models used in the apps
+   |         |--inputs/                     # Inputs, such as images, used for testing
+   |
+   |-- requirements.txt                     # Development modules
    |
    |-- .env                                 # Inject Configuration via Environment
    |-- manage.py                            # Start the app - Django default start script
