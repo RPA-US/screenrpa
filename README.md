@@ -114,7 +114,7 @@ The project is coded using a simple and intuitive structure presented bellow:
    |              |-- *.html                # All other pages
    |
    |-- resources/
-   |         |--models/                     # Models used in the apps
+   |         |--models/                     # Models used in apps
    |         |--inputs/                     # Inputs, such as images, used for testing
    |
    |-- requirements.txt                     # Development modules
