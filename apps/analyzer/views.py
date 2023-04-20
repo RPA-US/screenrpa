@@ -21,6 +21,7 @@ from core.settings import times_calculation_mode, metadata_location, sep, decisi
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
+from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.featureextraction.relevantinfoselection.preselectors import info_preselection
 from apps.featureextraction.relevantinfoselection.selectors import info_selection
 from apps.processdiscovery.views import process_discovery
