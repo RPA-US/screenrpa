@@ -9,6 +9,20 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.urls import reverse
 
+
+class Preselectors(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    configurations = JSONField(null=True, blank=True)
+    type = models.CharField(max_length=25, default='rpa-us')
+    skip = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def get_absolute_url(self):
+        return reverse("analyzer:casestudy_list")
+    
+    def __str__(self):
+        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+
 class UIElementsDetection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='rpa-us')
@@ -37,6 +51,19 @@ class UIElementsClassification(models.Model):
         
     def __str__(self):
         return 'type: ' + self.type + ' - model: ' + self.model
+
+class Selectors(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    configurations = JSONField(null=True, blank=True)
+    type = models.CharField(max_length=25, default='rpa-us')
+    skip = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def get_absolute_url(self):
+        return reverse("analyzer:casestudy_list")
+    
+    def __str__(self):
+        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 class FeatureExtractionTechnique(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

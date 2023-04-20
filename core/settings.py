@@ -238,7 +238,7 @@ STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.js
 CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
 
 # System Default Phases
-default_phases = ['ui_elements_detection','monitoring','ui_elements_classification','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['monitoring','info_preselection','ui_elements_detection','ui_elements_classification','info_selection','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################

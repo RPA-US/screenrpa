@@ -8,7 +8,6 @@ import datetime
 from dateutil import tz
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
-from apps.featureextraction.relevantinfoselection.preselectors import rectangle_preselector, attention_preselector
 
 def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
   if pattern == "ms":
@@ -205,15 +204,4 @@ def monitoring(log_path, root_path, special_colnames, monitoring_type, monitorin
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
         raise Exception("You select a gaze analysis that is not available in the system")
         
-    # TODO: Applying pre-selectors
-    if "preselectors" in monitoring_configurations:
-      msg = "behaviourmonitoring/monitoring/monitoring. preselector you choose is not implemented yet! :)"
-      preselectors = monitoring_configurations["preselectors"]
-      for p in preselectors:
-        if monitoring_configurations["preselectors"][p] == "rectangle_preselection":
-          rectangle_preselector()
-        elif monitoring_configurations["preselectors"][p] == "attention+zeros_preselection":
-          attention_preselector()
-      logging.info(msg)
-      print(msg)
     return root_path + "fixation.json"

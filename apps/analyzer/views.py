@@ -21,16 +21,17 @@ from core.settings import times_calculation_mode, metadata_location, sep, decisi
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
-from apps.featureextraction.SOM.detection import ui_elements_detection
+from apps.featureextraction.relevantinfoselection.preselectors import info_preselection
+from apps.featureextraction.relevantinfoselection.selectors import info_selection
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy
-from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
-from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
+from apps.featureextraction.models import Preselectors, UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, Selectors
+from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
 from apps.analyzer.serializers import CaseStudySerializer
-from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
+from apps.featureextraction.serializers import PreselectorsSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, SelectorsSerializer, FeatureExtractionTechniqueSerializer
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
@@ -45,6 +46,18 @@ from apps.analyzer.collect_results import experiments_results_collectors
 def generate_case_study(case_study, path_scenario, times, n):
     times[n] = {}
     to_exec_args = {
+        'monitoring': (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        case_study.monitoring.type,
+                                        case_study.monitoring.configurations)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.monitoring else None,
+        'info_preselection': (case_study.preselectors.configurations,
+                                        case_study.preselectors.skip,
+                                        case_study.preselectors.type)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.preselectors else None,
         'ui_elements_detection': (path_scenario + case_study.ui_elements_detection.input_filename,
                                         path_scenario,
                                         case_study.special_colnames,
@@ -54,13 +67,6 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.text_classname)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_detection else None,
-        'monitoring': (path_scenario +'log.csv',
-                                        path_scenario,
-                                        case_study.special_colnames,
-                                        case_study.monitoring.type,
-                                        case_study.monitoring.configurations)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.monitoring else None,
         'ui_elements_classification': (case_study.ui_elements_classification.model, # specific extractors
                                         case_study.ui_elements_classification.model_properties,
                                         path_scenario + 'components_npy' + sep,
@@ -74,6 +80,11 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
+        'info_selection': (case_study.selectors.configurations,
+                                        case_study.selectors.skip,
+                                        case_study.selectors.type)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.selectors else None,
         'process_discovery': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -130,6 +141,7 @@ def generate_case_study(case_study, path_scenario, times, n):
             start_t = time.time()
             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+            # Additional feature extraction metrics
             times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
             times[n][function_to_exec]["num_screenshots"] = num_screenshots
             times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
@@ -245,18 +257,26 @@ def case_study_generator(data):
         # For each phase we want to execute, we create a database row for it and relate it with the case study
         for phase in phases:
             match phase:
-                case "ui_elements_detection":
-                    serializer = UIElementsDetectionSerializer(data=phases[phase])
-                    serializer.is_valid(raise_exception=True)
-                    case_study.ui_elements_detection = serializer.save()
                 case "monitoring":
                     serializer = MonitoringSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.monitoring = serializer.save()
+                case "info_preselection":
+                    serializer = PreselectorsSerializer(data=phases[phase])
+                    serializer.is_valid(raise_exception=True)
+                    case_study.preselectors = serializer.save()
+                case "ui_elements_detection":
+                    serializer = UIElementsDetectionSerializer(data=phases[phase])
+                    serializer.is_valid(raise_exception=True)
+                    case_study.ui_elements_detection = serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
+                case "info_selection":
+                    serializer = SelectorsSerializer(data=phases[phase])
+                    serializer.is_valid(raise_exception=True)
+                    case_study.selectors = serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)

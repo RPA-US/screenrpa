@@ -6,13 +6,10 @@ from django.db.models import JSONField
 from django.contrib.auth.models import User
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique
+from apps.featureextraction.models import Preselectors, UIElementsDetection, UIElementsClassification, Selectors, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
 from django.urls import reverse
 from django.core.exceptions import ValidationError
-
-def default_phases_to_execute():
-    return {'ui_elements_detection': {}, 'ui_elements_classification': {}, 'extract_training_dataset': {}, 'decision_tree_training': {}}
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
@@ -66,9 +63,11 @@ class CaseStudy(models.Model):
     ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     target_label = models.CharField(max_length=50, default='Variant')
-    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
+    preselectors = models.ForeignKey(Preselectors, null=True, blank=True, on_delete=models.CASCADE)
+    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
+    selectors = models.ForeignKey(Selectors, null=True, blank=True, on_delete=models.CASCADE)
     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
