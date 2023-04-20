@@ -23,7 +23,7 @@ def ui_elements_classification(*data):
         case "uied":
             output = uied_ui_elements_classification(*data)
         case _:
-            pass
+            raise Exception("You select a type of UI element classification that doesnt exists")
     return output
 
 def feature_extraction_technique(*data):
