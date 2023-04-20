@@ -4,7 +4,7 @@ import json
 import pytz
 from dateutil.parser import parse
 
-def decode_imotions_gaze_analysis(gazeanalysis_log):
+def decode_imotions_monitoring(gazeanalysis_log):
     # Find row index where "#DATA" is located
     data_index = gazeanalysis_log.index[gazeanalysis_log.iloc[:, 0] == '#DATA'][0]
 

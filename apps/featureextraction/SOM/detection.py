@@ -14,7 +14,7 @@ from core.settings import cropping_threshold, platform_name, detection_phase_nam
 from art import tprint
 import pickle
 from tqdm import tqdm
-# from apps.featureextraction.gaze_analysis import gaze_events_associated_to_event_time_range
+# from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
 from apps.analyzer.utils import format_mht_file
 
 """
@@ -322,7 +322,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         # recortes.append(crop_img)
         # else:
         # If the GUI component overlaps with the textbox, cut the later one
-        # gaze_point_x and gaze_point_x >= x and gaze_point_x <= w and gaze_point_y >= y and gaze_point_y <= h and duration >= gaze_analysis_threshold
+        # gaze_point_x and gaze_point_x >= x and gaze_point_x <= w and gaze_point_y >= y and gaze_point_y <= h and duration >= monitoring_threshold
         coincidence_with_attention_point = True # TODO: gaze analysis phase
 
         if (condicion_recorte and coincidence_with_attention_point):

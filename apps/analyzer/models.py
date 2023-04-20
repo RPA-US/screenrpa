@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
 from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique
-from apps.behaviourmonitoring.models import GazeAnalysis
+from apps.behaviourmonitoring.models import Monitoring
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 
@@ -67,7 +67,7 @@ class CaseStudy(models.Model):
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     target_label = models.CharField(max_length=50, default='Variant')
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
-    gaze_analysis = models.ForeignKey(GazeAnalysis, null=True, blank=True, on_delete=models.CASCADE)
+    monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)

@@ -201,7 +201,7 @@ AUTHENTICATION_BACKENDS = (
 API_VERSION =               env('API_VERSION')
 decision_foldername =       env('DECISION_TREE_TRAINING_FOLDERNAME')
 cropping_threshold =        int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
-gaze_analysis_threshold =   int(env('GAZE_MINIMUM_TIME_STARING')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
+gaze_monitoring_threshold =   int(env('GAZE_MINIMUM_TIME_STARING')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 gui_quantity_difference =   int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 times_calculation_mode =    env('RESULTS_TIMES_FORMAT') # substitute "formatted" -> get times formatted "%H:%M:%S.%fS" 
 metadata_location =         env('METADATA_PATH')
@@ -238,7 +238,7 @@ STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.js
 CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
 
 # System Default Phases
-default_phases = ['ui_elements_detection','gaze_analysis','ui_elements_classification','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['ui_elements_detection','monitoring','ui_elements_classification','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################

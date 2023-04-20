@@ -23,15 +23,15 @@ from apps.decisiondiscovery.views import decision_tree_training, extract_trainin
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.processdiscovery.views import process_discovery
-from apps.behaviourmonitoring.log_mapping.gaze_analysis import gaze_analysis
+from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy
 from apps.featureextraction.models import UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique
-from apps.behaviourmonitoring.models import GazeAnalysis
+from apps.behaviourmonitoring.models import Monitoring
 from apps.decisiondiscovery.models import DecisionTreeTraining, ExtractTrainingDataset
 from apps.analyzer.forms import CaseStudyForm
 from apps.analyzer.serializers import CaseStudySerializer
 from apps.featureextraction.serializers import UIElementsClassificationSerializer, UIElementsDetectionSerializer, FeatureExtractionTechniqueSerializer
-from apps.behaviourmonitoring.serializers import GazeAnalysisSerializer
+from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.analyzer.tasks import init_generate_case_study
@@ -54,13 +54,13 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.text_classname)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_detection else None,
-        'gaze_analysis': (path_scenario +'log.csv',
+        'monitoring': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.gaze_analysis.type,
-                                        case_study.gaze_analysis.configurations)
+                                        case_study.monitoring.type,
+                                        case_study.monitoring.configurations)
                                         # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.gaze_analysis else None,
+                                        if case_study.monitoring else None,
         'ui_elements_classification': (case_study.ui_elements_classification.model, # specific extractors
                                         case_study.ui_elements_classification.model_properties,
                                         path_scenario + 'components_npy' + sep,
@@ -182,7 +182,7 @@ def celery_task_process_case_study(case_study_id):
         time.sleep(.1)
         print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
-        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.gaze_analysis or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery:
+        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery:
             if scenario_nested_folder == "TRUE":
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
@@ -249,10 +249,10 @@ def case_study_generator(data):
                     serializer = UIElementsDetectionSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_detection = serializer.save()
-                case "gaze_analysis":
-                    serializer = GazeAnalysisSerializer(data=phases[phase])
+                case "monitoring":
+                    serializer = MonitoringSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.gaze_analysis = serializer.save()
+                    case_study.monitoring = serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)

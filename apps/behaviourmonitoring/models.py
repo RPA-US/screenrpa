@@ -4,7 +4,7 @@ from django.db.models import JSONField
 from django.urls import reverse
 
 # Create your models here.
-class GazeAnalysis(models.Model):
+class Monitoring(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='attention-points')
     configurations = JSONField(null=True, blank=True)

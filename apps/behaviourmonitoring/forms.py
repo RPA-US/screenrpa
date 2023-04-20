@@ -4,11 +4,11 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from .models import GazeAnalysis
+from .models import Monitoring
 
-class GazeAnalysisForm(forms .ModelForm):
+class MonitoringForm(forms .ModelForm):
     class Meta:
-        model = GazeAnalysis
+        model = Monitoring
         exclude = (
             "user",
             )
@@ -33,4 +33,4 @@ class GazeAnalysisForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(GazeAnalysisForm, self).__init__(*args, **kwargs)
+        super(MonitoringForm, self).__init__(*args, **kwargs)

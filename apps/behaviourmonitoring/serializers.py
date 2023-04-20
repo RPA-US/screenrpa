@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import GazeAnalysis
+from .models import Monitoring
        
-class GazeAnalysisSerializer(serializers.ModelSerializer):
+class MonitoringSerializer(serializers.ModelSerializer):
     class Meta:
-        model = GazeAnalysis
+        model = Monitoring
         fields = '__all__'

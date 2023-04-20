@@ -1,15 +1,15 @@
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, CreateView
 from django.core.exceptions import ValidationError
-from .models import GazeAnalysis
-from .forms import GazeAnalysisForm
+from .models import Monitoring
+from .forms import MonitoringForm
 
 # Create your views here.
     
-class GazeAnalysisCreateView(CreateView):
-    model = GazeAnalysis
-    form_class = GazeAnalysisForm
-    template_name = "gaze_analysis/create.html"
+class MonitoringCreateView(CreateView):
+    model = Monitoring
+    form_class = MonitoringForm
+    template_name = "monitoring/create.html"
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -19,10 +19,10 @@ class GazeAnalysisCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class GazeAnalysisListView(ListView):
-    model = GazeAnalysis
-    template_name = "gaze_analysis/list.html"
+class MonitoringListView(ListView):
+    model = Monitoring
+    template_name = "monitoring/list.html"
     paginate_by = 50
 
     def get_queryset(self):
-        return GazeAnalysis.objects.all()
+        return Monitoring.objects.all()
