@@ -210,10 +210,10 @@ scenario_nested_folder =    env('SCENARIO_NESTED_FOLDER')
 several_iterations =        env('SEVERAL_ITERATIONS')
 platform_name =                         "RIM"
 monitoring_phase_name =                 "monitoring"
-info_preselection_phase_name =          "preselection"
+info_prefiltering_phase_name =          "preselection"
 detection_phase_name =                  "detection"
 classification_phase_name =             "classification"
-info_selection_phase_name =             "selection"
+info_filtering_phase_name =             "selection"
 feature_extraction_phase_name =         "feature extraction"
 flattening_phase_name =                 "flattening"
 decision_model_discovery_phase_name =   "decision model discovery"
@@ -241,7 +241,7 @@ STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.js
 CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
 
 # System Default Phases
-default_phases = ['monitoring','info_preselection','ui_elements_detection','ui_elements_classification','info_selection','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_filtering','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
 
 #############################################################
 #############################################################

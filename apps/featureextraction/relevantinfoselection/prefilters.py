@@ -6,6 +6,6 @@ def rectangle_preselector():
 def attention_preselector():
     print("Not implemented yet :)")
     
-def info_preselection(configurations, skip, type):
+def info_prefiltering(configurations, skip, type):
     # TODO
     print("Not implemented yet :)")

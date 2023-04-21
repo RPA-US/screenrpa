@@ -22,17 +22,17 @@ from core.settings import times_calculation_mode, metadata_location, sep, decisi
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.SOM.detection import ui_elements_detection
-from apps.featureextraction.relevantinfoselection.preselectors import info_preselection
-from apps.featureextraction.relevantinfoselection.selectors import info_selection
+from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
+from apps.featureextraction.relevantinfoselection.filters import info_filtering
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy
 from apps.behaviourmonitoring.models import Monitoring
-from apps.featureextraction.models import Preselectors, UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, Selectors
+from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, Filters
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
 from apps.analyzer.serializers import CaseStudySerializer
-from apps.featureextraction.serializers import PreselectorsSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, SelectorsSerializer, FeatureExtractionTechniqueSerializer
+from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, FiltersSerializer, FeatureExtractionTechniqueSerializer
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
@@ -54,7 +54,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.monitoring.configurations)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.monitoring else None,
-        'info_preselection': (case_study.preselectors.configurations,
+        'info_prefiltering': (case_study.preselectors.configurations,
                                         case_study.preselectors.skip,
                                         case_study.preselectors.type)
                                         # We check this phase is present in case_study to avoid exceptions
@@ -81,7 +81,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
-        'info_selection': (case_study.selectors.configurations,
+        'info_filtering': (case_study.selectors.configurations,
                                         case_study.selectors.skip,
                                         case_study.selectors.type)
                                         # We check this phase is present in case_study to avoid exceptions
@@ -262,8 +262,8 @@ def case_study_generator(data):
                     serializer = MonitoringSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.monitoring = serializer.save()
-                case "info_preselection":
-                    serializer = PreselectorsSerializer(data=phases[phase])
+                case "info_prefiltering":
+                    serializer = PrefiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.preselectors = serializer.save()
                 case "ui_elements_detection":
@@ -274,8 +274,8 @@ def case_study_generator(data):
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
-                case "info_selection":
-                    serializer = SelectorsSerializer(data=phases[phase])
+                case "info_filtering":
+                    serializer = FiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.selectors = serializer.save()
                 case "feature_extraction_technique":

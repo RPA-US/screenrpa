@@ -10,7 +10,7 @@ from django.db.models import JSONField
 from django.urls import reverse
 
 
-class Preselectors(models.Model):
+class Prefilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     configurations = JSONField(null=True, blank=True)
     type = models.CharField(max_length=25, default='rpa-us')
@@ -52,7 +52,7 @@ class UIElementsClassification(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - model: ' + self.model
 
-class Selectors(models.Model):
+class Filters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     configurations = JSONField(null=True, blank=True)
     type = models.CharField(max_length=25, default='rpa-us')

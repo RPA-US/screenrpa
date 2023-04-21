@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Preselectors, UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, Selectors
+from .models import Prefilters, UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, Filters
 
-class PreselectorsSerializer(serializers.ModelSerializer):
+class PrefiltersSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Preselectors
+        model = Prefilters
         fields = '__all__'
 
 class UIElementsDetectionSerializer(serializers.ModelSerializer):
@@ -16,9 +16,9 @@ class UIElementsClassificationSerializer(serializers.ModelSerializer):
         model = UIElementsClassification
         fields = '__all__'
         
-class SelectorsSerializer(serializers.ModelSerializer):
+class FiltersSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Selectors
+        model = Filters
         fields = '__all__'
 
 class FeatureExtractionTechniqueSerializer(serializers.ModelSerializer):

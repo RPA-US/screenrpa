@@ -6,7 +6,7 @@ from django.db.models import JSONField
 from django.contrib.auth.models import User
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
-from apps.featureextraction.models import Preselectors, UIElementsDetection, UIElementsClassification, Selectors, FeatureExtractionTechnique
+from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Filters, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
 from django.urls import reverse
 from django.core.exceptions import ValidationError
@@ -64,10 +64,10 @@ class CaseStudy(models.Model):
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     target_label = models.CharField(max_length=50, default='Variant')
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
-    preselectors = models.ForeignKey(Preselectors, null=True, blank=True, on_delete=models.CASCADE)
+    preselectors = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
-    selectors = models.ForeignKey(Selectors, null=True, blank=True, on_delete=models.CASCADE)
+    selectors = models.ForeignKey(Filters, null=True, blank=True, on_delete=models.CASCADE)
     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
