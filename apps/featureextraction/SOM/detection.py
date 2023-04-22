@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 from core.settings import cropping_threshold, platform_name, detection_phase_name
 from art import tprint
+import logging
 import pickle
 from tqdm import tqdm
 # from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
@@ -469,16 +470,20 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, special_colnames, configurations, skip=False, algorithm="legacy", text_classname="text"):
+def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", text_classname="text"):
     tprint(platform_name + " - " + detection_phase_name, "fancy60")
     print(param_img_root+"\n")
     
-    if "format" in configurations:
+    if os.path.exists(param_log_path):
+        logging.info("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor")
+        print("Log already exists, it's not needed to execute format conversor")
+    elif "format" in configurations:
+        logging.info("apps/featureextraction/SOM/detection.py Format conversor executed! Type: " + configurations["format"] + ", Filename: "  + configurations["formatted_log_name"])
         if "formatted_log_name" in configurations:
             log_filename = configurations["formatted_log_name"]
         else:
             log_filename = "log"
-        param_log_path = format_mht_file(param_log_path, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
+        param_log_path = format_mht_file(param_img_root + log_input_filaname, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
     
     # Log read
     log = pd.read_csv(param_log_path, sep=",")

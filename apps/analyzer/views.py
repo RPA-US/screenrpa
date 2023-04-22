@@ -54,13 +54,17 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.monitoring.configurations)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.monitoring else None,
-        'info_prefiltering': (case_study.preselectors.configurations,
-                                        case_study.preselectors.skip,
-                                        case_study.preselectors.type)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.preselectors else None,
-        'ui_elements_detection': (path_scenario + case_study.ui_elements_detection.input_filename,
+        'info_prefiltering': (path_scenario +'log.csv',
                                         path_scenario,
+                                        case_study.special_colnames,
+                                        case_study.prefilters.configurations,
+                                        case_study.prefilters.skip,
+                                        case_study.prefilters.type)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study.prefilters else None,
+        'ui_elements_detection': (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.ui_elements_detection.input_filename,
                                         case_study.special_colnames,
                                         case_study.ui_elements_detection.configurations,
                                         case_study.ui_elements_detection.skip,
@@ -81,11 +85,14 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
-        'info_filtering': (case_study.selectors.configurations,
-                                        case_study.selectors.skip,
-                                        case_study.selectors.type)
+        'info_filtering': (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        case_study.filters.configurations,
+                                        case_study.filters.skip,
+                                        case_study.filters.type)
                                         # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.selectors else None,
+                                        if case_study.filters else None,
         'process_discovery': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -192,8 +199,8 @@ def celery_task_process_case_study(case_study_id):
     foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
     
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
-        time.sleep(.1)
-        print("\nActual Scenario: " + str(scenario))
+        # time.sleep(.1)
+        # print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
         if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery:
             if scenario_nested_folder == "TRUE":
@@ -265,7 +272,7 @@ def case_study_generator(data):
                 case "info_prefiltering":
                     serializer = PrefiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.preselectors = serializer.save()
+                    case_study.prefilters = serializer.save()
                 case "ui_elements_detection":
                     serializer = UIElementsDetectionSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
@@ -277,7 +284,7 @@ def case_study_generator(data):
                 case "info_filtering":
                     serializer = FiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.selectors = serializer.save()
+                    case_study.filters = serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)

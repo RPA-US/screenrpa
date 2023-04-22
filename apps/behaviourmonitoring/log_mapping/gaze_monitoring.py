@@ -7,6 +7,7 @@ import pandas as pd
 import datetime
 from dateutil import tz
 from apps.analyzer.utils import get_mht_log_start_datetime
+from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
 
 def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
@@ -119,7 +120,7 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
   # ui_log = ui_log.sort_values(special_colnames["Timestamp"])
   # gaze_log = gaze_log.sort_values("Timestamp")
 
-  fixation_points = {"previous": {} }
+  fixation_points = {"previous": {}, "subsequent": {} }
   
   last_gaze_log_row = 0
   last_fixation_index = 0
@@ -177,6 +178,15 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
   return fixation_points
 
 def monitoring(log_path, root_path, special_colnames, monitoring_type, monitoring_configurations):
+    
+    if os.path.exists(log_path):
+      logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
+      print("Log already exists, it's not needed to execute format conversor")
+    elif "format" in monitoring_configurations:
+      log_filename = "log"
+      log_path = format_mht_file(root_path + monitoring_configurations["mht_log_filename"], monitoring_configurations["format"], root_path, log_filename, monitoring_configurations["org:resource"])
+  
+  
     ui_log = pd.read_csv(log_path, sep=",")
     sep = monitoring_configurations["separator"]
     eyetracking_log_filename = monitoring_configurations["eyetracking_log_filename"]
@@ -184,8 +194,8 @@ def monitoring(log_path, root_path, special_colnames, monitoring_type, monitorin
     if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
         gazeanalysis_log = pd.read_csv(root_path + eyetracking_log_filename, sep=sep)
     else:
-        logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking log cannot be read")
-        raise Exception("Eyetracking log cannot be read")
+        logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
+        raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
 
     if monitoring_type == "imotions":
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
