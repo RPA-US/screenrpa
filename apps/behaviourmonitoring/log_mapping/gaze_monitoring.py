@@ -143,12 +143,12 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
           gaze_timestamp = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], "ms")# + gaze_log_timedelta
           
           # Gaze Event between current ui log event and next ui log event
-          if current_timestamp <= gaze_timestamp and gaze_timestamp < next_timestamp:
+          if gaze_timestamp < next_timestamp:
             fixation_points, key = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames)
             last_fixation_index = gaze_log.iloc[i]["Fixation Index"]
           # Gaze Event before current ui log event
-          elif current_timestamp > gaze_timestamp:
-            raise Exception("current_timestamp > gaze_timestamp")
+          # elif current_timestamp > gaze_timestamp:
+          #   raise Exception("current_timestamp > gaze_timestamp")
           # Gaze Event after current ui log event and next ui log event
           else:
             last_gaze_log_row = i
