@@ -429,8 +429,11 @@ def is_block(clip, thread=0.15):
     if blank_count > 2: return False
     return True
 
-def compo_block_recognition(binary, compos, block_side_length=0.15):
-    height, width = binary.shape
+def compo_block_recognition(binary, compos, block_side_length=0.15, color=False):
+    if color:
+        height, width,_ = binary.shape
+    else:
+        height, width = binary.shape
     for compo in compos:
         if compo.height / height > block_side_length and compo.width / width > block_side_length:
             clip = compo.compo_clipping(binary)

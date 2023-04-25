@@ -55,6 +55,7 @@ Keras-Preprocessing==1.1.2
 kiwisolver==1.4.4
 kombu==5.2.4
 libclang==14.0.6
+lxml==4.9.2
 Markdown==3.4.1
 MarkupSafe==2.1.1
 matplotlib==3.6.1
@@ -70,6 +71,7 @@ opt-einsum==3.3.0
 packaging==21.3
 pandas==1.5.0
 Pillow==9.2.0
+pm4py==2.7.3
 prompt-toolkit==3.0.31
 protobuf==3.19.6
 psutil==5.9.2
@@ -106,6 +108,7 @@ termcolor==2.0.1
 threadpoolctl==3.1.0
 tifffile==2022.10.10
 toml==0.10.2
+torch==2.0.0
 tqdm==4.64.1
 typing_extensions==4.4.0
 tzdata==2022.4
@@ -119,3 +122,4 @@ Werkzeug==2.2.2
 wheel==0.38.4
 whitenoise==6.2.0
 wrapt==1.14.1
+
