@@ -5,7 +5,7 @@ from tqdm import tqdm
 import json
 import logging
 
-def gaze_filering(log_path, root_path, special_colnames):
+def gaze_filering(log_path, root_path, special_colnames, configurations, key):
     """
     This function remove from 'screenshot000X.JPG' the compos that do not receive attention by the user (there's no fixation point that matches compo area)
     """
@@ -25,20 +25,23 @@ def gaze_filering(log_path, root_path, special_colnames):
             screenshot_json = json.load(f)
         
         for compo in screenshot_json["compos"]:
-            if screenshot_filename in fixation_json:
+            # compo matches UI selector
+            if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
+                (screenshot_filename in fixation_json): # screenshot has fixation
                 for fixation_point in fixation_json[screenshot_filename]["fixation_points"]:
                     fixation_coordinates = fixation_point.split("#")
-                    x_coord = float(fixation_coordinates[0])
-                    y_coord = float(fixation_coordinates[1])
-                    x_cond = (compo["row_min"] <= x_coord) and (x_coord <= compo["row_max"])
-                    y_cond = (compo["column_min"] <= y_coord) and (y_coord <= compo["column_max"])
-                    if x_cond and y_cond:
-                        compo["relevant"] = True
+                    fixation_point_x = float(fixation_coordinates[0])
+                    fixation_point_y = float(fixation_coordinates[1])
+                    if eval(configurations[key]["predicate"]):
+                        if configurations[key]["only_leaf"] and (len(compo["contain"]) > 0):
+                            compo["relevant"] = "Nested"
+                        else:
+                            compo["relevant"] = "True"
                     else:
-                        compo["relevant"] = False
+                        compo["relevant"] = "False"
             else:
-                compo["relevant"] = False
-                
+                compo["relevant"] = "False"
+
         with open(root_path + "components_json" + sep + screenshot_filename + '.json', "w") as jsonFile:
             json.dump(screenshot_json, jsonFile, indent=4)
 
@@ -51,7 +54,7 @@ def apply_filters(log_path, root_path, special_colnames, configurations, skip):
             s = "and applied!"
             match key:
                 case "gaze":
-                    gaze_filering(log_path, root_path, special_colnames)
+                    gaze_filering(log_path, root_path, special_colnames, configurations, "gaze")
                 case _:
                     s = "but not executed. It's not one of the possible filters to apply!"
                     pass

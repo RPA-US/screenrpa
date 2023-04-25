@@ -10,6 +10,46 @@ from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
 
+import math
+
+def euclidean_distance(x1, y1, x2, y2):
+  """
+  Define a function to calculate the Euclidean distance between two points
+  """
+  return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze X", y_column_name="Gaze Y"):
+    """
+    Define a function to calculate the fixation dispersion given a list of fixations
+    """
+    
+    # Calculate the mean x and y coordinates of the fixations
+    total_x = 0
+    total_y = 0
+    for index in fixations:
+        total_x += float(gaze_log.loc[index,x_column_name])
+        total_y += float(gaze_log.loc[index,y_column_name])
+    mean_x = total_x / len(fixations)
+    mean_y = total_y / len(fixations)
+
+    # Calculate the sum of squared distances from each fixation to the mean fixation
+    ssd = sum(euclidean_distance(float(gaze_log.loc[index,x_column_name]), float(gaze_log.loc[index,y_column_name]), mean_x, mean_y)**2 for index in fixations)
+
+    # Divide the sum of squared distances by the number of fixations minus 1 to get the variance
+    variance = ssd / (len(fixations) - 1)
+
+    # Take the square root of the variance to get the standard deviation, which is the fixation dispersion
+    fixation_dispersion = math.sqrt(variance)
+
+    return fixation_dispersion
+  
+def calculate_dispersion(gaze_log, metrics, last_index):
+    dispersion = fixation_dispersion(range(metrics["start_row"], last_index + 1), gaze_log, "Gaze X", "Gaze Y")
+    
+    metrics["last_index"] = last_index
+    metrics["dispersion"] = dispersion
+    return metrics
+
 def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
   if pattern == "ms":
     ms = float(current_timestamp) / 1000
@@ -28,29 +68,65 @@ def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
     res = datetime.datetime.combine(start_datetime, time)
   return (res - time_begining).total_seconds()
 
+
+def format_fixation_point_key(i, gaze_log):
+  return str(gaze_log.iloc[i]["Fixation X"]) + "#" + str(gaze_log.iloc[i]["Fixation Y"])
+
 def gaze_log_get_key(i, gaze_log):
   init = {  
     "#events": 1,
+    "start_row": i,
     "ms_start": gaze_log.iloc[i]["Fixation Start"],
     "ms_end": gaze_log.iloc[i]["Fixation End"],
     "duration": gaze_log.iloc[i]["Fixation Duration"],
-    "dispersion": gaze_log.iloc[i]["Fixation Dispersion"]
+    "imotions_dispersion": gaze_log.iloc[i]["Fixation Dispersion"]
   }
-  return str(gaze_log.iloc[i]["Fixation X"]) + "#" + str(gaze_log.iloc[i]["Fixation Y"]), init
+  return format_fixation_point_key(i, gaze_log), init
 
 def update_previous_screenshots_in_splitted_events(fixation_points, j, key, init, ui_log, last_counter, special_colnames):
   for k in range(1, last_counter+1):
     if not (ui_log.iloc[j-k][special_colnames["Screenshot"]] in fixation_points):
+      # Initialize gaze metrics
       fixation_points[ui_log.iloc[j-k][special_colnames["Screenshot"]]] = { 'fixation_points': { key: init} }
     elif key in fixation_points[ui_log.iloc[j-k][special_colnames["Screenshot"]]]["fixation_points"]:
       fixation_points[ui_log.iloc[j-k][special_colnames["Screenshot"]]]["fixation_points"][key]["#events"] += 1
     else:
+      # Initialize gaze metrics
       fixation_points[ui_log.iloc[j-k][special_colnames["Screenshot"]]]["fixation_points"][key] = init
     fixation_points[ui_log.iloc[j-k][special_colnames["Screenshot"]]]["fixation_points"][key]["intersectioned"] = "True"
   
   return fixation_points 
 
-def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames):
+def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames):
+  """
+  
+  Update fixation points values
+  
+  j: ui_log index
+  i: gaze_log index
+  fixation_points
+  gaze_log: gaze_log content
+  ui_log: ui_log content
+  last_fixation_index: fixation index of the last row
+  last_gaze_log_row: last gaze log row 
+  last_fixation_index_row: gaze row index of the last fixation point detected
+  last_ui_log_index_row: ui log index that point to last fixation related event
+  starting_point: the start time to measure timestamps
+  initial_timestamp: first timestamp in the log
+  current_timestamp: current timestamp
+  startDateTime_ui_log: start datetime in ui log
+  startDateTime_gaze_tz: start datetime in gaze log
+  special_colnames: json indicating special columns names
+  """
+  gaze_fixation_start = None
+  
+  # When a fixation slot ends, dispersion is calculated
+  if last_ui_log_index_row != -1 and (not pd.isnull(last_fixation_index)) and last_fixation_index != 0 and (not pd.isnull(gaze_log.iloc[i]["Fixation Index"])) and gaze_log.iloc[i]["Fixation Index"] != last_fixation_index:
+    screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
+    gaze_metrics = fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)]
+    metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
+    fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)] = metrics_aux
+  
   if key and (key in fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"]) and \
     gaze_log.iloc[i]["Fixation Index"] == last_fixation_index:
     fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"][key]["#events"] += 1
@@ -73,9 +149,10 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
       gaze_fixation_start = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, 'ms') # + gaze_log_timedelta
       key, init = gaze_log_get_key(i, gaze_log)
       last_counter = 1
-      last_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[j-last_counter][special_colnames["Timestamp"]], '%H:%M:%S')
+      aux_index = j-last_counter if j != 0 else j
+      last_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[aux_index][special_colnames["Timestamp"]], '%H:%M:%S')
       
-      while last_timestamp == current_timestamp:
+      while last_timestamp == current_timestamp and j != 0:
         last_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[j-last_counter][special_colnames["Timestamp"]], '%H:%M:%S')
         logging.info("behaviourmonitoring/monitoring/update_fixation_points line:76. UI Log row " + str(j) + ". Finding the last timestamp change: " + str(last_counter) + " event before")
         last_counter+=1
@@ -84,6 +161,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
         if key in fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"]:
           fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"][key]["#events"] += 1
         else:
+          # Initialize gaze metrics
           fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"][key] = init
       elif (last_timestamp <= gaze_fixation_start) and (gaze_fixation_start < current_timestamp):
         fixation_points = update_previous_screenshots_in_splitted_events(fixation_points, j, key, init, ui_log, last_counter, special_colnames)
@@ -92,7 +170,8 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
         
         if key and (key in fixation_points["previous"]):
           fixation_points["previous"][key]["#events"] += 1
-        else:  
+        else:
+          # Initialize gaze metrics
           fixation_points["previous"][key] = init
     
     else:
@@ -102,7 +181,14 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
         msg = "No fixation point in " + str(gaze_log.iloc[i]["RowNumber"] + ". Saccade: " + str(gaze_log.iloc[i]["Saccade Index"]))
       logging.info(msg)
       print(msg)
-  return fixation_points, key
+  
+  if not pd.isnull(gaze_log.iloc[i]["Fixation Index"]):
+    last_fixation_index = gaze_log.iloc[i]["Fixation Index"]
+    last_fixation_index_row = i
+    if gaze_fixation_start and gaze_fixation_start >= current_timestamp:
+      last_ui_log_index_row = j
+  
+  return fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row
 
 def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, monitoring_configurations):
   # https://imotions.com/release-notes/imotions-9-1-7/
@@ -124,6 +210,8 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
   
   last_gaze_log_row = 0
   last_fixation_index = 0
+  last_fixation_index_row = -1
+  last_ui_log_index_row = -1
   
   initial_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[0][special_colnames["Timestamp"]], '%H:%M:%S')
   
@@ -144,8 +232,8 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
           
           # Gaze Event between current ui log event and next ui log event
           if gaze_timestamp < next_timestamp:
-            fixation_points, key = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames)
-            last_fixation_index = gaze_log.iloc[i]["Fixation Index"]
+            fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames)
+            
           # Gaze Event before current ui log event
           # elif current_timestamp > gaze_timestamp:
           #   raise Exception("current_timestamp > gaze_timestamp")
