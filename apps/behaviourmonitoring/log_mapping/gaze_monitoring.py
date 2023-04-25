@@ -44,7 +44,7 @@ def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze X", y_column_na
     return fixation_dispersion
   
 def calculate_dispersion(gaze_log, metrics, last_index):
-    dispersion = fixation_dispersion(range(metrics["start_row"], last_index + 1), gaze_log, "Gaze X", "Gaze Y")
+    dispersion = fixation_dispersion(range(metrics["start_index"], last_index + 1), gaze_log, "Gaze X", "Gaze Y")
     
     metrics["last_index"] = last_index
     metrics["dispersion"] = dispersion
@@ -75,7 +75,7 @@ def format_fixation_point_key(i, gaze_log):
 def gaze_log_get_key(i, gaze_log):
   init = {  
     "#events": 1,
-    "start_row": i,
+    "start_index": i,
     "ms_start": gaze_log.iloc[i]["Fixation Start"],
     "ms_end": gaze_log.iloc[i]["Fixation End"],
     "duration": gaze_log.iloc[i]["Fixation Duration"],
