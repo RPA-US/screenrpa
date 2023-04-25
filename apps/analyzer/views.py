@@ -17,7 +17,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.template import loader
 # Settings variables
-from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, FLATTENED_DATASET_NAME
+from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, active_celery, FLATTENED_DATASET_NAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
@@ -121,6 +121,8 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         path_scenario + 'log.csv',
                                         path_scenario + case_study.feature_extraction_technique.technique_name+'_enriched_log.csv',
                                         case_study.text_classname,
+                                        case_study.feature_extraction_technique.consider_relevant_compos,
+                                        case_study.feature_extraction_technique.relevant_compos_predicate,
                                         case_study.feature_extraction_technique.identifier,
                                         case_study.feature_extraction_technique.skip,
                                         case_study.feature_extraction_technique.technique_name)
@@ -307,8 +309,11 @@ def case_study_generator(data):
         # Updating the case study with the foreign keys of the phases to execute
         case_study.save()
         transaction_works = True
-    init_generate_case_study.delay(case_study.id)
-
+    if active_celery:
+        init_generate_case_study.delay(case_study.id)
+    else:
+        celery_task_process_case_study(case_study.id)
+        
     return transaction_works, case_study
 
 #============================================================================================================================
@@ -346,7 +351,10 @@ def executeCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
-    init_generate_case_study.delay(case_study_id)
+    if active_celery:
+        init_generate_case_study.delay(case_study_id)
+    else:
+        celery_task_process_case_study(case_study_id)
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
 def deleteCaseStudy(request):

@@ -217,6 +217,7 @@ info_filtering_phase_name =             "selection"
 feature_extraction_phase_name =         "feature extraction"
 flattening_phase_name =                 "flattening"
 decision_model_discovery_phase_name =   "decision model discovery"
+active_celery =                         False
 FLATTENED_DATASET_NAME =                "flattened_dataset_preprocessed.csv"
 
 
