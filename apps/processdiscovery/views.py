@@ -4,6 +4,7 @@ from django.shortcuts import render
 import numpy as np
 import pandas as pd
 import os
+import pm4py
 
 # State Discovery
 import cv2
@@ -17,9 +18,9 @@ from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 
 
-def state_level(log_path, root_path, special_colnames, configurations, skip, type):
+def scene_level(log_path, root_path, special_colnames, configurations, skip, type):
     """
-    Creates an identifier named "state_id" through clustering screenshots and assinging them an identifier 
+    Creates an identifier named "scene_id" through clustering screenshots and assinging them an identifier 
     """
     if type == "screen-cluster":
         # Cargar el UI log en un DataFrame de Pandas
@@ -56,11 +57,15 @@ def state_level(log_path, root_path, special_colnames, configurations, skip, typ
             plt.savefig(os.path.join(root_path + 'ui_log_states_dendrogram.png'))
 
         # Obtener los clusters utilizando un umbral de distancia
-        threshold = 0.1 * np.max(distance_matrix[:, 2])
+        if "similarity_th" in configurations:
+            threshold = float(configurations["similarity_th"]) * np.max(distance_matrix[:, 2])
+        else:
+            threshold = 0.1 * np.max(distance_matrix[:, 2])
+            print("Threshold: " + str(threshold))
         cluster_labels = fcluster(distance_matrix, threshold, criterion='distance')
 
         # Agregar los clusters al dataframe de UI log
-        ui_log['Activity'] = cluster_labels
+        ui_log[special_colnames['Activity']] = cluster_labels
         # ui_log['trace_id'] = list(range(1, ui_log.shape[0]+1))
         
         # Guardar el resultado en un nuevo archivo CSV
@@ -81,8 +86,17 @@ def state_level(log_path, root_path, special_colnames, configurations, skip, typ
     # # Visualizar el modelo BPMN y guardarlo como una imagen
     # bpmn_visualizer.apply(net, initial_marking, final_marking, output_file= root_path + 'bpmn_model.png')
 
+def process_level(log_path, root_path, special_colnames, configurations, type):
+    dataframe = pm4py.format_dataframe(dataframe, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])
+    event_log = pm4py.convert_to_event_log(dataframe)
+
+    process_model = pm4py.discover_bpmn_inductive(event_log)
+    # pm4py.view_bpmn(process_model)
+    pm4py.save_vis_bpmn(process_model, "bpm.png", "white")
+    
+    
 
 def process_discovery(log_path, root_path, special_colnames, configurations, skip, type):
     if not skip:
-        state_level(log_path, root_path, special_colnames, configurations, type)
-        # process_level(log_path, root_path, special_colnames, configurations, type)
+        scene_level(log_path, root_path, special_colnames, configurations, type)
+        process_level(log_path, root_path, special_colnames, configurations, type)
