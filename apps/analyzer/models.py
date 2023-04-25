@@ -14,6 +14,18 @@ from django.core.exceptions import ValidationError
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
+def default_special_colnames():
+    return dict({
+        "Case": "Case",
+        "Activity": "Activity",
+        "Screenshot": "Screenshot", 
+        "Variant": "Variant",
+        "Timestamp": "Timestamp",
+        "eyetracking_recording_timestamp": "Recording timestamp",
+        "eyetracking_gaze_point_x": "Gaze point X",
+        "eyetracking_gaze_point_y": "Gaze point Y"
+    })
+
 def get_ui_elements_classification_old_classes():
     return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
 'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
@@ -46,16 +58,7 @@ class CaseStudy(models.Model):
     exp_foldername = models.CharField(max_length=255)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
-    special_colnames = JSONField(default=dict({
-        "Case": "Case",
-        "Activity": "Activity",
-        "Screenshot": "Screenshot", 
-        "Variant": "Variant",
-        "Timestamp": "Timestamp",
-        "eyetracking_recording_timestamp": "Recording timestamp",
-        "eyetracking_gaze_point_x": "Gaze point X",
-        "eyetracking_gaze_point_y": "Gaze point Y"
-    }))
+    special_colnames = JSONField(default=default_special_colnames)
     text_classname = models.CharField(max_length=50)
     phases_to_execute = JSONField(null=True, blank=True)
     decision_point_activity = models.CharField(max_length=255)
