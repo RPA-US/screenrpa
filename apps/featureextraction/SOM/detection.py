@@ -4,26 +4,23 @@ import keras_ocr
 import cv2
 import matplotlib.pyplot as plt
 from os.path import join as pjoin
-# import apps.featureextraction.utils as utils
-# import ..utils as utils #QUIT
-from . import utils as utils #QUIT
-# import apps.featureextraction.SOM.ip_draw as draw
+import apps.featureextraction.utils as utils
+import apps.featureextraction.SOM.ip_draw as draw
 from . import ip_draw as draw
 import os
 import cv2
 import pandas as pd
 import numpy as np
-# from core.settings import cropping_threshold, platform_name, detection_phase_name
+from core.settings import cropping_threshold, platform_name, detection_phase_name
 from art import tprint
 import logging
 import pickle
 from tqdm import tqdm
 import torch
-# from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
-# from apps.analyzer.utils import format_mht_file
+from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
+from apps.analyzer.utils import format_mht_file
 from .segment_anything import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator
-# from apps.featureextraction.SOM.Component import Component 
-from .Component import Component #QUIT 
+from apps.featureextraction.SOM.Component import Component 
 
 """
 Text boxes detection: KERAS_OCR

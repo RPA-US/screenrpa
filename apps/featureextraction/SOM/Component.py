@@ -1,5 +1,5 @@
-# from apps.featureextraction.SOM.Bbox import Bbox 
-from .Bbox import Bbox #QUIT
+from apps.featureextraction.SOM.Bbox import Bbox 
+
 
 import cv2
 
