@@ -3,6 +3,8 @@ import pandas as pd
 import json
 from core.settings import STATUS_VALUES_ID
 
+pred = "compo['relevant'] == 'True'"
+
 def find_st_id(st_value):
     res = None
     f = open(STATUS_VALUES_ID)
@@ -14,7 +16,7 @@ def find_st_id(st_value):
     return res
 
 def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id="qua"):
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="qua"):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -56,27 +58,29 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
+                
+            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
 
-            num_UI_elements += len(data["compos"])
-            if len(data["compos"]) > max_num_UI_elements:
-                max_num_UI_elements = len(data["compos"])
-            if len(data["compos"]) < min_num_UI_elements:
-                min_num_UI_elements = len(data["compos"])
+            num_UI_elements += len(compos_list)
+            if len(compos_list) > max_num_UI_elements:
+                max_num_UI_elements = len(compos_list)
+            if len(compos_list) < min_num_UI_elements:
+                min_num_UI_elements = len(compos_list)
             
             for c in ui_elements_classification_classes:
                 counter = 0
                 if "_" in c:
                     st = c.split("_")
-                    for j in range(0, len(data["compos"])):
-                        ui_elem = data["compos"][j]
+                    for j in range(0, len(compos_list)):
+                        ui_elem = compos_list[j]
                         st_key = find_st_id(st[1])
                         if (ui_elem["class"] == st[0]) and (st_key in ui_elem) and (ui_elem[st_key] == st[1]):
                             counter+=1
                     quantity_ui_elements[c] = counter
                     ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
                 else:
-                    for j in range(0, len(data["compos"])):
-                        if data["compos"][j]["class"] == c:
+                    for j in range(0, len(compos_list)):
+                        if compos_list[j]["class"] == c:
                             counter+=1
                     quantity_ui_elements[c] = counter
                     ui_log_data[str(case)][id+"_"+c+"_"+activity] = counter
@@ -120,7 +124,7 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
 
 
 def location_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id="loc"):
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -142,16 +146,18 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
             data = json.load(f)
 
         screenshot_compos_frec = headers.copy()
+        
+        compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
 
-        for j in range(0, len(data["compos"])):
-            compo_class = data["compos"][j]["class"]
-            compo_x1 = data["compos"][j]["column_min"]
-            compo_y1 = data["compos"][j]["row_min"]
-            compo_x2 = data["compos"][j]["column_max"]
-            compo_y2 = data["compos"][j]["row_max"]
+        for j in range(0, len(compos_list)):
+            compo_class = compos_list[j]["class"]
+            compo_x1 = compos_list[j]["column_min"]
+            compo_y1 = compos_list[j]["row_min"]
+            compo_x2 = compos_list[j]["column_max"]
+            compo_y2 = compos_list[j]["row_max"]
             centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
             centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
-            data["compos"][j]["centroid"] = [centroid_x, centroid_y]
+            compos_list[j]["centroid"] = [centroid_x, centroid_y]
             screenshot_compos_frec[compo_class] += 1
             
             column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
@@ -160,12 +166,12 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
                 if not len(info_to_join[column_name]) == i:
                     for k in range(len(info_to_join[column_name]),i):
                         info_to_join[column_name].append("")
-                info_to_join[column_name].append(data["compos"][j]["centroid"])
+                info_to_join[column_name].append(compos_list[j]["centroid"])
             else:
                 column_as_vector = []
                 for k in range(0,i):
                     column_as_vector.append("")
-                column_as_vector.append(data["compos"][j]["centroid"])
+                column_as_vector.append(compos_list[j]["centroid"])
                 info_to_join[column_name] = column_as_vector
             # num_UI_elements += 1
                 
@@ -196,7 +202,7 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
 def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname, id="loc"):
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
 
     log = pd.read_csv(ui_log_path, sep=",")
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -218,16 +224,18 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
             data = json.load(f)
 
         screenshot_compos_frec = headers.copy()
-
-        for j in range(0, len(data["compos"])):
-            compo_class = data["compos"][j]["class"]
-            compo_x1 = data["compos"][j]["column_min"]
-            compo_y1 = data["compos"][j]["row_min"]
-            compo_x2 = data["compos"][j]["column_max"]
-            compo_y2 = data["compos"][j]["row_max"]
+        
+        compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]        
+        
+        for j in range(0, len(compos_list)):
+            compo_class = compos_list[j]["class"]
+            compo_x1 = compos_list[j]["column_min"]
+            compo_y1 = compos_list[j]["row_min"]
+            compo_x2 = compos_list[j]["column_max"]
+            compo_y2 = compos_list[j]["row_max"]
             centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
             centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
-            data["compos"][j]["centroid"] = [centroid_x, centroid_y]
+            compos_list[j]["centroid"] = [centroid_x, centroid_y]
             screenshot_compos_frec[compo_class] += 1
             
             if compo_class == text_classname:
@@ -239,12 +247,12 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
                 if not len(info_to_join[column_name]) == i:
                     for k in range(len(info_to_join[column_name]),i):
                         info_to_join[column_name].append("")
-                info_to_join[column_name].append(data["compos"][j]["centroid"])
+                info_to_join[column_name].append(compos_list[j]["centroid"])
             else:
                 column_as_vector = []
                 for k in range(0,i):
                     column_as_vector.append("")
-                column_as_vector.append(data["compos"][j]["centroid"])
+                column_as_vector.append(compos_list[j]["centroid"])
                 info_to_join[column_name] = column_as_vector
             # num_UI_elements += 1
                 
@@ -270,11 +278,12 @@ def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_c
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
 def caption_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id):
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id):
+    print("Not implemented yet :)")
     return None
 
 def state_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, id="sta"):
+                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="sta"):
     """
     Only Leaf UI Elements or Simple UI Elements can have an associated state. Composed UI Elements (forms, dialogs, sheets...) have another information associated
     like caption, or key-value pairs...
@@ -333,23 +342,25 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
 
-            num_UI_elements += len(data["compos"])
-            if len(data["compos"]) > max_num_UI_elements:
-                max_num_UI_elements = len(data["compos"])
-            if len(data["compos"]) < min_num_UI_elements:
-                min_num_UI_elements = len(data["compos"])
+            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            
+            num_UI_elements += len(compos_list)
+            if len(compos_list) > max_num_UI_elements:
+                max_num_UI_elements = len(compos_list)
+            if len(compos_list) < min_num_UI_elements:
+                min_num_UI_elements = len(compos_list)
 
-            for j in range(0, len(data["compos"])):
-                compo_x1 = data["compos"][j]["column_min"]
-                compo_y1 = data["compos"][j]["row_min"]
-                compo_x2 = data["compos"][j]["column_max"]
-                compo_y2 = data["compos"][j]["row_max"]
+            for j in range(0, len(compos_list)):
+                compo_x1 = compos_list[j]["column_min"]
+                compo_y1 = compos_list[j]["row_min"]
+                compo_x2 = compos_list[j]["column_max"]
+                compo_y2 = compos_list[j]["row_max"]
                 centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
                 centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
                 # Status columns 
-                status_columns = [i for i in dict(data["compos"][j]).keys() if "st_" in i]
+                status_columns = [i for i in dict(compos_list[j]).keys() if "st_" in i]
                 for status_col in status_columns:
-                    status = data["compos"][j][status_col]
+                    status = compos_list[j][status_col]
                     sub_id = str(status_col).split("_")[1]
                     ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid_x)+"-"+str(centroid_y)+"_"+activity] = status
             num_screenshots += 1
