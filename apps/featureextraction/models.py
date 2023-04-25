@@ -67,10 +67,12 @@ class Filters(models.Model):
 
 class FeatureExtractionTechnique(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    technique_name = models.CharField(max_length=255, default='count')
-    skip = models.BooleanField(default=False)
     identifier = models.CharField(max_length=25)
+    technique_name = models.CharField(max_length=255, default='count')
+    relevant_compos_predicate = models.CharField(max_length=255, default="compo['relevant'] == 'True'")
+    consider_relevant_compos = models.BooleanField(default=False)
     configurations = JSONField(null=True, blank=True)
+    skip = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
