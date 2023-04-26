@@ -6,6 +6,7 @@ from core.settings import sep, decision_foldername, platform_name, flattening_ph
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from apps.chefboost import Chefboost as chef
+from core.utils import read_ui_log_as_dataframe
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
@@ -74,7 +75,7 @@ def extract_training_dataset(decision_point_activity,
     tprint(platform_name + " - " + flattening_phase_name, "fancy60")
     print(log_path+"\n")
 
-    log = pd.read_csv(log_path, sep=",")#, index_col=0)
+    log = read_ui_log_as_dataframe(log_path)
 
     # columns_to_drop = [special_colnames["Case"], special_colnames["Activity"], special_colnames["Timestamp"], special_colnames["Screenshot"], special_colnames["Variant"]]
     columns = list(log.columns)

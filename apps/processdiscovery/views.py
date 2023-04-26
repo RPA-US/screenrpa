@@ -1,19 +1,16 @@
-from django.shortcuts import render
-
-# Create your views here.
+import os
 import numpy as np
 import pandas as pd
-import os
-import pm4py
-
+from django.shortcuts import render
+from core.utils import read_ui_log_as_dataframe
 # State Discovery
 import cv2
 from tensorflow.keras.applications import VGG16
 # from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 import matplotlib.pyplot as plt
-
 # Process Discovery
+import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 
@@ -24,7 +21,8 @@ def scene_level(log_path, root_path, special_colnames, configurations, skip, typ
     """
     if type == "screen-cluster":
         # Cargar el UI log en un DataFrame de Pandas
-        ui_log = pd.read_csv(log_path)
+        ui_log = read_ui_log_as_dataframe(log_path)
+
 
         # Cargar el modelo preentrenado de VGG16
         vgg_model = VGG16(weights='imagenet', include_top=False)
@@ -73,18 +71,6 @@ def scene_level(log_path, root_path, special_colnames, configurations, skip, typ
     else:
         raise Exception("You selected a process discovery type that doesnt exist")
 
-# def process_level(log_path, root_path, special_colnames, configurations, type):
-    # # Cargar el UI log clustered como un dataframe de pandas
-    # ui_log_clustered = pd.read_csv(root_path + 'ui_log_clustered.csv')
-
-    # # Convertir el UI log clustered a un objeto log de pm4py
-    # log = csv_importer.import_dataframe(ui_log_clustered)
-
-    # # Descubrir el modelo BPMN utilizando el algoritmo inductive miner
-    # net, initial_marking, final_marking = inductive_miner.apply(log)
-
-    # # Visualizar el modelo BPMN y guardarlo como una imagen
-    # bpmn_visualizer.apply(net, initial_marking, final_marking, output_file= root_path + 'bpmn_model.png')
 
 def process_level(log_path, root_path, special_colnames, configurations, type):
     dataframe = pm4py.format_dataframe(dataframe, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])

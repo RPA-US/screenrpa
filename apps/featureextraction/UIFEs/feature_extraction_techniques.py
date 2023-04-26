@@ -1,4 +1,4 @@
-
+from core.utils import read_ui_log_as_dataframe
 import pandas as pd
 import json
 from core.settings import STATUS_VALUES_ID
@@ -33,7 +33,8 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     
-    log = pd.read_csv(ui_log_path, sep=",")
+    log = read_ui_log_as_dataframe(ui_log_path)
+    
     # df = pd.DataFrame([], columns=ui_elements_classification_classes)
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
@@ -126,7 +127,8 @@ def quantity_ui_elements_fe_technique(ui_elements_classification_classes, decisi
 def location_ui_elements_fe_technique(ui_elements_classification_classes, decision_point, 
     case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
 
-    log = pd.read_csv(ui_log_path, sep=",")
+    log = read_ui_log_as_dataframe(ui_log_path)
+
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     headers = dict()
@@ -204,7 +206,8 @@ def location_ui_elements_fe_technique(ui_elements_classification_classes, decisi
 def location_ui_elements_and_plaintext_fe_technique(ui_elements_classification_classes, decision_point, 
     case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
 
-    log = pd.read_csv(ui_log_path, sep=",")
+    log = read_ui_log_as_dataframe(ui_log_path)
+
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     headers = dict()
@@ -318,7 +321,8 @@ def state_ui_element(ui_elements_classification_classes, decision_point, case_co
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     
-    log = pd.read_csv(ui_log_path, sep=",")
+    log = read_ui_log_as_dataframe(ui_log_path)
+
     # df = pd.DataFrame([], columns=ui_elements_classification_classes)
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 

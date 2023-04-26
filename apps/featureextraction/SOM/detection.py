@@ -1,26 +1,23 @@
+import os
+from os.path import join as pjoin
 import json
 import time
 import keras_ocr
+import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from os.path import join as pjoin
-import apps.featureextraction.utils as utils
-import apps.featureextraction.SOM.ip_draw as draw
 from . import ip_draw as draw
-import os
 import cv2
-import pandas as pd
-import numpy as np
-from core.settings import cropping_threshold, platform_name, detection_phase_name
 from art import tprint
 import logging
 import pickle
 from tqdm import tqdm
-import torch
-from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
-from apps.analyzer.utils import format_mht_file
-from .segment_anything import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator
-from apps.featureextraction.SOM.Component import Component 
+from core.settings import cropping_threshold, platform_name, detection_phase_name
+from apps.analyzer.utils import format_mht_file, read_ui_log_as_dataframe
+import apps.featureextraction.utils as utils
+from apps.featureextraction.SOM.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+import apps.featureextraction.SOM.ip_draw as draw
+# from apps.featureextraction.SOM.Component import Component 
 
 """
 Text boxes detection: KERAS_OCR
@@ -909,7 +906,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         param_log_path = format_mht_file(param_img_root + log_input_filaname, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
     
     # Log read
-    log = pd.read_csv(param_log_path, sep=",")
+    log = read_ui_log_as_dataframe(param_log_path)
     # Extract the names of the screenshots associated to each of the rows in the log
     image_names = log.loc[:, special_colnames["Screenshot"]].values.tolist()
     pipeline = keras_ocr.pipeline.Pipeline()

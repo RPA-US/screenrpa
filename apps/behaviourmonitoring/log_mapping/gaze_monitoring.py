@@ -9,7 +9,7 @@ from dateutil import tz
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
-
+from core.utils import read_ui_log_as_dataframe
 import math
 
 def euclidean_distance(x1, y1, x2, y2):
@@ -275,7 +275,7 @@ def monitoring(log_path, root_path, special_colnames, monitoring_type, monitorin
       log_path = format_mht_file(root_path + monitoring_configurations["mht_log_filename"], monitoring_configurations["format"], root_path, log_filename, monitoring_configurations["org:resource"])
   
   
-    ui_log = pd.read_csv(log_path, sep=",")
+    ui_log = read_ui_log_as_dataframe(log_path)
     sep = monitoring_configurations["separator"]
     eyetracking_log_filename = monitoring_configurations["eyetracking_log_filename"]
     
