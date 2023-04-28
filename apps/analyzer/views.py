@@ -17,7 +17,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.template import loader
 # Settings variables
-from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, active_celery, FLATTENED_DATASET_NAME
+from core.settings import metadata_location, sep, default_phases, scenario_nested_folder, active_celery
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique

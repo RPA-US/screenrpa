@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import os
 from art import tprint
-from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, FLATTENED_DATASET_NAME
+from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, flattened_dataset_name
 from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from apps.chefboost import Chefboost as chef
@@ -112,7 +112,7 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     
     # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset.to_csv(path + FLATTENED_DATASET_NAME)
+    flattened_dataset.to_csv(path + flattened_dataset_name)
     columns_len = flattened_dataset.shape[1]
     flattened_dataset = flattened_dataset.fillna('NaN')
     # tree_levels = {}

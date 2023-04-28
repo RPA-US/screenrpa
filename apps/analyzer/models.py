@@ -4,12 +4,14 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.contrib.auth.models import User
+from django.urls import reverse
+from django.core.exceptions import ValidationError
+from private_storage.fields import PrivateFileField
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
 from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Filters, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
-from django.urls import reverse
-from django.core.exceptions import ValidationError
+from apps.reporting.models import PDD
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
@@ -55,7 +57,8 @@ class CaseStudy(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=True, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    exp_foldername = models.CharField(max_length=255)
+    exp_files = PrivateFileField("File")
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)

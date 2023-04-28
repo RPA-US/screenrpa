@@ -6,7 +6,7 @@ import re
 from tqdm import tqdm
 import time
 from datetime import datetime
-from core.settings import times_calculation_mode, metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, scenario_nested_folder, FLATTENED_DATASET_NAME, several_iterations
+from core.settings import metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, several_iterations
 import csv
 from apps.analyzer.utils import get_foldernames_as_list
 

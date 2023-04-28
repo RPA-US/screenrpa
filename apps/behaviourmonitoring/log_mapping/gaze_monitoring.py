@@ -1,7 +1,6 @@
 import os
 import logging
 import pandas as pd
-from core.settings import gaze_monitoring_threshold, CDLR
 import json
 import pandas as pd
 import datetime
