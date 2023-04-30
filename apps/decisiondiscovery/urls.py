@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'decisiondiscovery'
+
 urlpatterns = [
     path('extract-training-dataset/list/', views.ExtractTrainingDatasetListView.as_view(), name='extract_training_dataset_list'),
     path('extract-training-dataset/new/', views.ExtractTrainingDatasetCreateView.as_view(), name='extract_training_dataset_create'),

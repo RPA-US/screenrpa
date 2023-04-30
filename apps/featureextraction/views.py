@@ -5,8 +5,8 @@ from apps.analyzer.utils import detect_fe_function
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
-from .models import FeatureExtractionTechnique, UIElementsClassification, UIElementsDetection
-from .forms import FeatureExtractionTechniqueForm, UIElementsClassificationForm, UIElementsDetectionForm
+from .models import FeatureExtractionTechnique, UIElementsClassification, UIElementsDetection, Prefilters, Filters
+from .forms import FeatureExtractionTechniqueForm, UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, FiltersForm
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -105,3 +105,47 @@ class UIElementsDetectionListView(ListView):
 
     def get_queryset(self):
         return UIElementsDetection.objects.all()
+
+
+class PrefiltersCreateView(CreateView):
+    model = Prefilters
+    form_class = PrefiltersForm
+    template_name = "prefiltering/create.html"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class PrefiltersListView(ListView):
+    model = Prefilters
+    template_name = "prefiltering/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Prefilters.objects.all()
+
+class FiltersCreateView(CreateView):
+    model = Filters
+    form_class = FiltersForm
+    template_name = "filtering/create.html"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class FiltersListView(ListView):
+    model = Filters
+    template_name = "filtering/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Filters.objects.all()
+    

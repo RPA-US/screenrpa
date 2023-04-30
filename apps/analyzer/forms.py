@@ -19,8 +19,9 @@ class CaseStudyForm(forms.ModelForm):
         fields = (
             "title",
             "description",
-            "exp_foldername",
-            "exp_folder_complete_path",
+            "exp_file",
+            # "exp_foldername",
+            # "exp_folder_complete_path",
             "scenarios_to_study",
             "special_colnames",
             "text_classname",
@@ -50,18 +51,23 @@ class CaseStudyForm(forms.ModelForm):
                     "placeholder": "Short experiment description..."
                     }
             ),
-            "exp_foldername": forms.TextInput(
+            'exp_file': forms.FileInput(
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "exp_folder"
+                    'accept': '.zip'
                     }
             ),
-            "exp_folder_complete_path": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "/rim/resources/exp_folder"
-                    }
-            ),
+            # "exp_foldername": forms.TextInput(
+            #     attrs={
+            #         "class": "form-control",
+            #         "placeholder": "exp_folder"
+            #         }
+            # ),
+            # "exp_folder_complete_path": forms.TextInput(
+            #     attrs={
+            #         "class": "form-control",
+            #         "placeholder": "/rim/resources/exp_folder"
+            #         }
+            # ),
             "scenarios_to_study": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "['scenario_1', 'scenario_2']"}
             ),

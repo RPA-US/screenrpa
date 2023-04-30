@@ -1,7 +1,9 @@
 from django.urls import path
 from . import views
 
+app_name = 'behaviourmonitoring'
+
 urlpatterns = [
-    path('gaze-analysis/list/', views.MonitoringListView.as_view(), name='monitoring_list'),
-    path('gaze-analysis/new/', views.MonitoringCreateView.as_view(), name='monitoring_create'),
+    path('list/', views.MonitoringListView.as_view(), name='monitoring_list'),
+    path('new/', views.MonitoringCreateView.as_view(), name='monitoring_create'),
 ]

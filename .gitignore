@@ -169,6 +169,7 @@ package-lock.json
 # database backup
 backup.json
 
+media/
 staticfiles/*
 !staticfiles/.gitkeep 
 .vscode/symbols.json

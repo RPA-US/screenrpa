@@ -26,7 +26,7 @@ class ExtractTrainingDataset(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")    
+        return reverse("decisiondiscovery:extract_training_dataset_list")    
     
     def __str__(self):
         return 'col to drop: ' + str(self.columns_to_drop)
@@ -40,7 +40,7 @@ class DecisionTreeTraining(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")
+        return reverse("decisiondiscovery:decision_tree_training_list")
     
     def __str__(self):
         return 'library: ' + self.library + ' - algs:' + str(self.algorithms)

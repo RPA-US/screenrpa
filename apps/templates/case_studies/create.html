@@ -61,18 +61,18 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      {{ form.exp_foldername.label_tag }}
-                      {{ form.exp_foldername }}
-                      <div class="form-validation">{{ form.exp_foldername.errors }}</div>
+                      {{ form.exp_file.label_tag }}
+                      {{ form.exp_file }}
+                      <div class="form-validation">{{ form.exp_file.errors }}</div>
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  {% comment %} <div class="col-lg-6">
                     <div class="form-group">
                       {{ form.exp_folder_complete_path.label_tag }}
                       {{ form.exp_folder_complete_path }}
                       <div class="form-validation">{{ form.exp_folder_complete_path.errors }}</div>
                     </div>
-                  </div>
+                  </div> {% endcomment %}
                 </div>
                 <div class="row">
                   <div class="col-lg-6">

@@ -13,11 +13,12 @@
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="#">Process discovery</a></li>
               </ol>
             </nav>
           </div>
           <div class="col-lg-6 col-5 text-right">
-            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
+            <a href="/pd/bpmn/new/" class="btn btn-sm btn-neutral">New</a>
           </div>
         </div>
       </div>
@@ -31,7 +32,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Your case studies</h3>
+            <h3 class="mb-0">Your configurations</h3>
           </div>
           <!-- Light table -->
           <div class="table-responsive">
@@ -39,69 +40,31 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">Id</th>
-                  <th scope="col" class="sort" data-sort="title">Title</th>
                   <th scope="col" class="sort" data-sort="created_at">Created at</th>
-                  <th scope="col">Foldername  </th>
-                  <th scope="col" class="sort" data-sort="status">Status</th>
-                  <th scope="col">Progress</th>
+                  <th scope="col" class="sort" data-sort="type">Type</th>
+                  <th scope="col" class="sort" data-sort="type">Configurations</th>
                 </tr>
               </thead>
               <tbody class="list">
-                {% for case_study in object_list %}
+                {% for report in object_list %}
                 <tr>
                   <th scope="row">
                     <div class="media align-items-center">
                       <div class="media-body">
                         <span class="id mb-0 text-sm">
-                        {{ case_study.id }}
+                        {{ report.id }}
                         </span>
                       </div>
                     </div>
                   </th>
-                  <td class="title">
-                    <a href="/case-study/detail/{{ case_study.id }}/">
-                      {{ case_study.title }}
-                    </a>
-                  </td>
-                  <td class="created_at">
-                    {{ case_study.created_at }}
-                  </td>
                   <td>
-                    {{ case_study.exp_foldername }}
+                      {{ report.created_at }}
                   </td>
-                  <td>
-                    <span class="badge badge-dot mr-4">
-                      {% if case_study.executed == 0 %}
-                      <i class="bg-danger"></i>
-                      <span class="status">not executed</span>
-                      {% elif case_study.executed == 100 %}
-                      <i class="bg-success"></i>
-                      <span class="status">executed</span>
-                      {% elif case_study.executed > 0 %}
-                      <i class="bg-warning"></i>
-                      <span class="status">pending</span>
-                      {% endif %}
-                    </span>
+                  <td class="type">
+                      {{ report.type }}
                   </td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <span class="completion mr-2">{{ case_study.executed }}</span>
-                      <div>
-                        {% if case_study.executed == 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
-                        </div>
-                        {% elif case_study.executed == 100 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                        </div>
-                        {% elif case_study.executed > 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                        </div>
-                        {% endif %}
-                      </div>
-                    </div>
+                  <td class="configurations">
+                      {{ report.configurations|truncatechars:100 }}
                   </td>
                   <td class="text-right">
                     <div class="dropdown">
@@ -109,14 +72,7 @@
                         <i class="fas fa-ellipsis-v"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                        {% if case_study.executed > 0 %}
-                        <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">Details</a>
-                        {% elif case_study.executed == 0 %}
-                        <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">Details</a>
-                        <a class="dropdown-item" onclick="return confirm('Are you sure you want to delete this case study?')" href="/case-study/delete/?id={{ case_study.pk }}">Delete</a>
-                        <a onclick="return confirm('Are you sure you want to generate the report?')" href="{% url 'reporting:report_generate' case_study_id=case_study.pk %}">Generate report</a>
-                        <a class="dropdown-item" href="/case-study/execute/?id={{ case_study.pk }}">Execute</a>
-                        {% endif %}
+                        <a href="{% url 'reporting:report_download' report_id=report.pk %}">Download report</a>
                       </div>
                     </div>
                   </td>

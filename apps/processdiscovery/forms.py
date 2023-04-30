@@ -4,11 +4,11 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from .models import Monitoring
+from .models import ProcessDiscovery
 
-class MonitoringForm(forms .ModelForm):
+class ProcessDiscoveryForm(forms .ModelForm):
     class Meta:
-        model = Monitoring
+        model = ProcessDiscovery
         exclude = (
             "user",
             "created_at",
@@ -33,4 +33,4 @@ class MonitoringForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(MonitoringForm, self).__init__(*args, **kwargs)
+        super(ProcessDiscoveryForm, self).__init__(*args, **kwargs)

@@ -9,16 +9,37 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.urls import reverse
 
+def default_prefilters_conf():
+    return dict({
+                "prefilter1":{
+                    
+                },
+                "prefilter2":{
+                
+                }
+                })
+    
+def default_filters_conf():
+    return dict({
+                "gaze":{
+                    "UI_selector": "all",
+                    "predicate": "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])",
+                    "only_leaf": True
+                },
+                "filter2":{
+
+                }
+                })
 
 class Prefilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    configurations = JSONField(null=True, blank=True)
+    configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")
+        return reverse("featureextraction:prefilters_list")
     
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
@@ -32,7 +53,7 @@ class UIElementsDetection(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")
+        return reverse("featureextraction:ui_detection_list")
     
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
@@ -47,20 +68,20 @@ class UIElementsClassification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")
+        return reverse("featureextraction:ui_classification_list")
         
     def __str__(self):
         return 'type: ' + self.type + ' - model: ' + self.model
 
 class Filters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    configurations = JSONField(null=True, blank=True)
+    configurations = JSONField(null=True, blank=True, default=default_filters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")
+        return reverse("featureextraction:filters_list")
     
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
@@ -76,7 +97,7 @@ class FeatureExtractionTechnique(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("analyzer:casestudy_list")
+        return reverse("featureextraction:fe_technique_list")
         
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)

@@ -1,3 +1,6 @@
+import os
+import zipfile
+import time
 from email.policy import default
 from xmlrpc.client import Boolean
 from django.db import models
@@ -7,11 +10,16 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
+from core.settings import PRIVATE_STORAGE_ROOT
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
 from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Filters, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
 from apps.reporting.models import PDD
+
+def unzip_file(zip_file_path, dest_folder_path):
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(dest_folder_path)
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
@@ -57,7 +65,7 @@ class CaseStudy(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=True, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    exp_files = PrivateFileField("File")
+    exp_file = PrivateFileField("File")
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
@@ -78,6 +86,7 @@ class CaseStudy(models.Model):
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+    report = models.ForeignKey(PDD, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
     class Meta:
@@ -100,7 +109,24 @@ class CaseStudy(models.Model):
         #     # items = [InputFormatSupported.objects.create(**item) for item in items]
         #     # '*' is the "splat" operator: It takes a list as input, and expands it into actual positional arguments in the function call.
         #     action.formats_supported.add(*items)
+        
         return case_study
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.exp_file:
+            # Generate unique folder name based on the uploaded file's name and current time
+            folder_name = f"{self.exp_file.name.split('.')[0]}_{str(int(time.time()))}"
+            folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
+            # Create the unzipped folder
+            os.makedirs(folder_path)
+            # Unzip the uploaded file to the unzipped folder
+            unzip_file(self.exp_file.path, folder_path)
+            # Save the unzipped folder path to the model instance
+            self.exp_folder_complete_path = folder_path
+            self.exp_foldername = get_exp_foldername(folder_path)
+            super().save(*args, **kwargs)
+            
     
     def term_unique(self, title):
         if CaseStudy.objects.filter(term=title).exists():

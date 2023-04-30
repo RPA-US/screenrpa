@@ -88,8 +88,9 @@ INSTALLED_APPS = [
     'apps.featureextraction', # Local App
     'apps.processdiscovery', # Local App
     'apps.decisiondiscovery', # Local App
-    'drf_spectacular',
-    'drf_spectacular_sidecar',  # required for Django collectstatic discovery
+    'apps.reporting', # Local App
+    'drf_spectacular', # Swagger
+    'drf_spectacular_sidecar',  # Swagger. required for Django collectstatic discovery
 ]
 
 MIDDLEWARE = [

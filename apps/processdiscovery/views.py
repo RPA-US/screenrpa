@@ -3,6 +3,12 @@ import numpy as np
 import pandas as pd
 from django.shortcuts import render
 from core.utils import read_ui_log_as_dataframe
+# Front Platform Imports
+from django.http import HttpResponseRedirect
+from django.views.generic import ListView, CreateView
+from django.core.exceptions import ValidationError
+from .models import ProcessDiscovery
+from .forms import ProcessDiscoveryForm
 # State Discovery
 import cv2
 from tensorflow.keras.applications import VGG16
@@ -86,3 +92,26 @@ def process_discovery(log_path, root_path, special_colnames, configurations, ski
     if not skip:
         scene_level(log_path, root_path, special_colnames, configurations, type)
         process_level(log_path, root_path, special_colnames, configurations, type)
+        
+        
+    
+class ProcessDiscoveryCreateView(CreateView):
+    model = ProcessDiscovery
+    form_class = ProcessDiscoveryForm
+    template_name = "processdiscovery/create.html"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class ProcessDiscoveryListView(ListView):
+    model = ProcessDiscovery
+    template_name = "processdiscovery/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return ProcessDiscovery.objects.all()
