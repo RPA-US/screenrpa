@@ -13,6 +13,8 @@ urlpatterns = [
     # Matches any html file
     re_path(r'^.*\.html*', views.pages, name='pages'),
     path('list/', views.CaseStudyListView.as_view(), name='casestudy_list'),
+    path('files/list/', views.exp_files, name='files_list'),
+    path('files/download/<int:case_study_id>/', views.exp_file_download, name='file_download'),
     path('new/', views.CaseStudyCreateView.as_view(), name='casestudy_create'),
     path('detail/<int:case_study_id>/', views.CaseStudyDetailView.as_view(), name='casestudy_detail'),
     path('execute/', views.executeCaseStudy, name='casestudy_execute'),

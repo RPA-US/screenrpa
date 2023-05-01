@@ -6,12 +6,10 @@ import re
 import datetime
 import email
 import base64
-import zipfile
-from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 import lxml.etree as ET
 from lxml import html
-from core.settings import FE_EXTRACTORS_FILEPATH, PRIVATE_STORAGE_ROOT
+from core.settings import FE_EXTRACTORS_FILEPATH
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 
 def detect_fe_function(text):
@@ -32,22 +30,6 @@ def get_foldernames_as_list(path, sep):
         if os.path.isdir(path+sep+f):
             foldername_logs_with_different_size_balance.append(f)
     return foldername_logs_with_different_size_balance
-
-def download_zip(unzipped_folder):
-    # Create a temporary zip file containing the contents of the unzipped folder
-    zip_filename = os.path.basename(unzipped_folder) + '.zip'
-    zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', zip_filename)
-    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
-        for root, dirs, files in os.walk(unzipped_folder):
-            for file in files:
-                file_path = os.path.join(root, file)
-                rel_path = os.path.relpath(file_path, unzipped_folder)
-                zip_ref.write(file_path, arcname=rel_path)
-    # Serve the zip file as a download response
-    with open(zip_file_path, 'rb') as zip_file:
-        response = FileResponse(zip_file, content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
-        return response
 
 ###########################################################################################################################
 # MHT to XES/CSV ##########################################################################################################

@@ -8,7 +8,8 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseRedirect
+import zipfile
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -17,7 +18,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.template import loader
 # Settings variables
-from core.settings import metadata_location, sep, default_phases, scenario_nested_folder, active_celery
+from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, scenario_nested_folder, active_celery
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
@@ -519,3 +520,36 @@ def pages(request):
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+
+
+@login_required(login_url="/login/")
+def exp_files(request):
+    user = request.user
+    case_studies = CaseStudy.objects.filter(user=user)
+    exp_files = [(c.id, c.exp_file.name, c.exp_file.path, c.exp_file.size) for c in case_studies]
+    return render(request, 'case_studies/exp_files.html', {'object_list': exp_files})
+
+@login_required(login_url="/login/")
+def exp_file_download(request, case_study_id):
+    user = request.user
+    cs = CaseStudy.objects.filter(user=user, id=case_study_id)
+    if cs.exists():
+        unzipped_folder = cs[0].exp_folder_complete_path
+    else:
+        raise Exception("You don't have permissions to access this files")
+    
+        # Create a temporary zip file containing the contents of the unzipped folder
+    zip_filename = os.path.basename(unzipped_folder) + ".zip"
+    zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
+    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
+        for root, dirs, files in os.walk(unzipped_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, unzipped_folder)
+                zip_ref.write(file_path, arcname=rel_path)
+    # Serve the zip file as a download response
+    response = FileResponse(open(zip_file_path, "rb"), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+    
+    return response

@@ -96,21 +96,16 @@ class CaseStudy(models.Model):
     def get_absolute_url(self):
         return reverse("home")
 
-    def create(self, validated_data):
-        CaseStudy.term_unique(self, validated_data.get("title"))
-        if not self.request.user.is_authenticated:
-            raise ValidationError("User must be authenticated.")
-        validated_data.update({"user": self.request.user})
-        exp_fol = get_exp_foldername(validated_data.pop("exp_folder_complete_path", None))
-        # items = validated_data.pop("formats_supported", None)
-        case_study = CaseStudy.objects.create(**validated_data)
-        case_study.exp_foldername = exp_fol
-        # if items is not None:
-        #     # items = [InputFormatSupported.objects.create(**item) for item in items]
-        #     # '*' is the "splat" operator: It takes a list as input, and expands it into actual positional arguments in the function call.
-        #     action.formats_supported.add(*items)
+    # def create(self, validated_data):
+    #     CaseStudy.term_unique(self, validated_data.get("title"))
+    #     if not self.request.user.is_authenticated:
+    #         raise ValidationError("User must be authenticated.")
+    #     validated_data.update({"user": self.request.user})
+    #     exp_fol = get_exp_foldername(validated_data.pop("exp_folder_complete_path", None))
+    #     case_study = CaseStudy.objects.create(**validated_data)
+    #     case_study.exp_foldername = exp_fol
         
-        return case_study
+    #     return case_study
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

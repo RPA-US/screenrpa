@@ -13,3 +13,10 @@ def pretty_json(value):
         value.pop("_state")
         value.pop("id")
     return value
+
+@register.filter
+def divide(value, arg):
+    try:
+        return round(int(value) / int(arg),2)
+    except (ValueError, ZeroDivisionError):
+        return None
