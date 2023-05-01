@@ -2,7 +2,7 @@
     "name": "screen-rpm",
     "mastertemplate": "boilerplate-code-django-dashboard",
     "version": "1.0.2",
-    "description": "ScreenRPM - a RPA-US platform",
+    "description": "ScreenRPA - a RPA-US platform",
     "scripts": {},
     "repository": {
         "type": "git",

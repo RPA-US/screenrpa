@@ -1,4 +1,4 @@
-# [ScreenRPM](https://canela.lsi.us.es/rim/api/v1/docs)
+# [ScreenRPA](https://canela.lsi.us.es/rim/api/v1/docs)
 
 
 ## Table of Contents
