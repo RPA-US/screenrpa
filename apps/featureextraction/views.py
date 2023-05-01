@@ -62,7 +62,7 @@ class FeatureExtractionTechniqueListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return FeatureExtractionTechnique.objects.all()
+        return FeatureExtractionTechnique.objects.filter(user=self.request.user)
     
 class UIElementsClassificationCreateView(CreateView):
     model = UIElementsClassification
@@ -83,7 +83,7 @@ class UIElementsClassificationListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return UIElementsClassification.objects.all()
+        return UIElementsClassification.objects.filter(user=self.request.user)
     
 class UIElementsDetectionCreateView(CreateView):
     model = UIElementsDetection
@@ -104,7 +104,7 @@ class UIElementsDetectionListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return UIElementsDetection.objects.all()
+        return UIElementsDetection.objects.filter(user=self.request.user)
 
 
 class PrefiltersCreateView(CreateView):
@@ -126,7 +126,7 @@ class PrefiltersListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Prefilters.objects.all()
+        return Prefilters.objects.filter(user=self.request.user)
 
 class FiltersCreateView(CreateView):
     model = Filters
@@ -147,5 +147,5 @@ class FiltersListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Filters.objects.all()
+        return Filters.objects.filter(user=self.request.user)
     

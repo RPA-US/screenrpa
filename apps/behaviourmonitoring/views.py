@@ -25,4 +25,4 @@ class MonitoringListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Monitoring.objects.all()
+        return Monitoring.objects.filter(user=self.request.user)

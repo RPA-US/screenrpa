@@ -157,7 +157,7 @@ class ExtractTrainingDatasetListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return ExtractTrainingDataset.objects.all()
+        return ExtractTrainingDataset.objects.filter(user=self.request.user)
     
 class DecisionTreeTrainingCreateView(CreateView):
     model = DecisionTreeTraining
@@ -178,4 +178,4 @@ class DecisionTreeTrainingListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return DecisionTreeTraining.objects.all()
+        return DecisionTreeTraining.objects.filter(user=self.request.user)
