@@ -3,8 +3,9 @@
 Copyright (c) RPA-US
 """
 
-from django.urls import path, re_path
+from django.urls import path, include, re_path
 from apps.analyzer import views
+import private_storage.urls
 
 app_name = 'analyzer'
 
@@ -22,4 +23,5 @@ urlpatterns = [
     path('api/', views.CaseStudyView.as_view(), name='run-case-study'),
     path('<int:case_study_id>', views.SpecificCaseStudyView.as_view(), name='get-case-study'),
     path('<int:case_study_id>/result', views.ResultCaseStudyView.as_view(), name='get-case-study-result'),
+    re_path('^private-data/', include(private_storage.urls)),
 ]

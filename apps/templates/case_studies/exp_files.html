@@ -43,6 +43,7 @@
                   <th scope="col" class="sort" data-sort="name">Filename</th>
                   <th scope="col" class="sort" data-sort="path">Path</th>
                   <th scope="col" class="sort" data-sort="size">Size (KB)</th>
+                  <th scope="col"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -63,7 +64,8 @@
                         <i class="fas fa-ellipsis-v"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                        <a href="{% url 'analyzer:file_download' case_study_id=file.0 %}">Download file</a>
+                        <a class="dropdown-item" href="/case-study/private-data/{{ file.1 }}/">Download input data</a>
+                        <a class="dropdown-item" href="{% url 'analyzer:file_download' case_study_id=file.0 %}">Export experiment data</a>
                       </div>
                     </div>
                   </td>

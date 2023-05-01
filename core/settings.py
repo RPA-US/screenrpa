@@ -243,7 +243,7 @@ AUTHENTICATION_BACKENDS = (
 
 # Private storage config
 PRIVATE_STORAGE_ROOT = 'media/'
-PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_staff'
+PRIVATE_STORAGE_AUTH_FUNCTION = 'apps.analyzer.permissions.allow_staff'
 
 
 # Celery settings

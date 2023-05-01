@@ -61,7 +61,7 @@ def get_exp_foldername(exp_folder_complete_path):
 
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, default="This is a nice experiment...")
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=True, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -70,9 +70,9 @@ class CaseStudy(models.Model):
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
-    text_classname = models.CharField(max_length=50)
+    text_classname = models.CharField(max_length=50, default="TextView")
     phases_to_execute = JSONField(null=True, blank=True)
-    decision_point_activity = models.CharField(max_length=255)
+    decision_point_activity = models.CharField(max_length=255, default="C")
     gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
     ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)

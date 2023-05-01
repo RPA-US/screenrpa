@@ -538,7 +538,7 @@ def exp_file_download(request, case_study_id):
     else:
         raise Exception("You don't have permissions to access this files")
     
-        # Create a temporary zip file containing the contents of the unzipped folder
+    # Create a temporary zip file containing the contents of the unzipped folder
     zip_filename = os.path.basename(unzipped_folder) + ".zip"
     zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
     with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
