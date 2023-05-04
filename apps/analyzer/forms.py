@@ -8,6 +8,10 @@ from .models import CaseStudy
 from django.core.exceptions import ValidationError
 
 class CaseStudyForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['exp_file'].required = True
+    
     class Meta:
         model = CaseStudy
         exclude = (
