@@ -194,16 +194,33 @@
                   <label class="form-control-label">Filtering</label>
                   <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.filters | pretty_json  }}</textarea>
                 </div>
-                <div class="form-group">
-                  <label class="form-control-label">Feature extraction technique</label>
-                  <textarea rows="4" class="form-control" 
-                    placeholder="{
-                      'technique_name': 'status',
-                      'gui_quantity_difference': 1,
-                      'identifier': 'sta_'
-                    }">
-                    {{ case_study.feature_extraction_technique | pretty_json  }}</textarea>
-                </div>
+                
+                {% for s_fe in single_fe %}
+                  <div class="form-group">
+                    <label class="form-control-label">Single Feature extraction technique</label>
+                    <textarea rows="4" class="form-control" 
+                      placeholder="{
+                        'technique_name': 'status',
+                        'gui_quantity_difference': 1,
+                        'identifier': 'sta_'
+                      }">
+                      {{ s_fe | pretty_json  }}</textarea>
+                  </div>
+                {% endfor %}
+                
+                {% for agg_fe in aggregate_fe %}
+                  <div class="form-group">
+                    <label class="form-control-label">Aggregate Feature extraction technique</label>
+                    <textarea rows="4" class="form-control" 
+                      placeholder="{
+                        'technique_name': 'status',
+                        'gui_quantity_difference': 1,
+                        'identifier': 'sta_'
+                      }">
+                      {{ agg_fe | pretty_json  }}</textarea>
+                  </div>
+                {% endfor %}
+                
                 <div class="form-group">
                   <label class="form-control-label">Extract training dataset</label>
                   <textarea rows="4" class="form-control" 
