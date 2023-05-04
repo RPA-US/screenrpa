@@ -8,7 +8,7 @@ import os
 import torch
 from SOM.UiComponent import UiComponent
 # import som_utils
-from SOM.utils import utils
+from apps.featureextraction.SOM import utils
 from SOM import ip_draw 
 import random
 
