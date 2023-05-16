@@ -12,8 +12,8 @@ from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from core.settings import PRIVATE_STORAGE_ROOT
 from apps.processdiscovery.models import ProcessDiscovery
-from apps.decisiondiscovery.models import ExtractTrainingDataset,DecisionTreeTraining
-from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Filters, FeatureExtractionTechnique
+from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
+from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
 from apps.behaviourmonitoring.models import Monitoring
 from apps.reporting.models import PDD
 
@@ -81,7 +81,7 @@ class CaseStudy(models.Model):
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
-    filters = models.ForeignKey(Filters, null=True, blank=True, on_delete=models.CASCADE)
+    filters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
     # feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)

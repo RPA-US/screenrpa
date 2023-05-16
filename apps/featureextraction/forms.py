@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, Prefilters, Filters
+from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters
 from django.core.exceptions import ValidationError
 
 class UIElementsDetectionForm(forms .ModelForm):
@@ -65,9 +65,9 @@ class PrefiltersForm(forms .ModelForm):
     def __init__(self, *args, **kwargs):
         super(PrefiltersForm, self).__init__(*args, **kwargs)
 
-class FiltersForm(forms .ModelForm):
+class PostfiltersForm(forms .ModelForm):
     class Meta:
-        model = Filters
+        model = Postfilters
         exclude = (
             "user",
             "created_at",
@@ -96,7 +96,7 @@ class FiltersForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(FiltersForm, self).__init__(*args, **kwargs)
+        super(PostfiltersForm, self).__init__(*args, **kwargs)
 
 class UIElementsClassificationForm(forms .ModelForm):
     class Meta:
@@ -138,35 +138,3 @@ class UIElementsClassificationForm(forms .ModelForm):
     def __init__(self, *args, **kwargs):
         super(UIElementsClassificationForm, self).__init__(*args, **kwargs)
    
-class FeatureExtractionTechniqueForm(forms.ModelForm):
-    class Meta:
-        model = FeatureExtractionTechnique
-        exclude = (
-            "user",
-            )
-        fields = (
-            "technique_name",
-            "skip",
-            "identifier"
-        )
-
-        widgets = {
-            "technique_name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "status"
-                    }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
-            ),
-            "identifier": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "sta_s"
-                    }
-            )
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(FeatureExtractionTechniqueForm, self).__init__(*args, **kwargs)

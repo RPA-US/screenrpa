@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CaseStudy
+from .models import CaseStudy, FeatureExtractionTechnique
 
 class CaseStudySerializer(serializers.ModelSerializer):
     phases_to_execute = serializers.JSONField()
@@ -11,3 +11,8 @@ class CaseStudySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('phases_to_execute')
         return CaseStudy.objects.create(**validated_data)
+
+class FeatureExtractionTechniqueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeatureExtractionTechnique
+        fields = '__all__'

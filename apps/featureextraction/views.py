@@ -1,12 +1,14 @@
-from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
 from art import tprint
 from core.settings import platform_name, classification_phase_name, feature_extraction_phase_name, aggregate_feature_extraction_phase_name
 from apps.analyzer.utils import detect_fe_function, detect_agg_fe_function
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
-from .models import FeatureExtractionTechnique, UIElementsClassification, UIElementsDetection, Prefilters, Filters
-from .forms import FeatureExtractionTechniqueForm, UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, FiltersForm
+from apps.analyzer.models import FeatureExtractionTechnique
+from apps.analyzer.forms import FeatureExtractionTechniqueForm
+from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
+from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters
+from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -143,10 +145,10 @@ class PrefiltersListView(ListView):
     def get_queryset(self):
         return Prefilters.objects.filter(user=self.request.user)
 
-class FiltersCreateView(CreateView):
-    model = Filters
-    form_class = FiltersForm
-    template_name = "filtering/create.html"
+class PostfiltersCreateView(CreateView):
+    model = Postfilters
+    form_class = PostfiltersForm
+    template_name = "postfiltering/create.html"
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -156,11 +158,11 @@ class FiltersCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class FiltersListView(ListView):
-    model = Filters
-    template_name = "filtering/list.html"
+class PostfiltersListView(ListView):
+    model = Postfilters
+    template_name = "postfiltering/list.html"
     paginate_by = 50
 
     def get_queryset(self):
-        return Filters.objects.filter(user=self.request.user)
+        return Postfilters.objects.filter(user=self.request.user)
     

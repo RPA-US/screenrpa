@@ -24,16 +24,16 @@ from apps.decisiondiscovery.views import decision_tree_training, extract_trainin
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
-from apps.featureextraction.relevantinfoselection.filters import info_filtering
+from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
-from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, Filters
+from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
-from apps.analyzer.serializers import CaseStudySerializer
-from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, FiltersSerializer, FeatureExtractionTechniqueSerializer
+from apps.analyzer.serializers import CaseStudySerializer, FeatureExtractionTechniqueSerializer
+from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, PostfiltersSerializer
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
@@ -86,7 +86,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
-        'info_filtering': (path_scenario +'log.csv',
+        'info_postfiltering': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
                                         case_study.filters.configurations,
@@ -306,7 +306,7 @@ def case_study_generator(data):
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
                 case "info_filtering":
-                    serializer = FiltersSerializer(data=phases[phase])
+                    serializer = PostfiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.filters = serializer.save()
                 case "feature_extraction_technique":

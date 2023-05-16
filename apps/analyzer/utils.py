@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 import lxml.etree as ET
 from lxml import html
 from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
-from models import FeatureExtractionTechnique
+from .models import FeatureExtractionTechnique
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 
 def get_foldernames_as_list(path, sep):
@@ -27,11 +27,11 @@ def get_foldernames_as_list(path, sep):
 
 def case_study_has_feature_extraction_technique(case_study, type="ANY"):
     if type=="SINGLE":
-      res = FeatureExtractionTechnique.objects.exists(case_study=case_study, type="SINGLE")
+      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE").exists()
     elif type=="AGGREGATE":
-      res = FeatureExtractionTechnique.objects.exists(case_study=case_study, type="AGGREGATE")
+      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE").exists()
     else:
-      res = FeatureExtractionTechnique.objects.exists(case_study=case_study)
+      res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
     return res
 
 def get_feature_extraction_technique_from_cs(case_study):

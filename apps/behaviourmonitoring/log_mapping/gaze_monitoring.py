@@ -126,8 +126,10 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
     metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
     fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)] = metrics_aux
   
+  # if fixation_key is in screenshot fixation_points and fixation_index is equal to last_fixation_index
   if key and (key in fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"]) and \
     gaze_log.iloc[i]["Fixation Index"] == last_fixation_index:
+    # increase the number of events associated to that fixation + 1
     fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]]["fixation_points"][key]["#events"] += 1
   # if an UI log event splits a fixation cluster:  
   # if it is the first iteration, and 
@@ -140,6 +142,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
     "fixation_points" in fixation_points[ui_log.iloc[j-1][special_colnames["Screenshot"]]] and \
     key in fixation_points[ui_log.iloc[j-1][special_colnames["Screenshot"]]]["fixation_points"]) and \
       ui_log.iloc[j][special_colnames["Screenshot"]] != ui_log.iloc[j-1][special_colnames["Screenshot"]]:
+      # raise an exception
       logging.exception("behaviourmonitoring/monitoring/update_fixation_points line:65. UI Log row " + str(j) + ". Fixation cluster splitted by two UI Log event!")
       raise Exception("Fixation cluster splitted by two UI Log event!")
   else:
@@ -175,9 +178,9 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
     
     else:
       if gaze_log.iloc[i]["Saccade Index"] and (not pd.isnull(gaze_log.iloc[i]["Saccade Index"])):
-        msg = "Row " + str(gaze_log.iloc[i]["RowNumber"] + ": Saccade movement - Index " + str(gaze_log.iloc[i]["Saccade Index"]))
+        msg = "Row " + str(gaze_log.iloc[i]["RowNumber"]) + ": Saccade movement - Index " + str(gaze_log.iloc[i]["Saccade Index"])
       else:
-        msg = "No fixation point in " + str(gaze_log.iloc[i]["RowNumber"] + ". Saccade: " + str(gaze_log.iloc[i]["Saccade Index"]))
+        msg = "No fixation point in " + str(gaze_log.iloc[i]["RowNumber"]) + ". Saccade: " + str(gaze_log.iloc[i]["Saccade Index"])
       logging.info(msg)
       print(msg)
   
