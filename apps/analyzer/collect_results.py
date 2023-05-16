@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from core.settings import metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, several_iterations
 import csv
-from apps.analyzer.utils import get_foldernames_as_list
+from apps.analyzer.utils import get_foldernames_as_list, case_study_has_feature_extraction_technique
 
 
 def times_duration(times, phases_info, scenario, phase):
@@ -266,7 +266,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
         # 1 == Balanced, 0 == Imbalanced
         balanced.append(1 if metainfo[3] == "Balanced" else 0)
 
-        if case_study.feature_extraction_technique:
+        if case_study_has_feature_extraction_technique(case_study):
             num_UI_elements.append(times[scenario]["feature_extraction_technique"]["num_UI_elements"])
             num_screenshots.append(times[scenario]["feature_extraction_technique"]["num_screenshots"])
             max_ui_elements_number.append(times[scenario]["feature_extraction_technique"]["max_#UI_elements"])
@@ -319,7 +319,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     }
     
     
-    if case_study.feature_extraction_technique:
+    if case_study_has_feature_extraction_technique(case_study):
         dict_results['num_UI_elements'] =  num_UI_elements
         dict_results['num_screenshots'] =  num_screenshots
         dict_results['density'] =  density

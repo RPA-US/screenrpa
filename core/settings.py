@@ -45,10 +45,11 @@ classification_phase_name =             "classification"
 info_filtering_phase_name =             "selection"
 feature_extraction_phase_name =         "feature extraction"
 flattening_phase_name =                 "flattening"
+aggregate_feature_extraction_phase_name =         "aggreate feature extraction"
 decision_model_discovery_phase_name =   "decision model discovery"
 
 # System Default Phases
-default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_filtering','process_discovery','feature_extraction_technique','extract_training_dataset','decision_tree_training']
+default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_filtering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
 
 #===================================================================================================
 #===================================================================================================
@@ -294,5 +295,6 @@ else:
 
 # Configuration JSON files Paths
 FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
+AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "aggreate_feature_extractors.json"
 STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
 CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"

@@ -47,7 +47,7 @@ def gaze_filering(log_path, root_path, special_colnames, configurations, key):
             json.dump(screenshot_json, jsonFile, indent=4)
 
 def apply_filters(log_path, root_path, special_colnames, configurations):
-    for key in tqdm(configurations, desc="Filters have been processed: "):
+    for key in tqdm(configurations, desc="Postfilters have been processed: "):
         # ui_selector = configurations["key"]["UI_selector"]
         # predicate = configurations["key"]["predicate"]
         # remove_nested = configurations["key"]["remove_nested"]
@@ -63,7 +63,7 @@ def apply_filters(log_path, root_path, special_colnames, configurations):
         logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
 
 
-def info_filtering(*data):
+def info_postfiltering(*data):
     data_list = list(data)
     filters_format_type = data_list.pop()
     skip = data_list.pop()

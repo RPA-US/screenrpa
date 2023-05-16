@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from .models import CaseStudy
+from .models import CaseStudy, FeatureExtractionTechnique
 from django.core.exceptions import ValidationError
 
 class CaseStudyForm(forms.ModelForm):
@@ -37,7 +37,6 @@ class CaseStudyForm(forms.ModelForm):
             "ui_elements_detection",
             "monitoring",
             "ui_elements_classification",
-            "feature_extraction_technique",
             "extract_training_dataset",
             "decision_tree_training"
         )
@@ -159,3 +158,38 @@ class CaseStudyForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CaseStudyForm, self).__init__(*args, **kwargs)
+
+
+  
+class FeatureExtractionTechniqueForm(forms.ModelForm):
+    class Meta:
+        model = FeatureExtractionTechnique
+        exclude = (
+            "user",
+            )
+        fields = (
+            "technique_name",
+            "skip",
+            "identifier"
+        )
+
+        widgets = {
+            "technique_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "status"
+                    }
+            ),
+            "skip": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox", "checked": "checked"}
+            ),
+            "identifier": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "sta_s"
+                    }
+            )
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(FeatureExtractionTechniqueForm, self).__init__(*args, **kwargs)

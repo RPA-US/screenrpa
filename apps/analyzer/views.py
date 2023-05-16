@@ -24,21 +24,21 @@ from apps.decisiondiscovery.views import decision_tree_training, extract_trainin
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
-from apps.featureextraction.relevantinfoselection.filters import info_filtering
+from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, FeatureExtractionTechnique
 from apps.behaviourmonitoring.models import Monitoring
-from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, FeatureExtractionTechnique, Filters
+from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
-from apps.analyzer.serializers import CaseStudySerializer
-from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, FiltersSerializer, FeatureExtractionTechniqueSerializer
+from apps.analyzer.serializers import CaseStudySerializer, FeatureExtractionTechniqueSerializer
+from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, PostfiltersSerializer
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.analyzer.tasks import init_generate_case_study
-from apps.analyzer.utils import get_foldernames_as_list
+from apps.analyzer.utils import get_foldernames_as_list, case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs
 from apps.analyzer.collect_results import experiments_results_collectors
 
 #============================================================================================================================
@@ -86,7 +86,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
-        'info_filtering': (path_scenario +'log.csv',
+        'info_postfiltering': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
                                         case_study.filters.configurations,
@@ -94,6 +94,23 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.filters.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.filters else None,
+        'feature_extraction_technique': (case_study.ui_elements_classification_classes,
+                                        case_study.decision_point_activity,
+                                        case_study.special_colnames["Case"],
+                                        case_study.special_colnames["Activity"],
+                                        case_study.special_colnames["Screenshot"],
+                                        path_scenario + 'components_json' + sep,
+                                        path_scenario + 'flattened_dataset.json',
+                                        path_scenario + 'log.csv',
+                                        path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
+                                        case_study.text_classname,
+                                        get_feature_extraction_technique_from_cs(case_study).consider_relevant_compos,
+                                        get_feature_extraction_technique_from_cs(case_study).relevant_compos_predicate,
+                                        get_feature_extraction_technique_from_cs(case_study).identifier,
+                                        get_feature_extraction_technique_from_cs(case_study).skip,
+                                        get_feature_extraction_technique_from_cs(case_study).technique_name)
+                                        # We check this phase is present in case_study to avoid exceptions
+                                        if case_study_has_feature_extraction_technique(case_study, "SINGLE") else None,
         'process_discovery': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -112,7 +129,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                     )
                                     # We check this phase is present in case_study to avoid exceptions
                                     if case_study.extract_training_dataset else None,
-        'feature_extraction_technique': (case_study.ui_elements_classification_classes,
+        'aggregate_features_as_dataset_columns': (case_study.ui_elements_classification_classes,
                                         case_study.decision_point_activity,
                                         case_study.special_colnames["Case"],
                                         case_study.special_colnames["Activity"],
@@ -120,15 +137,15 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         path_scenario + 'components_json' + sep,
                                         path_scenario + 'flattened_dataset.json',
                                         path_scenario + 'log.csv',
-                                        path_scenario + case_study.feature_extraction_technique.technique_name+'_enriched_log.csv',
+                                        path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
                                         case_study.text_classname,
-                                        case_study.feature_extraction_technique.consider_relevant_compos,
-                                        case_study.feature_extraction_technique.relevant_compos_predicate,
-                                        case_study.feature_extraction_technique.identifier,
-                                        case_study.feature_extraction_technique.skip,
-                                        case_study.feature_extraction_technique.technique_name)
+                                        get_feature_extraction_technique_from_cs(case_study).consider_relevant_compos,
+                                        get_feature_extraction_technique_from_cs(case_study).relevant_compos_predicate,
+                                        get_feature_extraction_technique_from_cs(case_study).identifier,
+                                        get_feature_extraction_technique_from_cs(case_study).skip,
+                                        get_feature_extraction_technique_from_cs(case_study).technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.feature_extraction_technique else None,
+                                        if case_study_has_feature_extraction_technique(case_study, "AGGREGATE") else None,
         'decision_tree_training': (path_scenario + 'flattened_dataset.json', 
                                     path_scenario,
                                     case_study.decision_tree_training.library,
@@ -148,7 +165,7 @@ def generate_case_study(case_study, path_scenario, times, n):
             times[n][function_to_exec]["columns_len"] = columns_len
             # times[n][function_to_exec]["tree_levels"] = tree_levels
             times[n][function_to_exec]["accuracy"] = res
-        elif function_to_exec == "feature_extraction_technique":
+        elif function_to_exec == "feature_extraction_technique" or function_to_exec == "aggregate_features_as_dataset_columns":
             start_t = time.time()
             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
@@ -205,7 +222,11 @@ def celery_task_process_case_study(case_study_id):
         # time.sleep(.1)
         # print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
-        if case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.feature_extraction_technique or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery:
+        
+        pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.monitoring or + \
+                case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or + \
+                    case_study.report or case_study_has_feature_extraction_technique(case_study)
+        if pred:
             if scenario_nested_folder == "TRUE":
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
@@ -285,13 +306,15 @@ def case_study_generator(data):
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
                 case "info_filtering":
-                    serializer = FiltersSerializer(data=phases[phase])
+                    serializer = PostfiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.filters = serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.feature_extraction_technique = serializer.save()
+                    serializer.type = "SINGLE"
+                    serializer.case_study = case_study
+                    serializer.save()
                 case "process_discovery":
                     serializer = ProcessDiscoverySerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
@@ -300,6 +323,12 @@ def case_study_generator(data):
                     serializer = ExtractTrainingDatasetSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.extract_training_dataset = serializer.save()
+                case "aggregate_features_as_dataset_columns":
+                    serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
+                    serializer.is_valid(raise_exception=True)
+                    serializer.type = "AGGREGATE"
+                    serializer.case_study = case_study
+                    serializer.save()
                 case "decision_tree_training":
                     serializer = DecisionTreeTrainingSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
@@ -369,7 +398,11 @@ def deleteCaseStudy(request):
 class CaseStudyDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
-        context = {"case_study": case_study}
+        context = {
+            "case_study": case_study, 
+            "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
+            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE")
+            }
         return render(request, "case_studies/detail.html", context)
 
 class CaseStudyView(generics.ListCreateAPIView):
