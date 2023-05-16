@@ -410,7 +410,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
             
             elif algorithm == "sam": #TODO
                 path_to_save_mask_npy=path_to_save_mask_elements+ image_names[img_index]
-                recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index)
+                recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/")
                 
                 with open(path_to_save_time_of_pipepile+image_names[img_index]+'_sam_time.json','w') as outfile:
                     json.dump(dict_times,outfile)

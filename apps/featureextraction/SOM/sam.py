@@ -10,10 +10,10 @@ from tqdm import tqdm
 from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
-CHECKPOINT_PATH='checkpoints/'
 
 
-def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint='h'):
+
+def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,checkpoint='h'):
     '''
     Analyzes an image and extracts its UI components
 
@@ -132,7 +132,7 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     time1=time.time()
     # torch.cuda.set_per_process_memory_fraction(fraction=0.55, device=0)
-    sam = sam_model_registry[model_type](checkpoint=CHECKPOINT_PATH+sam_checkpoint)
+    sam = sam_model_registry[model_type](checkpoint=checkpoint_path+sam_checkpoint)
     # device = "cuda:0"
     # sam.to(device=device)
 
