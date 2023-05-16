@@ -137,8 +137,8 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
         '''
         params uicompos: list<Compo> 
         returns:
-            --> compos_json: a json containing a list of Compos
-            --> uicompos: Compo objects with 'contain' and 'category' updated
+            --> compos_json: a json containing a list of UiComponents
+            --> uicompos: UiComponent objects with 'contain' and 'category' updated
         '''
         n = len(uicompos)
         list_compo_dict=[]
@@ -168,8 +168,8 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
         get components from masks and json with sam format
         returns:
         ---> arrays_dict: a dict containg list of each non-Json-serializable object of mask (segmentation, crop_box)
-        ---> mask_json: a json format of the mask including the id of the Compo 
-        ---> sorted_compos: a list of Compo elements sorted by bbox area 
+        ---> mask_json: a json format of the mask including the id of the UiComponent
+        ---> sorted_compos: a list of UiComponent elements sorted by bbox area 
         '''
         def bbox_area(bbox):
             return bbox[3]*bbox[2]
