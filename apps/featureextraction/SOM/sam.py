@@ -13,7 +13,7 @@ from .UiComponent import UiComponent #QUIT
 
 
 
-def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,checkpoint='h'):
+def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,checkpoint='l'):
     '''
     Analyzes an image and extracts its UI components
 
@@ -137,12 +137,12 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     # sam.to(device=device)
 
     ### GENERATE MASK ###
-    mask_generator = SamAutomaticMaskGenerator(sam)
+    # mask_generator = SamAutomaticMaskGenerator(sam)
 
-    # mask_generator = SamAutomaticMaskGenerator(
-    #     model=sam,
-    #     pred_iou_thresh=0.88,
-    # )
+    mask_generator = SamAutomaticMaskGenerator(
+        model=sam,
+        pred_iou_thresh=0.95,
+    )
     masks = mask_generator.generate(image_copy)
     time2=time.time()
     '''
