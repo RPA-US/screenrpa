@@ -1,10 +1,11 @@
-from core.settings import platform_name, info_filtering_phase_name, sep
-from core.utils import read_ui_log_as_dataframe
-from art import tprint
-import pandas as pd
-from tqdm import tqdm
 import json
 import logging
+import time
+import pandas as pd
+from tqdm import tqdm
+from art import tprint
+from core.utils import read_ui_log_as_dataframe
+from core.settings import platform_name, info_postfiltering_phase_name, sep
 
 def gaze_filering(log_path, root_path, special_colnames, configurations, key):
     """
@@ -47,11 +48,13 @@ def gaze_filering(log_path, root_path, special_colnames, configurations, key):
             json.dump(screenshot_json, jsonFile, indent=4)
 
 def apply_filters(log_path, root_path, special_colnames, configurations):
+    times = {}
     for key in tqdm(configurations, desc="Postfilters have been processed: "):
         # ui_selector = configurations["key"]["UI_selector"]
         # predicate = configurations["key"]["predicate"]
         # remove_nested = configurations["key"]["remove_nested"]
         s = "and applied!"
+        start_t = time.time()
         match key:
             case "gaze":
                 gaze_filering(log_path, root_path, special_colnames, configurations, "gaze")
@@ -61,7 +64,9 @@ def apply_filters(log_path, root_path, special_colnames, configurations):
         
         print("Filter '" + key + "' detected " + s)
         logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
+        times[key] = {"duration": float(time.time()) - float(start_t)}
 
+    return times
 
 def info_postfiltering(*data):
     data_list = list(data)
@@ -69,7 +74,7 @@ def info_postfiltering(*data):
     skip = data_list.pop()
     data = tuple(data_list)
     if not skip:  
-        tprint(platform_name + " - " + info_filtering_phase_name, "fancy60")
+        tprint(platform_name + " - " + info_postfiltering_phase_name, "fancy60")
         
         match filters_format_type:
             case "rpa-us":
@@ -77,6 +82,6 @@ def info_postfiltering(*data):
             case _:
                 raise Exception("You select a type of filter that doesnt exists")
     else:
-        logging.info("Phase " + info_filtering_phase_name + " skipped!")
-        output = "Phase " + info_filtering_phase_name + " skipped!"
+        logging.info("Phase " + info_postfiltering_phase_name + " skipped!")
+        output = "Phase " + info_postfiltering_phase_name + " skipped!"
     return output
