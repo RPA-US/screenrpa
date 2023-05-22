@@ -192,7 +192,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-control-label">Post-filtering</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.filters | pretty_json  }}</textarea>
+                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.postfilters | pretty_json  }}</textarea>
                 </div>
                 
                 {% for s_fe in single_fe %}

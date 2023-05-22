@@ -347,7 +347,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, configurations):
+def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -379,20 +379,14 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
         
         overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or (not skip)
 
-        # Gaze analysis?
-
         if overwrite:
-
+            start_t = time.time()
             if algorithm == "rpa-us":
                 recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname)
                 
                 # save metadata json
                 with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
                     json.dump(comp_json, outfile)
-
-                # save ui elements npy
-                aux = np.array(recortes)
-                np.save(screenshot_npy, aux)
 
                 # save texts npy
                 np.save(screenshot_texts_npy, text_or_not_text)
@@ -404,10 +398,6 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # store all bounding boxes from the ui elements that are in 'uicompos'
                 utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)
 
-                # save ui elements npy
-                aux = np.array(recortes, dtype=object)
-                np.save(screenshot_npy, aux)
-            
             elif algorithm == "sam": #TODO
                 path_to_save_mask_npy=path_to_save_mask_elements+ image_names[img_index]
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/")
@@ -431,10 +421,6 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     aux = np.array(arrays_dict[n])
                     np.save(path_element,aux)
 
-                # save ui elements npy
-                aux = np.array(recortes)
-                np.save(screenshot_npy, aux)
-
                 # save texts npy
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
@@ -442,6 +428,18 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 raise Exception("You select a type of UI element detection that doesnt exists")
             # if (add_words_columns and (not no_modification)) or (add_words_columns and (not os.path.exists(param_img_root+"text_colums.csv"))):
             #     storage_text_info_as_dataset(words, image_names, log, param_img_root)
+
+            if image_names[img_index] in metadata['screenshots']:
+                metadata['screenshots'][image_names[img_index]]['detect_images_components duration'] = float(time.time()) - float(start_t)
+                metadata['screenshots'][image_names[img_index]]['detect_images_components #UICompos'] = len(recortes)
+            else:
+                metadata['screenshots'][image_names[img_index]] = {"detect_images_components duration": float(time.time()) - float(start_t)}
+            
+            # save ui elements npy
+            aux = np.array(recortes, dtype=object)
+            np.save(screenshot_npy, aux)
+        
+    return metadata
 
 
 # def storage_text_info_as_dataset(words, image_names, log, param_img_root):
@@ -525,6 +523,8 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     pipeline = keras_ocr.pipeline.Pipeline()
     file_exists = os.path.exists(param_img_root + "images_ocr_info.txt")
 
+    metadata = { 'screenshots': {} } 
+    
     if file_exists:
         print("\n\nReading images OCR info from file...")
         with open(param_img_root + "images_ocr_info.txt", "rb") as fp:   # Unpickling
@@ -532,8 +532,11 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     else:
         text_corners = []
         for img in image_names:
+            start_t = time.time()
             ocr_result = get_ocr_image(pipeline, param_img_root, img)
             text_corners.append(ocr_result[0])
+            metadata['screenshots'][img] = {"get_ocr_image duration": float(time.time()) - float(start_t)}
+
         with open(param_img_root + "images_ocr_info.txt", "wb") as fp:  # Pickling
             pickle.dump(text_corners, fp)
 
@@ -546,8 +549,9 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         if not os.path.exists(p):
             os.mkdir(p)
 
-    detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, configurations)
-
+    metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations)
+    metadata["duration"] = float(time.time()) - float(start_t)
+    return metadata
 
 
 ############################################

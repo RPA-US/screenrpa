@@ -89,11 +89,11 @@ def generate_case_study(case_study, path_scenario, times, n):
         'info_postfiltering': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.filters.configurations,
-                                        case_study.filters.skip,
-                                        case_study.filters.type)
+                                        case_study.postfilters.configurations,
+                                        case_study.postfilters.skip,
+                                        case_study.postfilters.type)
                                         # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.filters else None,
+                                        if case_study.postfilters else None,
         'feature_extraction_technique': (case_study.ui_elements_classification_classes,
                                         case_study.decision_point_activity,
                                         case_study.special_colnames["Case"],
@@ -174,6 +174,9 @@ def generate_case_study(case_study, path_scenario, times, n):
             times[n][function_to_exec]["num_screenshots"] = num_screenshots
             times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
             times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+        elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or function_to_exec == "ui_elements_detection":
+            filtering_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
+            times[n][function_to_exec] = filtering_times
         else:
             start_t = time.time()
             output = eval(function_to_exec)(*to_exec_args[function_to_exec])
@@ -223,9 +226,7 @@ def celery_task_process_case_study(case_study_id):
         # print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
         
-        pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.monitoring or + \
-                case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or + \
-                    case_study.report or case_study_has_feature_extraction_technique(case_study)
+        pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.prefilters or case_study.postfilters or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or case_study.report or case_study_has_feature_extraction_technique(case_study)
         if pred:
             if scenario_nested_folder == "TRUE":
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
@@ -305,10 +306,10 @@ def case_study_generator(data):
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     case_study.ui_elements_classification = serializer.save()
-                case "info_filtering":
+                case "info_postfiltering":
                     serializer = PostfiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.filters = serializer.save()
+                    case_study.postfilters = serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
