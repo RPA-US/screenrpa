@@ -549,6 +549,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         if not os.path.exists(p):
             os.mkdir(p)
 
+    start_t = time.time()
     metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations)
     metadata["duration"] = float(time.time()) - float(start_t)
     return metadata

@@ -53,7 +53,7 @@ def attention_areas_prefilter(log_path, root_path, special_colnames, configurati
         if screenshot_filename in fixation_data:
             attention_screen_mapping(root_path, fixation_data, screenshot_filename)
         else:
-            logging.info(screenshot_filename + " doesn't generate filtered screenshot. It doesn't have fixations related.")
+            logging.info(str(screenshot_filename) + " doesn't generate filtered screenshot. It doesn't have fixations related.")
 
 def apply_prefilters(log_path, root_path, special_colnames, configurations):
     times = {}

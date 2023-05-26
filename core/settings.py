@@ -50,6 +50,7 @@ decision_model_discovery_phase_name =   "decision model discovery"
 
 # System Default Phases
 default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
+monitoring_imotions_needded_columns = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
 #===================================================================================================
 #===================================================================================================

@@ -379,3 +379,93 @@ def caption_ui_element(ui_elements_classification_classes, decision_point, case_
                                       metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id):
     print("Not implemented yet :)")
     return None
+
+
+
+def number_ui_element(ui_elements_classification_classes, decision_point, 
+    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
+    """
+    Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
+    """
+    
+    log = read_ui_log_as_dataframe(ui_log_path)
+
+    screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
+
+    headers = dict()
+    info_to_join: dict[str:list] = {}
+
+    for elem in ui_elements_classification_classes:
+        headers[elem] = 0
+
+    num_screenshots = len(screenshot_filenames)
+    num_UI_compos = 0
+    num_UI_elements = 0
+    num_UI_groups = 0
+
+    df = pd.DataFrame(columns=["#UICompos", "#UIElements", "#UIGroups"])
+    
+    for i, screenshot_filename in enumerate(screenshot_filenames):
+        # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+            data = json.load(f)
+
+        screenshot_compos_frec = headers.copy()
+        
+        
+        if consider_relevant_compos:
+            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+        else:
+            compos_list = data["compos"]
+
+        for j in range(0, len(compos_list)):
+            compo_class = compos_list[j]["class"]
+            compo_x1 = compos_list[j]["column_min"]
+            compo_y1 = compos_list[j]["row_min"]
+            compo_x2 = compos_list[j]["column_max"]
+            compo_y2 = compos_list[j]["row_max"]
+            centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
+            centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
+            compos_list[j]["centroid"] = [centroid_x, centroid_y]
+            screenshot_compos_frec[compo_class] += 1
+            
+            column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
+
+            if column_name in info_to_join:
+                if not len(info_to_join[column_name]) == i:
+                    for k in range(len(info_to_join[column_name]),i):
+                        info_to_join[column_name].append("")
+                info_to_join[column_name].append(compos_list[j]["centroid"])
+            else:
+                column_as_vector = []
+                for k in range(0,i):
+                    column_as_vector.append("")
+                column_as_vector.append(compos_list[j]["centroid"])
+                info_to_join[column_name] = column_as_vector
+            
+            if len(compos_list[j]["contain"]) > 0:
+                num_UI_groups+=1
+            else:
+                num_UI_elements+=1
+            
+            num_UI_compos += 1
+                
+        if not "features" in data:
+            data["features"] = {}
+            
+        data["features"]["location"] = info_to_join
+        data["features"]["#UICompos"] = num_UI_compos
+        data["features"]["#UIElements"] = num_UI_elements
+        data["features"]["#UIGroups"] = num_UI_groups
+        new_row = [num_UI_compos, num_UI_elements, num_UI_groups]
+        df.loc[i] = new_row
+        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+            json.dump(data, jsonFile, indent=4)
+            
+    df.to_csv(metadata_json_root + "metrics.csv", index=False)
+            
+        
+
+    print("\n\n=========== ENRICHED COMPO_JSON: path=" + metadata_json_root + 'XXXXXX.json')
+    
+    return num_UI_compos, num_screenshots, None, None

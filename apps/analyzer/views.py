@@ -313,8 +313,8 @@ def case_study_generator(data):
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    serializer.type = "SINGLE"
-                    serializer.case_study = case_study
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['type'] = "SINGLE"
                     serializer.save()
                 case "process_discovery":
                     serializer = ProcessDiscoverySerializer(data=phases[phase])
@@ -327,8 +327,8 @@ def case_study_generator(data):
                 case "aggregate_features_as_dataset_columns":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    serializer.type = "AGGREGATE"
-                    serializer.case_study = case_study
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['type'] = "AGGREGATE"
                     serializer.save()
                 case "decision_tree_training":
                     serializer = DecisionTreeTrainingSerializer(data=phases[phase])

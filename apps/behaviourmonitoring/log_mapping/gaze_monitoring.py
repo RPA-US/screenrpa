@@ -1,15 +1,22 @@
 import os
 import logging
-import pandas as pd
 import json
-import pandas as pd
+import math
 import datetime
+import pandas as pd
+import numpy as np
 from dateutil import tz
+from core.utils import read_ui_log_as_dataframe
+from core.settings import monitoring_imotions_needded_columns
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
-from core.utils import read_ui_log_as_dataframe
-import math
+
+ms_pattern = '%H-%M-%S.%f'
+# ui_log_timestamp_pattern = '%H:%M:%S %p'
+ui_log_timestamp_pattern = '%H:%M:%S'
+# ui_log_format_pattern = '\u200e%m/\u200e%d/\u200e%Y %H:%M:%S %p'
+ui_log_format_pattern = None
 
 def euclidean_distance(x1, y1, x2, y2):
   """
@@ -35,7 +42,10 @@ def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze X", y_column_na
     ssd = sum(euclidean_distance(float(gaze_log.loc[index,x_column_name]), float(gaze_log.loc[index,y_column_name]), mean_x, mean_y)**2 for index in fixations)
 
     # Divide the sum of squared distances by the number of fixations minus 1 to get the variance
-    variance = ssd / (len(fixations) - 1)
+    if len(fixations) > 1:
+      variance = ssd / (len(fixations) - 1)
+    else:
+      variance = 0
 
     # Take the square root of the variance to get the standard deviation, which is the fixation dispersion
     fixation_dispersion = math.sqrt(variance)
@@ -60,20 +70,21 @@ def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
     if len(str(float(current_timestamp) / 1000)) > 6:
       ms = str(ms)[:6]
     ms = str(hs)+"-"+str(min)+"-"+str(ms)
-    time = datetime.datetime.strptime(ms, '%H-%M-%S.%f').time()
+    time = datetime.datetime.strptime(ms, ms_pattern).time()
     res = start_datetime + datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=time.second, microseconds=time.microsecond)
   else:
     time =  datetime.datetime.strptime(current_timestamp, pattern).time()
     res = datetime.datetime.combine(start_datetime, time)
-  return (res - time_begining).total_seconds()
+  return (res - time_begining).total_seconds(), res
 
 
 def format_fixation_point_key(i, gaze_log):
   return str(gaze_log.iloc[i]["Fixation X"]) + "#" + str(gaze_log.iloc[i]["Fixation Y"])
 
-def gaze_log_get_key(i, gaze_log):
+def gaze_log_get_key(i, gaze_log, gaze_timestamp):
   init = {  
     "#events": 1,
+    "timestamp": gaze_timestamp.strftime(ui_log_timestamp_pattern),
     "start_index": i,
     "ms_start": gaze_log.iloc[i]["Fixation Start"],
     "ms_end": gaze_log.iloc[i]["Fixation End"],
@@ -148,14 +159,14 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
   else:
     fixation_start = gaze_log.iloc[i]["Fixation Start"]
     if fixation_start and (not pd.isnull(fixation_start)):
-      gaze_fixation_start = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, 'ms') # + gaze_log_timedelta
-      key, init = gaze_log_get_key(i, gaze_log)
+      gaze_fixation_start, t = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, 'ms') # + gaze_log_timedelta
+      key, init = gaze_log_get_key(i, gaze_log, t)
       last_counter = 1
       aux_index = j-last_counter if j != 0 else j
-      last_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[aux_index][special_colnames["Timestamp"]], '%H:%M:%S')
+      last_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[aux_index][special_colnames["Timestamp"]], ui_log_timestamp_pattern)
       
       while last_timestamp == current_timestamp and j != 0:
-        last_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[j-last_counter][special_colnames["Timestamp"]], '%H:%M:%S')
+        last_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[j-last_counter][special_colnames["Timestamp"]], ui_log_timestamp_pattern)
         logging.info("behaviourmonitoring/monitoring/update_fixation_points line:76. UI Log row " + str(j) + ". Finding the last timestamp change: " + str(last_counter) + " event before")
         last_counter+=1
       
@@ -215,22 +226,24 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
   last_fixation_index_row = -1
   last_ui_log_index_row = -1
   
-  initial_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[0][special_colnames["Timestamp"]], '%H:%M:%S')
+  initial_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[0][special_colnames["Timestamp"]], ui_log_timestamp_pattern)
   
   # Loop: Each UI Log row
   for j in range(len(ui_log)-1):
       # Obtain current event timestamp and next event timestamp 
       current_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
-      current_timestamp = get_timestamp(starting_point, startDateTime_ui_log, current_timestamp, '%H:%M:%S')# + ui_log_timedelta
+      current_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, current_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
       next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
-      next_timestamp = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, '%H:%M:%S')# + ui_log_timedelta
+      next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
       
       if next_timestamp > current_timestamp:
         fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
         key = None
         
+        
+        
         for i in range(last_gaze_log_row, len(gaze_log)-1):
-          gaze_timestamp = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], "ms")# + gaze_log_timedelta
+          gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], "ms")# + gaze_log_timedelta
           
           # Gaze Event between current ui log event and next ui log event
           if gaze_timestamp < next_timestamp:
@@ -243,6 +256,12 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
           else:
             last_gaze_log_row = i
             break
+        # Add the dispersion calculation of the last screenshot associated to the UI Log Event
+        screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
+        gaze_metrics = fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)]
+        metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
+        fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)] = metrics_aux
+        
         # If all gaze log events have been covered: break
         if i == len(gaze_log)-2:
           break
@@ -252,20 +271,86 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
       else:
         logging.info("behaviourmonitoring/monitoring/gaze_log_mapping line:155. UI Logs events with the same timestamps: next_timestamp (row " + str(j+1) + ") == current_timestamp (row " + str(j) + ")")
   
-  last_ui_log_timestamp = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[len(ui_log)-1][special_colnames["Timestamp"]], '%H:%M:%S')        
-  last_gaze_timestamp = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[len(gaze_log)-1]["Timestamp"], "ms")# + gaze_log_timedelta
+  last_ui_log_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[len(ui_log)-1][special_colnames["Timestamp"]], ui_log_timestamp_pattern)        
+  last_gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[len(gaze_log)-1]["Timestamp"], "ms")# + gaze_log_timedelta
   
   # Store gaze logs that takes place after last UI log event
   if last_gaze_timestamp > last_ui_log_timestamp:
     logging.info("behaviourmonitoring/monitoring/gaze_log_mapping line:161. Gaze log events after UI Log last event")
     for i in range(last_gaze_log_row, len(gaze_log)-1):
-      key, init = gaze_log_get_key(i, gaze_log)
-      if key and (key in fixation_points["subsequent"]):
-        fixation_points["subsequent"][key]["#events"] += 1
-      else:  
-        fixation_points["subsequent"][key] = init
+      fixation_start = gaze_log.iloc[i]["Fixation Start"]
+      if fixation_start and (not pd.isnull(fixation_start)):
+        gaze_fixation_start, t = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, 'ms') # + gaze_log_timedelta
+        key, init = gaze_log_get_key(i, gaze_log, t)
+        if key and (key in fixation_points["subsequent"]):
+          fixation_points["subsequent"][key]["#events"] += 1
+        else:  
+          fixation_points["subsequent"][key] = init
+      else:
+        if gaze_log.iloc[i]["Saccade Index"] and (not pd.isnull(gaze_log.iloc[i]["Saccade Index"])):
+          msg = "Row " + str(gaze_log.iloc[i]["RowNumber"]) + ": Saccade movement - Index " + str(gaze_log.iloc[i]["Saccade Index"])
+        else:
+          msg = "No fixation point in " + str(gaze_log.iloc[i]["RowNumber"]) + ". Saccade: " + str(gaze_log.iloc[i]["Saccade Index"])
+        logging.info(msg)
+        print(msg)
       
   return fixation_points
+
+def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
+  ub_log = ui_log.copy()
+  acum = 0
+  columns_added = [special_colnames["Screenshot"], special_colnames["NameApp"]]
+  var_act_case_bool = [False,False,False]
+  if special_colnames["Variant"] in ui_log.columns:
+    var_act_case_bool[0] = True
+    columns_added.append(special_colnames["Variant"])
+  if special_colnames["Activity"] in ui_log.columns:
+    var_act_case_bool[1] = True
+    columns_added.append(special_colnames["Activity"])
+  if special_colnames["Case"] in ui_log.columns:
+    var_act_case_bool[2] = True
+    columns_added.append(special_colnames["Case"])
+  
+  columns_nan = ui_log.columns
+  columns_nan = columns_nan.drop(columns_added)
+  
+  for ui_event_index in range(len(ui_log)-1):
+    new_row_json = {}
+    screenshot = ui_log.iloc[ui_event_index][special_colnames["Screenshot"]]
+    new_row_json[special_colnames["Screenshot"]] = [screenshot]
+    nameapp = ui_log.iloc[ui_event_index][special_colnames["NameApp"]]
+    new_row_json[special_colnames["NameApp"]] = [nameapp]
+    if var_act_case_bool[0]:
+      variant = ui_log.iloc[ui_event_index][special_colnames["Variant"]]
+      new_row_json[special_colnames["Variant"]] = [variant]
+    if var_act_case_bool[1]:
+      activity = ui_log.iloc[ui_event_index][special_colnames["Activity"]]
+      new_row_json[special_colnames["Activity"]] = [activity]
+    if var_act_case_bool[2]:
+      case = ui_log.iloc[ui_event_index][special_colnames["Case"]]
+      new_row_json[special_colnames["Case"]] = [case]
+
+    for col in columns_nan:
+      new_row_json[col] = [np.nan]
+    
+    new_row_json[special_colnames["EventType"]] = ["GazeFixation"]
+      
+    for coor_coded in fixation_p[screenshot]["fixation_points"]:
+      coordinates = coor_coded.split("#")
+      new_row_json[special_colnames["CoorX"]] = [coordinates[0]]
+      new_row_json[special_colnames["CoorY"]] = [coordinates[1]]
+      new_row_json["#events"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["#events"]]
+      new_row_json[special_colnames["Timestamp"]] = [fixation_p[screenshot]["fixation_points"][coor_coded]["timestamp"]]
+      new_row_json["dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["dispersion"]]
+      new_row_json["imotions_dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["imotions_dispersion"]]
+      
+      new_row_json = pd.DataFrame(new_row_json)
+      
+      ub_log = pd.concat([ub_log.iloc[:ui_event_index+acum+1], new_row_json, ub_log.iloc[ui_event_index+acum+1:]]).reset_index(drop=True)
+      acum+=1
+      
+
+  ub_log.to_csv(root_path + "ub_log_fixation.csv")
 
 def monitoring(log_path, root_path, special_colnames, monitoring_type, monitoring_configurations):
     
@@ -288,17 +373,31 @@ def monitoring(log_path, root_path, special_colnames, monitoring_type, monitorin
         raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
 
     if monitoring_type == "imotions":
+        # fixation.json to Dataframe checker
+        for col_name in monitoring_imotions_needded_columns:
+          if special_colnames[col_name] not in ui_log.columns:
+            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(monitoring_imotions_needded_columns))
+            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(monitoring_imotions_needded_columns))
+        
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"])
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"], ui_log_format_pattern)
 
-        fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, monitoring_configurations)
+        if os.path.exists(root_path + "fixation.json"):
+          fixation_p = json.load(open(root_path + "fixation.json"))
+          logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
+          print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
+        else:
+          fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, monitoring_configurations)
         
         # Serializing json
         json_object = json.dumps(fixation_p, indent=4)
         with open(root_path + "fixation.json", "w") as outfile:
             outfile.write(json_object)
         logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
+        
+        fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+        
         
     else:
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")

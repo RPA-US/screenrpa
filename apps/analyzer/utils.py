@@ -122,7 +122,7 @@ def from_html_to_xes(org_resource, myhtml, root_file_path, output_filename):
       ET.SubElement(event, 'string', {'key': 'ocel:eid'}).text = str(i)
       ET.SubElement(event, 'string', {'key': 'ocel:org:resource'}).text = org_resource
       ET.SubElement(event, 'string', {'key': 'ocel:concept:name'}).text = children[0].text
-      ET.SubElement(event, 'string', {'key': 'ocel:type:click'}).text = children[1].text
+      ET.SubElement(event, 'string', {'key': 'ocel:type:event'}).text = children[1].text
       coords = children[2].text.strip().split(",")
       ET.SubElement(event, 'float', {'key': 'ocel:click:coorX'}).text = coords[0]
       ET.SubElement(event, 'float', {'key': 'ocel:click:coorY'}).text = coords[1]
@@ -166,7 +166,7 @@ def from_html_to_csv(org_resource, myhtml, root_file_path, output_filename):
         event['ocel:eid'] = str(i)
         event['ocel:org:resource'] = org_resource
         event['ocel:concept:name'] = each_action[0].text
-        event['ocel:type:click'] = each_action[1].text
+        event['ocel:type:event'] = each_action[1].text
         coords = each_action[2].text.strip().split(",")
         event['ocel:click:coorX'] = coords[0]
         event['ocel:click:coorY'] = coords[1]
@@ -221,7 +221,7 @@ def format_mht_file(mht_file_path, output_format, output_path, output_filename, 
 ###########################################################################################################################
 ###########################################################################################################################
 
-def get_mht_log_start_datetime(mht_file_path):
+def get_mht_log_start_datetime(mht_file_path, pattern):
     with open(mht_file_path) as mht_file: 
         msg = email.message_from_file(mht_file)
         myhtml = msg.get_payload()[0].get_payload()
@@ -239,7 +239,9 @@ def get_mht_log_start_datetime(mht_file_path):
         logging.exception("analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the format:'Step 1: (datetime)'")
         raise Exception("The MHT file doesnt have '(datetime)' after 'Step 1:'")
       
-    if "/" in datetime_parenthesis:
+    if pattern:
+      format_pattern = pattern
+    elif "/" in datetime_parenthesis:
       format_pattern = '\u200e%d/\u200e%m/\u200e%Y %H:%M:%S'
     else: 
       format_pattern = '\u200e%d-\u200e%m-\u200e%Y %H:%M:%S'
