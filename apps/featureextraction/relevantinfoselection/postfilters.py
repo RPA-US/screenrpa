@@ -41,7 +41,7 @@ def calculate_intersection_area(rect_x, rect_y, rect_width, rect_height, circle_
     
     return area_inter
 
-def is_component_relevant_v1(compo, fixation_point, fixation_point_x, fixation_point_y):
+def is_component_relevant_option1(compo, fixation_point, fixation_point_x, fixation_point_y):
     # Calcular el radio del círculo de fijación
     dispersion = fixation_point["dispersion"]
     
@@ -84,7 +84,7 @@ def is_component_relevant_v1(compo, fixation_point, fixation_point_x, fixation_p
         return False
 
 
-def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_point_y):
+def is_component_relevant_option2(compo, fixation_point, fixation_point_x, fixation_point_y):
     compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
     
     circle_radius = fixation_point["dispersion"] * 10
@@ -117,10 +117,10 @@ def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_p
     res = intersection_area / compo_area
     return res > 0.25
 
-def is_component_relevant_v3(compo, fixation_point, fixation_point_x, fixation_point_y):
+def is_component_relevant(compo, fixation_point, fixation_point_x, fixation_point_y, scale_factor):
     compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
     
-    circle_radius = fixation_point["dispersion"]
+    circle_radius = fixation_point["dispersion"] * int(scale_factor)
     intersection_area = calculate_intersection_area(compo['row_min'], compo['column_min'], compo['row_max'] - compo['row_min'], compo['column_max'] - compo['column_min'], fixation_point_x, fixation_point_y, circle_radius)
     res = intersection_area / compo_area
     return res
@@ -158,20 +158,19 @@ def gaze_filering(log_path, root_path, special_colnames, configurations, key):
                     # predicate: is_component_relevant_v2(compo, fixation_obj, fixation_point_x, fixation_point_y)
                     
                     if configurations[key]["predicate"] == "is_component_relevant":
-                        cal = is_component_relevant_v3(compo, fixation_obj, fixation_point_x, fixation_point_y)
+                        cal = is_component_relevant(compo, fixation_obj, fixation_point_x, fixation_point_y, configurations[key]["scale_factor"])
                         compo["intersection_area"] = cal
-                        cond = cal > 0.25
+                        cond = cal > float(configurations[key]["intersection_area_thresh"])
                     else: 
                         cond = eval(configurations[key]["predicate"])
 
-                    if cond:
+                    if compo["relevant"] == "True" or compo["relevant"] == "Nested":
+                        pass
+                    elif cond:
                         if configurations[key]["only_leaf"] and (len(compo["contain"]) > 0):
                             compo["relevant"] = "Nested"
                         else:
-                            compo["relevant"] = "True"
-                            
-                    elif compo["relevant"] == "True" or compo["relevant"] == "Nested":
-                        pass
+                            compo["relevant"] = "True"      
                     else:
                         compo["relevant"] = "False"
             else:
