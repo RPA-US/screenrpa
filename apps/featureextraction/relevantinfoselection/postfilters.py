@@ -8,8 +8,38 @@ from tqdm import tqdm
 from art import tprint
 from core.utils import read_ui_log_as_dataframe
 from core.settings import platform_name, info_postfiltering_phase_name, sep
-
 import math
+
+def calculate_intersection_area(rect_x, rect_y, rect_width, rect_height, circle_x, circle_y, circle_radius):
+    # Calcular las coordenadas del rectángulo y el círculo
+    rect_left = rect_x
+    rect_right = rect_x + rect_width
+    rect_top = rect_y
+    rect_bottom = rect_y + rect_height
+    circle_left = circle_x - circle_radius
+    circle_right = circle_x + circle_radius
+    circle_top = circle_y - circle_radius
+    circle_bottom = circle_y + circle_radius
+    
+    # Calcular las coordenadas de la intersección
+    x_inter = max(rect_left, circle_left)
+    y_inter = max(rect_top, circle_top)
+    width_inter = min(rect_right, circle_right) - x_inter
+    height_inter = min(rect_bottom, circle_bottom) - y_inter
+    
+    # Verificar si hay intersección
+    if width_inter < 0 or height_inter < 0:
+        return 0
+    
+    # Calcular el área de la intersección
+    if width_inter < height_inter:
+        radius_inter = width_inter / 2
+    else:
+        radius_inter = height_inter / 2
+    
+    area_inter = math.pi * radius_inter**2
+    
+    return area_inter
 
 def is_component_relevant_v1(compo, fixation_point, fixation_point_x, fixation_point_y):
     # Calcular el radio del círculo de fijación
@@ -57,36 +87,43 @@ def is_component_relevant_v1(compo, fixation_point, fixation_point_x, fixation_p
 def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_point_y):
     compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
     
-    circle_x = fixation_point_x
-    circle_y = fixation_point_y
-    circle_radius = fixation_point["dispersion"]
+    circle_radius = fixation_point["dispersion"] * 10
     
     intersection_area = 0
     
-    if circle_x < compo['row_min']:
+    if fixation_point_x < compo['row_min']:
         closest_x = compo['row_min']
-    elif circle_x > compo['row_max']:
+    elif fixation_point_x > compo['row_max']:
         closest_x = compo['row_max']
     else:
-        closest_x = circle_x
+        closest_x = fixation_point_x
     
-    if circle_y < compo['column_min']:
+    if fixation_point_y < compo['column_min']:
         closest_y = compo['column_min']
-    elif circle_y > compo['column_max']:
+    elif fixation_point_y > compo['column_max']:
         closest_y = compo['column_max']
     else:
-        closest_y = circle_y
+        closest_y = fixation_point_y
     
-    if (circle_x >= compo['row_min'] and circle_x <= compo['row_max'] and
-            circle_y >= compo['column_min'] and circle_y <= compo['column_max']):
+    if (fixation_point_x >= compo['row_min'] and fixation_point_x <= compo['row_max'] and
+            fixation_point_y >= compo['column_min'] and fixation_point_y <= compo['column_max']):
         intersection_area = circle_radius**2
     else:
-        distance = ((circle_x - closest_x)**2 + (circle_y - closest_y)**2)**0.5
+        distance = ((fixation_point_x - closest_x)**2 + (fixation_point_y - closest_y)**2)**0.5
         if distance < circle_radius:
             intersection_area = (circle_radius**2 * math.acos(distance / circle_radius) -
                                  distance * (circle_radius**2 - distance**2)**0.5)
     
-    return intersection_area / compo_area > 0.5
+    res = intersection_area / compo_area
+    return res > 0.25
+
+def is_component_relevant_v3(compo, fixation_point, fixation_point_x, fixation_point_y):
+    compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
+    
+    circle_radius = fixation_point["dispersion"]
+    intersection_area = calculate_intersection_area(compo['row_min'], compo['column_min'], compo['row_max'] - compo['row_min'], compo['column_max'] - compo['column_min'], fixation_point_x, fixation_point_y, circle_radius)
+    res = intersection_area / compo_area
+    return res
 
 def gaze_filering(log_path, root_path, special_colnames, configurations, key):
     """
@@ -108,6 +145,7 @@ def gaze_filering(log_path, root_path, special_colnames, configurations, key):
             screenshot_json = json.load(f)
         
         for compo in screenshot_json["compos"]:
+            compo["relevant"] = "NaN"
             # compo matches UI selector
             if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
                 (screenshot_filename in fixation_json): # screenshot has fixation
@@ -119,11 +157,21 @@ def gaze_filering(log_path, root_path, special_colnames, configurations, key):
                     # predicate: "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])"
                     # predicate: is_component_relevant_v2(compo, fixation_obj, fixation_point_x, fixation_point_y)
                     
-                    if eval(configurations[key]["predicate"]):
+                    if configurations[key]["predicate"] == "is_component_relevant":
+                        cal = is_component_relevant_v3(compo, fixation_obj, fixation_point_x, fixation_point_y)
+                        compo["intersection_area"] = cal
+                        cond = cal > 0.25
+                    else: 
+                        cond = eval(configurations[key]["predicate"])
+
+                    if cond:
                         if configurations[key]["only_leaf"] and (len(compo["contain"]) > 0):
                             compo["relevant"] = "Nested"
                         else:
                             compo["relevant"] = "True"
+                            
+                    elif compo["relevant"] == "True" or compo["relevant"] == "Nested":
+                        pass
                     else:
                         compo["relevant"] = "False"
             else:
