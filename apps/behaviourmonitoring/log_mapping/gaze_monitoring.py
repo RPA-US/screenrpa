@@ -53,7 +53,12 @@ def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze X", y_column_na
     return fixation_dispersion
   
 def calculate_dispersion(gaze_log, metrics, last_index):
-    dispersion = fixation_dispersion(range(metrics["start_index"], last_index + 1), gaze_log, "Gaze X", "Gaze Y")
+    current_fixations = range(metrics["start_index"], last_index + 1)
+    # dispersion = fixation_dispersion(current_fixations, gaze_log, "Gaze X", "Gaze Y")
+    fixations_x = [float(gaze_log.loc[index,"Gaze X"]) for index in current_fixations]
+    fixations_y = [float(gaze_log.loc[index,"Gaze Y"]) for index in current_fixations]
+    # REF PyTrack: An end-to-end analysis toolkit for eye tracking -> Parameter extraction - Fixations
+    dispersion = euclidean_distance(min(fixations_x), min(fixations_y), max(fixations_x), max(fixations_y))
     
     metrics["last_index"] = last_index
     metrics["dispersion"] = dispersion
