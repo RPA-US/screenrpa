@@ -26,7 +26,7 @@ DB_USER =                       env('DB_USER')
 DB_PASSWORD =                   env('DB_PASSWORD')
 API_VERSION =                   env('API_VERSION')
 active_celery =                 config('DISABLE_MULTITHREADING', default=False, cast=bool)
-scenario_nested_folder =        env('SCENARIO_NESTED_FOLDER')
+scenario_nested_folder =        config('SCENARIO_NESTED_FOLDER', default=False, cast=bool)
 metadata_location =             env('METADATA_PATH')
 fixation_duration_threshold =   int(env('FIXATION_DURATION_THRESHOLD')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 cropping_threshold =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
@@ -34,7 +34,7 @@ gui_quantity_difference =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum ti
 flattened_dataset_name =        env('FLATTENED_DATASET_NAME')
 several_iterations =            env('DECISION_TREE_TRAINING_ITERATIONS')
 decision_foldername =           env('DECISION_TREE_TRAINING_FOLDERNAME')
-plot_decision_trees =           env('PLOT_DECISION_TREES')
+plot_decision_trees =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
 platform_name =                         "RIM"

@@ -154,7 +154,7 @@ def CART_sklearn_decision_tree(df, param_path, one_hot_columns, target_label):
 
     type(target_casted[0])
 
-    if plot_decision_trees == 'True':
+    if plot_decision_trees:
         img = plot_decision_tree(
             param_path + "decision_tree", clf_model, feature_names, target_casted)
         plt.imshow(img)

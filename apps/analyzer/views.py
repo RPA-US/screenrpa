@@ -228,7 +228,7 @@ def celery_task_process_case_study(case_study_id):
         
         pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.prefilters or case_study.postfilters or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or case_study.report or case_study_has_feature_extraction_technique(case_study)
         if pred:
-            if scenario_nested_folder == "TRUE":
+            if scenario_nested_folder:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
                     generate_case_study(case_study, path_scenario, times, n)
