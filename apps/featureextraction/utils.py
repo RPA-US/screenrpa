@@ -285,16 +285,16 @@ def rm_line(binary,
         if wait_key == 0:
             cv2.destroyWindow('no-line binary')
 
-# take the binary image as input
-# calculate the connected regions -> get the bounding boundaries of them -> check if those regions are rectangles
-# return all boundaries and boundaries of rectangles
-def component_detection(binary, min_obj_area,
+def component_detection(binary, min_obj_area, uied_params,
                         line_thickness=UIEDC.THRESHOLD_LINE_THICKNESS,
                         min_rec_evenness=UIEDC.THRESHOLD_REC_MIN_EVENNESS,
                         max_dent_ratio=UIEDC.THRESHOLD_REC_MAX_DENT_RATIO,
-                        step_h = 5, step_v = 2,
                         rec_detect=False, show=False, test=False):
     """
+    Take the binary image as input
+    Calculate the connected regions -> get the bounding boundaries of them -> check if those regions are rectangles
+    return all boundaries (and boundaries of rectangles if rec_detect=True)
+    
     :param binary: Binary image from pre-processing
     :param min_obj_area: If not pass then ignore the small object
     :param min_obj_perimeter: If not pass then ignore the small object
@@ -310,8 +310,8 @@ def component_detection(binary, min_obj_area,
     compos_rec = []
     compos_nonrec = []
     row, column = binary.shape[0], binary.shape[1]
-    for i in range(0, row, step_h):
-        for j in range(i % 2, column, step_v):
+    for i in range(0, row, uied_params['step_h']):
+        for j in range(i % 2, column, uied_params['step_w']):
             if binary[i, j] == 255 and mask[i, j] == 0:
                 # get connected area
                 # regio1n = util.boundary_bfs_connected_area(binary, i, j, mask)
@@ -326,7 +326,7 @@ def component_detection(binary, min_obj_area,
                 component = Component(region, binary.shape)
                 # calculate the boundary of the connected area
                 # ignore small area
-                if component.width <= 3 or component.height <= 3:
+                if component.width <= uied_params["compo-width-considered-small"] or component.height <= uied_params["compo-height-considered-small"]:
                     continue
                 # check if it is line by checking the length of edges
                 # if component.compo_is_line(line_thickness):
