@@ -403,7 +403,7 @@ def number_ui_element(ui_elements_classification_classes, decision_point,
     num_UI_elements = 0
     num_UI_groups = 0
 
-    df = pd.DataFrame(columns=["#UICompos", "#UIElements", "#UIGroups"])
+    df = pd.DataFrame(columns=["screenshot", "#UICompos", "#UIElements", "#UIGroups"])
     
     for i, screenshot_filename in enumerate(screenshot_filenames):
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
@@ -457,7 +457,7 @@ def number_ui_element(ui_elements_classification_classes, decision_point,
         data["features"]["#UICompos"] = num_UI_compos
         data["features"]["#UIElements"] = num_UI_elements
         data["features"]["#UIGroups"] = num_UI_groups
-        new_row = [num_UI_compos, num_UI_elements, num_UI_groups]
+        new_row = [screenshot_filename, num_UI_compos, num_UI_elements, num_UI_groups]
         df.loc[i] = new_row
         with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
             json.dump(data, jsonFile, indent=4)
