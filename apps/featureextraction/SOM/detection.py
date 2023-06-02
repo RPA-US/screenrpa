@@ -61,7 +61,7 @@ def get_ocr_image(pipeline, param_img_root, images_input):
     return prediction_groups
 
 
-def nesting_inspection(org, grey, compos, ffl_block):
+def nesting_inspection(org, grey, compos, uied_params):
     '''
     Inspect all big compos through block division by flood-fill
     :param ffl_block: gradient threshold for flood-fill
@@ -79,11 +79,11 @@ def nesting_inspection(org, grey, compos, ffl_block):
                 compos[i].contain+=[compos[j]]
                 compos[i] = compos[i]
         
-        if compo.height > 30:
+        if compo.height > uied_params["min_elem_height"]:
             replace = False
             clip_grey = compo.compo_clipping(grey)
             n_compos = utils.nested_components_detection(
-                clip_grey, org, grad_thresh=ffl_block, show=False)
+                clip_grey, org, grad_thresh=uied_params["ffl_block"], uied_params=uied_params, show=False)
             
             if n_compos:
                 compos[i].contain+=n_compos
@@ -137,10 +137,15 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     uied_params = {
         'min-grad': 3,
         'ffl-block': 5,
-        'min-ele-area': 20,
+        'min-ele-area': 10,
+        'min-ele-height': 10,
         'merge-contained-ele': True,
         'max-word-inline-gap': 4,
-        'max-line-gap': 4
+        'max-line-gap': 4,
+        'nested-min-compo-height': 5, # 10
+        'nested-shared-area-percentage': 0.9,
+        'nested-shared-area-to-be-redundant': 0.7,
+        'nested-ignore-non-rectangle-blocks': False
     }
     
     name = input_img_path.split('/')[-1][:-4] if '/' in input_img_path else input_img_path.split('\\')[-1][:-4]
@@ -173,8 +178,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
-    uicompos = nesting_inspection(org, grey,
-                                uicompos, ffl_block=uied_params['ffl-block'])
+    uicompos = nesting_inspection(org, grey, uicompos, uied_params)
 
     # *** Step 5 *** save detection result
     utils.compos_update(uicompos, org.shape)
