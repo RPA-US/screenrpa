@@ -10,7 +10,7 @@ from core.utils import read_ui_log_as_dataframe
 from core.settings import platform_name, info_postfiltering_phase_name, sep
 import math
 
-def calculate_intersection_area(rect_x, rect_y, rect_width, rect_height, circle_x, circle_y, circle_radius):
+def calculate_intersection_area_v0(rect_x, rect_y, rect_width, rect_height, circle_x, circle_y, circle_radius):
     # Calcular las coordenadas del rectángulo y el círculo
     rect_left = rect_x
     rect_right = rect_x + rect_width
@@ -84,29 +84,30 @@ def is_component_relevant_option1(compo, fixation_point, fixation_point_x, fixat
         return False
 
 
-def is_component_relevant_option2(compo, fixation_point, fixation_point_x, fixation_point_y):
-    compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
-    
-    circle_radius = fixation_point["dispersion"] * 10
-    
+def calculate_intersection_area(compo, fixation_point_x, fixation_point_y, circle_radius):
+    # compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
+    x_min = compo["row_min"]
+    x_max = compo["row_max"]
+    y_min = compo["column_min"]
+    y_max = compo["column_max"]
     intersection_area = 0
     
-    if fixation_point_x < compo['row_min']:
-        closest_x = compo['row_min']
-    elif fixation_point_x > compo['row_max']:
-        closest_x = compo['row_max']
+    if fixation_point_x < x_min:
+        closest_x = x_min
+    elif fixation_point_x > x_max:
+        closest_x = x_max
     else:
         closest_x = fixation_point_x
     
-    if fixation_point_y < compo['column_min']:
-        closest_y = compo['column_min']
-    elif fixation_point_y > compo['column_max']:
-        closest_y = compo['column_max']
+    if fixation_point_y < y_min:
+        closest_y = y_min
+    elif fixation_point_y > y_max:
+        closest_y = y_max
     else:
         closest_y = fixation_point_y
     
-    if (fixation_point_x >= compo['row_min'] and fixation_point_x <= compo['row_max'] and
-            fixation_point_y >= compo['column_min'] and fixation_point_y <= compo['column_max']):
+    if (fixation_point_x >= x_min and fixation_point_x <= x_max and
+            fixation_point_y >= y_min and fixation_point_y <= y_max):
         intersection_area = circle_radius**2
     else:
         distance = ((fixation_point_x - closest_x)**2 + (fixation_point_y - closest_y)**2)**0.5
@@ -114,14 +115,13 @@ def is_component_relevant_option2(compo, fixation_point, fixation_point_x, fixat
             intersection_area = (circle_radius**2 * math.acos(distance / circle_radius) -
                                  distance * (circle_radius**2 - distance**2)**0.5)
     
-    res = intersection_area / compo_area
-    return res > 0.25
+    return intersection_area
 
 def is_component_relevant(compo, fixation_point, fixation_point_x, fixation_point_y, scale_factor):
     compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
-    
+        
     circle_radius = fixation_point["dispersion"] * int(scale_factor)
-    intersection_area = calculate_intersection_area(compo['row_min'], compo['column_min'], compo['row_max'] - compo['row_min'], compo['column_max'] - compo['column_min'], fixation_point_x, fixation_point_y, circle_radius)
+    intersection_area = calculate_intersection_area(compo, fixation_point_x, fixation_point_y, circle_radius)
     res = intersection_area / compo_area
     return res
 
@@ -155,24 +155,26 @@ def gaze_filering(log_path, root_path, special_colnames, configurations, key):
                     fixation_point_x = float(fixation_coordinates[0])
                     fixation_point_y = float(fixation_coordinates[1])
                     # predicate: "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])"
-                    # predicate: is_component_relevant_v2(compo, fixation_obj, fixation_point_x, fixation_point_y)
-                    
-                    if configurations[key]["predicate"] == "is_component_relevant":
-                        cal = is_component_relevant(compo, fixation_obj, fixation_point_x, fixation_point_y, configurations[key]["scale_factor"])
-                        compo["intersection_area"] = cal
-                        cond = cal > float(configurations[key]["intersection_area_thresh"])
-                    else: 
-                        cond = eval(configurations[key]["predicate"])
+                    # predicate: is_component_relevant_option2(compo, fixation_obj, fixation_point_x, fixation_point_y)
 
                     if compo["relevant"] == "True" or compo["relevant"] == "Nested":
                         pass
-                    elif cond:
-                        if configurations[key]["only_leaf"] and (len(compo["contain"]) > 0):
-                            compo["relevant"] = "Nested"
-                        else:
-                            compo["relevant"] = "True"      
                     else:
-                        compo["relevant"] = "False"
+                        if configurations[key]["predicate"] == "is_component_relevant":
+                            cal = is_component_relevant(compo, fixation_obj, fixation_point_x, fixation_point_y, configurations[key]["scale_factor"])
+                            compo["intersection_area"] = cal
+                            cond = cal > float(configurations[key]["intersection_area_thresh"])
+                        else: 
+                            cond = eval(configurations[key]["predicate"])
+                        
+                        if cond:
+                            nested = bool(configurations[key]["only_leaf"])
+                            if nested and (len(compo["contain"]) > 0):
+                                compo["relevant"] = "Nested"
+                            else:
+                                compo["relevant"] = "True"      
+                        else:
+                            compo["relevant"] = "False"
             else:
                 compo["relevant"] = "False"
 
