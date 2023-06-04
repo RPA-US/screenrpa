@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import json
 from core.settings import sep
+from PIL import Image, ImageDraw
+from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
 
 # #######################
@@ -522,3 +524,38 @@ def draw_ui_compos_borders(exp_path):
 
         with open(root_path + compo_json_filename, "w") as outfile:
             json.dump(compo_json, outfile, indent=4)
+            
+def get_geometry_list_points(coords, geometry):
+    if geometry.geom_type == "MultiPolygon" or geometry.geom_type == "GeometryCollection" :
+        for g in geometry:
+            coords += get_geometry_list_points(coords, g)
+    else:
+        coords += list(geometry.exterior.coords)
+    return coords
+
+def draw_geometry_over_image(background_image_path, polygons, output_image_path):
+    # Open the background image
+    background_image = Image.open(background_image_path)
+
+    # Create a blank image with the same size as the background image
+    overlay_image = Image.new('RGBA', background_image.size, (0, 0, 0, 0))
+
+    # Create a drawing context
+    draw = ImageDraw.Draw(overlay_image)
+
+    for geometry in polygons:
+        # List points to draw
+        coords = get_geometry_list_points([], geometry)
+        
+        if coords and len(coords) > 0:
+            # Draw the geometry on the overlay image
+            draw.polygon(coords, fill=(255, 0, 0, 128), outline=(255, 0, 0, 255))
+
+    # Blend the overlay image with the background image
+    result_image = Image.alpha_composite(background_image.convert('RGBA'), overlay_image)
+
+    # Convert the result image to RGB
+    result_image_rgb = result_image.convert('RGB')
+
+    # Save the result image
+    result_image_rgb.save(output_image_path)
