@@ -26,8 +26,8 @@ def attention_screen_mapping(root_path, fixation_data, screenshot_filename, scal
         if 'dispersion' in fixation_data[screenshot_filename]['fixation_points'][fixation_point]:
             dispersion = float(fixation_data[screenshot_filename]['fixation_points'][fixation_point]['dispersion'])
             if not pd.isna(dispersion):
-                size = int(dispersion) * int(scale_factor)  # Scale the dispersion to a reasonable size for the circle
-                draw.ellipse((x - size, y - size, x + size, y + size), fill=255)
+                radius = int(dispersion) * int(scale_factor)  # Scale the dispersion to a reasonable size for the circle
+                draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=255)
             else:
                 logging.info(fixation_point + " - (dispersion attr is nan) not mapped to attention area in screenshot " + screenshot_filename)
         else:
