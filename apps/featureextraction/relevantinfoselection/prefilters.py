@@ -36,7 +36,7 @@ def attention_screen_mapping(root_path, fixation_data, screenshot_filename, scal
     # Apply the attention mask to the original image
     attention_map = Image.composite(image, Image.new('RGB', image.size, (0, 0, 0)), attention_mask)
 
-    attention_path = root_path + 'attention_map_screenshots'
+    attention_path = root_path + 'prefilter_attention_maps'
     
     if not os.path.exists(attention_path):
         os.mkdir(attention_path)

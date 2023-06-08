@@ -8,7 +8,7 @@ import pandas as pd
 from art import tprint
 from tqdm import tqdm
 from shapely.ops import unary_union
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, box
 from core.utils import read_ui_log_as_dataframe
 from core.settings import platform_name, info_postfiltering_phase_name, sep
 from apps.featureextraction.utils import draw_geometry_over_image
@@ -151,6 +151,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
         
         if configurations[key]["predicate"] == "is_component_relevant":
             polygon_circles = []
+            polygon_rectangles = []
             for fixation_point in fixation_json[screenshot_filename]["fixation_points"]:
                 fixation_coordinates = fixation_point.split("#")
                 fixation_obj = fixation_json[screenshot_filename]["fixation_points"][fixation_point]
@@ -163,34 +164,44 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                     polygon_circles.append(polygon_circle)
 
                 fixation_mask = unary_union(polygon_circles)
-        
-            if configurations[key]["mode"] == "draw":
-                if not os.path.exists(root_path + "postfilter_attention_maps/"):
-                    os.makedirs(root_path + "postfilter_attention_maps/")
-                draw_geometry_over_image(root_path + screenshot_filename, polygon_circles, root_path + "postfilter_attention_maps/" + screenshot_filename)
-            
+          
             for compo in screenshot_json["compos"]:
                 compo["relevant"] = "NaN"
                 # compo matches UI selector
                 if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
                     (screenshot_filename in fixation_json): # screenshot has fixation
                         
-                    polygon_rect = Polygon([(compo['row_min'], compo['column_min']), (compo['row_max'], compo['column_max']), (0,0)])
+                    x_min = compo['row_min']
+                    y_min = compo['column_min']
+                    x_max = compo['row_max']
+                    y_max = compo['column_max']
+                    
+                    polygon_rect = box(x_min, y_min, x_max, y_max)
                     intersection = polygon_rect.intersection(fixation_mask)
 
                     compo["intersection_area"] = intersection.area
                     
-                    if intersection.area > float(configurations[key]["intersection_area_thresh"]):
+                    if polygon_rect.area > 0 and (intersection.area / polygon_rect.area) > float(configurations[key]["intersection_area_thresh"]):
                         nested = bool(configurations[key]["only_leaf"])
-                        if nested and (len(compo["contain"]) > 0):
+                        if nested and (len(compo["contain"]) > 0 or compo["label"] == "UIGroup"):
                             compo["relevant"] = "Nested"
+                            if configurations[key]["consider_nested_as_relevant"] == "True":
+                                polygon_rectangles.append(polygon_rect)
                         else:
                             compo["relevant"] = "True"
+                            polygon_rectangles.append(polygon_rect)
+                            
                     else:
                         compo["relevant"] = "False"
                                     
                 else:
                     compo["relevant"] = "False"
+                    
+            if configurations[key]["mode"] == "draw":
+                if not os.path.exists(root_path + "postfilter_attention_maps" + sep):
+                    os.makedirs(root_path + "postfilter_attention_maps" + sep)
+                draw_geometry_over_image(root_path + screenshot_filename, polygon_circles, polygon_rectangles, root_path + "postfilter_attention_maps" + sep + screenshot_filename)
+            
         else:
             for compo in screenshot_json["compos"]:
                 compo["relevant"] = "NaN"

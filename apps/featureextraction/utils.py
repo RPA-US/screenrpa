@@ -533,7 +533,16 @@ def get_geometry_list_points(coords, geometry):
         coords += list(geometry.exterior.coords)
     return coords
 
-def draw_geometry_over_image(background_image_path, polygons, output_image_path):
+def polygon_list_to_draw(polygons, draw: ImageDraw, fill=(255, 0, 0, 128), outline=(255, 0, 0, 255)):
+    for geometry in polygons:
+        # List points to draw
+        coords = get_geometry_list_points([], geometry)
+        
+        if coords and len(coords) > 0:
+            # Draw the geometry on the overlay image
+            draw.polygon(coords, fill=fill, outline=outline)
+
+def draw_geometry_over_image(background_image_path, circles, rectangles, output_image_path):
     # Open the background image
     background_image = Image.open(background_image_path)
 
@@ -543,13 +552,8 @@ def draw_geometry_over_image(background_image_path, polygons, output_image_path)
     # Create a drawing context
     draw = ImageDraw.Draw(overlay_image)
 
-    for geometry in polygons:
-        # List points to draw
-        coords = get_geometry_list_points([], geometry)
-        
-        if coords and len(coords) > 0:
-            # Draw the geometry on the overlay image
-            draw.polygon(coords, fill=(255, 0, 0, 128), outline=(255, 0, 0, 255))
+    polygon_list_to_draw(rectangles, draw, (255, 255, 0, 128), "blue")
+    polygon_list_to_draw(circles, draw)
 
     # Blend the overlay image with the background image
     result_image = Image.alpha_composite(background_image.convert('RGBA'), overlay_image)
