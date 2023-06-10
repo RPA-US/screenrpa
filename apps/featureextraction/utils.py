@@ -488,14 +488,15 @@ def draw_ui_compos_borders(exp_path):
         for compo in compo_json["compos"]:
             # Extract component properties
             # Coordenadas a escalar
-            y_min = int(compo['row_min'])
-            x_min = int(compo['column_min'])
-            y_max = int(compo['row_max'])
-            x_max = int(compo['column_max'])
+            x_min = int(compo['row_min'])
+            y_min = int(compo['column_min'])
+            x_max = int(compo['row_max'])
+            y_max = int(compo['column_max'])
             
+            img_shape = list(compo_json["img_shape"])
             
             # Coordenadas de origen y destino
-            src_resolution = (800, 1422)
+            src_resolution = (img_shape[0], img_shape[1])
             dest_resolution = (1080, 1920)
 
             # Escalar coordenadas
