@@ -339,20 +339,21 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
       new_row_json[col] = [np.nan]
     
     new_row_json[special_colnames["EventType"]] = ["GazeFixation"]
-      
-    for coor_coded in fixation_p[screenshot]["fixation_points"]:
-      coordinates = coor_coded.split("#")
-      new_row_json[special_colnames["CoorX"]] = [coordinates[0]]
-      new_row_json[special_colnames["CoorY"]] = [coordinates[1]]
-      new_row_json["#events"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["#events"]]
-      new_row_json[special_colnames["Timestamp"]] = [fixation_p[screenshot]["fixation_points"][coor_coded]["timestamp"]]
-      new_row_json["dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["dispersion"]]
-      new_row_json["imotions_dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["imotions_dispersion"]]
-      
-      new_row_json = pd.DataFrame(new_row_json)
-      
-      ub_log = pd.concat([ub_log.iloc[:ui_event_index+acum+1], new_row_json, ub_log.iloc[ui_event_index+acum+1:]]).reset_index(drop=True)
-      acum+=1
+    
+    if screenshot in fixation_p:  
+      for coor_coded in fixation_p[screenshot]["fixation_points"]:
+        coordinates = coor_coded.split("#")
+        new_row_json[special_colnames["CoorX"]] = [coordinates[0]]
+        new_row_json[special_colnames["CoorY"]] = [coordinates[1]]
+        new_row_json["#events"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["#events"]]
+        new_row_json[special_colnames["Timestamp"]] = [fixation_p[screenshot]["fixation_points"][coor_coded]["timestamp"]]
+        # new_row_json["dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["dispersion"]]
+        new_row_json["imotions_dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["imotions_dispersion"]]
+        
+        new_row_json = pd.DataFrame(new_row_json)
+        
+        ub_log = pd.concat([ub_log.iloc[:ui_event_index+acum+1], new_row_json, ub_log.iloc[ui_event_index+acum+1:]]).reset_index(drop=True)
+        acum+=1
       
 
   ub_log.to_csv(root_path + "ub_log_fixation.csv")
