@@ -2,13 +2,10 @@ import os
 import cv2
 import numpy as np
 import json
-
+from core.settings import sep
+from PIL import Image, ImageDraw
+from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
-
-NESTED_MIN_COMPO_HEIGHT = 10
-NESTED_SHARED_AREA_PERCENTAGE = 0.9
-NESTED_SHARED_AREA_TO_BE_REDUNDANT_PERCENTAGE = 0.7
-NESTED_IGNORE_NON_RECTANGLE_BLOCKS = False
 
 # #######################
 # CONFIG
@@ -164,7 +161,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
 
 UIEDC = Config()
 
-def nested_components_detection(grey, org, grad_thresh,
+def nested_components_detection(grey, org, grad_thresh, uied_params,
                    show=False, write_path=None,
                    step_h=10, step_v=10,
                    line_thickness=UIEDC.THRESHOLD_LINE_THICKNESS,
@@ -199,13 +196,14 @@ def nested_components_detection(grey, org, grad_thresh,
                 # draw.draw_region(region, broad_all)
                 # if block.height < 40 and block.width < 40:
                 #     continue
-                if compo.height < NESTED_MIN_COMPO_HEIGHT:
+                        
+                if compo.height < uied_params['nested-min-compo-height']:
                     continue
 
                 # print(block.area / (row * column))
-                if compo.area / (row * column) > NESTED_SHARED_AREA_PERCENTAGE:
+                if compo.area / (row * column) > uied_params['nested-shared-area-percentage']:
                     continue
-                elif compo.area / (row * column) > NESTED_SHARED_AREA_TO_BE_REDUNDANT_PERCENTAGE:
+                elif compo.area / (row * column) > uied_params['nested-shared-area-to-be-redundant']:
                     compo.redundant = True
 
                 # get the boundary of this region
@@ -213,7 +211,7 @@ def nested_components_detection(grey, org, grad_thresh,
                 if compo.compo_is_line(line_thickness):
                     continue
                 # ignore non-rectangle as blocks must be rectangular
-                if NESTED_IGNORE_NON_RECTANGLE_BLOCKS or (not compo.compo_is_rectangle(min_rec_evenness, max_dent_ratio)):
+                if uied_params['nested-ignore-non-rectangle-blocks'] or (not compo.compo_is_rectangle(min_rec_evenness, max_dent_ratio)):
                     continue
                 
                 # if block.height/row < min_block_height_ratio:
@@ -289,16 +287,16 @@ def rm_line(binary,
         if wait_key == 0:
             cv2.destroyWindow('no-line binary')
 
-# take the binary image as input
-# calculate the connected regions -> get the bounding boundaries of them -> check if those regions are rectangles
-# return all boundaries and boundaries of rectangles
-def component_detection(binary, min_obj_area,
+def component_detection(binary, min_obj_area, uied_params,
                         line_thickness=UIEDC.THRESHOLD_LINE_THICKNESS,
                         min_rec_evenness=UIEDC.THRESHOLD_REC_MIN_EVENNESS,
                         max_dent_ratio=UIEDC.THRESHOLD_REC_MAX_DENT_RATIO,
-                        step_h = 5, step_v = 2,
                         rec_detect=False, show=False, test=False):
     """
+    Take the binary image as input
+    Calculate the connected regions -> get the bounding boundaries of them -> check if those regions are rectangles
+    return all boundaries (and boundaries of rectangles if rec_detect=True)
+    
     :param binary: Binary image from pre-processing
     :param min_obj_area: If not pass then ignore the small object
     :param min_obj_perimeter: If not pass then ignore the small object
@@ -314,8 +312,8 @@ def component_detection(binary, min_obj_area,
     compos_rec = []
     compos_nonrec = []
     row, column = binary.shape[0], binary.shape[1]
-    for i in range(0, row, step_h):
-        for j in range(i % 2, column, step_v):
+    for i in range(0, row, uied_params['step_h']):
+        for j in range(i % 2, column, uied_params['step_w']):
             if binary[i, j] == 255 and mask[i, j] == 0:
                 # get connected area
                 # regio1n = util.boundary_bfs_connected_area(binary, i, j, mask)
@@ -330,7 +328,7 @@ def component_detection(binary, min_obj_area,
                 component = Component(region, binary.shape)
                 # calculate the boundary of the connected area
                 # ignore small area
-                if component.width <= 3 or component.height <= 3:
+                if component.width <= uied_params["compo-width-considered-small"] or component.height <= uied_params["compo-height-considered-small"]:
                     continue
                 # check if it is line by checking the length of edges
                 # if component.compo_is_line(line_thickness):
@@ -457,3 +455,112 @@ def rm_contained_compos_not_in_block(compos):
         if not marked[i]:
             new_compos.append(compos[i])
     return new_compos
+
+
+def scale_coordinates(coord, src_resolution, dest_resolution):
+    src_height, src_width = src_resolution
+    dest_height, dest_width = dest_resolution
+
+    x = coord[0]
+    y = coord[1]
+
+    scaled_x = int(x * (dest_width / src_width))
+    scaled_y = int(y * (dest_height / src_height))
+
+    return (scaled_x, scaled_y)
+
+
+def draw_ui_compos_borders(exp_path):
+    root_path = exp_path + sep + "components_json" + sep
+    arr = os.listdir(root_path)
+
+    if not os.path.exists(exp_path + sep + "compo_json_borders"):
+        os.mkdir(exp_path + sep + "compo_json_borders")
+    
+    for compo_json_filename in arr:
+        with open(root_path + compo_json_filename, 'r') as f:
+            print(compo_json_filename)
+            compo_json = json.load(f)
+            
+        # Load image
+        image = cv2.imread(exp_path + sep + compo_json_filename[:19])
+        
+        for compo in compo_json["compos"]:
+            # Extract component properties
+            # Coordenadas a escalar
+            x_min = int(compo['row_min'])
+            y_min = int(compo['column_min'])
+            x_max = int(compo['row_max'])
+            y_max = int(compo['column_max'])
+            
+            img_shape = list(compo_json["img_shape"])
+            
+            # Coordenadas de origen y destino
+            src_resolution = (img_shape[0], img_shape[1])
+            dest_resolution = (1080, 1920)
+
+            # Escalar coordenadas
+            x_min, y_min = scale_coordinates((x_min, y_min), src_resolution, dest_resolution)
+            x_max, y_max = scale_coordinates((x_max, y_max), src_resolution, dest_resolution)
+
+
+            # Define border color based on compo ID
+            color_id = compo['id'] % 3  # Assuming 3 different colors
+            if color_id == 0:
+                border_color = (255, 0, 0)  # Blue
+            elif color_id == 1:
+                border_color = (0, 255, 0)  # Green
+            else:
+                border_color = (0, 0, 255)  # Red
+
+            # Draw border rectangle on the image
+            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), border_color, 2)
+
+            
+        # Save the image with component borders
+        output_path = exp_path + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        cv2.imwrite(output_path, image)
+        image = None
+
+
+        with open(root_path + compo_json_filename, "w") as outfile:
+            json.dump(compo_json, outfile, indent=4)
+            
+def get_geometry_list_points(coords, geometry):
+    if geometry.geom_type == "MultiPolygon" or geometry.geom_type == "GeometryCollection" :
+        for g in geometry:
+            coords += get_geometry_list_points(coords, g)
+    else:
+        coords += list(geometry.exterior.coords)
+    return coords
+
+def polygon_list_to_draw(polygons, draw: ImageDraw, fill=(255, 0, 0, 128), outline=(255, 0, 0, 255)):
+    for geometry in polygons:
+        # List points to draw
+        coords = get_geometry_list_points([], geometry)
+        
+        if coords and len(coords) > 0:
+            # Draw the geometry on the overlay image
+            draw.polygon(coords, fill=fill, outline=outline)
+
+def draw_geometry_over_image(background_image_path, circles, rectangles, output_image_path):
+    # Open the background image
+    background_image = Image.open(background_image_path)
+
+    # Create a blank image with the same size as the background image
+    overlay_image = Image.new('RGBA', background_image.size, (0, 0, 0, 0))
+
+    # Create a drawing context
+    draw = ImageDraw.Draw(overlay_image)
+
+    polygon_list_to_draw(rectangles, draw, (255, 255, 0, 128), "blue")
+    polygon_list_to_draw(circles, draw)
+
+    # Blend the overlay image with the background image
+    result_image = Image.alpha_composite(background_image.convert('RGBA'), overlay_image)
+
+    # Convert the result image to RGB
+    result_image_rgb = result_image.convert('RGB')
+
+    # Save the result image
+    result_image_rgb.save(output_image_path)

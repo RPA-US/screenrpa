@@ -1,12 +1,18 @@
-from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
 from art import tprint
-from core.settings import platform_name, classification_phase_name, feature_extraction_phase_name
-from apps.analyzer.utils import detect_fe_function
-from django.http import HttpResponseRedirect
+from core.settings import sep, platform_name, classification_phase_name, feature_extraction_phase_name, aggregate_feature_extraction_phase_name
+from apps.analyzer.utils import detect_fe_function, detect_agg_fe_function
+from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
-from .models import FeatureExtractionTechnique, UIElementsClassification, UIElementsDetection, Prefilters, Filters
-from .forms import FeatureExtractionTechniqueForm, UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, FiltersForm
+from apps.analyzer.models import FeatureExtractionTechnique, CaseStudy
+from apps.analyzer.forms import FeatureExtractionTechniqueForm
+from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
+from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters
+from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm
+from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
+from .utils import draw_ui_compos_borders
+from rest_framework import status
+
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -43,6 +49,21 @@ def feature_extraction_technique(*data):
         output = detect_fe_function(feature_extraction_technique_name)(*data)
     return output
 
+def aggregate_features_as_dataset_columns(*data):
+    tprint(platform_name + " - " + aggregate_feature_extraction_phase_name, "fancy60")
+
+    data_list = list(data)
+    agg_feature_extraction_technique_name = data_list.pop()
+    skip = data_list.pop()
+    data = tuple(data_list)
+    output = None
+
+    print("Aggregate feature extraction selected: " + agg_feature_extraction_technique_name+"\n")
+    
+    if not skip:
+        output = detect_agg_fe_function(agg_feature_extraction_technique_name)(*data)
+    return output
+
 class FeatureExtractionTechniqueCreateView(CreateView):
     model = FeatureExtractionTechnique
     form_class = FeatureExtractionTechniqueForm
@@ -62,7 +83,7 @@ class FeatureExtractionTechniqueListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return FeatureExtractionTechnique.objects.all()
+        return FeatureExtractionTechnique.objects.filter(user=self.request.user)
     
 class UIElementsClassificationCreateView(CreateView):
     model = UIElementsClassification
@@ -83,7 +104,7 @@ class UIElementsClassificationListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return UIElementsClassification.objects.all()
+        return UIElementsClassification.objects.filter(user=self.request.user)
     
 class UIElementsDetectionCreateView(CreateView):
     model = UIElementsDetection
@@ -104,7 +125,7 @@ class UIElementsDetectionListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return UIElementsDetection.objects.all()
+        return UIElementsDetection.objects.filter(user=self.request.user)
 
 
 class PrefiltersCreateView(CreateView):
@@ -126,12 +147,12 @@ class PrefiltersListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Prefilters.objects.all()
+        return Prefilters.objects.filter(user=self.request.user)
 
-class FiltersCreateView(CreateView):
-    model = Filters
-    form_class = FiltersForm
-    template_name = "filtering/create.html"
+class PostfiltersCreateView(CreateView):
+    model = Postfilters
+    form_class = PostfiltersForm
+    template_name = "postfiltering/create.html"
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -141,11 +162,63 @@ class FiltersCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class FiltersListView(ListView):
-    model = Filters
-    template_name = "filtering/list.html"
+class PostfiltersListView(ListView):
+    model = Postfilters
+    template_name = "postfiltering/list.html"
     paginate_by = 50
 
     def get_queryset(self):
-        return Filters.objects.all()
+        return Postfilters.objects.filter(user=self.request.user)
     
+    
+def draw_postfilter(request, case_study_id):
+    st = status.HTTP_200_OK
+    
+    try:
+        case_study = CaseStudy.objects.get(id=case_study_id)
+        if case_study.executed:
+            # user = request.user
+            # cs = CaseStudy.objects.filter(user=user, id=case_study_id)
+            # if cs.exists() :
+            # cs = cs[0]
+            cs = case_study
+            for scenario in cs.scenarios_to_study:
+                draw_postfilter_relevant_ui_compos_borders(cs.exp_folder_complete_path + sep + scenario)
+
+            # else:
+            #     raise Exception("You don't have permissions to access this files")
+            response = 'Postfiltered UI compos borders has been drawn!'
+        else:
+            response = 'The processing of this case study has not yet finished, please try again in a few minutes'
+
+    except Exception as e:
+        response = f"Case Study with id {case_study_id} raise an exception: " + str(e)
+        st = status.HTTP_404_NOT_FOUND
+
+    return HttpResponse(response, status=st)
+
+def draw_ui_compos(request, case_study_id):
+    st = status.HTTP_200_OK
+    
+    try:
+        case_study = CaseStudy.objects.get(id=case_study_id)
+        if case_study.executed:
+            # user = request.user
+            # cs = CaseStudy.objects.filter(user=user, id=case_study_id)
+            # if cs.exists() :
+            # cs = cs[0]
+            cs = case_study
+            for scenario in cs.scenarios_to_study:
+                draw_ui_compos_borders(cs.exp_folder_complete_path + sep + scenario)
+
+            # else:
+            #     raise Exception("You don't have permissions to access this files")
+            response = 'Postfiltered UI compos borders has been drawn!'
+        else:
+            response = 'The processing of this case study has not yet finished, please try again in a few minutes'
+
+    except Exception as e:
+        response = f"Case Study with id {case_study_id} raise an exception: " + str(e)
+        st = status.HTTP_404_NOT_FOUND
+
+    return HttpResponse(response, status=st)
