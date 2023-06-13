@@ -1,5 +1,5 @@
-# RIM tool
-Relevance Information Mining tool
+# ScreenRPA tool
+Screen-based Task Mining Framework in the context of Robotic Process Automation (RPA) 
 
 ## Before run
 For development in Windows, make sure you have [Docker](https://docs.docker.com/desktop/install/windows-install/) installed and working. On Linux this is optional, since all Python packages on this project are compatible with it.
