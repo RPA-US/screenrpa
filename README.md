@@ -20,8 +20,8 @@
 
 > To authenticate use the default credentials ***test / ApS12_ZZs8*** or create a new user on the **registration page**.
 
-- **Screen RPM** [Login Page](https://canela.lsi.us.es/rim)
-- **[Screen RPM Public Samples](https://canela.lsi.us.es/rim/results)** - sample experiments that show app funtionality 
+- **Screen RPA** [Login Page](https://canela.lsi.us.es/screenrpa)
+- **[Screen RPA Public Samples](https://canela.lsi.us.es/screenrpa/results)** - sample experiments that show app funtionality 
 
 <br />
 
@@ -225,9 +225,9 @@ At present, we officially aim to support the last two versions of the following 
 
 ## Reporting Issues
 
-We use GitHub Issues as the official bug tracker for the **Screen RPM**. Here are some advices for our users that want to report an issue:
+We use GitHub Issues as the official bug tracker for the **Screen RPA**. Here are some advices for our users that want to report an issue:
 
-1. Make sure that you are using the latest version of the **Screen RPM**.
+1. Make sure that you are using the latest version of the **Screen RPA**.
 2. Providing us reproducible steps for the issue will shorten the time it takes for it to be fixed.
 3. Some issues may be browser-specific, so specifying in what browser you encountered the issue might help.
 

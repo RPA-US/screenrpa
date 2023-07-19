@@ -21,7 +21,7 @@ from django.template import loader
 from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, scenario_nested_folder, active_celery
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
+from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, aggregate_features_as_dataset_columns
 from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
 from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
@@ -99,7 +99,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.special_colnames["Case"],
                                         case_study.special_colnames["Activity"],
                                         case_study.special_colnames["Screenshot"],
-                                        path_scenario + 'components_json' + sep,
+                                        path_scenario,
                                         path_scenario + 'flattened_dataset.json',
                                         path_scenario + 'log.csv',
                                         path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
@@ -213,7 +213,7 @@ def celery_task_process_case_study(case_study_id):
  
 
     # year = datetime.now().date().strftime("%Y")
-    tprint("RPA-US     RIM", "tarty1")
+    tprint("RPA-US     SCREEN RPA", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
     if case_study.scenarios_to_study:
         aux_path = case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0]

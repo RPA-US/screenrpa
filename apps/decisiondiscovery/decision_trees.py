@@ -11,9 +11,67 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from apps.chefboost import Chefboost as chef
 from core.settings import plot_decision_trees, several_iterations
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import f1_score, accuracy_score
 
-def chefboost_decision_tree(df, param_path, algorithms, target_label):
+# def chefboost_decision_tree(df, param_path, algorithms, target_label):
+#     """
+    
+#     config = {
+#     		'algorithm' (string): ID3, 'C4.5, CART, CHAID or Regression
+#     		'enableParallelism' (boolean): False
+#     		'enableGBM' (boolean): True,
+#     		'epochs' (int): 7,
+#     		'learning_rate' (int): 1,
+#     		'enableRandomForest' (boolean): True,
+#     		'num_of_trees' (int): 5,
+#     		'enableAdaboost' (boolean): True,
+#     		'num_of_weak_classifier' (int): 4
+#     	}
+#     """
+#     times = {}
+
+#     for alg in list(algorithms):
+#         df.rename(columns = {target_label:'Decision'}, inplace = True)
+#         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
+#         enableParallelism = False
+#         config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'max_depth': 4}# 'num_cores': 2, 
+#         if several_iterations:
+#             durations = []
+#             for i in range(0, int(several_iterations)):
+#                 start_t = time.time()
+#                 model, accuracy_score = chef.fit(df, config = config)
+#                 durations.append(float(time.time()) - float(start_t))
+#             durations_total = 0
+#             for d in durations:
+#                 durations_total+=d
+#             times[alg] = { "duration": durations_total/len(durations) }
+#         else:
+#             start_t = time.time()
+#             model, accuracy_score = chef.fit(df, config = config)
+#             times[alg] = { "duration": float(time.time()) - float(start_t) }
+#         # TODO: accurracy_score -> store evaluate terminar output
+#         # accuracy_score = chef.evaluate(model, df, "Decision")
+#         # model = chef.fit(df, config = config)
+#         # output = subprocess.Popen( [chef.evaluate(model,df)], stdout=subprocess.PIPE ).communicate()[0]
+#         # file = open(param_path+alg+'-results.txt','w')
+#         # file.write(output)
+#         # file.close()
+#         # Saving model
+#         # model = chef.fit(df, config = config, target_label = 'Variant')
+#         # chef.save_model(model, alg+'model.pkl')
+#         # TODO: feature importance
+#         fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
+#         fi.to_csv(param_path+alg+"-tree-feature-importance.csv")
+#         # TODO: Graphical representation of feature importance
+#         # fi.plot(kind="barh", title="Feature Importance")
+#         shutil.move('outputs/rules/rules.py', param_path+alg+'-rules.py')
+#         if enableParallelism:
+#             shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
+#     return accuracy_score, times
+
+
+def chefboost_decision_tree(df, param_path, algorithms, target_label, cv=5):
     """
     
     config = {
@@ -29,8 +87,10 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
     	}
     """
     times = {}
+    accuracies = {}
 
     for alg in list(algorithms):
+
         df.rename(columns = {target_label:'Decision'}, inplace = True)
         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
         enableParallelism = False
@@ -39,7 +99,7 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
             durations = []
             for i in range(0, int(several_iterations)):
                 start_t = time.time()
-                model, accuracy_score = chef.fit(df, config = config)
+                model = chef.fit(df, config = config, target_label = "Decision")
                 durations.append(float(time.time()) - float(start_t))
             durations_total = 0
             for d in durations:
@@ -47,28 +107,49 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label):
             times[alg] = { "duration": durations_total/len(durations) }
         else:
             start_t = time.time()
-            model, accuracy_score = chef.fit(df, config = config)
+            model = chef.fit(df, config = config, target_label = "Decision")
             times[alg] = { "duration": float(time.time()) - float(start_t) }
-        # TODO: accurracy_score -> store evaluate terminar output
-        # accuracy_score = chef.evaluate(model, df, "Decision")
-        # model = chef.fit(df, config = config)
-        # output = subprocess.Popen( [chef.evaluate(model,df)], stdout=subprocess.PIPE ).communicate()[0]
-        # file = open(param_path+alg+'-results.txt','w')
-        # file.write(output)
-        # file.close()
         # Saving model
-        # model = chef.fit(df, config = config, target_label = 'Variant')
-        # chef.save_model(model, alg+'model.pkl')
-        # TODO: feature importance
+        chef.save_model(model, alg+'model.pkl')
+
+        
+        # => Feature importance
         fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
         fi.to_csv(param_path+alg+"-tree-feature-importance.csv")
         # TODO: Graphical representation of feature importance
         # fi.plot(kind="barh", title="Feature Importance")
-        shutil.move('outputs/rules/rules.py', param_path+alg+'-rules.py')
+
+        # shutil.move('outputs/rules/rules.py', param_path+alg+'-rules.py')
         if enableParallelism:
             shutil.move('outputs/rules/rules.json', param_path+alg+'-rules.json')
-    return accuracy_score, times
 
+
+        # Cross-validation: accurracy + f1 score
+        X = df.drop(columns=['Decision'])
+        y = df['Decision']
+        skf = StratifiedKFold(n_splits=cv)
+        skf.get_n_splits(X, y)
+
+        for i, (train_index, test_index) in enumerate(skf.split(X, y)):
+            print(f"Fold {i}:")
+            print(f"  Train: index={train_index}")
+            print(f"  Test:  index={test_index}")
+            X_train_fold, X_test_fold = df.iloc[train_index], X.iloc[test_index]
+            y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
+            current_iteration_model = chef.fit(X_train_fold, config, target_label)
+
+            y_pred = []
+            metrics_f1 = []
+            metrics_acc = []
+            for _, X_test_instance in X_test_fold.iterrows():
+                y_pred.append(chef.predict(current_iteration_model, X_test_instance))
+            metrics_f1.append(f1_score(y_test_fold, y_pred))
+            metrics_acc.append(accuracy_score(y_test_fold, y_pred))
+
+        accuracies['accuracy'] = np.mean(metrics_acc)
+        accuracies['f1_score'] = np.mean(metrics_f1)
+        
+    return accuracies, times
 
 # Ref. https://gist.github.com/j-adamczyk/dc82f7b54d49f81cb48ac87329dba95e#file-graphviz_disk_op-py
 def plot_decision_tree(path: str,

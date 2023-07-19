@@ -12,6 +12,7 @@ from lxml import html
 from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
 from .models import FeatureExtractionTechnique
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
+from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 
 def get_foldernames_as_list(path, sep):
     folders_and_files = os.listdir(path)

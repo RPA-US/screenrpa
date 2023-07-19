@@ -37,7 +37,7 @@ decision_foldername =           env('DECISION_TREE_TRAINING_FOLDERNAME')
 plot_decision_trees =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-platform_name =                         "RIM"
+platform_name =                         "SCREEN RPA"
 monitoring_phase_name =                 "monitoring"
 info_prefiltering_phase_name =          "preselection"
 detection_phase_name =                  "detection"
@@ -220,7 +220,7 @@ REST_FRAMEWORK = {
 
 # Swagger Drsf spectacular
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'RIM API',
+    'TITLE': 'SCREEN RPA API',
     'DESCRIPTION': 'Automatic generation of sintetic UI log in RPA context introducing variability',
     'VERSION': '1.0.0',
     # OTHER SETTINGS
