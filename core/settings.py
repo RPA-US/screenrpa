@@ -32,7 +32,7 @@ fixation_duration_threshold =   int(env('FIXATION_DURATION_THRESHOLD')) # minimu
 cropping_threshold =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
 gui_quantity_difference =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 flattened_dataset_name =        env('FLATTENED_DATASET_NAME')
-several_iterations =            env('DECISION_TREE_TRAINING_ITERATIONS')
+several_iterations =            int(env('DECISION_TREE_TRAINING_ITERATIONS'))
 decision_foldername =           env('DECISION_TREE_TRAINING_FOLDERNAME')
 plot_decision_trees =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 

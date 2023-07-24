@@ -72,7 +72,7 @@ def extract_training_dataset(decision_point_activity,
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
-    tprint(platform_name + " - " + flattening_phase_name, "fancy60")
+    tprint("  " + platform_name + " - " + flattening_phase_name, "fancy60")
     print(log_path+"\n")
 
     log = read_ui_log_as_dataframe(log_path)

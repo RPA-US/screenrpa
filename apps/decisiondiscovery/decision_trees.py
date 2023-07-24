@@ -12,7 +12,7 @@ from sklearn.metrics import accuracy_score
 from apps.chefboost import Chefboost as chef
 from core.settings import plot_decision_trees, several_iterations
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score, accuracy_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 # def chefboost_decision_tree(df, param_path, algorithms, target_label):
 #     """
@@ -71,7 +71,7 @@ from sklearn.metrics import f1_score, accuracy_score
 #     return accuracy_score, times
 
 
-def chefboost_decision_tree(df, param_path, algorithms, target_label, cv=5):
+def chefboost_decision_tree(df, param_path, algorithms, target_label):
     """
     
     config = {
@@ -88,6 +88,11 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label, cv=5):
     """
     times = {}
     accuracies = {}
+    
+    if "e30" in param_path:
+        cv = 2
+    else:
+        cv = 5
 
     for alg in list(algorithms):
 
@@ -107,10 +112,10 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label, cv=5):
             times[alg] = { "duration": durations_total/len(durations) }
         else:
             start_t = time.time()
-            model = chef.fit(df, config = config, target_label = "Decision")
+            model, acc = chef.fit(df, config = config, target_label = "Decision")
             times[alg] = { "duration": float(time.time()) - float(start_t) }
         # Saving model
-        chef.save_model(model, alg+'model.pkl')
+        # chef.save_model(model, alg+'model.pkl')
 
         
         # => Feature importance
@@ -128,26 +133,43 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label, cv=5):
         X = df.drop(columns=['Decision'])
         y = df['Decision']
         skf = StratifiedKFold(n_splits=cv)
-        skf.get_n_splits(X, y)
+        # skf.get_n_splits(X, y)
 
         for i, (train_index, test_index) in enumerate(skf.split(X, y)):
             print(f"Fold {i}:")
             print(f"  Train: index={train_index}")
             print(f"  Test:  index={test_index}")
-            X_train_fold, X_test_fold = df.iloc[train_index], X.iloc[test_index]
+            X_train_fold, X_test_fold = df.iloc[train_index], df.iloc[test_index] # TODO: review X instead of df
             y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
-            current_iteration_model = chef.fit(X_train_fold, config, target_label)
+            # print("y_train_fold")
+            # print(y_train_fold)
+            # print("y_test_fold")
+            # print(y_test_fold)
+            current_iteration_model, acc = chef.fit(X_train_fold, config, target_label)
+            
+            current_iteration_model
 
             y_pred = []
-            metrics_f1 = []
             metrics_acc = []
+            metrics_precision = []
+            metrics_recall = []
+            metrics_f1 = []
+            
             for _, X_test_instance in X_test_fold.iterrows():
                 y_pred.append(chef.predict(current_iteration_model, X_test_instance))
-            metrics_f1.append(f1_score(y_test_fold, y_pred))
+                
             metrics_acc.append(accuracy_score(y_test_fold, y_pred))
+            metrics_precision.append(precision_score(y_test_fold, y_pred, average='macro'))
+            metrics_recall.append(recall_score(y_test_fold, y_pred, average='macro'))
+            metrics_f1.append(f1_score(y_test_fold, y_pred, average='macro'))
 
         accuracies['accuracy'] = np.mean(metrics_acc)
+        accuracies['precision'] = np.mean(metrics_precision)
+        accuracies['recall'] = np.mean(metrics_recall)
         accuracies['f1_score'] = np.mean(metrics_f1)
+        
+        print(param_path)
+        print(f"  Stratified K-Fold:  accuracy={accuracies['accuracy']} f1_score={accuracies['f1_score']} ")
         
     return accuracies, times
 
