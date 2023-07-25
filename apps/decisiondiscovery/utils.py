@@ -9,7 +9,7 @@ def preprocess_data(data):
   data = data.drop(columns=columns_to_drop)
   return data
 
-def create_and_fit_pipeline(X,y, model):
+def def_preprocessor(X):
   # define type of columns
   status_columns = list(filter(lambda x:"sta_" in x, X.columns))
   one_hot_columns = list(X.select_dtypes(include=['object']).columns.drop(status_columns))
@@ -37,7 +37,10 @@ def create_and_fit_pipeline(X,y, model):
         ('status_categorical', status_transformer, status_columns)
     ]
   )
+  return preprocessor
 
+def create_and_fit_pipeline(X,y, model):
+  preprocessor = def_preprocessor(X)
   # create pipeline
   pipeline = Pipeline(steps=[
     ('preprocessor', preprocessor),
@@ -48,3 +51,61 @@ def create_and_fit_pipeline(X,y, model):
   pipeline.fit(X,y)
 
   return pipeline
+
+
+# read from text representation
+import re
+
+def parse_decision_tree(file_path):
+    tree_structure = []
+
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    def parse_node(node_str, depth):
+        match = re.match(r'\|   ' * (get_node_depth(node_str) - 1) + r'\|--- (.+) (<=|>=|>|<)\s+([0-9.-]+)', node_str)
+        if match:
+            feature, operator, threshold = match.groups()
+            return [feature, operator, float(threshold)]
+
+        match = re.match(r'\|   ' * (get_node_depth(node_str) - 1) + r'\|--- class: (.+)', node_str)
+        if match:
+            class_value = match.group(1)
+            return f'class: {class_value}'
+
+    def get_node_depth(node_str):
+        return len(re.findall(r'\|', node_str))
+    
+    def build_tree(lines, index, depth):
+        if index < 0:
+            node_depth = 0
+            node = ['root']
+        else:
+            node_str = lines[index].strip()
+            node_depth = get_node_depth(node_str)
+            node = parse_node(node_str, node_depth)
+
+        next_index = index + 1
+        if node_depth == depth:
+
+            if isinstance(node, list):
+                children = []
+                while next_index < len(lines):
+                    child_depth = get_node_depth(lines[next_index].strip())
+
+                    if child_depth > node_depth:
+                        child, next_index = build_tree(lines, next_index, child_depth)
+                        children.append(child)
+                    else:
+                        break
+                node.append(children)
+                return node, next_index
+            else:
+                return node, next_index
+        else:
+           
+            return node, index
+
+    tree_structure, index = build_tree(lines, -1, depth=0)
+  
+    return tree_structure
