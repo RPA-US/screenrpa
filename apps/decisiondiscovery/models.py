@@ -37,6 +37,7 @@ class DecisionTreeTraining(models.Model):
     algorithms = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
     one_hot_columns = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
+    cv = models.IntegerField(default=5)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):

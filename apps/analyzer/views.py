@@ -146,7 +146,8 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         get_feature_extraction_technique_from_cs(case_study).technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study_has_feature_extraction_technique(case_study, "AGGREGATE") else None,
-        'decision_tree_training': (path_scenario + 'flattened_dataset.json', 
+        'decision_tree_training': (case_study.decision_tree_training.cv,
+                                    path_scenario + 'flattened_dataset.json', 
                                     path_scenario,
                                     case_study.decision_tree_training.library,
                                     case_study.decision_tree_training.algorithms,
@@ -159,7 +160,7 @@ def generate_case_study(case_study, path_scenario, times, n):
 
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
-        if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library !='sklearn':
+        if function_to_exec == "decision_tree_training":
             res, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times
             times[n][function_to_exec]["columns_len"] = columns_len

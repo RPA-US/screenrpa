@@ -88,7 +88,8 @@ def extract_training_dataset(decision_point_activity,
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      
-def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json",
+def decision_tree_training(cv, 
+                           flattened_json_log_path="media/flattened_dataset.json",
                            path="media/", 
                            implementation="sklearn",
                            algorithms=['ID3', 'CART', 'CHAID', 'C4.5'],
@@ -118,9 +119,9 @@ def decision_tree_training(flattened_json_log_path="media/flattened_dataset.json
     # tree_levels = {}
     
     if implementation == 'sklearn':
-        res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label)
+        res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label, cv)
     else:
-        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label)
+        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label, cv)
         # TODO: caculate number of tree levels automatically
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')
