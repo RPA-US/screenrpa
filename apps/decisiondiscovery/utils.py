@@ -3,6 +3,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
+import re
+import math
 
 def preprocess_data(data):
   columns_to_drop = list(filter(lambda x:"TextInput" in x, data.columns))
@@ -53,9 +55,7 @@ def create_and_fit_pipeline(X,y, model):
   return pipeline
 
 
-# read from text representation
-import re
-
+# Formating textual representation of decision trees
 def parse_decision_tree(file_path):
     tree_structure = []
 
@@ -110,6 +110,17 @@ def parse_decision_tree(file_path):
   
     return tree_structure
   
+  
+# Check path inside decision tree representation 
+def points_distance(punto_x, punto_y):
+    x1, y1 = punto_x
+    x2, y2 = punto_y
+    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+def centroid_distance_checker(punto_x, punto_y, umbral):
+    distancia = points_distance(punto_x, punto_y)
+    return distancia < umbral
+  
 def read_feature_column_name(column_name):
     # Definimos la expresión regular para buscar los componentes del identificador
     if "__" in column_name:
@@ -133,3 +144,35 @@ def read_feature_column_name(column_name):
         raise Exception("El identificador no sigue el formato esperado.")
 
     return suffix, feature, centroid, activity
+  
+def find_path_in_decision_tree(tree, feature_values, target_class, centroid_threshold=5.0):
+    def dt_condition_checker(parent, node_index, feature_values):
+        node = parent[3][node_index]
+        if isinstance(node, str):
+            return int(node.split(':')[-1]) == target_class
+
+        feature_id, operator, threshold, branches = node
+        
+        suffix, feature, centroid, activity = read_feature_column_name(feature_id)
+        
+        exists_schema_aux = True
+        for cond_feature in feature_values:
+            cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
+            if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
+                feature_value = feature_values[cond_feature]
+                exists_schema_aux = False
+                break
+        if exists_schema_aux:
+            return False
+
+        condition = eval(str(feature_value) + ' ' + operator + ' ' + str(threshold))
+        if condition:
+            next_parent = node
+            next_node_index = 0
+        else:
+            next_parent = parent
+            next_node_index = 1
+
+        return dt_condition_checker(next_parent, next_node_index, feature_values)
+
+    return dt_condition_checker(tree, 0, feature_values)
