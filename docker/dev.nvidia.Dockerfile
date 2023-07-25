@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.5.0-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-ubuntu20.04
 # ARG postgresuser=root
 # ARG postgrespassword=root
 
@@ -36,3 +36,5 @@ RUN apt upgrade libstdc++6 -y
 
 # Installs cudnn8
 RUN apt install libcudnn8 libcudnn8-dev -y
+
+

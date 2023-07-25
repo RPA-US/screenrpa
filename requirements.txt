@@ -104,6 +104,7 @@ tensorboard-plugin-wit==1.8.1
 tensorflow==2.10.0
 tensorflow-estimator==2.10.0
 tensorflow-io-gcs-filesystem==0.27.0
+tensorrt==8.5.2.2
 termcolor==2.0.1
 threadpoolctl==3.1.0
 tifffile==2022.10.10

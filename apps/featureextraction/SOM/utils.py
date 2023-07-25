@@ -3,9 +3,8 @@ import cv2
 import numpy as np
 import json
 
-from apps.featureextraction.SOM.Component import Component
-# from . import Component #QUIT
-
+# from apps.featureextraction.SOM.Component import Component
+from .Component import Component #QUIT
 NESTED_MIN_COMPO_HEIGHT = 10
 NESTED_SHARED_AREA_PERCENTAGE = 0.9
 NESTED_SHARED_AREA_TO_BE_REDUNDANT_PERCENTAGE = 0.7

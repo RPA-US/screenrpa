@@ -4,24 +4,27 @@ import keras_ocr
 import cv2
 import matplotlib.pyplot as plt
 from os.path import join as pjoin
-import apps.featureextraction.utils as utils
-import apps.featureextraction.SOM.ip_draw as draw
-from . import ip_draw as draw
+# import apps.featureextraction.utils as utils
+from . import utils as utils #QUIT
+# import apps.featureextraction.SOM.ip_draw as draw
+from . import ip_draw as draw #QUIT
 import os
 import cv2
 import pandas as pd
 import numpy as np
-from core.settings import cropping_threshold, platform_name, detection_phase_name
+# from core.settings import cropping_threshold, platform_name, detection_phase_name
 from art import tprint
 import logging
 import pickle
 from tqdm import tqdm
 import torch
-from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
-from apps.analyzer.utils import format_mht_file
+# from apps.featureextraction.monitoring import gaze_events_associated_to_event_time_range
+# from apps.analyzer.utils import format_mht_file
 from .segment_anything import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator
-from apps.featureextraction.SOM.Component import Component 
-
+# from apps.featureextraction.SOM.Component import Component 
+from .Component import Component #QUIT
+import gc
+from .UiComponent import UiComponent #QUIT
 """
 Text boxes detection: KERAS_OCR
 
@@ -105,93 +108,98 @@ def nesting_inspection(org, grey, compos, ffl_block):
     return compos + nesting_compos
 
 
+########################
+###      SAM         ###
+########################
 
 
-class Compo:
-    def __init__(self,id,segmentation,bbox_list, area, crop_box, image_shape):
-        self.id=id
-        self.mask=segmentation
-        self.area=area
-        self.bbox=bbox_list #List in format XYWH
-        self.bbox_area=bbox_list[2]*bbox_list[3]
-        self.crop_box=crop_box
-        self.contain=[]
-        self.category='UI_Element'
-        self.image_shape=image_shape
+def nesting_compos(uicompos):
+    '''
+    params uicompos: list<Compo> 
+    returns:
+        --> compos_json: a json containing a list of Compos
+        --> uicompos: Compo objects with 'contain' and 'category' updated
+    '''
+    n = len(uicompos)
+    list_compo_dict=[]
+    for i in range(n):
+        compo_a = uicompos[i]
+        for j in range(i+1,n):
+            compo_b = uicompos[j]
+            rel = compo_a.compo_relation(compo_b)
+            if rel==-1:
+                compo_b.contain.append(compo_a.id)
+                compo_b.category='UI_Group'
+            elif rel==1:
+                compo_a.contain.append(compo_b.id)
+                compo_a.category='UI_Group'
+        list_compo_dict.append(compo_a.to_dict())
+    compos_json = json.dumps(list_compo_dict,indent=1)
+    return compos_json,uicompos
 
-    def put_bbox(self):
-        x,y,w,h = self.bbox
-        return [x,y,x+w,y+h]
+
+def resize_by_height(org, resize_height):
+    w_h_ratio = org.shape[1] / org.shape[0]
+    resize_w = resize_height * w_h_ratio
+    re = cv2.resize(org, (int(resize_w), int(resize_height)))
+    return re
+
+def get_regions(anns):
+    '''
+    This function transform the sam output in the aim of generating the Compontent's input region
+    '''
+    if len(anns)==0:
+        return
+    sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
+    for ann in sorted_anns:
+        region=[]
+        m = ann['segmentation']
+        row,col=m.shape
+        for j in range(row):
+            for i in range(col):
+                if m[j][i]: region.append((j,i))
+        
+        ann['region']=region
+    return sorted_anns
+
+def bbox_area(bbox):
+    return bbox[3]*bbox[2]
+
+def get_compos_mask_json(masks, image_shape):
+    '''
+    get components from masks and json with sam format
+    returns:
+    ---> arrays_dict: a dict containg list of each non-Json-serializable object of mask (segmentation, crop_box)
+    ---> mask_json: a json format of the mask including the id of the Compo 
+    ---> sorted_compos: a list of Compo elements sorted by bbox area 
+    '''
     
-    def to_dict(self):
-        return {
-            'id':self.id,
-            'area':self.area,
-            'bbox':self.bbox,
-            'bbox_area':self.bbox_area,
-            'category':self.category,
-            'contain':self.contain
-        }
+    sorted_compos=[]
+    sorted_masks=list(sorted(masks, key=lambda mask: bbox_area(mask['bbox']), reverse=True))
+    arrays_dict={
+        'segmentation':[],
+        'point_coords':[],
+        'crop_box':[]
+    }
+    for i,mask in enumerate(sorted_masks): #TODO maybe here we can include a filter of areas
+        #if bbox_area(mask)<uied_params['min-ele-area']: break
+        compo=UiComponent(i,bbox_list=mask['bbox'],area=mask['area'], contain=[])
+        compo.set_data(segmentation=mask['segmentation'],crop_box=mask['crop_box'], image_shape=image_shape)
+        
+        sorted_compos.append(compo)
+
+        for n in ['segmentation','crop_box']:
+            arrays_dict[n].append(mask[n])    
+        
+        mask['id']=compo.id
+        mask.pop('segmentation')
+        mask.pop('crop_box')
+
     
-    def compo_clipping(self, img, pad=0, show=False):
-        column_min, row_min, column_max, row_max = self.put_bbox()
-        column_min = max(column_min - pad, 0)
-        column_max = min(column_max + pad, img.shape[1])
-        row_min = max(row_min - pad, 0)
-        row_max = min(row_max + pad, img.shape[0])
-        clip = img[row_min:row_max, column_min:column_max]
-        return clip
-    
-    def compo_relation(self,compo_b, bias=(0,0)):
-        '''
-        Calculate the relation between two rectangles by nms
-       :return: -1 : a in b
-         0  : a, b are not intersected
-         1  : b in a
-         2  : a, b are intersected
-       '''
-        bbox_b = compo_b
+    mask_json = json.dumps(sorted_masks,indent=1)
+    return arrays_dict,mask_json, sorted_compos
 
-        col_min_a, row_min_a, w_a, h_a = self.bbox
-        col_max_a = col_min_a + w_a
-        row_max_a = row_min_a + h_a
-
-        col_min_b, row_min_b, w_b, h_b = bbox_b.bbox
-        col_max_b = col_min_b + w_b
-        row_max_b = row_min_b + h_b
-
-        bias_col, bias_row = bias
-        # get the intersected area
-        col_min_s = max(col_min_a - bias_col, col_min_b - bias_col)
-        row_min_s = max(row_min_a - bias_row, row_min_b - bias_row)
-        col_max_s = min(col_max_a + bias_col, col_max_b + bias_col)
-        row_max_s = min(row_max_a + bias_row, row_max_b + bias_row)
-        w = np.maximum(0, col_max_s - col_min_s)
-        h = np.maximum(0, row_max_s - row_min_s)
-        inter = w * h
-        area_a = (col_max_a - col_min_a) * (row_max_a - row_min_a)
-        area_b = (col_max_b - col_min_b) * (row_max_b - row_min_b)
-        iou = inter / (area_a + area_b - inter)
-        ioa = inter / self.bbox_area
-        iob = inter / bbox_b.bbox_area
-
-        if iou == 0 and ioa == 0 and iob == 0:
-            return 0
-        # contained by b
-        if ioa >= 1:
-            return -1
-        # contains b
-        if iob >= 1:
-            return 1
-        # not intersected with each other
-        # intersected
-        if iou >= 0.02 or iob > 0.2 or ioa > 0.2:
-            return 2
-        # if iou == 0:
-        return 0
-
-
-def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint='h'):
+def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint='h', show=True):
     '''
     Analyzes an image and extracts its UI components
 
@@ -205,154 +213,26 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     :type path_to_save_bordered_images: str
     :param img_index: Index of the image we want to analyze in images_names
     :type img_index: int
+    :param checkpoint: type of SAM model to use (can be l, h, b)
     :return: Crops and text inside components
     :rtype: Tuple
     '''
 
     time0=time.time()
 
-    # words={}
-
-    # #TODO IMPLEMENT ALGORITHM TO DETECT WORDS INSIDE BOX
-    # # Store on global_y all the "y" coordinates and text boxes
-    # # Each row is a different text box, much more friendly than the format returned by keras_ocr 
-    # global_y = []
-    # global_x = []
-    # words[img_index] = {}
-
-    # for j in range(0, len(texto_detectado_ocr[img_index])):
-    #     coordenada_y = []
-    #     coordenada_x = []
-
-    #     #TODO Entiendo que en texto_detectado_ocr[img_index][j]=[word; list[x,y]] donde cada x,y representa coordenada en la imagen donde se sitúa el word
-    #     for i in range(0, len(texto_detectado_ocr[img_index][j][1])): 
-    #         coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
-    #         coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
-
-    #     word = texto_detectado_ocr[img_index][j][0]
-    #     centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
-    #     if word in words[img_index]: 
-    #         words[img_index][word] += [centroid]  #Ahora entiendo que word es un entero, luego se está usando un labelizado de las palabras
-    #     else:
-    #         words[img_index][word] = [centroid]
-
-    #     global_y.append(coordenada_y) #global_ e global_y son lista de listas de puntos (cada lista para cada word)
-    #     global_x.append(coordenada_x)
-
-    # intervalo_y = []
-    # intervalo_x = []
-    # for j in range(0, len(global_y)):
-    #     intervalo_y.append([int(max(global_y[j])), int(min(global_y[j]))])
-    #     intervalo_x.append([int(max(global_x[j])), int(min(global_x[j]))]) #Esto va a cargar una especie de box, dividida entre intervalo_x e intervalo_y
-
-
-    # words_bbox=[] #Creo que es más legible guardarlo en formato XYWH
-    # for j in range(0,len(intervalo_y)):
-    #     x = intervalo_x[j][1]
-    #     y = intervalo_y[j][1]
-    #     w = intervalo_x[j][0]-x
-    #     h = intervalo_y[j][0]-y
-    #     words_bbox.append([x,y,w,h])
-
     resize_height = 800
     input_img_path = pjoin(param_img_root, image_names[img_index])
-    uied_params = {'min-ele-area': 40}
+    # uied_params = {'min-ele-area': 40}
 
     name = input_img_path.split('/')[-1][:-4] if '/' in input_img_path else input_img_path.split('\\')[-1][:-4]
     ip_root = pjoin(path_to_save_bordered_images, "ip")
+
     if not os.path.exists(ip_root):
         os.mkdir(ip_root)
 
     # ##########################
     # COMPONENT DETECTION
-    # ##########################
-    
-    #AUXILIAR FUNCTIONS#######################
-    # def recursive_creator_and_nesting_inspector(masks, fathers, )
-
-
-    def nesting_compos(uicompos):
-        '''
-        params uicompos: list<Compo> 
-        returns:
-            --> compos_json: a json containing a list of Compos
-            --> uicompos: Compo objects with 'contain' and 'category' updated
-        '''
-        n = len(uicompos)
-        list_compo_dict=[]
-        for i in range(n):
-            compo_a = uicompos[i]
-            for j in range(i+1,n):
-                compo_b = uicompos[j]
-                rel = compo_a.compo_relation(compo_b)
-                if rel==-1:
-                    compo_b.contain.append(compo_a.id)
-                elif rel==1:
-                    compo_a.contain.append(compo_b.id)
-                    compo_a.category='UI_Group'
-            list_compo_dict.append(compo_a.to_dict())
-        compos_json = json.dumps(list_compo_dict,indent=1)
-        return compos_json,uicompos
-    
-    def resize_by_height(org, resize_height):
-        w_h_ratio = org.shape[1] / org.shape[0]
-        resize_w = resize_height * w_h_ratio
-        re = cv2.resize(org, (int(resize_w), int(resize_height)))
-        return re
-
-    def get_regions(anns):
-        '''
-        This function transform the sam output in the aim of generating the Compontent's input region
-        '''
-        if len(anns)==0:
-            return
-        sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
-        for ann in sorted_anns:
-            region=[]
-            m = ann['segmentation']
-            row,col=m.shape
-            for j in range(row):
-                for i in range(col):
-                    if m[j][i]: region.append((j,i))
-            
-            ann['region']=region
-        return sorted_anns
-    
-    def get_compos_mask_json(masks, image_shape):
-        '''
-        get components from masks and json with sam format
-        returns:
-        ---> arrays_dict: a dict containg list of each non-Json-serializable object of mask (segmentation, crop_box)
-        ---> mask_json: a json format of the mask including the id of the Compo 
-        ---> sorted_compos: a list of Compo elements sorted by bbox area 
-        '''
-        def bbox_area(bbox):
-            return bbox[3]*bbox[2]
-        sorted_compos=[]
-        sorted_masks=list(sorted(masks, key=lambda mask: bbox_area(mask['bbox']), reverse=True))
-        arrays_dict={
-            'segmentation':[],
-            'point_coords':[],
-            'crop_box':[]
-        }
-        for i,mask in enumerate(sorted_masks): #TODO maybe here we can include a filter of areas
-            #if bbox_area(mask)<uied_params['min-ele-area']: break
-            compo=Compo(i,mask['segmentation'],mask['bbox'],mask['area'],mask['crop_box'], image_shape=image_shape)
-            sorted_compos.append(compo)
-
-            for n in ['segmentation','crop_box']:
-                arrays_dict[n].append(mask[n])    
-            
-            mask['id']=compo.id
-            mask.pop('segmentation')
-            mask.pop('crop_box')
-
-        
-        mask_json = json.dumps(sorted_masks,indent=1)
-        return arrays_dict,mask_json, sorted_compos 
-
-        
-    ##################################
+    # ##########################     
 
     image = cv2.imread(input_img_path, cv2.COLOR_BGR2RGB)
     image = resize_by_height(image, resize_height)
@@ -374,24 +254,22 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
         case _:
             raise Exception("You select a type of sam's checkpoint that doesnt exists")
 
-    # device = "cuda"
-
-
     time1=time.time()
     sam = sam_model_registry[model_type](checkpoint=CHECKPOINT_PATH+sam_checkpoint)
+    # device = "cuda:0"
     # sam.to(device=device)
 
-
     ### GENERATE MASK ###
-    # mask_generator = SamAutomaticMaskGenerator(sam)
-    mask_generator = SamAutomaticMaskGenerator(
-        model=sam,
-        pred_iou_thresh=0.95,
-    )
+    mask_generator = SamAutomaticMaskGenerator(sam)
+    # mask_generator = SamAutomaticMaskGenerator(
+    #     model=sam,
+    #     pred_iou_thresh=0.88,
+    # )
     '''
     Revisar hiperparámetros del Generator, útil el min_area.
     '''
-
+    # torch.cuda.empty_cache()
+    # torch.cuda.set_per_process_memory_fraction(fraction=0.95, device=0)
     masks = mask_generator.generate(image_copy)
     time2=time.time()
     '''
@@ -413,36 +291,18 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     '''
     arrays_dict,mask_json,uicompos = get_compos_mask_json(masks, image_shape)
 
-    # sorted_anns = get_regions(masks)
     time3=time.time()
-    # uicompos = []
-    # j = 0
-    # for ann in sorted_anns:
-    #     region = ann['region']
-    #     shape = image.shape
-    #     component = Component(region=region, image_shape=shape)
-    #     if component.area<uied_params['min-ele-area']:
-    #         continue
-    #     else:
-    #         j+=1
-    #     component.compo_update(id=j, org_shape=shape)
-    #     uicompos.append(component)
-
-    # uicompos = utils.merge_intersected_compos(uicompos) #I think we loss compos if we merge them with the sam algorithm
-    # utils.compo_block_recognition(image, uicompos, color=True)
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
     compos_json,uicompos= nesting_compos(uicompos)
     time4=time.time()
     # *** Step 5 *** save detection result
-    # utils.compos_update(uicompos, org.shape)
-    draw.draw_bounding_box(image_copy, uicompos, show=False, name='merged compo', 
-                           write_path=pjoin(ip_root, name + '.jpg'), 
-                           wait_key=0)
-    
-    time5=time.time()
-    times=[time0,time1,time2,time3,time4,time5]
+    if show:
+        draw.draw_bounding_box(image_copy, uicompos, show=False, name='merged compo', 
+                                write_path=pjoin(ip_root, name + '.jpg'), 
+                                wait_key=0)
 
+    time5=time.time()
     dict_times={
         'preprocess_image':time1-time0,
         'sam_extractor':time2-time1,
@@ -450,8 +310,6 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
         'nesting_compos':time4-time3,
         'drawing':time5-time4
     }
-    print(dict_times)
-
 
         
     # cropping_threshold=5
@@ -481,8 +339,6 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     #                 lista_para_no_recortar_dos_veces_mismo_gui.append(k)
     #             else:
 
-
-
     # ##########################
     # RESULTS
     # ##########################
@@ -491,8 +347,6 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     return clips, uicompos, mask_json, compos_json, arrays_dict,dict_times
     
-
-
 
 def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images, image_names, img_index):
     '''
