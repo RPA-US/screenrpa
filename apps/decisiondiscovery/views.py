@@ -3,7 +3,7 @@ import json
 import os
 from art import tprint
 from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, flattened_dataset_name
-from .decision_trees import CART_sklearn_decision_tree, chefboost_decision_tree
+from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from apps.chefboost import Chefboost as chef
 from core.utils import read_ui_log_as_dataframe
@@ -119,14 +119,19 @@ def decision_tree_training(cv,
     # tree_levels = {}
     
     if implementation == 'sklearn':
-        res, times = CART_sklearn_decision_tree(flattened_dataset, path, one_hot_columns, target_label, cv)
-    else:
+        # Default criterion = gini
+        if not algorithms:
+            algorithms = ["gini"]
+        res, times = sklearn_decision_tree(flattened_dataset, path, algorithms, one_hot_columns, target_label, cv)
+    elif implementation == 'chefboost':
         res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label, cv)
         # TODO: caculate number of tree levels automatically
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')
             # rules_info_json = json.load(rules_info)
             # tree_levels[alg] = len(rules_info_json.keys())            
+    else:
+        raise Exception("Decision model chosen is not an option")
         
     return res, times, columns_len#, tree_levels
     
