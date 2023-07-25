@@ -109,3 +109,27 @@ def parse_decision_tree(file_path):
     tree_structure, index = build_tree(lines, -1, depth=0)
   
     return tree_structure
+  
+def read_feature_column_name(column_name):
+    # Definimos la expresión regular para buscar los componentes del identificador
+    if "__" in column_name:
+        pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
+        aux = 1
+    else:
+        pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
+        suffix = None
+        aux = 0
+
+    # Buscamos las coincidences en el identificador utilizando la expresión regular
+    coincidences = re.match(pattern, column_name)
+
+    if coincidences:
+        if aux == 1:
+            suffix = coincidences.group(1)
+        feature = coincidences.group(aux+1)
+        centroid = [float(coincidences.group(aux+2).split("-")[0]), float(coincidences.group(aux+2).split("-")[1])]
+        activity = coincidences.group(aux+3)
+    else:
+        raise Exception("El identificador no sigue el formato esperado.")
+
+    return suffix, feature, centroid, activity
