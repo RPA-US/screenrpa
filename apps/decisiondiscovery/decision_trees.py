@@ -184,8 +184,8 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     preprocessor = def_preprocessor(X)
     X = preprocessor.fit_transform(X)
     X_df = pd.DataFrame(X)
-    X_df.to_csv(param_path + "preprocessed_df.csv")
     feature_names = list(preprocessor.get_feature_names_out())
+    X_df.to_csv(param_path + "preprocessed_df.csv", header=feature_names)
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
     start_t = time.time()

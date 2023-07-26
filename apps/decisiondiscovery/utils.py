@@ -16,7 +16,14 @@ def preprocess_data(data):
 def def_preprocessor(X):
     # define type of columns
     # sta_columns = list(filter(lambda x:"sta_" in x, X.columns))
-    # Crear un diccionario para mapear los valores de reemplazo
+    
+    # Identificar las columnas con todos los valores iguales
+    columns_to_drop = X.columns[X.nunique() == 1]
+    # Identificar las columnas con todos los valores nulos
+    columns_to_drop = columns_to_drop.union(X.columns[X.isnull().all()])
+    # Eliminar las columnas con todos los valores iguales o nulos
+    X = X.drop(columns=columns_to_drop)
+    
     mapping_dict = {"enabled": ['NaN', 'enabled'], "checked": ['unchecked', 'checked', '']}
     mapping_list = []
     sta_columns = []
@@ -184,21 +191,22 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
     def dt_condition_checker(parent, node_index, feature_values, features_in_tree):
         node = parent[3][node_index]
         if isinstance(node, str):
-            return node.split(':')[-1] == target_class, features_in_tree
-
+            res = node.split(':')[-1].strip() == target_class, features_in_tree
+            return res 
+        
         feature_id, operator, threshold, branches = node
         
         suffix, feature, centroid, activity = read_feature_column_name(feature_id)
         
-        exists_schema_aux = True
+        exists_schema_aux = False
         for cond_feature in feature_values:
             cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
             if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
                 feature_value = feature_values[cond_feature]
                 features_in_tree[cond_feature] = features_in_tree[cond_feature] + 1 if cond_feature in features_in_tree else 1
-                exists_schema_aux = False
+                exists_schema_aux = True
                 break
-        if exists_schema_aux:
+        if not exists_schema_aux:
             return False, features_in_tree
 
         condition = eval(str(feature_value) + ' ' + operator + ' ' + str(threshold))
