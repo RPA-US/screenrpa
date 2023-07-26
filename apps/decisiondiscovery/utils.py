@@ -145,11 +145,11 @@ def read_feature_column_name(column_name):
 
     return suffix, feature, centroid, activity
   
-def find_path_in_decision_tree(tree, feature_values, target_class, centroid_threshold=5.0):
-    def dt_condition_checker(parent, node_index, feature_values):
+def find_path_in_decision_tree(tree, feature_values, target_class, centroid_threshold=250):
+    def dt_condition_checker(parent, node_index, feature_values, features_in_tree):
         node = parent[3][node_index]
         if isinstance(node, str):
-            return int(node.split(':')[-1]) == target_class
+            return int(node.split(':')[-1]) == target_class, features_in_tree
 
         feature_id, operator, threshold, branches = node
         
@@ -160,10 +160,11 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
             cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
             if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
                 feature_value = feature_values[cond_feature]
+                features_in_tree[cond_feature] = features_in_tree[cond_feature] + 1 if cond_feature in features_in_tree else 1
                 exists_schema_aux = False
                 break
         if exists_schema_aux:
-            return False
+            return False, features_in_tree
 
         condition = eval(str(feature_value) + ' ' + operator + ' ' + str(threshold))
         if condition:
@@ -173,6 +174,6 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
             next_parent = parent
             next_node_index = 1
 
-        return dt_condition_checker(next_parent, next_node_index, feature_values)
+        return dt_condition_checker(next_parent, next_node_index, feature_values, features_in_tree)
 
-    return dt_condition_checker(tree, 0, feature_values)
+    return dt_condition_checker(tree, 0, feature_values, {})

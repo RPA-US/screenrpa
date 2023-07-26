@@ -6,22 +6,18 @@ from core.settings import sep, decision_foldername, platform_name, flattening_ph
 from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from apps.chefboost import Chefboost as chef
+from apps.analyzer.models import CaseStudy 
 from core.utils import read_ui_log_as_dataframe
+from core.settings import metadata_location
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
-# import json
-# import sys
-# from django.shortcuts import render
-# import seaborn as sns
-# from sklearn.ensemble import RandomForestClassifier
-# import graphviz
-# import matplotlib.pyplot as plt
-# import matplotlib.image as plt_img
-# from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-# from sklearn.metrics import accuracy_score
+from .utils import find_path_in_decision_tree
+from tqdm import tqdm
+from rest_framework.response import Response
+from rest_framework import generics, status, viewsets #, permissions
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -88,14 +84,25 @@ def extract_training_dataset(decision_point_activity,
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      
-def decision_tree_training(cv, 
-                           flattened_json_log_path="media/flattened_dataset.json",
-                           path="media/", 
-                           implementation="sklearn",
-                           algorithms=['ID3', 'CART', 'CHAID', 'C4.5'],
-                           columns_to_ignore=["Timestamp_start", "Timestamp_end"],
-                           target_label='Variant',
-                           one_hot_columns=['NameApp']):
+def decision_tree_training(case_study, path_scenario):
+    "media/flattened_dataset.json",
+    "media/", 
+    "sklearn",
+    ['ID3', 'CART', 'CHAID', 'C4.5'],
+    ["Timestamp_start", "Timestamp_end"],
+    'Variant',
+    ['NameApp']
+                           
+    flattened_json_log_path = path_scenario + 'flattened_dataset.json'
+    path = path_scenario
+    implementation = case_study.decision_tree_training.library
+    configuration = case_study.decision_tree_training.configuration
+    columns_to_ignore = case_study.decision_tree_training.columns_to_drop_before_decision_point
+    target_label = case_study.target_label
+    one_hot_columns = case_study.decision_tree_training.one_hot_columns
+    cv = configuration["cv"]
+    algorithms = configuration["algorithms"]
+    feature_values = configuration["feature_values"]
     
     tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
     print(flattened_json_log_path+"\n")
@@ -119,10 +126,7 @@ def decision_tree_training(cv,
     # tree_levels = {}
     
     if implementation == 'sklearn':
-        # Default criterion = gini
-        if not algorithms:
-            algorithms = ["gini"]
-        res, times = sklearn_decision_tree(flattened_dataset, path, algorithms, one_hot_columns, target_label, cv)
+        res, times = sklearn_decision_tree(flattened_dataset, path, configuration, one_hot_columns, target_label, cv)
     elif implementation == 'chefboost':
         res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label, cv)
         # TODO: caculate number of tree levels automatically
@@ -133,6 +137,7 @@ def decision_tree_training(cv,
     else:
         raise Exception("Decision model chosen is not an option")
         
+    decision_tree_feature_checker(case_study, feature_values)
     return res, times, columns_len#, tree_levels
     
 def decision_tree_predict(module_path, instance):
@@ -185,3 +190,60 @@ class DecisionTreeTrainingListView(ListView):
 
     def get_queryset(self):
         return DecisionTreeTraining.objects.filter(user=self.request.user)
+
+
+def decision_tree_feature_checker(cs, feature_values):
+    """
+    
+    A function to check conditions over decision tree representations
+
+    Args:
+        feature_values (dict): Classes and values of the features that should appear in the decision tree to reach this class
+        
+        Ejemplo:
+        feature_values = {
+            1: {
+                'status_categorical__sta_enabled_717.5-606.5_2_B': 0.3,
+                'status_categorical__sta_checked_649.0-1110.5_4_D': 0.2
+            },
+            2: {
+                'status_categorical__sta_enabled_717.5-606.5_2_B': 0.7,
+                'status_categorical__sta_checked_649.0-1110.5_4_D': 0.2
+            }
+        }
+
+    Returns:
+        boolean: indicates if the path drives to the correct class
+
+        dict: indicates how many times a feature appears in the decision tree. Example: {
+            1: {
+                'status_categorical__sta_enabled_717.5-606.5_2_B': 2,
+                'status_categorical__sta_checked_649.0-1110.5_4_D': 1
+            },
+            2: {
+                'status_categorical__sta_enabled_717.5-606.5_2_B': 1
+            }
+        }
+    """
+    metadata = {}
+        
+    for scenario in tqdm(cs.scenarios_to_study, desc="Scenarios that have been processed: "):
+        path_scenario = cs.exp_folder_complete_path + sep + scenario + sep
+        dt_file = path_scenario + decision_foldername + sep + "decision_tree.log"
+        
+        with open(dt_file, "r") as f:
+            tree = f.read()
+            
+        for target_class, fe_values_class in feature_values:
+            path_exists, features_in_tree = find_path_in_decision_tree(tree, fe_values_class, target_class)
+            metadata[scenario][target_class]: features_in_tree
+            metadata[scenario][target_class]["cumple_condicion"]: path_exists
+        # print(path_exists)
+        # print((len(features_in_tree) / len(feature_values))*100)
+
+    # Serializing json
+    json_object = json.dumps(metadata, indent=4)
+    # Writing to .json
+    metadata_final_path = metadata_location + sep + str(cs.id) + "-" + cs.title + "-dt-metainfo.json"
+    with open(metadata_final_path, "w") as outfile:
+        outfile.write(json_object)

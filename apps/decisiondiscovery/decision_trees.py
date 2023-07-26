@@ -72,7 +72,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 #     return accuracy_score, times
 
 
-def chefboost_decision_tree(df, param_path, algorithms, target_label, cv):
+def chefboost_decision_tree(df, param_path, configuration, target_label, cv):
     """
     
     config = {
@@ -89,6 +89,8 @@ def chefboost_decision_tree(df, param_path, algorithms, target_label, cv):
     """
     times = {}
     accuracies = {}
+    
+    algorithms = configuration["algorithms"]
 
     for alg in list(algorithms):
         df_aux = df.copy()
@@ -160,7 +162,7 @@ def plot_decision_tree(path: str,
 
     return image
 
-def sklearn_decision_tree(df, param_path, algorithms, one_hot_columns, target_label, cv):
+def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target_label, cv):
     times = {}
     accuracies = {}
     

@@ -132,8 +132,8 @@ def experiments_results_collectors_old_structure(case_study, decision_tree_filen
     # tree_training_time = []
     # tree_training_accuracy = []
 
-    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and
-                                                                                case_study.decision_tree_training.algorithms) else None
+    decision_tree_algorithms = case_study.decision_tree_training.configuration["algorithms"] if (case_study.decision_tree_training and case_study.decision_tree_training.configuration and 
+                                                                                "algorithms" in case_study.decision_tree_training.configuration) else None
 
     if decision_tree_algorithms:
         accuracy = {}
@@ -243,8 +243,8 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     # tree_training_time = []
     tree_training_accuracy = []
 
-    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and
-                                                                                case_study.decision_tree_training.algorithms) else None
+    decision_tree_algorithms = case_study.decision_tree_training.configuration["algorithms"] if (case_study.decision_tree_training and case_study.decision_tree_training.configuration and 
+                                                                                "algorithms" in case_study.decision_tree_training.configuration) else None
 
     if decision_tree_algorithms:
         accuracy = {}

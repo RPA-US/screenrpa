@@ -146,14 +146,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         get_feature_extraction_technique_from_cs(case_study).technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study_has_feature_extraction_technique(case_study, "AGGREGATE") else None,
-        'decision_tree_training': (case_study.decision_tree_training.cv,
-                                    path_scenario + 'flattened_dataset.json', 
-                                    path_scenario,
-                                    case_study.decision_tree_training.library,
-                                    case_study.decision_tree_training.algorithms,
-                                    case_study.decision_tree_training.columns_to_drop_before_decision_point,
-                                    case_study.target_label,
-                                    case_study.decision_tree_training.one_hot_columns)
+        'decision_tree_training': (case_study, path_scenario)
                                     # We check this phase is present in case_study to avoid exceptions
                                     if case_study.decision_tree_training  else None
         }

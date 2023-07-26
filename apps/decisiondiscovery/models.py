@@ -34,14 +34,13 @@ class ExtractTrainingDataset(models.Model):
 class DecisionTreeTraining(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     library = models.CharField(max_length=255, default='chefboost') # 'sklearn'
-    algorithms = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
+    configuration = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
     one_hot_columns = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
-    cv = models.IntegerField(default=5)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
         return reverse("decisiondiscovery:decision_tree_training_list")
     
     def __str__(self):
-        return 'library: ' + self.library + ' - algs:' + str(self.algorithms)
+        return 'library: ' + self.library + ' - algs:' + str(self.configuration)
