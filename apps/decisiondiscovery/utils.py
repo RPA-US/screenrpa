@@ -142,8 +142,11 @@ def points_distance(punto_x, punto_y):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 def centroid_distance_checker(punto_x, punto_y, umbral):
-    distancia = points_distance(punto_x, punto_y)
-    return distancia < umbral
+    if not punto_x and not punto_y:
+        return True
+    else:
+        distancia = points_distance(punto_x, punto_y)
+        return distancia < umbral
   
 def read_feature_column_name(column_name):
     
@@ -200,16 +203,26 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
         
         exists_schema_aux = False
         for cond_feature in feature_values:
-            cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
-            if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
-                feature_value = feature_values[cond_feature]
-                features_in_tree[cond_feature] = features_in_tree[cond_feature] + 1 if cond_feature in features_in_tree else 1
-                exists_schema_aux = True
-                break
+            if cond_feature == "or_cond":
+                for or_cond_feature in feature_values[cond_feature]:
+                    or_cond_feature_suffix, or_cond_feature_name, or_cond_feature_centroid, or_cond_feature_activity = read_feature_column_name(or_cond_feature)
+                    if (feature == or_cond_feature_name and centroid_distance_checker(centroid, or_cond_feature_centroid, centroid_threshold)):
+                        feature_value = feature_values[cond_feature][or_cond_feature]
+                        features_in_tree[or_cond_feature] = features_in_tree[or_cond_feature] + 1 if or_cond_feature in features_in_tree else 1
+                        exists_schema_aux = True
+                        break  
+            else:
+                cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
+                if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
+                    feature_value = feature_values[cond_feature]
+                    features_in_tree[cond_feature] = features_in_tree[cond_feature] + 1 if cond_feature in features_in_tree else 1
+                    exists_schema_aux = True
+                    break
         if not exists_schema_aux:
             return False, features_in_tree
 
         condition = eval(str(feature_value) + ' ' + operator + ' ' + str(threshold))
+
         if condition:
             next_parent = node
             next_node_index = 0
