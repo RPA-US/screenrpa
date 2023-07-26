@@ -26,7 +26,7 @@ services:
     command: tail -F anything
     build:
       context: .
-      dockerfile: ./docker/dev.Dockerfile
+      dockerfile: ./docker/prod.Dockerfile
       args:
         branch: ${BRANCH_DOCKER}
         target: dev
