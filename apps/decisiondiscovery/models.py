@@ -16,8 +16,8 @@ def get_default_extract_training_columns_to_ignore():
 def get_default_decision_tree_columns_to_ignore():
     return 'Timestamp_start, Timestamp_end'.split(', ') # this returns a list
 
-def get_default_algorithms():
-    return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
+# def get_default_algorithms():
+#     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
 class ExtractTrainingDataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -33,9 +33,9 @@ class ExtractTrainingDataset(models.Model):
     
 class DecisionTreeTraining(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    library = models.CharField(max_length=255, default='chefboost') # 'sklearn'
-    configuration = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
-    one_hot_columns = ArrayField(models.CharField(max_length=25), default=get_default_algorithms)
+    configuration = models.JSONField()
+    library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
+    one_hot_columns = ArrayField(models.CharField(max_length=25))
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     

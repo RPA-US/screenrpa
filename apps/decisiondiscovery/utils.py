@@ -1,10 +1,12 @@
+import re
+import math
+import pandas as pd
+import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
-import re
-import math
 
 def preprocess_data(data):
   columns_to_drop = list(filter(lambda x:"TextInput" in x, data.columns))
@@ -12,37 +14,52 @@ def preprocess_data(data):
   return data
 
 def def_preprocessor(X):
-  # define type of columns
-  status_columns = list(filter(lambda x:"sta_" in x, X.columns))
-  one_hot_columns = list(X.select_dtypes(include=['object']).columns.drop(status_columns))
-  numeric_features = X.select_dtypes(include=['number']).columns
+    # define type of columns
+    # sta_columns = list(filter(lambda x:"sta_" in x, X.columns))
+    # Crear un diccionario para mapear los valores de reemplazo
+    mapping_dict = {"enabled": ['NaN', 'enabled'], "checked": ['unchecked', 'checked', '']}
+    mapping_list = []
+    sta_columns = []
+    # Identificar las columnas que contienen "sta_" en su nombre
+    for col in X.columns:
+        if 'sta_' in col:
+            sta_columns.append(col)
+            if 'enabled' in col:
+                mapping_list.append(list(mapping_dict['enabled']))
+            elif 'checked' in col:
+                mapping_list.append(list(mapping_dict['checked']))
+            else:
+                raise Exception("Not preprocessed column: " + str(col))
+                
+    one_hot_columns = list(X.select_dtypes(include=['object']).columns.drop(sta_columns))
+    numeric_features = X.select_dtypes(include=['number']).columns
 
-  # create each transformer
-  status_transformer = Pipeline(steps=[
-                                ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-                                ('label_encoder', OrdinalEncoder())
-                                ])
-  one_hot_transformer = Pipeline(steps=[
-                                ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-                                ('one_hot_encoder', OneHotEncoder())
-                                ])
+    # create each transformer
+    status_transformer = Pipeline(steps=[
+                                    ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+                                    ('label_encoder', OrdinalEncoder(categories=list(mapping_list)))
+                                    ])
+    one_hot_transformer = Pipeline(steps=[
+                                    ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+                                    ('one_hot_encoder', OneHotEncoder())
+                                    ])
 
-  numeric_transformer = Pipeline(steps=[
-                                ('imputer', SimpleImputer(strategy='mean')),
-                                ])#('scaler',StandardScaler())
+    numeric_transformer = Pipeline(steps=[
+                                    ('imputer', SimpleImputer(strategy='mean')),
+                                    ])#('scaler',StandardScaler())
 
-  # create preprocessor
-  preprocessor = ColumnTransformer(
-    transformers=[
-        ('numeric', numeric_transformer, numeric_features),
-        ('one_hot_categorical', one_hot_transformer, one_hot_columns),
-        ('status_categorical', status_transformer, status_columns)
-    ]
-  )
-  return preprocessor
+    # create preprocessor
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('numeric', numeric_transformer, numeric_features),
+            ('one_hot_categorical', one_hot_transformer, one_hot_columns),
+            ('status_categorical', status_transformer, sta_columns)
+        ]
+    )
+    return preprocessor
 
 def create_and_fit_pipeline(X,y, model):
-  preprocessor = def_preprocessor(X)
+  preprocessor = def_preprocessor(X, [])
   # create pipeline
   pipeline = Pipeline(steps=[
     ('preprocessor', preprocessor),
@@ -79,7 +96,7 @@ def parse_decision_tree(file_path):
     def build_tree(lines, index, depth):
         if index < 0:
             node_depth = 0
-            node = ['root']
+            node = ['root', 'None', 'None']
         else:
             node_str = lines[index].strip()
             node_depth = get_node_depth(node_str)
@@ -122,24 +139,42 @@ def centroid_distance_checker(punto_x, punto_y, umbral):
     return distancia < umbral
   
 def read_feature_column_name(column_name):
+    
+    # Buscar el patrón en la cadena de texto
+    contains_centroid = bool(re.search(r'\d+\.\d+-\d+\.\d+', column_name))
+    
     # Definimos la expresión regular para buscar los componentes del identificador
-    if "__" in column_name:
+    if "__" in column_name and contains_centroid:
         pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
-        aux = 1
+        aux1 = 1
+        aux2 = 1
+    elif "__" in column_name and not contains_centroid:
+        pattern = r"(\w+)__(\w+)_(\w+_\w+)"
+        centroid = None
+        aux1 = 1
+        aux2 = 0
+    elif not "__" in column_name and not contains_centroid:
+        pattern = r"(\w+)_(\w+_\w+)"
+        suffix = None
+        aux1 = 0
+        centroid = None
+        aux2 = 0
     else:
         pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
         suffix = None
-        aux = 0
+        aux1 = 0
+        aux2 = 1
 
     # Buscamos las coincidences en el identificador utilizando la expresión regular
     coincidences = re.match(pattern, column_name)
 
     if coincidences:
-        if aux == 1:
+        if aux1 == 1:
             suffix = coincidences.group(1)
-        feature = coincidences.group(aux+1)
-        centroid = [float(coincidences.group(aux+2).split("-")[0]), float(coincidences.group(aux+2).split("-")[1])]
-        activity = coincidences.group(aux+3)
+        feature = coincidences.group(aux1+1)
+        if aux2 == 1:
+            centroid = [float(coincidences.group(aux1+2).split("-")[0]), float(coincidences.group(aux1+2).split("-")[1])]
+        activity = coincidences.group(aux1+aux2+2)
     else:
         raise Exception("El identificador no sigue el formato esperado.")
 
@@ -149,7 +184,7 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
     def dt_condition_checker(parent, node_index, feature_values, features_in_tree):
         node = parent[3][node_index]
         if isinstance(node, str):
-            return int(node.split(':')[-1]) == target_class, features_in_tree
+            return node.split(':')[-1] == target_class, features_in_tree
 
         feature_id, operator, threshold, branches = node
         
