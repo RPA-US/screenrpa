@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.5.0-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
 # ARG postgresuser=root
 # ARG postgrespassword=root
 
@@ -27,7 +27,7 @@ COPY . .
 RUN python3.10 -m venv venv
 RUN ./venv/bin/python -m pip install --upgrade pip
 RUN ./venv/bin/python -m pip install --no-cache-dir -r requirements.txt
-RUN ./venv/bin/python -m pip install tensorflow==2.9.1
+RUN ./venv/bin/python -m pip install tensorflow==2.10.0
 
 # Upgrades libstdc++6
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y

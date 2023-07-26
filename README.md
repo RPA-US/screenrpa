@@ -196,10 +196,27 @@ $ git clone https://github.com/RPA-US/rim.git
 $ cd rim
 ```
 
-> Start the app in Docker
+> Create a .env file
+
+Copy the .env.sample in the docker folder and replace the values for those you desire.
+
+> Build the container for the app in Docker
+
+There are two images for this application, one for development for systems with nvidia GPUs and one for production, without an nvidia GPU.
 
 ```bash
-$ sudo docker-compose pull && sudo docker-compose build && sudo docker-compose up -d
+$ sudo docker-compose -f ./docker/<docker-compose-file> up
+```
+
+> Start the application
+
+Follow the instructions to run the applications from the "Create tables" section onwards.
+
+If you want to use celery run the following commands:
+
+```bash
+$ redis-server
+$ python -m celery -A core worker --concurrency=1
 ```
 
 Visit `http://localhost:85` in your browser. The app should be up & running.
