@@ -11,7 +11,71 @@ from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
 
+#AUXILIAR FUNCTIONS#######################
+def nesting_compos(uicompos):
+    '''
+    params uicompos: list<Compo> 
+    returns:
+        --> compos_json: a json containing a list of Compos
+        --> uicompos: Compo objects with 'contain' and 'category' updated
+    '''
+    n = len(uicompos)
+    list_compo_dict=[]
+    for i in range(n):
+        compo_a = uicompos[i]
+        for j in range(i+1,n):
+            compo_b = uicompos[j]
+            rel = compo_a.compo_relation(compo_b)
+            if rel==-1:
+                compo_b.contain.append(compo_a.id)
+                compo_b.category='UI_Group'
+            elif rel==1:
+                compo_a.contain.append(compo_b.id)
+                compo_a.category='UI_Group'
+        list_compo_dict.append(compo_a.to_dict())
+    compos_json = json.dumps(list_compo_dict,indent=1)
+    return compos_json,uicompos
 
+def resize_by_height(org, resize_height):
+    w_h_ratio = org.shape[1] / org.shape[0]
+    resize_w = resize_height * w_h_ratio
+    re = cv2.resize(org, (int(resize_w), int(resize_height)))
+    return re
+
+def get_compos_mask_json(masks, image_shape):
+    '''
+    get components from masks and json with sam format
+    returns:
+    ---> arrays_dict: a dict containg list of each non-Json-serializable object of mask (segmentation, crop_box)
+    ---> mask_json: a json format of the mask including the id of the Compo 
+    ---> sorted_compos: a list of Compo elements sorted by bbox area 
+    '''
+    def bbox_area(bbox):
+        return bbox[3]*bbox[2]
+    sorted_compos=[]
+    sorted_masks=list(sorted(masks, key=lambda mask: bbox_area(mask['bbox']), reverse=True))
+    arrays_dict={
+        'segmentation':[],
+        'point_coords':[],
+        'crop_box':[]
+    }
+    for i,mask in enumerate(sorted_masks): #TODO maybe here we can include a filter of areas
+        #if bbox_area(mask)<uied_params['min-ele-area']: break
+        compo=UiComponent(i,bbox_list=mask['bbox'],area=mask['area'], contain=[])
+        compo.set_data(segmentation=mask['segmentation'],crop_box=mask['crop_box'], image_shape=image_shape)
+        
+        sorted_compos.append(compo)
+
+        for n in ['segmentation','crop_box']:
+            arrays_dict[n].append(mask[n])    
+        
+        mask['id']=compo.id
+        mask.pop('segmentation')
+        mask.pop('crop_box')
+
+    
+    mask_json = json.dumps(sorted_masks,indent=1)
+    return arrays_dict,mask_json, sorted_compos 
 
 def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,checkpoint='l'):
     '''
@@ -42,73 +106,6 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     if not os.path.exists(ip_root):
         os.mkdir(ip_root)
     
-    #AUXILIAR FUNCTIONS#######################
-    def nesting_compos(uicompos):
-        '''
-        params uicompos: list<Compo> 
-        returns:
-            --> compos_json: a json containing a list of Compos
-            --> uicompos: Compo objects with 'contain' and 'category' updated
-        '''
-        n = len(uicompos)
-        list_compo_dict=[]
-        for i in range(n):
-            compo_a = uicompos[i]
-            for j in range(i+1,n):
-                compo_b = uicompos[j]
-                rel = compo_a.compo_relation(compo_b)
-                if rel==-1:
-                    compo_b.contain.append(compo_a.id)
-                    compo_b.category='UI_Group'
-                elif rel==1:
-                    compo_a.contain.append(compo_b.id)
-                    compo_a.category='UI_Group'
-            list_compo_dict.append(compo_a.to_dict())
-        compos_json = json.dumps(list_compo_dict,indent=1)
-        return compos_json,uicompos
-    
-    def resize_by_height(org, resize_height):
-        w_h_ratio = org.shape[1] / org.shape[0]
-        resize_w = resize_height * w_h_ratio
-        re = cv2.resize(org, (int(resize_w), int(resize_height)))
-        return re
-
-    def get_compos_mask_json(masks, image_shape):
-        '''
-        get components from masks and json with sam format
-        returns:
-        ---> arrays_dict: a dict containg list of each non-Json-serializable object of mask (segmentation, crop_box)
-        ---> mask_json: a json format of the mask including the id of the Compo 
-        ---> sorted_compos: a list of Compo elements sorted by bbox area 
-        '''
-        def bbox_area(bbox):
-            return bbox[3]*bbox[2]
-        sorted_compos=[]
-        sorted_masks=list(sorted(masks, key=lambda mask: bbox_area(mask['bbox']), reverse=True))
-        arrays_dict={
-            'segmentation':[],
-            'point_coords':[],
-            'crop_box':[]
-        }
-        for i,mask in enumerate(sorted_masks): #TODO maybe here we can include a filter of areas
-            #if bbox_area(mask)<uied_params['min-ele-area']: break
-            compo=UiComponent(i,bbox_list=mask['bbox'],area=mask['area'], contain=[])
-            compo.set_data(segmentation=mask['segmentation'],crop_box=mask['crop_box'], image_shape=image_shape)
-            
-            sorted_compos.append(compo)
-
-            for n in ['segmentation','crop_box']:
-                arrays_dict[n].append(mask[n])    
-            
-            mask['id']=compo.id
-            mask.pop('segmentation')
-            mask.pop('crop_box')
-
-        
-        mask_json = json.dumps(sorted_masks,indent=1)
-        return arrays_dict,mask_json, sorted_compos 
-
-        
     ##################################
     ##PREPROCESADO
     image = cv2.imread(input_img_path, cv2.COLOR_BGR2RGB)
@@ -174,7 +171,6 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
                            wait_key=0)
     
     time5=time.time()
-    times=[time0,time1,time2,time3,time4,time5]
 
     dict_times={
         'preprocess_image':time1-time0,
