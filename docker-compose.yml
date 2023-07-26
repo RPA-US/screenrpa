@@ -19,7 +19,7 @@ services:
     networks:
       - db_network
 
-  screen-rpm:
+  screen-rpa:
     container_name: ${DOCKERNAME}rim
     restart: unless-stopped
     env_file: .env
@@ -47,7 +47,7 @@ services:
     networks:
       - web_network
     depends_on: 
-      - screen-rpm
+      - screen-rpa
 networks:
   db_network:
     driver: bridge

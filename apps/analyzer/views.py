@@ -21,7 +21,7 @@ from django.template import loader
 from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, scenario_nested_folder, active_celery
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
+from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, aggregate_features_as_dataset_columns
 from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
 from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
@@ -134,7 +134,7 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         case_study.special_colnames["Case"],
                                         case_study.special_colnames["Activity"],
                                         case_study.special_colnames["Screenshot"],
-                                        path_scenario + 'components_json' + sep,
+                                        path_scenario,
                                         path_scenario + 'flattened_dataset.json',
                                         path_scenario + 'log.csv',
                                         path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
@@ -146,20 +146,14 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         get_feature_extraction_technique_from_cs(case_study).technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study_has_feature_extraction_technique(case_study, "AGGREGATE") else None,
-        'decision_tree_training': (path_scenario + 'flattened_dataset.json', 
-                                    path_scenario,
-                                    case_study.decision_tree_training.library,
-                                    case_study.decision_tree_training.algorithms,
-                                    case_study.decision_tree_training.columns_to_drop_before_decision_point,
-                                    case_study.target_label,
-                                    case_study.decision_tree_training.one_hot_columns)
+        'decision_tree_training': (case_study, path_scenario)
                                     # We check this phase is present in case_study to avoid exceptions
                                     if case_study.decision_tree_training  else None
         }
 
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
-        if function_to_exec == "decision_tree_training" and case_study.decision_tree_training.library !='sklearn':
+        if function_to_exec == "decision_tree_training":
             res, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times
             times[n][function_to_exec]["columns_len"] = columns_len
@@ -213,7 +207,7 @@ def celery_task_process_case_study(case_study_id):
  
 
     # year = datetime.now().date().strftime("%Y")
-    tprint("RPA-US     RIM", "tarty1")
+    tprint("RPA-US     SCREEN RPA", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
     if case_study.scenarios_to_study:
         aux_path = case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0]
@@ -228,7 +222,7 @@ def celery_task_process_case_study(case_study_id):
         
         pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.prefilters or case_study.postfilters or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or case_study.report or case_study_has_feature_extraction_technique(case_study)
         if pred:
-            if scenario_nested_folder == "TRUE":
+            if scenario_nested_folder:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
                     generate_case_study(case_study, path_scenario, times, n)
@@ -313,8 +307,8 @@ def case_study_generator(data):
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    serializer.type = "SINGLE"
-                    serializer.case_study = case_study
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['type'] = "SINGLE"
                     serializer.save()
                 case "process_discovery":
                     serializer = ProcessDiscoverySerializer(data=phases[phase])
@@ -327,8 +321,8 @@ def case_study_generator(data):
                 case "aggregate_features_as_dataset_columns":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    serializer.type = "AGGREGATE"
-                    serializer.case_study = case_study
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['type'] = "AGGREGATE"
                     serializer.save()
                 case "decision_tree_training":
                     serializer = DecisionTreeTrainingSerializer(data=phases[phase])

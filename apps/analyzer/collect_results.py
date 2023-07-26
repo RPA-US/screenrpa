@@ -132,8 +132,8 @@ def experiments_results_collectors_old_structure(case_study, decision_tree_filen
     # tree_training_time = []
     # tree_training_accuracy = []
 
-    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and
-                                                                                case_study.decision_tree_training.algorithms) else None
+    decision_tree_algorithms = case_study.decision_tree_training.configuration["algorithms"] if (case_study.decision_tree_training and case_study.decision_tree_training.configuration and 
+                                                                                "algorithms" in case_study.decision_tree_training.configuration) else None
 
     if decision_tree_algorithms:
         accuracy = {}
@@ -148,7 +148,7 @@ def experiments_results_collectors_old_structure(case_study, decision_tree_filen
         family_size_balance_variations = get_foldernames_as_list(scenario_path, sep)
         # if case_study.drop and (case_study.drop in family_size_balance_variations):
         #     family_size_balance_variations.remove(case_study.drop)
-        json_f = open(times_info_path+"-metainfo.json")
+        json_f = open(times_info_path+"-"+case_study.exp_foldername+"-metainfo.json")
         times = json.load(json_f)
         for n in family_size_balance_variations:
             metainfo = n.split("_")
@@ -243,8 +243,8 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     # tree_training_time = []
     tree_training_accuracy = []
 
-    decision_tree_algorithms = case_study.decision_tree_training.algorithms if (case_study.decision_tree_training and
-                                                                                case_study.decision_tree_training.algorithms) else None
+    decision_tree_algorithms = case_study.decision_tree_training.configuration["algorithms"] if (case_study.decision_tree_training and case_study.decision_tree_training.configuration and 
+                                                                                "algorithms" in case_study.decision_tree_training.configuration) else None
 
     if decision_tree_algorithms:
         accuracy = {}

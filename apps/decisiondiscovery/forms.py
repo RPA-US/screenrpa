@@ -45,7 +45,7 @@ class DecisionTreeTrainingForm(forms.ModelForm):
             )
         fields = (
             "library",
-            "algorithms",
+            "configuration",
             "one_hot_columns",
             "columns_to_drop_before_decision_point"
         )

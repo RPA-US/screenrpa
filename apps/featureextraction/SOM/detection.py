@@ -61,7 +61,7 @@ def get_ocr_image(pipeline, param_img_root, images_input):
     return prediction_groups
 
 
-def nesting_inspection(org, grey, compos, ffl_block):
+def nesting_inspection(org, grey, compos, uied_params, times):
     '''
     Inspect all big compos through block division by flood-fill
     :param ffl_block: gradient threshold for flood-fill
@@ -69,7 +69,8 @@ def nesting_inspection(org, grey, compos, ffl_block):
     '''
     nesting_compos = []
     for i, compo in enumerate(compos):
-        # compos containment
+        # compos containment 
+        start_nested_components_containment = time.time()
         for j in range(i + 1, len(compos)):
             relation = compos[i].compo_relation(compos[j])
             if relation == -1:
@@ -78,20 +79,21 @@ def nesting_inspection(org, grey, compos, ffl_block):
             if relation == 1:
                 compos[i].contain+=[compos[j]]
                 compos[i] = compos[i]
+        times["nested_compos_containment"] = time.time() - start_nested_components_containment
         
-        if compo.height > 30:
+        if compo.height > uied_params["min-ele-height"]:
             replace = False
             clip_grey = compo.compo_clipping(grey)
-            n_compos = utils.nested_components_detection(
-                clip_grey, org, grad_thresh=ffl_block, show=False)
+            start_nested_components_detection = time.time()
+            n_compos = utils.nested_components_detection(clip_grey, org, grad_thresh=uied_params["ffl-block"], uied_params=uied_params, show=False)
+            times["nested_components_detection"] = time.time() - start_nested_components_detection
             
             if n_compos:
                 compos[i].contain+=n_compos
                 compos[i] = compos[i]
             
             for comp in n_compos:
-                comp.compo_relative_position(
-                    compo.bbox.col_min, compo.bbox.row_min)
+                comp.compo_relative_position(compo.bbox.col_min, compo.bbox.row_min)
 
             # for n_compo in n_compos:
             #     if n_compo.redundant:
@@ -101,10 +103,27 @@ def nesting_inspection(org, grey, compos, ffl_block):
             if not replace:
                 nesting_compos += n_compos
         
-    return compos + nesting_compos
+    return compos + nesting_compos, times
 
 
-def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images, image_names, img_index):
+def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images, image_names, img_index, times, uied_params={
+        "min-grad": 3,
+        "ffl-block": 5,
+        "min-ele-area": 10,
+        "min-ele-height": 10,
+        "merge-contained-ele": False,
+        "merge-intersected-compos": True,
+        "max-word-inline-gap": 4,
+        "max-line-gap": 4,
+        "nested-min-compo-height": 5, # 10
+        "nested-shared-area-percentage": 0.9,
+        "nested-shared-area-to-be-redundant": 0.7,
+        "nested-ignore-non-rectangle-blocks": False,
+        "compo-height-considered-small": 5, # discarded during detection
+        "compo-width-considered-small": 5, # discarded during detection
+        "step_h": 2, # it affects hugely the detection time (if =5 real detection times close to mockup ones)
+        "step_w": 2
+    }):
     '''
     Analyzes an image and extracts its UI components with an alternative algorithm type
 
@@ -134,14 +153,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     3. If not *merge-contained-ele*, the elements inside others will be recognized, while prone to produce noises
     4. The *max-word-inline-gap* and *max-line-gap* should be dependent on the input image size and resolution
     '''
-    uied_params = {
-        'min-grad': 3,
-        'ffl-block': 5,
-        'min-ele-area': 20,
-        'merge-contained-ele': True,
-        'max-word-inline-gap': 4,
-        'max-line-gap': 4
-    }
+
     
     name = input_img_path.split('/')[-1][:-4] if '/' in input_img_path else input_img_path.split('\\')[-1][:-4]
     ip_root = pjoin(path_to_save_bordered_images, "ip")
@@ -152,32 +164,47 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     # COMPONENT DETECTION
     # ##########################
 
+    start_get_binary_map_time = time.time()
     # *** Step 1 *** pre-processing: read img -> get binary map
     org, grey = utils.read_img(input_img_path, resize_by_height)
     binary = utils.binarization(org, grad_min=int(uied_params['min-grad']))
+    times["get_binary_map_time"] = time.time() - start_get_binary_map_time
 
     # *** Step 2 *** element detection
+    start_get_component_detection = time.time()
     utils.rm_line(binary, show=False, wait_key=0)
-    uicompos = utils.component_detection(
-        binary, min_obj_area=int(uied_params['min-ele-area']))
+    uicompos = utils.component_detection(binary, min_obj_area=int(uied_params['min-ele-area']), uied_params=uied_params)
+    times["get_component_detection"] = time.time() - start_get_component_detection
     
 
     # *** Step 3 *** results refinement
     # DESKTOP: doesnt detect navbars
-    # uicompos = utils.compo_filter(uicompos, min_area=int(
-    #     uied_params['min-ele-area']), img_shape=binary.shape)
-    uicompos = utils.merge_intersected_compos(uicompos)
+    # uicompos = utils.compo_filter(uicompos, min_area=int(uied_params['min-ele-area']), img_shape=binary.shape)
+    
+    if uied_params['merge-intersected-compos']:
+        start_merge_intersected_compos = time.time()
+        uicompos = utils.merge_intersected_compos(uicompos)
+        times["merge_intersected_compos"] = time.time() - start_merge_intersected_compos
+    
+    start_compo_block_recognition = time.time()
     utils.compo_block_recognition(binary, uicompos)
+    times["compo_block_recognition"] = time.time() - start_compo_block_recognition
+    
     if uied_params['merge-contained-ele']:
+        start_rm_contained_compos_not_in_block = time.time()
         uicompos = utils.rm_contained_compos_not_in_block(uicompos)
+        times["rm_contained_compos_not_in_block"] = time.time() - start_rm_contained_compos_not_in_block
     
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
-    uicompos = nesting_inspection(org, grey,
-                                uicompos, ffl_block=uied_params['ffl-block'])
+    start_nesting_inspection = time.time()
+    uicompos, times = nesting_inspection(org, grey, uicompos, uied_params, times)
+    times["nesting_inspection"] = time.time() - start_nesting_inspection
 
     # *** Step 5 *** save detection result
+    start_save_detection_result = time.time()
     utils.compos_update(uicompos, org.shape)
+    times["save_detection_result"] = time.time() - start_save_detection_result
 
     draw.draw_bounding_box(org, uicompos, show=False, name='merged compo', 
                            write_path=pjoin(ip_root, name + '.jpg'), 
@@ -187,9 +214,11 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     # RESULTS
     # ##########################
 
+    start_compo_clipping = time.time()
     clips = [compo.compo_clipping(org) for compo in uicompos]
+    times["compo_clipping"] = time.time() - start_compo_clipping
 
-    return clips, uicompos
+    return clips, uicompos, times
 
 
 def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, img_index, text_classname):
@@ -379,6 +408,8 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
         
         overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or (not skip)
 
+        times = {}
+        
         if overwrite:
             start_t = time.time()
             if algorithm == "rpa-us":
@@ -393,7 +424,10 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
 
             elif algorithm == "uied":
                 # this method edit the metadata json with the ui element class and text if corresponds
-                recortes, uicompos = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index)
+                if configurations:
+                    recortes, uicompos, times = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index, times, configurations)
+                else:
+                    recortes, uicompos, times = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index, times)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
                 utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)
@@ -433,7 +467,13 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 metadata['screenshots'][image_names[img_index]]['detect_images_components duration'] = float(time.time()) - float(start_t)
                 metadata['screenshots'][image_names[img_index]]['detect_images_components #UICompos'] = len(recortes)
             else:
-                metadata['screenshots'][image_names[img_index]] = {"detect_images_components duration": float(time.time()) - float(start_t)}
+                metadata['screenshots'][image_names[img_index]] = {
+                    "detect_images_components duration": float(time.time()) - float(start_t),
+                    "detect_images_components #UICompos": len(recortes)
+                }
+                
+            for key in times:
+                metadata['screenshots'][image_names[img_index]]['detect_images_components ' + key] = times[key]
             
             # save ui elements npy
             aux = np.array(recortes, dtype=object)
@@ -549,6 +589,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         if not os.path.exists(p):
             os.mkdir(p)
 
+    start_t = time.time()
     metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations)
     metadata["duration"] = float(time.time()) - float(start_t)
     return metadata

@@ -2,5 +2,5 @@
     "quantity": "occurrence_ui_element_class",
     "location": "centroid_ui_element_class",
     "plaintext": "centroid_ui_element_class_or_plaintext",
-    "status": "state_ui_element"
+    "status": "state_ui_element_centroid"
 }

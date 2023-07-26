@@ -26,18 +26,18 @@ DB_USER =                       env('DB_USER')
 DB_PASSWORD =                   env('DB_PASSWORD')
 API_VERSION =                   env('API_VERSION')
 active_celery =                 config('DISABLE_MULTITHREADING', default=False, cast=bool)
-scenario_nested_folder =        env('SCENARIO_NESTED_FOLDER')
+scenario_nested_folder =        config('SCENARIO_NESTED_FOLDER', default=False, cast=bool)
 metadata_location =             env('METADATA_PATH')
 fixation_duration_threshold =   int(env('FIXATION_DURATION_THRESHOLD')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 cropping_threshold =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
 gui_quantity_difference =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
 flattened_dataset_name =        env('FLATTENED_DATASET_NAME')
-several_iterations =            env('DECISION_TREE_TRAINING_ITERATIONS')
+several_iterations =            int(env('DECISION_TREE_TRAINING_ITERATIONS'))
 decision_foldername =           env('DECISION_TREE_TRAINING_FOLDERNAME')
-plot_decision_trees =           env('PLOT_DECISION_TREES')
+plot_decision_trees =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-platform_name =                         "RIM"
+platform_name =                         "SCREEN RPA"
 monitoring_phase_name =                 "monitoring"
 info_prefiltering_phase_name =          "preselection"
 detection_phase_name =                  "detection"
@@ -50,6 +50,7 @@ decision_model_discovery_phase_name =   "decision model discovery"
 
 # System Default Phases
 default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
+monitoring_imotions_needded_columns = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
 #===================================================================================================
 #===================================================================================================
@@ -219,7 +220,7 @@ REST_FRAMEWORK = {
 
 # Swagger Drsf spectacular
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'RIM API',
+    'TITLE': 'SCREEN RPA API',
     'DESCRIPTION': 'Automatic generation of sintetic UI log in RPA context introducing variability',
     'VERSION': '1.0.0',
     # OTHER SETTINGS

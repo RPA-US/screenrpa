@@ -141,7 +141,7 @@ class FeatureExtractionTechnique(models.Model):
     consider_relevant_compos = models.BooleanField(default=False)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE) 
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):

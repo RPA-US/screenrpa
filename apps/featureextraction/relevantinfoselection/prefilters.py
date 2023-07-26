@@ -14,7 +14,7 @@ from core.utils import read_ui_log_as_dataframe
 def rectangle_prefilter():
     print("Not implemented yet :)")
 
-def attention_screen_mapping(root_path, fixation_data, screenshot_filename):
+def attention_screen_mapping(root_path, fixation_data, screenshot_filename, scale_factor):
     # Load the image and create a new black image of the same size
     image = Image.open(root_path + screenshot_filename)
     attention_mask = Image.new('L', image.size, 0)
@@ -26,8 +26,8 @@ def attention_screen_mapping(root_path, fixation_data, screenshot_filename):
         if 'dispersion' in fixation_data[screenshot_filename]['fixation_points'][fixation_point]:
             dispersion = float(fixation_data[screenshot_filename]['fixation_points'][fixation_point]['dispersion'])
             if not pd.isna(dispersion):
-                size = int(dispersion * 10)  # Scale the dispersion to a reasonable size for the circle
-                draw.ellipse((x - size, y - size, x + size, y + size), fill=255)
+                radius = int(dispersion) * int(scale_factor)  # Scale the dispersion to a reasonable size for the circle
+                draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=255)
             else:
                 logging.info(fixation_point + " - (dispersion attr is nan) not mapped to attention area in screenshot " + screenshot_filename)
         else:
@@ -36,7 +36,7 @@ def attention_screen_mapping(root_path, fixation_data, screenshot_filename):
     # Apply the attention mask to the original image
     attention_map = Image.composite(image, Image.new('RGB', image.size, (0, 0, 0)), attention_mask)
 
-    attention_path = root_path + 'attention_map_screenshots'
+    attention_path = root_path + 'prefilter_attention_maps'
     
     if not os.path.exists(attention_path):
         os.mkdir(attention_path)
@@ -51,16 +51,16 @@ def attention_areas_prefilter(log_path, root_path, special_colnames, configurati
         fixation_data = json.load(f)
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         if screenshot_filename in fixation_data:
-            attention_screen_mapping(root_path, fixation_data, screenshot_filename)
+            attention_screen_mapping(root_path, fixation_data, screenshot_filename, configurations[config_key]["scale_factor"])
         else:
-            logging.info(screenshot_filename + " doesn't generate filtered screenshot. It doesn't have fixations related.")
+            logging.info(str(screenshot_filename) + " doesn't generate filtered screenshot. It doesn't have fixations related.")
 
 def apply_prefilters(log_path, root_path, special_colnames, configurations):
     times = {}
     for key in tqdm(configurations, desc="Prefilters have been processed: "):
-        # ui_selector = configurations["key"]["UI_selector"]
-        # predicate = configurations["key"]["predicate"]
-        # remove_nested = configurations["key"]["remove_nested"]
+        # ui_selector = configurations[key]["UI_selector"]
+        # predicate = configurations[key]["predicate"]
+        # remove_nested = configurations[key]["remove_nested"]
         s = "and applied!"
         start_t = time.time()
         match key:

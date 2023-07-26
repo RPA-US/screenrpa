@@ -60,7 +60,10 @@ def occurrence_ui_element_class(ui_elements_classification_classes, decision_poi
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
                 
-            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            if consider_relevant_compos:
+                compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            else:
+                compos_list = data["compos"]
 
             num_UI_elements += len(compos_list)
             if len(compos_list) > max_num_UI_elements:
@@ -135,7 +138,10 @@ def centroid_ui_element_class(ui_elements_classification_classes, decision_point
 
         screenshot_compos_frec = headers.copy()
         
-        compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+        if consider_relevant_compos:
+            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+        else:
+            compos_list = data["compos"]
 
         for j in range(0, len(compos_list)):
             compo_class = compos_list[j]["class"]
@@ -203,7 +209,10 @@ def centroid_ui_element_class_or_plaintext(ui_elements_classification_classes, d
 
         screenshot_compos_frec = headers.copy()
         
-        compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]        
+        if consider_relevant_compos:
+            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+        else:
+            compos_list = data["compos"]        
         
         for j in range(0, len(compos_list)):
             compo_class = compos_list[j]["class"]
@@ -310,7 +319,10 @@ def state_ui_element_centroid(ui_elements_classification_classes, decision_point
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
 
-            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            if consider_relevant_compos:
+                compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            else:
+                compos_list = data["compos"]
             
             num_UI_elements += len(compos_list)
             if len(compos_list) > max_num_UI_elements:
@@ -380,7 +392,10 @@ def attention_ui_hierarchy(ui_elements_classification_classes, decision_point, c
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
 
-            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            if consider_relevant_compos:
+                compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+            else:
+                compos_list = data["compos"]
             
             num_UI_elements += len(compos_list)
             if len(compos_list) > max_num_UI_elements:
