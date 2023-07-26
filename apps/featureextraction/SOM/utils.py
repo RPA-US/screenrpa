@@ -2,6 +2,25 @@ from SOM.UiComponent import UiComponent
 import numpy as np
 import json
 import pandas as pd
+import random
+from SOM import ip_draw
+import cv2
+
+def save_screenshot_modified(path_to_original_screenshit,path_to_save_modified_screenshit, new_components,random_color=True, color=None,show=False, separator='/'):
+    '''
+    new_components are the same as the return of similar_uicomponent
+    if random_color = False you should pass a color
+    '''
+    name = path_to_original_screenshit.split(separator)[-1]
+    original_img = cv2.imread(path_to_original_screenshit)
+    if random_color:
+        color = (random.randrange(0,256),random.randrange(0,256),random.randrange(0,256))
+    else:
+        color = color
+    _=ip_draw.draw_bounding_box(original_img, new_components,color=color, show=show, name='merged compo', 
+                           write_path=path_to_save_modified_screenshit+name, 
+                           wait_key=0)
+
 
 
 def add_xpath_to_dataset(store_components,last_element_idx, last_group_idx,path_to_screenshit_json, pt):
