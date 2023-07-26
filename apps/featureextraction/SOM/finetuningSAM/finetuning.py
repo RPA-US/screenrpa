@@ -6,7 +6,7 @@ import torch
 import json
 import os
 import pycocotools.mask as mask_utils
-from clasesFineTuning import Labelme2SAMDataset
+from clases import Labelme2SAMDataset
 import cv2
 import time
 import matplotlib.pyplot as plt
