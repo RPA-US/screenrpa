@@ -191,7 +191,8 @@ def read_feature_column_name(column_name):
     return suffix, feature, centroid, activity
   
 def find_path_in_decision_tree(tree, feature_values, target_class, centroid_threshold=250):
-    def dt_condition_checker(parent, node_index, feature_values, features_in_tree):
+    def dt_condition_checker(parent, node_index, features_in_tree):
+        feature_values = features_in_tree["feature_values"]
         node = parent[3][node_index]
         if isinstance(node, str):
             res = node.split(':')[-1].strip() == target_class, features_in_tree
@@ -203,7 +204,7 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
         
         exists_schema_aux = False
         for cond_feature in feature_values:
-            if cond_feature == "or_cond":
+            if cond_feature[:7] == "or_cond":
                 for or_cond_feature in feature_values[cond_feature]:
                     or_cond_feature_suffix, or_cond_feature_name, or_cond_feature_centroid, or_cond_feature_activity = read_feature_column_name(or_cond_feature)
                     if (feature == or_cond_feature_name and centroid_distance_checker(centroid, or_cond_feature_centroid, centroid_threshold)):
@@ -230,6 +231,6 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
             next_parent = parent
             next_node_index = 1
 
-        return dt_condition_checker(next_parent, next_node_index, feature_values, features_in_tree)
+        return dt_condition_checker(next_parent, next_node_index, features_in_tree)
 
-    return dt_condition_checker(tree, 0, feature_values, {})
+    return dt_condition_checker(tree, 0, {"feature_values": feature_values})
