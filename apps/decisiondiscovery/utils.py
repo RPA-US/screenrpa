@@ -1,10 +1,12 @@
+import re
+import math
+import pandas as pd
+import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
-import re
-import math
 
 def preprocess_data(data):
   columns_to_drop = list(filter(lambda x:"TextInput" in x, data.columns))
@@ -12,37 +14,59 @@ def preprocess_data(data):
   return data
 
 def def_preprocessor(X):
-  # define type of columns
-  status_columns = list(filter(lambda x:"sta_" in x, X.columns))
-  one_hot_columns = list(X.select_dtypes(include=['object']).columns.drop(status_columns))
-  numeric_features = X.select_dtypes(include=['number']).columns
+    # define type of columns
+    # sta_columns = list(filter(lambda x:"sta_" in x, X.columns))
+    
+    # Identificar las columnas con todos los valores iguales
+    columns_to_drop = X.columns[X.nunique() == 1]
+    # Identificar las columnas con todos los valores nulos
+    columns_to_drop = columns_to_drop.union(X.columns[X.isnull().all()])
+    # Eliminar las columnas con todos los valores iguales o nulos
+    X = X.drop(columns=columns_to_drop)
+    
+    mapping_dict = {"enabled": ['NaN', 'enabled'], "checked": ['unchecked', 'checked', '']}
+    mapping_list = []
+    sta_columns = []
+    # Identificar las columnas que contienen "sta_" en su nombre
+    for col in X.columns:
+        if 'sta_' in col:
+            sta_columns.append(col)
+            if 'enabled' in col:
+                mapping_list.append(list(mapping_dict['enabled']))
+            elif 'checked' in col:
+                mapping_list.append(list(mapping_dict['checked']))
+            else:
+                raise Exception("Not preprocessed column: " + str(col))
+                
+    one_hot_columns = list(X.select_dtypes(include=['object']).columns.drop(sta_columns))
+    numeric_features = X.select_dtypes(include=['number']).columns
 
-  # create each transformer
-  status_transformer = Pipeline(steps=[
-                                ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-                                ('label_encoder', OrdinalEncoder())
-                                ])
-  one_hot_transformer = Pipeline(steps=[
-                                ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-                                ('one_hot_encoder', OneHotEncoder())
-                                ])
+    # create each transformer
+    status_transformer = Pipeline(steps=[
+                                    ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+                                    ('label_encoder', OrdinalEncoder(categories=list(mapping_list)))
+                                    ])
+    one_hot_transformer = Pipeline(steps=[
+                                    ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+                                    ('one_hot_encoder', OneHotEncoder())
+                                    ])
 
-  numeric_transformer = Pipeline(steps=[
-                                ('imputer', SimpleImputer(strategy='mean')),
-                                ])#('scaler',StandardScaler())
+    numeric_transformer = Pipeline(steps=[
+                                    ('imputer', SimpleImputer(strategy='mean')),
+                                    ])#('scaler',StandardScaler())
 
-  # create preprocessor
-  preprocessor = ColumnTransformer(
-    transformers=[
-        ('numeric', numeric_transformer, numeric_features),
-        ('one_hot_categorical', one_hot_transformer, one_hot_columns),
-        ('status_categorical', status_transformer, status_columns)
-    ]
-  )
-  return preprocessor
+    # create preprocessor
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('numeric', numeric_transformer, numeric_features),
+            ('one_hot_categorical', one_hot_transformer, one_hot_columns),
+            ('status_categorical', status_transformer, sta_columns)
+        ]
+    )
+    return preprocessor
 
 def create_and_fit_pipeline(X,y, model):
-  preprocessor = def_preprocessor(X)
+  preprocessor = def_preprocessor(X, [])
   # create pipeline
   pipeline = Pipeline(steps=[
     ('preprocessor', preprocessor),
@@ -79,7 +103,7 @@ def parse_decision_tree(file_path):
     def build_tree(lines, index, depth):
         if index < 0:
             node_depth = 0
-            node = ['root']
+            node = ['root', 'None', 'None']
         else:
             node_str = lines[index].strip()
             node_depth = get_node_depth(node_str)
@@ -92,23 +116,24 @@ def parse_decision_tree(file_path):
                 children = []
                 while next_index < len(lines):
                     child_depth = get_node_depth(lines[next_index].strip())
-
+                    max_depth = child_depth if child_depth > max_depth else max_depth
+                    
                     if child_depth > node_depth:
-                        child, next_index = build_tree(lines, next_index, child_depth)
+                        child, max_depth, next_index = build_tree(lines, next_index, child_depth)
                         children.append(child)
                     else:
                         break
                 node.append(children)
-                return node, next_index
+                return node, max_depth, next_index
             else:
-                return node, next_index
+                return node, max_depth, next_index
         else:
            
-            return node, index
+            return node, max_depth, index
 
-    tree_structure, index = build_tree(lines, -1, depth=0)
+    tree_structure, max_depth, index = build_tree(lines, -1, depth=0)
   
-    return tree_structure
+    return tree_structure, max_depth
   
   
 # Check path inside decision tree representation 
@@ -118,55 +143,88 @@ def points_distance(punto_x, punto_y):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 def centroid_distance_checker(punto_x, punto_y, umbral):
-    distancia = points_distance(punto_x, punto_y)
-    return distancia < umbral
+    if not punto_x and not punto_y:
+        return True
+    else:
+        distancia = points_distance(punto_x, punto_y)
+        return distancia < umbral
   
 def read_feature_column_name(column_name):
+    
+    # Buscar el patrón en la cadena de texto
+    contains_centroid = bool(re.search(r'\d+\.\d+-\d+\.\d+', column_name))
+    
     # Definimos la expresión regular para buscar los componentes del identificador
-    if "__" in column_name:
+    if "__" in column_name and contains_centroid:
         pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
-        aux = 1
+        aux1 = 1
+        aux2 = 1
+    elif "__" in column_name and not contains_centroid:
+        pattern = r"(\w+)__(\w+)_(\w+_\w+)"
+        centroid = None
+        aux1 = 1
+        aux2 = 0
+    elif not "__" in column_name and not contains_centroid:
+        pattern = r"(\w+)_(\w+_\w+)"
+        suffix = None
+        aux1 = 0
+        centroid = None
+        aux2 = 0
     else:
         pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
         suffix = None
-        aux = 0
+        aux1 = 0
+        aux2 = 1
 
     # Buscamos las coincidences en el identificador utilizando la expresión regular
     coincidences = re.match(pattern, column_name)
 
     if coincidences:
-        if aux == 1:
+        if aux1 == 1:
             suffix = coincidences.group(1)
-        feature = coincidences.group(aux+1)
-        centroid = [float(coincidences.group(aux+2).split("-")[0]), float(coincidences.group(aux+2).split("-")[1])]
-        activity = coincidences.group(aux+3)
+        feature = coincidences.group(aux1+1)
+        if aux2 == 1:
+            centroid = [float(coincidences.group(aux1+2).split("-")[0]), float(coincidences.group(aux1+2).split("-")[1])]
+        activity = coincidences.group(aux1+aux2+2)
     else:
         raise Exception("El identificador no sigue el formato esperado.")
 
     return suffix, feature, centroid, activity
   
 def find_path_in_decision_tree(tree, feature_values, target_class, centroid_threshold=250):
-    def dt_condition_checker(parent, node_index, feature_values, features_in_tree):
+    def dt_condition_checker(parent, node_index, features_in_tree):
+        feature_values = features_in_tree["feature_values"]
         node = parent[3][node_index]
         if isinstance(node, str):
-            return int(node.split(':')[-1]) == target_class, features_in_tree
-
+            res = node.split(':')[-1].strip() == target_class, features_in_tree
+            return res 
+        
         feature_id, operator, threshold, branches = node
         
         suffix, feature, centroid, activity = read_feature_column_name(feature_id)
         
-        exists_schema_aux = True
+        exists_schema_aux = False
         for cond_feature in feature_values:
-            cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
-            if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
-                feature_value = feature_values[cond_feature]
-                features_in_tree[cond_feature] = features_in_tree[cond_feature] + 1 if cond_feature in features_in_tree else 1
-                exists_schema_aux = False
-                break
-        if exists_schema_aux:
+            if cond_feature[:7] == "or_cond":
+                for or_cond_feature in feature_values[cond_feature]:
+                    or_cond_feature_suffix, or_cond_feature_name, or_cond_feature_centroid, or_cond_feature_activity = read_feature_column_name(or_cond_feature)
+                    if (feature == or_cond_feature_name and centroid_distance_checker(centroid, or_cond_feature_centroid, centroid_threshold)):
+                        feature_value = feature_values[cond_feature][or_cond_feature]
+                        features_in_tree[or_cond_feature] = features_in_tree[or_cond_feature] + 1 if or_cond_feature in features_in_tree else 1
+                        exists_schema_aux = True
+                        break  
+            else:
+                cond_feature_suffix, cond_feature_name, cond_feature_centroid, cond_feature_activity = read_feature_column_name(cond_feature)
+                if cond_feature_name == feature and centroid_distance_checker(centroid, cond_feature_centroid, centroid_threshold):
+                    feature_value = feature_values[cond_feature]
+                    features_in_tree[cond_feature] = features_in_tree[cond_feature] + 1 if cond_feature in features_in_tree else 1
+                    exists_schema_aux = True
+                    break
+        if not exists_schema_aux:
             return False, features_in_tree
 
         condition = eval(str(feature_value) + ' ' + operator + ' ' + str(threshold))
+
         if condition:
             next_parent = node
             next_node_index = 0
@@ -174,6 +232,6 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
             next_parent = parent
             next_node_index = 1
 
-        return dt_condition_checker(next_parent, next_node_index, feature_values, features_in_tree)
+        return dt_condition_checker(next_parent, next_node_index, features_in_tree)
 
-    return dt_condition_checker(tree, 0, feature_values, {})
+    return dt_condition_checker(tree, 0, {"feature_values": feature_values})

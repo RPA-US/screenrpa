@@ -176,25 +176,28 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     
     if "e50_" in param_path:
         cv = 2
-    else:
-        cv = 3
 
     # Extract features and target variable
     X = df.drop(columns=['Variant'])
     y = df['Variant']
-
+    
     preprocessor = def_preprocessor(X)
     X = preprocessor.fit_transform(X)
+    X_df = pd.DataFrame(X)
     feature_names = list(preprocessor.get_feature_names_out())
-
+    X_df.to_csv(param_path + "preprocessed_df.csv", header=feature_names)
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
     tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, cv)
 
-    accuracies = cross_validation(pd.DataFrame(X),pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,cv)
+    accuracies = cross_validation(X_df,pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,cv)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
-
+    # times["sklearn"]["encoders"] = {
+    #     "enabled": status_encoder.fit_transform(["enabled"])[0], 
+    #     "checked": status_encoder.fit_transform(["checked"])[0],
+    #      "__empty__": status_encoder.fit_transform([""])[0]
+    # }
     
     # Assuming 'best_tree_tree' is already trained on the training data
     text_representation = export_text(tree_classifier, feature_names=feature_names)

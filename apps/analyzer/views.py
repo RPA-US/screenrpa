@@ -154,11 +154,12 @@ def generate_case_study(case_study, path_scenario, times, n):
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
         if function_to_exec == "decision_tree_training":
-            res, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
+            res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times
             times[n][function_to_exec]["columns_len"] = columns_len
             # times[n][function_to_exec]["tree_levels"] = tree_levels
             times[n][function_to_exec]["accuracy"] = res
+            times[n][function_to_exec]["feature_checker"] = fe_checker
         elif function_to_exec == "feature_extraction_technique" or function_to_exec == "aggregate_features_as_dataset_columns":
             start_t = time.time()
             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
