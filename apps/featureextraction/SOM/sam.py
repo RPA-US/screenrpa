@@ -3,11 +3,12 @@ from os.path import join as pjoin
 import json
 import time
 import cv2
+import torch
 from . import ip_draw as draw
-import cv2
 from art import tprint
 from tqdm import tqdm
 from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+from .fastSAM import FastSAM
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
 
@@ -77,7 +78,7 @@ def get_compos_mask_json(masks, image_shape):
     mask_json = json.dumps(sorted_masks,indent=1)
     return arrays_dict,mask_json, sorted_compos 
 
-def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,checkpoint='l'):
+def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,sam_type="sam",checkpoint='l'):
     '''
     Analyzes an image and extracts its UI components
 
@@ -113,34 +114,16 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     image_copy = image.copy()
     image_shape = image.shape
 
-    ### SAM MODEL ####
-    match checkpoint:
-        case "h":
-            sam_checkpoint = "sam_vit_h_4b8939.pth"
-            model_type = "vit_h"
-        case "b":
-            sam_checkpoint = "sam_vit_b_01ec64.pth"
-            model_type = "vit_b"
-        case "l":
-            sam_checkpoint = "sam_vit_l_0b3195.pth"
-            model_type = "vit_l"
-        case _:
-            raise Exception("You select a type of sam's checkpoint that doesnt exists")
-
     time1=time.time()
-    # torch.cuda.set_per_process_memory_fraction(fraction=0.55, device=0)
-    sam = sam_model_registry[model_type](checkpoint=checkpoint_path+sam_checkpoint)
-    # device = "cuda:0"
-    # sam.to(device=device)
 
-    ### GENERATE MASK ###
-    # mask_generator = SamAutomaticMaskGenerator(sam)
+    sam_type="fast-sam"
+    checkpoint="x"
+    match(sam_type):
+        case "fast-sam":
+            masks = get_fast_sam_masks(checkpoint, checkpoint_path, image_copy)
+        case "sam":
+            masks = get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy)
 
-    mask_generator = SamAutomaticMaskGenerator(
-        model=sam,
-        pred_iou_thresh=0.95,
-    )
-    masks = mask_generator.generate(image_copy)
     time2=time.time()
     '''
     masks contains the .generate return:
@@ -187,3 +170,58 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     return clips, uicompos, mask_json, compos_json, arrays_dict, dict_times
   
+def get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy):
+
+    ### SAM MODEL ####
+    match checkpoint:
+        case "h":
+            sam_checkpoint = "sam_vit_h_4b8939.pth"
+            model_type = "vit_h"
+        case "b":
+            sam_checkpoint = "sam_vit_b_01ec64.pth"
+            model_type = "vit_b"
+        case "l":
+            sam_checkpoint = "sam_vit_l_0b3195.pth"
+            model_type = "vit_l"
+        case _:
+            raise Exception("You select a type of sam's checkpoint that doesnt exists")
+
+    # torch.cuda.set_per_process_memory_fraction(fraction=0.55, device=0)
+    sam = sam_model_registry[model_type](checkpoint=checkpoint_path+sam_checkpoint)
+    # device = "cuda:0"
+    # sam.to(device=device)
+
+    ### GENERATE MASK ###
+    # mask_generator = SamAutomaticMaskGenerator(sam)
+
+    mask_generator = SamAutomaticMaskGenerator(
+        model=sam,
+        pred_iou_thresh=0.95,
+    )
+    masks = mask_generator.generate(image_copy)
+
+    return masks
+
+def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy):
+
+    ### FAST-SAM MODEL ###
+    match checkpoint:
+        case "s":
+            sam_checkpoint = "FastSAM-s.pt"
+        case "x":
+            sam_checkpoint = "FastSAM-x.pt"
+        case _:
+            raise Exception("You select a type of fast sam's checkpoint that doesnt exists")
+
+    fast_sam = FastSAM(checkpoint_path+sam_checkpoint)
+
+    # device = "cuda:0"
+    # fast_sam(device=device)
+
+    ### GENERATE MASK ###
+
+    masks = fast_sam.predict(source=image_copy)[0]
+
+    # TODO: parse the masks object to be in line with the masks returned by sam
+
+    return masks
