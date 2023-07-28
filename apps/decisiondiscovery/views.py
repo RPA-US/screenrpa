@@ -233,9 +233,10 @@ def decision_tree_feature_checker(feature_values, centroid_threshold, path):
     
     metadata = {}        
     for target_class, fe_values_class in feature_values.items():
-        tree = parse_decision_tree(dt_file)
+        tree, max_depth = parse_decision_tree(dt_file)
         path_exists, features_in_tree = find_path_in_decision_tree(tree, fe_values_class, target_class, centroid_threshold)
         metadata[target_class] = features_in_tree
+        metadata[target_class]["tree_depth"] = max_depth
         metadata[target_class]["cumple_condicion"] = path_exists
     # print(path_exists)
     # print((len(features_in_tree) / len(feature_values))*100)

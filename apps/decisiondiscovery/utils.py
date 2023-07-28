@@ -116,23 +116,24 @@ def parse_decision_tree(file_path):
                 children = []
                 while next_index < len(lines):
                     child_depth = get_node_depth(lines[next_index].strip())
-
+                    max_depth = child_depth if child_depth > max_depth else max_depth
+                    
                     if child_depth > node_depth:
-                        child, next_index = build_tree(lines, next_index, child_depth)
+                        child, max_depth, next_index = build_tree(lines, next_index, child_depth)
                         children.append(child)
                     else:
                         break
                 node.append(children)
-                return node, next_index
+                return node, max_depth, next_index
             else:
-                return node, next_index
+                return node, max_depth, next_index
         else:
            
-            return node, index
+            return node, max_depth, index
 
-    tree_structure, index = build_tree(lines, -1, depth=0)
+    tree_structure, max_depth, index = build_tree(lines, -1, depth=0)
   
-    return tree_structure
+    return tree_structure, max_depth
   
   
 # Check path inside decision tree representation 
