@@ -54,9 +54,13 @@ class FastSAMPrompt:
                 continue
             annotation['id'] = i
             annotation['segmentation'] = mask.cpu().numpy()
-            annotation['bbox'] = result.boxes.data[i]
-            annotation['score'] = result.boxes.conf[i]
-            annotation['area'] = annotation['segmentation'].sum()
+            # We do not use boxes.xywh because the bounding box given by it is wrong
+            annotation['bbox'] = [int(result.boxes.xyxy[i].tolist()[0]), int(result.boxes.xyxy[i].tolist()[1]),
+                                  int(result.boxes.xyxy[i].tolist()[2]) - int(result.boxes.xyxy[i].tolist()[0]),
+                                  int(result.boxes.xyxy[i].tolist()[3]) - int(result.boxes.xyxy[i].tolist()[1])]
+            annotation['score'] = result.boxes.conf[i].tolist()
+            annotation['area'] = annotation['segmentation'].sum().item()
+            annotation['crop_box'] = [0, 0, self.img.shape[1], self.img.shape[0]]
             annotations.append(annotation)
         return annotations
 
