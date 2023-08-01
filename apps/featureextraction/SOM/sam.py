@@ -8,7 +8,7 @@ from . import ip_draw as draw
 from art import tprint
 from tqdm import tqdm
 from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
-from .fastSAM import FastSAM
+from .fastSAM import FastSAM, FastSAMPrompt
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
 
@@ -116,32 +116,14 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     time1=time.time()
 
-    sam_type="fast-sam"
-    checkpoint="x"
     match(sam_type):
         case "fast-sam":
-            masks = get_fast_sam_masks(checkpoint, checkpoint_path, image_copy)
+            masks = get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, input_img_path)
         case "sam":
             masks = get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy)
 
     time2=time.time()
-    '''
-    masks contains the .generate return:
-        - list of mask, each record is a dict(str, any) containg:
-            - segmentation (dict(str, any) or np.ndarray):
-                The mask. If output_mode='binary_mask', is an array of shape HW.
-                Otherwise, is a dictionary containing the RLE
-            - bbox (list(float)): The box around the mask, in XYWH format.
-            - area (int): The area in pixels of the mask.
-            - predicted_iou (float): The model's own prediction of the mask's
-                    quality. This is filtered by the pred_iou_thresh parameter.
-            - point_coords (list(list(float))): The point coordinates input
-                    to the model to generate this mask.
-            - stability_score (float): A measure of the mask's quality. This
-                    is filtered on using the stability_score_thresh parameter.
-            - crop_box (list(float)): The crop of the image used to generate
-                    the mask, given in XYWH format.   
-    '''
+
     arrays_dict,mask_json,uicompos = get_compos_mask_json(masks, image_shape)
     time3=time.time()
 
@@ -171,6 +153,23 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     return clips, uicompos, mask_json, compos_json, arrays_dict, dict_times
   
 def get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy):
+    '''
+    masks contains the .generate return:
+        - list of mask, each record is a dict(str, any) containg:
+            - segmentation (dict(str, any) or np.ndarray):
+                The mask. If output_mode='binary_mask', is an array of shape HW.
+                Otherwise, is a dictionary containing the RLE
+            - bbox (list(int)): The box around the mask, in XYWH format.
+            - area (int): The area in pixels of the mask.
+            - predicted_iou (float): The model's own prediction of the mask's
+                    quality. This is filtered by the pred_iou_thresh parameter.
+            - point_coords (list(list(float))): The point coordinates input
+                    to the model to generate this mask.
+            - stability_score (float): A measure of the mask's quality. This
+                    is filtered on using the stability_score_thresh parameter.
+            - crop_box (list(int)): The crop of the image used to generate
+                    the mask, given in XYWH format.   
+    '''
 
     ### SAM MODEL ####
     match checkpoint:
@@ -202,9 +201,23 @@ def get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy):
 
     return masks
 
-def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy):
+def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
+    '''
+    masks contains the .generate return:
+        - list of mask, each record is a dict(str, any) containg:
+            - segmentation (dict(str, any) or np.ndarray):
+                The mask. If output_mode='binary_mask', is an array of shape HW.
+                Otherwise, is a dictionary containing the RLE
+            - bbox (list(int)): The box around the mask, in XYWH format.
+            - area (int): The area in pixels of the mask.
+            - point_coords (list(list(float))): The point coordinates input
+                to the model to generate this mask.
+            - score (float): A measure of the mask's quality.
+            - crop_box (list(int)): The crop of the image used to generate
+                the mask, given in XYWH format.   
+'''
 
-    ### FAST-SAM MODEL ###
+### FAST-SAM MODEL ###
     match checkpoint:
         case "s":
             sam_checkpoint = "FastSAM-s.pt"
@@ -215,13 +228,14 @@ def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy):
 
     fast_sam = FastSAM(checkpoint_path+sam_checkpoint)
 
-    # device = "cuda:0"
-    # fast_sam(device=device)
+    # Define parameters for prediction
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    everything_results = fast_sam(source=image_copy, device=device, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
+
+    # Run fastSAM over the image
+    prompt_process = FastSAMPrompt(image_copy, everything_results, device=device)
 
     ### GENERATE MASK ###
-
-    masks = fast_sam.predict(source=image_copy)[0]
-
-    # TODO: parse the masks object to be in line with the masks returned by sam
+    masks = prompt_process._format_results(prompt_process.results[0])
 
     return masks
