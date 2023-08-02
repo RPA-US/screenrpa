@@ -4,6 +4,7 @@ import json
 import time
 import cv2
 import torch
+import logging
 from . import ip_draw as draw
 from art import tprint
 from tqdm import tqdm
@@ -92,6 +93,8 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     :type img_index: int
     :param checkpoint: sam model checkpoint to use
     :type checkpoint: str in 'l','h','b'.
+    :param sam_type: specify type of sam to use
+    :type sam_type: str
     :return: Crops and text inside components
     :rtype: Tuple
     '''
@@ -224,7 +227,8 @@ def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
         case "x":
             sam_checkpoint = "FastSAM-x.pt"
         case _:
-            raise Exception("You select a type of fast sam's checkpoint that doesnt exists")
+            sam_checkpoint = "FastSAM-x.pt"
+            logging.info("Defaulting to checkpoint type 'x'")
 
     fast_sam = FastSAM(checkpoint_path+sam_checkpoint)
 
