@@ -7,6 +7,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
+from apps.analyzer.models import CaseStudy
 from django.urls import reverse
 
 def default_prefilters_conf():
@@ -36,6 +37,7 @@ class Prefilters(models.Model):
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
@@ -50,6 +52,7 @@ class UIElementsDetection(models.Model):
     input_filename = models.CharField(max_length=50, default='log.csv')
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
@@ -65,6 +68,7 @@ class UIElementsClassification(models.Model):
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
@@ -78,6 +82,7 @@ class Postfilters(models.Model):
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
@@ -85,3 +90,22 @@ class Postfilters(models.Model):
     
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+    
+
+class FeatureExtractionTechnique(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    identifier = models.CharField(max_length=25)
+    type = models.CharField(max_length=255, default='SINGLE')
+    technique_name = models.CharField(max_length=255, default='count')
+    relevant_compos_predicate = models.CharField(max_length=255, default="compo['relevant'] == 'True'")
+    consider_relevant_compos = models.BooleanField(default=False)
+    configurations = JSONField(null=True, blank=True)
+    skip = models.BooleanField(default=False)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    def get_absolute_url(self):
+        return reverse("featureextraction:fe_technique_list")
+        
+    def __str__(self):
+        return 'technique: ' + self.technique_name + ' - skip? ' + str(self.skip)

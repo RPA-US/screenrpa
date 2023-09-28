@@ -6,10 +6,51 @@ from core.settings import sep
 from PIL import Image, ImageDraw
 from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
+from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
+from .models import FeatureExtractionTechnique
+from django.shortcuts import get_object_or_404
 
-# #######################
-# CONFIG
-# #######################
+###########################################################################################################################
+# Feature extraction techniques ###########################################################################################
+###########################################################################################################################
+
+def case_study_has_feature_extraction_technique(case_study, type="ANY"):
+    if type=="SINGLE":
+      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE").exists()
+    elif type=="AGGREGATE":
+      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE").exists()
+    else:
+      res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
+    return res
+
+def get_feature_extraction_technique_from_cs(case_study):
+  return get_object_or_404(FeatureExtractionTechnique, case_study=case_study)
+
+def detect_fe_function(text):
+    '''
+    Selecting a function in the system by means of a keyword
+    args:
+        text: function to be detected
+    '''
+    # Search the function by key in the json
+    f = open(FE_EXTRACTORS_FILEPATH)
+    json_func = json.load(f)
+    return eval(json_func[text])
+
+def detect_agg_fe_function(text):
+    '''
+    Selecting a function in the system by means of a keyword
+    args:
+        text: function to be detected
+    '''
+    # Search the function by key in the json
+    f = open(AGGREGATE_FE_EXTRACTORS_FILEPATH)
+    json_func = json.load(f)
+    return eval(json_func[text])
+
+###########################################################################################################################
+# UIED CONFIG            ##################################################################################################
+###########################################################################################################################
 
 class Config:
 
@@ -26,9 +67,9 @@ class Config:
         self.THRESHOLD_TOP_BOTTOM_BAR = (0.045, 0.94)  # (36/800, 752/800) height ratio of top and bottom bar
         self.THRESHOLD_BLOCK_MIN_HEIGHT = 0.03  # 24/800
 
-# ########################
-# PREPROCESSING
-# ########################    
+###########################################################################################################################
+# PREPROCESSING          ##################################################################################################
+########################################################################################################################### 
 def read_img(path, resize_height=None, kernel_size=None):
 
     def resize_by_height(org):

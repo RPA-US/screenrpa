@@ -1,11 +1,5 @@
 from django.contrib import admin
-from .models import CaseStudy, Monitoring, UIElementsDetection, UIElementsClassification, FeatureExtractionTechnique, ExtractTrainingDataset, DecisionTreeTraining
+from .models import CaseStudy
 
 # Register your models here.
 admin.site.register(CaseStudy)
-admin.site.register(Monitoring)
-admin.site.register(UIElementsDetection)
-admin.site.register(UIElementsClassification)
-admin.site.register(FeatureExtractionTechnique)
-admin.site.register(ExtractTrainingDataset)
-admin.site.register(DecisionTreeTraining)

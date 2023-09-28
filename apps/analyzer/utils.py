@@ -6,11 +6,9 @@ import re
 import datetime
 import email
 import base64
-from django.shortcuts import get_object_or_404
 import lxml.etree as ET
 from lxml import html
-from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
-from .models import FeatureExtractionTechnique
+
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 
@@ -22,43 +20,6 @@ def get_foldernames_as_list(path, sep):
             foldername_logs_with_different_size_balance.append(f)
     return foldername_logs_with_different_size_balance
 
-###########################################################################################################################
-# Feature extraction techniques ###########################################################################################
-###########################################################################################################################
-
-def case_study_has_feature_extraction_technique(case_study, type="ANY"):
-    if type=="SINGLE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE").exists()
-    elif type=="AGGREGATE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE").exists()
-    else:
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
-    return res
-
-def get_feature_extraction_technique_from_cs(case_study):
-  return get_object_or_404(FeatureExtractionTechnique, case_study=case_study)
-
-def detect_fe_function(text):
-    '''
-    Selecting a function in the system by means of a keyword
-    args:
-        text: function to be detected
-    '''
-    # Search the function by key in the json
-    f = open(FE_EXTRACTORS_FILEPATH)
-    json_func = json.load(f)
-    return eval(json_func[text])
-
-def detect_agg_fe_function(text):
-    '''
-    Selecting a function in the system by means of a keyword
-    args:
-        text: function to be detected
-    '''
-    # Search the function by key in the json
-    f = open(AGGREGATE_FE_EXTRACTORS_FILEPATH)
-    json_func = json.load(f)
-    return eval(json_func[text])
 
 ###########################################################################################################################
 # MHT to XES/CSV ##########################################################################################################

@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters
+from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique
 from django.core.exceptions import ValidationError
 
 class UIElementsDetectionForm(forms .ModelForm):
@@ -138,3 +138,37 @@ class UIElementsClassificationForm(forms .ModelForm):
     def __init__(self, *args, **kwargs):
         super(UIElementsClassificationForm, self).__init__(*args, **kwargs)
    
+
+  
+class FeatureExtractionTechniqueForm(forms.ModelForm):
+    class Meta:
+        model = FeatureExtractionTechnique
+        exclude = (
+            "user",
+            )
+        fields = (
+            "technique_name",
+            "skip",
+            "identifier"
+        )
+
+        widgets = {
+            "technique_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "status"
+                    }
+            ),
+            "skip": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox", "checked": "checked"}
+            ),
+            "identifier": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "sta_s"
+                    }
+            )
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(FeatureExtractionTechniqueForm, self).__init__(*args, **kwargs)

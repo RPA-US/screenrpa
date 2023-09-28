@@ -65,12 +65,6 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-exp_foldername">Folder name</label>
-                      <input type="text" id="input-exp_foldername" class="form-control" placeholder="folder_containing_exp" value="{{ case_study.exp_foldername }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
                       <label class="form-control-label" for="input-exp_folder_complete_path">Folder path</label>
                       <input type="text" id="input-exp_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ case_study.exp_folder_complete_path }}">
                     </div>
@@ -85,7 +79,7 @@
                   </div>
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-gui_class_success_regex">Regular expression to evaluate decision discovered</label>
+                      <label class="form-control-label" for="input-gui_class_success_regex">Decision Oracle</label> <!-- Regular expression to evaluate decision discovered -->
                       <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="CheckBox_4_D and ImageView_2_B" value="{{ case_study.gui_class_success_regex }}">
                     </div>
                   </div>
@@ -172,41 +166,89 @@
               </div>
               <hr class="my-4" />
               <!-- Phases to execute -->
-              <h6 class="heading-small text-muted mb-4">Phases to execute</h6>
+              <h6 class="heading-small text-muted mb-4">Related executions</h6>
               <div class="pl-lg-4">
-                <div class="form-group">
-                  <label class="form-control-label">Behaviour Monitoring</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.monitoring | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">Pre-Filtering</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.prefilters | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">UI Elements detection</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.ui_elements_detection | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">UI Elements classification</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.ui_elements_classification | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">Post-filtering</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.postfilters | pretty_json  }}</textarea>
+                <div class="card-body">
+                  <div class="row icon-examples">
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-active-40"></i>
+                          <span>Behaviour Monitoring</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-air-baloon"></i>
+                          <span>Pre-Filtering</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-album-2"></i>
+                          <span>UI Elements detection</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-align-center"></i>
+                          <span>UI Elements classification</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-align-center"></i>
+                          <span>Post-filtering</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-align-center"></i>
+                          <span>Feature extraction</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-align-center"></i>
+                          <span>Extract training dataset</span>
+                        </div>
+                      </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <button type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-align-center"></i>
+                          <span>Decision tree training</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 
-                {% for s_fe in single_fe %}
-                  <div class="form-group">
+                {% comment %} {% for s_fe in single_fe %}
+                <div class="form-group">
                     <label class="form-control-label">Single Feature extraction technique</label>
                     <textarea rows="4" class="form-control" 
-                      placeholder="{
-                        'technique_name': 'status',
-                        'gui_quantity_difference': 1,
-                        'identifier': 'sta_'
-                      }">
-                      {{ s_fe | pretty_json  }}</textarea>
+                    placeholder="{
+                      'technique_name': 'status',
+                      'gui_quantity_difference': 1,
+                      'identifier': 'sta_'
+                    }">
+                    {{ s_fe | pretty_json  }}</textarea>
                   </div>
-                {% endfor %}
+                  {% endfor %}
                 
                 {% for agg_fe in aggregate_fe %}
                   <div class="form-group">
@@ -219,9 +261,9 @@
                       }">
                       {{ agg_fe | pretty_json  }}</textarea>
                   </div>
-                {% endfor %}
+                {% endfor %} {% endcomment %}
                 
-                <div class="form-group">
+                {% comment %} <div class="form-group">
                   <label class="form-control-label">Extract training dataset</label>
                   <textarea rows="4" class="form-control" 
                     placeholder="{
@@ -229,19 +271,7 @@
                     'columns_to_drop_before_decision_point': ['Coor_X', 'Coor_Y', 'MorKeyb', 'TextInput', 'Click']
                     }">
                     {{ case_study.extract_training_dataset | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">Decision tree training</label>
-                  <textarea rows="4" class="form-control" 
-                    placeholder="{
-                      'library': 'chefboost',
-                      'algorithms': ['CHAID'],
-                      'target_label': 'Variant',
-                      'one_hot_columns': ['NameApp'],
-                      'columns_to_drop': ['Timestamp_start', 'Timestamp_end']
-                    }">
-                  {{ case_study.decision_tree_training | pretty_json  }}</textarea>
-                </div>
+                </div> {% endcomment %}
               </div>
             </form>
           </div>

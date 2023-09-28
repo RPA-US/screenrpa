@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from .models import CaseStudy, FeatureExtractionTechnique
+from .models import CaseStudy
 from django.core.exceptions import ValidationError
 
 class CaseStudyForm(forms.ModelForm):
@@ -33,12 +33,7 @@ class CaseStudyForm(forms.ModelForm):
             "gui_class_success_regex",
             "ui_elements_classification_image_shape",
             "ui_elements_classification_classes",
-            "target_label",
-            "ui_elements_detection",
-            "monitoring",
-            "ui_elements_classification",
-            "extract_training_dataset",
-            "decision_tree_training"
+            "target_label"
         )
 
         widgets = {
@@ -116,36 +111,36 @@ class CaseStudyForm(forms.ModelForm):
                     "placeholder": "Variant"
                     }
             ),
-            "ui_elements_detection": forms.Select(
-                attrs={
-                    "class": "custom-select"
-                    }
-            ),
-            "monitoring": forms.Select(
-                attrs={
-                    "class": "custom-select"
-                    }
-            ),
-            "ui_elements_classification": forms.Select(
-                attrs={
-                    "class": "custom-select"
-                    }
-            ),
-            "feature_extraction_technique": forms.Select(
-                attrs={
-                    "class": "custom-select"
-                    }
-            ),
-            "extract_training_dataset": forms.Select(
-                attrs={
-                    "class": "custom-select"
-                    }
-            ),
-            "decision_tree_training": forms.Select(
-                attrs={
-                    "class": "custom-select"
-                    }
-            )
+            # "ui_elements_detection": forms.Select(
+            #     attrs={
+            #         "class": "custom-select"
+            #         }
+            # ),
+            # "monitoring": forms.Select(
+            #     attrs={
+            #         "class": "custom-select"
+            #         }
+            # ),
+            # "ui_elements_classification": forms.Select(
+            #     attrs={
+            #         "class": "custom-select"
+            #         }
+            # ),
+            # "feature_extraction_technique": forms.Select(
+            #     attrs={
+            #         "class": "custom-select"
+            #         }
+            # ),
+            # "extract_training_dataset": forms.Select(
+            #     attrs={
+            #         "class": "custom-select"
+            #         }
+            # ),
+            # "decision_tree_training": forms.Select(
+            #     attrs={
+            #         "class": "custom-select"
+            #         }
+            # )
         }
 
     def clean_title(self):
@@ -159,37 +154,3 @@ class CaseStudyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(CaseStudyForm, self).__init__(*args, **kwargs)
 
-
-  
-class FeatureExtractionTechniqueForm(forms.ModelForm):
-    class Meta:
-        model = FeatureExtractionTechnique
-        exclude = (
-            "user",
-            )
-        fields = (
-            "technique_name",
-            "skip",
-            "identifier"
-        )
-
-        widgets = {
-            "technique_name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "status"
-                    }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
-            ),
-            "identifier": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "sta_s"
-                    }
-            )
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(FeatureExtractionTechniqueForm, self).__init__(*args, **kwargs)

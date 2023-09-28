@@ -1,15 +1,14 @@
 from art import tprint
 from core.settings import sep, platform_name, classification_phase_name, feature_extraction_phase_name, aggregate_feature_extraction_phase_name
-from apps.analyzer.utils import detect_fe_function, detect_agg_fe_function
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
-from apps.analyzer.models import FeatureExtractionTechnique, CaseStudy
-from apps.analyzer.forms import FeatureExtractionTechniqueForm
+from apps.analyzer.models import CaseStudy
 from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
-from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters
-from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm
+from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique
+from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm, FeatureExtractionTechniqueForm
 from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
+from .utils import detect_fe_function, detect_agg_fe_function
 from .utils import draw_ui_compos_borders
 from rest_framework import status
 

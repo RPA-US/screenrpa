@@ -6,6 +6,7 @@ from xmlrpc.client import Boolean
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from apps.analyzer.models import CaseStudy
 from django.urls import reverse
 
 # Create your models here.
@@ -23,6 +24,7 @@ class ExtractTrainingDataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
@@ -37,6 +39,7 @@ class DecisionTreeTraining(models.Model):
     library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
     one_hot_columns = ArrayField(models.CharField(max_length=25))
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):

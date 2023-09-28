@@ -11,11 +11,11 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from core.settings import PRIVATE_STORAGE_ROOT
-from apps.processdiscovery.models import ProcessDiscovery
-from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
-from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
-from apps.behaviourmonitoring.models import Monitoring
-from apps.reporting.models import PDD
+# from apps.processdiscovery.models import ProcessDiscovery
+# from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
+# from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
+# from apps.behaviourmonitoring.models import Monitoring
+# from apps.reporting.models import PDD
 
 def unzip_file(zip_file_path, dest_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
@@ -77,16 +77,16 @@ class CaseStudy(models.Model):
     ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
     ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     target_label = models.CharField(max_length=50, default='Variant')
-    monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
-    prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
-    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
-    ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
-    postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
+    # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
+    # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
+    # ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
+    # ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
+    # postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
     # feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
-    process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
-    extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
-    decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
-    report = models.ForeignKey(PDD, null=True, blank=True, on_delete=models.CASCADE)
+    # process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
+    # extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
+    # decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+    # report = models.ForeignKey(PDD, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
     class Meta:
@@ -130,22 +130,3 @@ class CaseStudy(models.Model):
     
     def __str__(self):
         return self.title + ' - id:' + str(self.id)
-    
-
-class FeatureExtractionTechnique(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    identifier = models.CharField(max_length=25)
-    type = models.CharField(max_length=255, default='SINGLE')
-    technique_name = models.CharField(max_length=255, default='count')
-    relevant_compos_predicate = models.CharField(max_length=255, default="compo['relevant'] == 'True'")
-    consider_relevant_compos = models.BooleanField(default=False)
-    configurations = JSONField(null=True, blank=True)
-    skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    def get_absolute_url(self):
-        return reverse("featureextraction:fe_technique_list")
-        
-    def __str__(self):
-        return 'technique: ' + self.technique_name + ' - skip? ' + str(self.skip)

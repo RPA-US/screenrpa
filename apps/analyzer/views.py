@@ -27,18 +27,19 @@ from apps.featureextraction.relevantinfoselection.prefilters import info_prefilt
 from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
-from apps.analyzer.models import CaseStudy, FeatureExtractionTechnique
+from apps.analyzer.models import CaseStudy
 from apps.behaviourmonitoring.models import Monitoring
-from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters
+from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
-from apps.analyzer.serializers import CaseStudySerializer, FeatureExtractionTechniqueSerializer
-from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, PostfiltersSerializer
+from apps.analyzer.serializers import CaseStudySerializer
+from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, PostfiltersSerializer, FeatureExtractionTechniqueSerializer
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.analyzer.tasks import init_generate_case_study
-from apps.analyzer.utils import get_foldernames_as_list, case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs
+from apps.analyzer.utils import get_foldernames_as_list
+from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs
 from apps.analyzer.collect_results import experiments_results_collectors
 
 #============================================================================================================================

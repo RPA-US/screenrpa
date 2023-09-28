@@ -8,7 +8,8 @@ import time
 from datetime import datetime
 from core.settings import metadata_location, sep, decision_foldername, gui_quantity_difference, default_phases, several_iterations
 import csv
-from apps.analyzer.utils import get_foldernames_as_list, case_study_has_feature_extraction_technique
+from apps.analyzer.utils import get_foldernames_as_list
+from apps.featureextraction.utils import case_study_has_feature_extraction_technique
 
 
 def times_duration(times, phases_info, scenario, phase):
