@@ -101,6 +101,7 @@ def parse_decision_tree(file_path):
         return len(re.findall(r'\|', node_str))
     
     def build_tree(lines, index, depth):
+        max_depth = 0
         if index < 0:
             node_depth = 0
             node = ['root', 'None', 'None']
