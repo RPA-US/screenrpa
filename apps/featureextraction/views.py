@@ -30,6 +30,8 @@ def ui_elements_classification(*data):
             output = uied_ui_elements_classification(*data)
         case "sam": #TODO
             output = legacy_ui_elements_classification(*data)
+        case "fast-sam": #TODO
+            output = legacy_ui_elements_classification(*data)
         case _:
             raise Exception("You select a type of UI element classification that doesnt exists")
     return output

@@ -20,6 +20,7 @@ click==8.1.3
 click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.2.0
+clip==0.2.0
 cmake==3.26.3
 colorama==0.4.5
 comm==0.1.3
@@ -208,3 +209,6 @@ wcwidth==0.2.5
 Werkzeug==2.2.2
 whitenoise==6.2.0
 wrapt==1.14.1
+seaborn>=0.11.0
+gradio==3.35.2
+ultralytics == 8.0.120
