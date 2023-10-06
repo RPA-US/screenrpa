@@ -25,4 +25,10 @@ class MonitoringListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Monitoring.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos Monitoring por case_study_id
+        queryset = Monitoring.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset

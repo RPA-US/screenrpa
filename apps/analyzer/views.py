@@ -370,7 +370,7 @@ class CaseStudyListView(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return CaseStudy.objects.filter(active=True, user=self.request.user)
+        return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
     
 def executeCaseStudy(request):
