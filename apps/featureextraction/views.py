@@ -83,8 +83,19 @@ class FeatureExtractionTechniqueListView(ListView):
     template_name = "feature_extraction_technique/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(FeatureExtractionTechniqueListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return FeatureExtractionTechnique.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = FeatureExtractionTechnique.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
     
 class UIElementsClassificationCreateView(CreateView):
     model = UIElementsClassification
@@ -104,8 +115,19 @@ class UIElementsClassificationListView(ListView):
     template_name = "ui_elements_classification/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(UIElementsClassificationListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return UIElementsClassification.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = UIElementsClassification.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
     
 class UIElementsDetectionCreateView(CreateView):
     model = UIElementsDetection
@@ -125,8 +147,19 @@ class UIElementsDetectionListView(ListView):
     template_name = "ui_elements_detection/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(UIElementsDetectionListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return UIElementsDetection.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = UIElementsDetection.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
 
 
 class PrefiltersCreateView(CreateView):
@@ -147,8 +180,19 @@ class PrefiltersListView(ListView):
     template_name = "prefiltering/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(PrefiltersListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return Prefilters.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = Prefilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
 
 class PostfiltersCreateView(CreateView):
     model = Postfilters
@@ -168,8 +212,19 @@ class PostfiltersListView(ListView):
     template_name = "postfiltering/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(PostfiltersListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return Postfilters.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = Postfilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
     
     
 def draw_postfilter(request, case_study_id):

@@ -171,8 +171,19 @@ class ExtractTrainingDatasetListView(ListView):
     template_name = "extract_training_dataset/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(ExtractTrainingDatasetListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return ExtractTrainingDataset.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
     
 class DecisionTreeTrainingCreateView(CreateView):
     model = DecisionTreeTraining
@@ -192,8 +203,19 @@ class DecisionTreeTrainingListView(ListView):
     template_name = "decision_tree_training/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(DecisionTreeTrainingListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return DecisionTreeTraining.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos DecisionTreeTraining por case_study_id
+        queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
 
 
 def decision_tree_feature_checker(feature_values, centroid_threshold, path):

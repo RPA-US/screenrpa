@@ -24,6 +24,11 @@ class MonitoringListView(ListView):
     template_name = "monitoring/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(MonitoringListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')

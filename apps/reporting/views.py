@@ -358,5 +358,16 @@ class ReportListView(ListView):
     template_name = "reporting/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(ReportListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return PDD.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = PDD.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        
+        return queryset

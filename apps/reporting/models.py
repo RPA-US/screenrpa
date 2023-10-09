@@ -6,6 +6,7 @@ from apps.analyzer.models import CaseStudy
 
 # Create your models here.
 class PDD(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
     file = PrivateFileField("PDD")
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

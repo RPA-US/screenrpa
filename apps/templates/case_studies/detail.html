@@ -14,7 +14,7 @@
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="#">{{ case_study.title }}</a></li>
+                <li class="breadcrumb-item"><a href="#">Case study {{ case_study.id }}</a></li>
               </ol>
             </nav>
           </div>
@@ -184,7 +184,7 @@
                       <button type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-zoom-split-in"></i>
-                          <a class="nav-link" href="/fe/prefiltering/list/">
+                          <a class="nav-link" href="/fe/prefiltering/list/{{ case_study.id }}">
                             <span>Pre-Filtering</span>
                           </a>
                         </div>
@@ -194,7 +194,7 @@
                       <button type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-image"></i>
-                          <a class="nav-link" href="/fe/ui-element-detection/list/">
+                          <a class="nav-link" href="/fe/ui-element-detection/list/{{ case_study.id }}">
                             <span>UI Elements Detection</span>
                           </a>
                         </div>
@@ -204,7 +204,7 @@
                       <button type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-album-2"></i>
-                          <a class="nav-link" href="/fe/ui-element-classification/list/">
+                          <a class="nav-link" href="/fe/ui-element-classification/list/{{ case_study.id }}">
                             <span>UI Elements Classification</span>
                           </a>
                         </div>
@@ -214,7 +214,7 @@
                       <button type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-zoom-split-in"></i>
-                          <a class="nav-link" href="/fe/postfiltering/list/">
+                          <a class="nav-link" href="/fe/postfiltering/list/{{ case_study.id }}">
                             <span>Post-filtering</span>
                           </a>
                           </div>
@@ -224,7 +224,7 @@
                         <button type="button" class="btn-icon-clipboard">
                           <div>
                             <i class="ni ni-money-coins"></i>
-                            <a class="nav-link" href="/fe/feature-extraction-technique/list/">
+                            <a class="nav-link" href="/fe/feature-extraction-technique/list/{{ case_study.id }}">
                               <span>Feature extraction</span>
                             </a>
                             </div>
@@ -234,7 +234,7 @@
                           <button type="button" class="btn-icon-clipboard">
                           <div>
                             <i class="ni ni-sound-wave"></i>
-                            <a class="nav-link" href="/pd/bpmn/list/">
+                            <a class="nav-link" href="/pd/bpmn/list/{{ case_study.id }}">
                               <span>Process Discovery</span>
                             </a>
                           </div>
@@ -244,7 +244,7 @@
                           <button type="button" class="btn-icon-clipboard">
                           <div>
                             <i class="ni ni-settings"></i>
-                            <a class="nav-link" href="/dd/extract-training-dataset/list/">
+                            <a class="nav-link" href="/dd/extract-training-dataset/list/{{ case_study.id }}">
                               <span>Extract training dataset</span>
                             </a>
                           </div>
@@ -254,7 +254,7 @@
                           <button type="button" class="btn-icon-clipboard">
                             <div>
                               <i class="ni ni-vector"></i>
-                              <a class="nav-link" href="/dd/decision-tree-training/list/">
+                              <a class="nav-link" href="/dd/decision-tree-training/list/{{ case_study.id }}">
                                 <span>Decision tree training</span>
                               </a>
                             </div>
@@ -264,7 +264,7 @@
                           <button type="button" class="btn-icon-clipboard">
                             <div>
                               <i class="ni ni-single-copy-04"></i>
-                              <a class="nav-link" href="/reporting/pdd/list/">
+                              <a class="nav-link" href="/reporting/pdd/list/{{ case_study.id }}">
                                 <span>Reporting</span>
                               </a>
                             </div>

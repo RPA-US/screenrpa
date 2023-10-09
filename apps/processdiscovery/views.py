@@ -113,5 +113,16 @@ class ProcessDiscoveryListView(ListView):
     template_name = "processdiscovery/list.html"
     paginate_by = 50
 
+    def get_context_data(self, **kwargs):
+        context = super(ProcessDiscoveryListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
     def get_queryset(self):
-        return ProcessDiscovery.objects.filter(user=self.request.user)
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Filtra los objetos por case_study_id
+        queryset = ProcessDiscovery.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        return queryset
