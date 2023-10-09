@@ -57,16 +57,15 @@ class DecisionTreeTrainingForm(forms.ModelForm):
                     "placeholder": "chefboost"
                     }
             ),
-            "algorithms": forms.Textarea(
+            "configuration": forms.Textarea(
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "['ID3','CHAID']"
-                    }
+                    "class": "form-control"
+                }
             ),
             "one_hot_columns": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "['NameApp']"
+                    "placeholder": "'NameApp', 'User'"
                     }
             ),
             "columns_to_drop_before_decision_point": forms.TextInput(

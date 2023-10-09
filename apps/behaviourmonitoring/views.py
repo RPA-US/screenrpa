@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect
 from django.views.generic import ListView, CreateView
 from django.core.exceptions import ValidationError
 from .models import Monitoring
+from apps.analyzer.models import CaseStudy
 from .forms import MonitoringForm
 
 # Create your views here.
@@ -16,6 +17,7 @@ class MonitoringCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 

@@ -16,6 +16,7 @@ from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 from .utils import find_path_in_decision_tree, parse_decision_tree
 from tqdm import tqdm
+from apps.analyzer.models import CaseStudy
 from rest_framework.response import Response
 from rest_framework import generics, status, viewsets #, permissions
 
@@ -163,6 +164,7 @@ class ExtractTrainingDatasetCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -195,6 +197,7 @@ class DecisionTreeTrainingCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 

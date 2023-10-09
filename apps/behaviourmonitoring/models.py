@@ -26,7 +26,7 @@ class Monitoring(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("behaviourmonitoring:monitoring_list")
+        return reverse("behaviourmonitoring:monitoring_list", args=[str(self.case_study_id)])
     
     def __str__(self):
         return 'type: ' + self.type

@@ -18,7 +18,7 @@ class ProcessDiscovery(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("processdiscovery:processdiscovery_list")
+        return reverse("processdiscovery:processdiscovery_list", args=[str(self.case_study_id)])
     
     def __str__(self):
         return 'type: ' + self.type

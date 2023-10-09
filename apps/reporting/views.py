@@ -1,17 +1,18 @@
 import os
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 import datetime
 import docx
 from docx import Document
 from docx.shared import Inches
+from django.core.exceptions import ValidationError
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView
 from .models import PDD
-
+from apps.analyzer.models import CaseStudy
     
 
 
@@ -331,7 +332,7 @@ class ReportGenerateView(DetailView):
             response.write(file.read())
         
         return response
-    
+
 # TODO:
 class ReportDownloadView(DetailView):
     def get(self, request, *args, **kwargs):

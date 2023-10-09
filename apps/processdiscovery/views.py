@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
-
+from apps.analyzer.models import CaseStudy
 
 def scene_level(log_path, root_path, special_colnames, configurations, skip, type):
     """
@@ -105,6 +105,7 @@ class ProcessDiscoveryCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 

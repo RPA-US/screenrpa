@@ -11,7 +11,7 @@ from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compo
 from .utils import detect_fe_function, detect_agg_fe_function
 from .utils import draw_ui_compos_borders
 from rest_framework import status
-
+from apps.analyzer.models import CaseStudy
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -75,6 +75,7 @@ class FeatureExtractionTechniqueCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -107,6 +108,7 @@ class UIElementsClassificationCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -139,6 +141,7 @@ class UIElementsDetectionCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -172,6 +175,7 @@ class PrefiltersCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -204,6 +208,7 @@ class PostfiltersCreateView(CreateView):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 

@@ -22,4 +22,4 @@ class PDD(models.Model):
     #     return reverse("PDD_detail", kwargs={"pk": self.pk})
     
     def get_absolute_url(self):
-        return reverse("reporting:report_list")
+        return reverse("reporting:report_list", args=[str(self.case_study_id)])

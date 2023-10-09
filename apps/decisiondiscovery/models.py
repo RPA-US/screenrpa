@@ -16,6 +16,72 @@ def get_default_extract_training_columns_to_ignore():
 
 def get_default_decision_tree_columns_to_ignore():
     return 'Timestamp_start, Timestamp_end'.split(', ') # this returns a list
+def default_dd_configuration():
+    return {
+                "feature_values": {
+                    "1": {
+                        "or_cond": {
+                            "numeric__qua2_TextView_2_B": 11.0,
+                            "numeric__qua2_ImageView_2_B": 3.0,
+                            "numeric__qua2_ImageButton_2_B": 63.0,
+                            "status_categorical__sta_enabled_1044.0-775.0_2_B": 1.0,
+                            "sta_enabled_717.5-606.5_2_B": 1.0
+                        },
+                        "or_cond_2": {
+                            "sta_checked_649.0-1110.5_4_D": 1.0,
+                            "status_categorical__sta_checked_649.0-1110.5_4_D": 1.0,
+                            "numeric__qua2_Checkbox_checked_4_D": 1.0,
+                            "numeric__qua2_Checkbox_unchecked_4_D": 0.0
+                        }
+                    },
+                    "2": {
+                        "or_cond": {
+                            "numeric__qua2_TextView_2_B": 11.0,
+                            "numeric__qua2_ImageView_2_B": 3.0,
+                            "numeric__qua2_ImageButton_2_B": 63.0,
+                            "sta_enabled_717.5-606.5_2_B": 1.0,
+                            "status_categorical__sta_enabled_717.5-606.5_2_B": 1.0
+                        },
+                        "or_cond_2": {
+                            "sta_checked_649.0-1110.5_4_D": 0.0,
+                            "status_categorical__sta_checked_649.0-1110.5_4_D": 0.0,
+                            "numeric__qua2_Checkbox_checked_4_D": 0.0,
+                            "numeric__qua2_Checkbox_unchecked_4_D": 1.0
+                        }
+                    },
+                    "3": {
+                        "or_cond": {
+                            "numeric__qua2_TextView_2_B": 0.0,
+                            "numeric__qua2_ImageView_2_B": 0.0,
+                            "numeric__qua2_ImageButton_2_B": 5.0,
+                            "status_categorical__sta_enabled_717.5-606.5_2_B": 0.0,
+                            "sta_enabled_717.5-606.5_2_B": 0.0
+                        },
+                        "or_cond_2": {
+                            "sta_checked_649.0-1110.5_4_D": 1.0,
+                            "status_categorical__sta_checked_649.0-1110.5_4_D": 1.0,
+                            "numeric__qua2_Checkbox_checked_4_D": 1.0,
+                            "numeric__qua2_Checkbox_unchecked_4_D": 0.0
+                        }
+                    },
+                    "4": {
+                        "or_cond": {
+                            "numeric__qua2_TextView_2_B": 0.0,
+                            "numeric__qua2_ImageView_2_B": 0.0,
+                            "numeric__qua2_ImageButton_2_B": 5.0,
+                            "sta_enabled_717.5-606.5_2_B": 0.0,
+                            "status_categorical__sta_enabled_717.5-606.5_2_B": 0.0
+                        },
+                        "or_cond_2": {
+                            "sta_checked_649.0-1110.5_4_D": 0.0,
+                            "status_categorical__sta_checked_649.0-1110.5_4_D": 0.0,
+                            "numeric__qua2_Checkbox_checked_4_D": 0.0,
+                            "numeric__qua2_Checkbox_unchecked_4_D": 1.0
+                        }
+                    }
+                },
+                "centroid_threshold": 10000
+            }
 
 # def get_default_algorithms():
 #     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
@@ -28,14 +94,14 @@ class ExtractTrainingDataset(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("decisiondiscovery:extract_training_dataset_list")    
+        return reverse("decisiondiscovery:extract_training_dataset_list", args=[str(self.case_study_id)])    
     
     def __str__(self):
         return 'col to drop: ' + str(self.columns_to_drop)
     
 class DecisionTreeTraining(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    configuration = models.JSONField()
+    configuration = models.JSONField(default=default_dd_configuration)
     library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
     one_hot_columns = ArrayField(models.CharField(max_length=25))
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
@@ -43,7 +109,7 @@ class DecisionTreeTraining(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("decisiondiscovery:decision_tree_training_list")
+        return reverse("decisiondiscovery:decision_tree_training_list", args=[str(self.case_study_id)])
     
     def __str__(self):
         return 'library: ' + self.library + ' - algs:' + str(self.configuration)

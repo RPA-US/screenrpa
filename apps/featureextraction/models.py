@@ -41,7 +41,7 @@ class Prefilters(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
-        return reverse("featureextraction:prefilters_list")
+        return reverse("featureextraction:prefilters_list", args=[str(self.case_study_id)])
     
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
@@ -56,7 +56,7 @@ class UIElementsDetection(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
-        return reverse("featureextraction:ui_detection_list")
+        return reverse("featureextraction:ui_detection_list", args=[str(self.case_study_id)])
     
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
@@ -72,7 +72,7 @@ class UIElementsClassification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("featureextraction:ui_classification_list")
+        return reverse("featureextraction:ui_classification_list", args=[str(self.case_study_id)])
         
     def __str__(self):
         return 'type: ' + self.type + ' - model: ' + self.model
@@ -86,7 +86,7 @@ class Postfilters(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
-        return reverse("featureextraction:postfilters_list")
+        return reverse("featureextraction:postfilters_list", args=[str(self.case_study_id)])
     
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
@@ -105,7 +105,7 @@ class FeatureExtractionTechnique(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
-        return reverse("featureextraction:fe_technique_list")
+        return reverse("featureextraction:fe_technique_list", args=[str(self.case_study_id)])
         
     def __str__(self):
         return 'technique: ' + self.technique_name + ' - skip? ' + str(self.skip)
