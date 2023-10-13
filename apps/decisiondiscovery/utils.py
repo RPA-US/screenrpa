@@ -20,6 +20,13 @@ def get_extract_training_dataset_from_cs(case_study):
 def get_decision_tree_training_from_cs(case_study):
   return get_object_or_404(DecisionTreeTraining, case_study=case_study, active=True)
 
+def case_study_has_extract_training_dataset_from_cs(case_study):
+  return ExtractTrainingDataset.objects.filter(case_study=case_study, active=True).exists()
+
+def case_study_has_decision_tree_training_from_cs(case_study):
+  return DecisionTreeTraining.objects.filter(case_study=case_study, active=True).exists()
+
+
 ###########################################################################################################################
 
 def preprocess_data(data):

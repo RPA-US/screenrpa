@@ -11,6 +11,7 @@ from core.settings import monitoring_imotions_needded_columns
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
+from apps.behaviourmonitoring.utils import get_monitoring_from_cs
 
 ms_pattern = '%H-%M-%S.%f'
 # ui_log_timestamp_pattern = '%H:%M:%S %p'
@@ -358,7 +359,9 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
 
   ub_log.to_csv(root_path + "ub_log_fixation.csv")
 
-def monitoring(log_path, root_path, special_colnames, monitoring_type, monitoring_configurations):
+def monitoring(log_path, root_path, special_colnames, monitoring_obj):
+    monitoring_type = monitoring_obj.type
+    monitoring_configurations = monitoring_obj.configurations
     
     if os.path.exists(log_path):
       logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
@@ -404,6 +407,9 @@ def monitoring(log_path, root_path, special_colnames, monitoring_type, monitorin
         
         fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
         
+        monitoring_obj.executed = 100
+        monitoring_obj.ub_log_path = root_path + "fixation.json"
+        monitoring.save()
         
     else:
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")

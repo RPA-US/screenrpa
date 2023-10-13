@@ -7,3 +7,6 @@ from django.shortcuts import get_object_or_404
 
 def get_process_discovery_from_cs(case_study):
   return get_object_or_404(ProcessDiscovery, case_study=case_study)
+
+def case_study_has_process_discovery_from_cs(case_study):
+  return ProcessDiscovery.objects.filter(case_study=case_study, active=True).exists()

@@ -8,7 +8,11 @@ import email
 import base64
 import lxml.etree as ET
 from lxml import html
-
+from core.settings import sep
+from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs, case_study_has_ui_elements_detection_from_cs, get_ui_elements_detection_from_cs, case_study_has_ui_elements_classification_from_cs, get_ui_elements_classification_from_cs, case_study_has_info_postfiltering_from_cs, get_info_postfiltering_from_cs, case_study_has_info_prefiltering_from_cs, get_info_prefiltering_from_cs
+from apps.behaviourmonitoring.utils import get_monitoring_from_cs, case_study_has_monitoring_from_cs
+from apps.processdiscovery.utils import get_process_discovery_from_cs, case_study_has_process_discovery_from_cs
+from apps.decisiondiscovery.utils import get_extract_training_dataset_from_cs, case_study_has_extract_training_dataset_from_cs, get_decision_tree_training_from_cs, case_study_has_decision_tree_training_from_cs
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 
@@ -213,3 +217,115 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
 ###########################################################################################################################
 ###########################################################################################################################
 ###########################################################################################################################
+
+def phases_to_execute_specs(case_study, path_scenario):
+    to_exec_args = {}
+    # We check this phase is present in case_study to avoid exceptions
+    if case_study_has_monitoring_from_cs:
+        aux_monitoring = get_monitoring_from_cs(case_study=case_study)
+        to_exec_args['monitoring'] = (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        aux_monitoring)
+        
+    if case_study_has_info_postfiltering_from_cs:
+        aux_prefilters = get_info_prefiltering_from_cs(case_study=case_study)
+        to_exec_args['info_prefiltering'] =  (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        aux_prefilters.configurations,
+                                        aux_prefilters.skip,
+                                        aux_prefilters.type)
+        
+    if case_study_has_ui_elements_detection_from_cs:
+        aux_ui_elements_detection = get_ui_elements_detection_from_cs(case_study=case_study)
+        to_exec_args['ui_elements_detection'] = (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.ui_elements_detection.input_filename,
+                                        case_study.special_colnames,
+                                        aux_ui_elements_detection.configurations,
+                                        aux_ui_elements_detection.skip,
+                                        aux_ui_elements_detection.type,
+                                        case_study.text_classname)
+    if case_study_has_ui_elements_classification_from_cs:
+        aux_ui_elements_classification = get_ui_elements_classification_from_cs(case_study=case_study)
+        to_exec_args['ui_elements_classification'] = (case_study.ui_elements_classification.model, # specific extractors
+                                        case_study.ui_elements_classification.model_properties,
+                                        path_scenario + 'components_npy' + sep,
+                                        path_scenario + 'components_json' + sep,
+                                        path_scenario + 'log.csv',
+                                        case_study.special_colnames["Screenshot"],
+                                        case_study.text_classname,
+                                        aux_ui_elements_classification.skip,
+                                        case_study.ui_elements_classification_classes,
+                                        case_study.ui_elements_classification_image_shape,
+                                        aux_ui_elements_classification.type)
+        
+    if case_study_has_info_postfiltering_from_cs:
+        aux_postfilters = get_info_postfiltering_from_cs(case_study=case_study)
+        to_exec_args['info_postfiltering'] = (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        aux_postfilters.configurations,
+                                        aux_postfilters.skip,
+                                        aux_postfilters.type)
+        
+    if case_study_has_feature_extraction_technique(case_study, 'SINGLE'):
+        aux_feature_extraction_technique = get_feature_extraction_technique_from_cs(case_study=case_study)
+        to_exec_args['feature_extraction_technique'] = (case_study.ui_elements_classification_classes,
+                                        case_study.decision_point_activity,
+                                        case_study.special_colnames["Case"],
+                                        case_study.special_colnames["Activity"],
+                                        case_study.special_colnames["Screenshot"],
+                                        path_scenario + 'components_json' + sep,
+                                        path_scenario + 'flattened_dataset.json',
+                                        path_scenario + 'log.csv',
+                                        path_scenario + aux_feature_extraction_technique.technique_name+'_enriched_log.csv',
+                                        case_study.text_classname,
+                                        aux_feature_extraction_technique.consider_relevant_compos,
+                                        aux_feature_extraction_technique.relevant_compos_predicate,
+                                        aux_feature_extraction_technique.identifier,
+                                        aux_feature_extraction_technique.skip,
+                                        aux_feature_extraction_technique.technique_name)
+        
+    if case_study_has_process_discovery_from_cs(case_study):
+        aux_process_discovery = get_process_discovery_from_cs(case_study=case_study)
+        to_exec_args['process_discovery'] = (path_scenario +'log.csv',
+                                        path_scenario,
+                                        case_study.special_colnames,
+                                        aux_process_discovery.configurations,
+                                        aux_process_discovery.skip,
+                                        aux_process_discovery.type)
+        
+    if case_study_has_extract_training_dataset_from_cs(case_study):
+        aux_extract_training_dataset = get_extract_training_dataset_from_cs(case_study=case_study)
+        to_exec_args['extract_training_dataset'] = (case_study.decision_point_activity, 
+                                        case_study.target_label,
+                                        case_study.special_colnames,
+                                        aux_extract_training_dataset.columns_to_drop,
+                                        path_scenario + 'log.csv',
+                                        path_scenario, 
+                                        aux_extract_training_dataset.columns_to_drop_before_decision_point)
+        
+    if case_study_has_feature_extraction_technique(case_study, 'AGGREGATE'):
+        aux_feature_extraction_technique = get_feature_extraction_technique_from_cs(case_study=case_study)
+        to_exec_args['aggregate_features_as_dataset_columns'] = (case_study.ui_elements_classification_classes,
+                                        case_study.decision_point_activity,
+                                        case_study.special_colnames["Case"],
+                                        case_study.special_colnames["Activity"],
+                                        case_study.special_colnames["Screenshot"],
+                                        path_scenario,
+                                        path_scenario + 'flattened_dataset.json',
+                                        path_scenario + 'log.csv',
+                                        path_scenario + aux_feature_extraction_technique.technique_name+'_enriched_log.csv',
+                                        case_study.text_classname,
+                                        aux_feature_extraction_technique.consider_relevant_compos,
+                                        aux_feature_extraction_technique.relevant_compos_predicate,
+                                        aux_feature_extraction_technique.identifier,
+                                        aux_feature_extraction_technique.skip,
+                                        aux_feature_extraction_technique.technique_name)
+        
+    if case_study_has_decision_tree_training_from_cs(case_study):
+        to_exec_args['decision_tree_training'] = (case_study, path_scenario)
+        
+    return to_exec_args

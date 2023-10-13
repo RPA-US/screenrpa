@@ -29,6 +29,25 @@ def get_info_postfiltering_from_cs(case_study):
 def get_feature_extraction_technique_from_cs(case_study):
   return get_object_or_404(FeatureExtractionTechnique, case_study=case_study, active=True)
 
+###########################################################################################################################
+# case study has phases data  ###########################################################################################
+###########################################################################################################################
+
+def case_study_has_info_prefiltering_from_cs(case_study):
+  return Prefilters.objects.filter(case_study=case_study, active=True).exists()
+
+def case_study_has_ui_elements_detection_from_cs(case_study):
+  return UIElementsDetection.objects.filter(case_study=case_study, active=True).exists()
+
+def case_study_has_ui_elements_classification_from_cs(case_study):
+  return UIElementsClassification.objects.filter(case_study=case_study, active=True).exists()
+
+def case_study_has_info_postfiltering_from_cs(case_study):
+  return Postfilters.objects.filter(case_study=case_study, active=True).exists()
+
+def case_study_has_feature_extraction_technique_from_cs(case_study):
+  return FeatureExtractionTechnique.objects.filter(case_study=case_study, active=True).exists()
+
 
 ###########################################################################################################################
 # Feature extraction techniques ###########################################################################################

@@ -21,8 +21,9 @@ def default_monitoring_conf():
 class Monitoring(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=25, default='imotions')
-    # executed = models.IntegerField(default=0, editable=True)
-    # active = models.BooleanField(default=True, editable=True)
+    executed = models.IntegerField(default=0, editable=True)
+    active = models.BooleanField(default=False, editable=True)
+    ub_log_path = models.CharField(max_length=50, blank=True, null=True, default=None)
     configurations = JSONField(null=True, blank=True, default=default_monitoring_conf)
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
