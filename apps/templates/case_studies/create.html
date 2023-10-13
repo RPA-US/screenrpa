@@ -148,7 +148,7 @@
               </div>
               <hr class="my-4" />
               <!-- Phases to execute -->
-              <h6 class="heading-small text-muted mb-4">Phases to execute</h6>
+              {% comment %} <h6 class="heading-small text-muted mb-4">Phases to execute</h6>
               <div class="pl-lg-4">
                 <div class="form-group">
                   {{ form.ui_elements_detection.label_tag }}
@@ -186,7 +186,7 @@
                     <div class="form-validation">{{ form.decision_tree_training.errors }}</div>
                   </div>
                 </div>
-              </div>
+              </div> {% endcomment %}
               <button type="submit" value="submit" class="close" >
                 Save
               </button>

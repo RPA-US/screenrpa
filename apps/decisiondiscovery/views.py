@@ -31,7 +31,7 @@ def extract_training_dataset(decision_point_activity,
         special_colnames,
         columns_to_drop,
         log_path="media/enriched_log_feature_extracted.csv", 
-        path_dataset_saved="media/", 
+        path_dataset_saved="media", 
         actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"]):
     """
     Iterate for every UI log row:
@@ -87,7 +87,7 @@ def extract_training_dataset(decision_point_activity,
                      
 def decision_tree_training(case_study, path_scenario):
     "media/flattened_dataset.json",
-    "media/", 
+    "media", 
     "sklearn",
     ['ID3', 'CART', 'CHAID', 'C4.5'],
     ["Timestamp_start", "Timestamp_end"],

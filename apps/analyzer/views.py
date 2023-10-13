@@ -39,38 +39,52 @@ from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.analyzer.tasks import init_generate_case_study
 from apps.analyzer.utils import get_foldernames_as_list
-from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs
 from apps.analyzer.collect_results import experiments_results_collectors
+from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs, get_ui_elements_detection_from_cs, get_ui_elements_classification_from_cs, get_info_postfiltering_from_cs, get_info_prefiltering_from_cs
+from apps.behaviourmonitoring.utils import get_monitoring_from_cs
+from apps.processdiscovery.utils import get_process_discovery_from_cs
+from apps.decisiondiscovery.utils import get_extract_training_dataset_from_cs, get_decision_tree_training_from_cs
 
 #============================================================================================================================
 #============================================================================================================================
 #============================================================================================================================
 
-def generate_case_study(case_study, path_scenario, times, n):
+def generate_case_study(case_study, path_scenario, times, n, phase):
     times[n] = {}
+    
+    # TODO: comprobar si existe dentro del metodo
+    aux_monitoring = get_monitoring_from_cs(case_study=case_study)
+    aux_prefilters = get_info_prefiltering_from_cs(case_study=case_study)
+    aux_process_discovery = get_process_discovery_from_cs(case_study=case_study)
+    aux_feature_extraction_technique = get_feature_extraction_technique_from_cs(case_study=case_study)
+    aux_postfilters = get_info_postfiltering_from_cs(case_study=case_study)
+    aux_ui_elements_classification = get_ui_elements_classification_from_cs(case_study=case_study)
+    aux_ui_elements_detection = get_ui_elements_detection_from_cs(case_study=case_study)
+    aux_extract_training_dataset = get_extract_training_dataset_from_cs(case_study=case_study)
+    
     to_exec_args = {
         'monitoring': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.monitoring.type,
-                                        case_study.monitoring.configurations)
+                                        aux_monitoring.type,
+                                        aux_monitoring.configurations)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.monitoring else None,
         'info_prefiltering': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.prefilters.configurations,
-                                        case_study.prefilters.skip,
-                                        case_study.prefilters.type)
+                                        aux_prefilters.configurations,
+                                        aux_prefilters.skip,
+                                        aux_prefilters.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.prefilters else None,
         'ui_elements_detection': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.ui_elements_detection.input_filename,
                                         case_study.special_colnames,
-                                        case_study.ui_elements_detection.configurations,
-                                        case_study.ui_elements_detection.skip,
-                                        case_study.ui_elements_detection.type,
+                                        aux_ui_elements_detection.configurations,
+                                        aux_ui_elements_detection.skip,
+                                        aux_ui_elements_detection.type,
                                         case_study.text_classname)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_detection else None,
@@ -81,18 +95,18 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         path_scenario + 'log.csv',
                                         case_study.special_colnames["Screenshot"],
                                         case_study.text_classname,
-                                        case_study.ui_elements_classification.skip,
+                                        aux_ui_elements_classification.skip,
                                         case_study.ui_elements_classification_classes,
                                         case_study.ui_elements_classification_image_shape,
-                                        case_study.ui_elements_classification.type)
+                                        aux_ui_elements_classification.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.ui_elements_classification else None,
         'info_postfiltering': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.postfilters.configurations,
-                                        case_study.postfilters.skip,
-                                        case_study.postfilters.type)
+                                        aux_postfilters.configurations,
+                                        aux_postfilters.skip,
+                                        aux_postfilters.type)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study.postfilters else None,
         'feature_extraction_technique': (case_study.ui_elements_classification_classes,
@@ -105,28 +119,28 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         path_scenario + 'log.csv',
                                         path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
                                         case_study.text_classname,
-                                        get_feature_extraction_technique_from_cs(case_study).consider_relevant_compos,
-                                        get_feature_extraction_technique_from_cs(case_study).relevant_compos_predicate,
-                                        get_feature_extraction_technique_from_cs(case_study).identifier,
-                                        get_feature_extraction_technique_from_cs(case_study).skip,
-                                        get_feature_extraction_technique_from_cs(case_study).technique_name)
+                                        aux_feature_extraction_technique.consider_relevant_compos,
+                                        aux_feature_extraction_technique.relevant_compos_predicate,
+                                        aux_feature_extraction_technique.identifier,
+                                        aux_feature_extraction_technique.skip,
+                                        aux_feature_extraction_technique.technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study_has_feature_extraction_technique(case_study, "SINGLE") else None,
         'process_discovery': (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
-                                        case_study.process_discovery.configurations,
-                                        case_study.process_discovery.skip,
-                                        case_study.process_discovery.type)
+                                        aux_process_discovery.configurations,
+                                        aux_process_discovery.skip,
+                                        aux_process_discovery.type)
                                     # We check this phase is present in case_study to avoid exceptions
                                     if case_study.process_discovery else None,
         'extract_training_dataset': (case_study.decision_point_activity, 
                                         case_study.target_label,
                                         case_study.special_colnames,
-                                        case_study.extract_training_dataset.columns_to_drop,
+                                        aux_extract_training_dataset.columns_to_drop,
                                         path_scenario + 'log.csv',
                                         path_scenario, 
-                                        case_study.extract_training_dataset.columns_to_drop_before_decision_point,
+                                        aux_extract_training_dataset.columns_to_drop_before_decision_point,
                                     )
                                     # We check this phase is present in case_study to avoid exceptions
                                     if case_study.extract_training_dataset else None,
@@ -138,19 +152,23 @@ def generate_case_study(case_study, path_scenario, times, n):
                                         path_scenario,
                                         path_scenario + 'flattened_dataset.json',
                                         path_scenario + 'log.csv',
-                                        path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
+                                        path_scenario + aux_feature_extraction_technique.technique_name+'_enriched_log.csv',
                                         case_study.text_classname,
-                                        get_feature_extraction_technique_from_cs(case_study).consider_relevant_compos,
-                                        get_feature_extraction_technique_from_cs(case_study).relevant_compos_predicate,
-                                        get_feature_extraction_technique_from_cs(case_study).identifier,
-                                        get_feature_extraction_technique_from_cs(case_study).skip,
-                                        get_feature_extraction_technique_from_cs(case_study).technique_name)
+                                        aux_feature_extraction_technique.consider_relevant_compos,
+                                        aux_feature_extraction_technique.relevant_compos_predicate,
+                                        aux_feature_extraction_technique.identifier,
+                                        aux_feature_extraction_technique.skip,
+                                        aux_feature_extraction_technique.technique_name)
                                         # We check this phase is present in case_study to avoid exceptions
                                         if case_study_has_feature_extraction_technique(case_study, "AGGREGATE") else None,
         'decision_tree_training': (case_study, path_scenario)
                                     # We check this phase is present in case_study to avoid exceptions
                                     if case_study.decision_tree_training  else None
         }
+    
+    # execute only one phase
+    if phase:
+        to_exec_args = to_exec_args[phase]
 
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
@@ -188,7 +206,7 @@ def generate_case_study(case_study, path_scenario, times, n):
 #============================================================================================================================
 #============================================================================================================================
 
-def celery_task_process_case_study(case_study_id):
+def celery_task_process_case_study(case_study_id, phase):
     """
     This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
@@ -227,10 +245,10 @@ def celery_task_process_case_study(case_study_id):
             if scenario_nested_folder:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
-                    generate_case_study(case_study, path_scenario, times, n)
+                    generate_case_study(case_study, path_scenario, times, n, phase)
             else:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep
-                generate_case_study(case_study, path_scenario, times, scenario)
+                generate_case_study(case_study, path_scenario, times, scenario, phase)
         else:
             raise Exception("There's no phase to execute or the specified phase doesnt corresponds to a supported one")
                 
@@ -337,9 +355,9 @@ def case_study_generator(data):
         case_study.save()
         transaction_works = True
     if active_celery:
-        init_generate_case_study.delay(case_study.id)
+        init_generate_case_study.delay(case_study.id, None)
     else:
-        celery_task_process_case_study(case_study.id)
+        celery_task_process_case_study(case_study.id, None)
         
     return transaction_works, case_study
 
@@ -375,13 +393,14 @@ class CaseStudyListView(ListView):
     
 def executeCaseStudy(request):
     case_study_id = request.GET.get("id")
+    phase_id = request.GET.get("phase")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
     if active_celery:
-        init_generate_case_study.delay(case_study_id)
+        init_generate_case_study.delay(case_study_id, phase_id)
     else:
-        celery_task_process_case_study(case_study_id)
+        celery_task_process_case_study(case_study_id, phase_id)
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
 def deleteCaseStudy(request):

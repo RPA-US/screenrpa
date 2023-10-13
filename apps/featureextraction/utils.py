@@ -7,8 +7,28 @@ from PIL import Image, ImageDraw
 from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
 from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
-from .models import FeatureExtractionTechnique
+from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification
 from django.shortcuts import get_object_or_404
+
+###########################################################################################################################
+# case study get phases data  ###########################################################################################
+###########################################################################################################################
+
+def get_info_prefiltering_from_cs(case_study):
+  return get_object_or_404(Prefilters, case_study=case_study, active=True)
+
+def get_ui_elements_detection_from_cs(case_study):
+  return get_object_or_404(UIElementsDetection, case_study=case_study, active=True)
+
+def get_ui_elements_classification_from_cs(case_study):
+  return get_object_or_404(UIElementsClassification, case_study=case_study, active=True)
+
+def get_info_postfiltering_from_cs(case_study):
+  return get_object_or_404(Postfilters, case_study=case_study, active=True)
+
+def get_feature_extraction_technique_from_cs(case_study):
+  return get_object_or_404(FeatureExtractionTechnique, case_study=case_study, active=True)
+
 
 ###########################################################################################################################
 # Feature extraction techniques ###########################################################################################
@@ -22,9 +42,6 @@ def case_study_has_feature_extraction_technique(case_study, type="ANY"):
     else:
       res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
     return res
-
-def get_feature_extraction_technique_from_cs(case_study):
-  return get_object_or_404(FeatureExtractionTechnique, case_study=case_study)
 
 def detect_fe_function(text):
     '''

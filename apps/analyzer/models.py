@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
-from core.settings import PRIVATE_STORAGE_ROOT
+from core.settings import PRIVATE_STORAGE_ROOT, sep
 # from apps.processdiscovery.models import ProcessDiscovery
 # from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 # from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
@@ -112,7 +112,8 @@ class CaseStudy(models.Model):
         if self.exp_file:
             # Generate unique folder name based on the uploaded file's name and current time
             folder_name = f"{self.exp_file.name.split('.')[0]}_{str(int(time.time()))}"
-            folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
+            # folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
+            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + folder_name
             # Create the unzipped folder
             os.makedirs(folder_path)
             # Unzip the uploaded file to the unzipped folder

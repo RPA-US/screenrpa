@@ -7,6 +7,20 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler, OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from django.shortcuts import get_object_or_404
+from .models import ExtractTrainingDataset, DecisionTreeTraining
+
+###########################################################################################################################
+# case study get phases data  ###########################################################################################
+###########################################################################################################################
+
+def get_extract_training_dataset_from_cs(case_study):
+  return get_object_or_404(ExtractTrainingDataset, case_study=case_study, active=True)
+
+def get_decision_tree_training_from_cs(case_study):
+  return get_object_or_404(DecisionTreeTraining, case_study=case_study, active=True)
+
+###########################################################################################################################
 
 def preprocess_data(data):
   columns_to_drop = list(filter(lambda x:"TextInput" in x, data.columns))
