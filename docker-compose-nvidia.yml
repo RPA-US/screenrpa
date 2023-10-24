@@ -3,16 +3,16 @@ version: '3.7'
 # Volumes
 volumes:
   db_data:
-    name: ${DOCKERNAME}db_data
-  rim_data:
-    name: ${DOCKERNAME}rim_data
+    name: db_data
+  screenrpa_data:
+    name: screenrpa_data
 
 services:
   db:
     image: postgres
-    container_name: ${DOCKERNAME}db
+    container_name: ${DOCKERNAME_PREFIX}db
     restart: always
-    env_file: ./docker/.env
+    env_file: ./.env
     hostname: db
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -21,26 +21,14 @@ services:
     networks:
       - db_network
 
-  screen-rpa:
-    container_name: ${DOCKERNAME}rim
+  screenrpa:
+    image: amartinezrojas/screenrpa:v2
+    container_name: ${DOCKERNAME_PREFIX}screenrpa
     restart: unless-stopped
-    env_file: ./docker/.env
+    env_file: ./.env
     command: tail -F anything
-    build:
-      context: .
-      dockerfile: ./docker/dev.nvidia.Dockerfile
-      args:
-        branch: ${BRANCH_DOCKER}
-        target: dev
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     volumes:
-      - rim_data:/rim
+      - screenrpa_data:/screenrpa
     networks:
       - db_network
       - web_network
@@ -55,8 +43,8 @@ services:
       - ./nginx:/etc/nginx/conf.d
     networks:
       - web_network
-    depends_on: 
-      - screen-rpa
+    depends_on:
+      - screenrpa
 networks:
   db_network:
     driver: bridge

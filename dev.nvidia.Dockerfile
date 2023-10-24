@@ -1,6 +1,4 @@
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
-# ARG postgresuser=root
-# ARG postgrespassword=root
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -21,6 +19,7 @@ RUN apt-get install -y postgresql postgresql-client
 # Allows docker to cache installed dependencies between builds
 
 # Copy the project files
+WORKDIR /screenrpa
 COPY . .
 
 # Installs python dependencies
@@ -36,3 +35,7 @@ RUN apt upgrade libstdc++6 -y
 
 # Installs cudnn8
 RUN apt install libcudnn8 libcudnn8-dev -y
+
+# running migrations
+RUN ./venv/bin/python manage.py makemigrations apps_analyzer apps_decisiondiscovery apps_featureextraction apps_behaviourmonitoring apps_processdiscovery apps_reporting apps_authentication
+# RUN ./venv/bin/python manage.py migrate
