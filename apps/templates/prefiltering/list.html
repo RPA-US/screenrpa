@@ -67,6 +67,53 @@
                   <td class="configurations">
                       {{ monitoring.configurations|truncatechars:100 }}
                   </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if monitoring.active %}
+                      <i class="bg-success"></i>
+                      <span class="status">active</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">not active</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <span class="completion mr-2">{{ monitoring.executed }}</span>
+                      <div>
+                        {% if monitoring.executed == 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ monitoring.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                        </div>
+                        {% elif monitoring.executed == 100 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ monitoring.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+                        </div>
+                        {% elif monitoring.executed > 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ monitoring.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-right">
+                    <div class="dropdown">
+                      <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </a>
+                      <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                        {% if monitoring.executed > 0 %}
+                        <a class="dropdown-item" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ monitoring.pk }}/">Details</a>
+                        {% elif monitoring.executed == 0 %}
+                        <a class="dropdown-item" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ monitoring.pk }}/">Details</a>
+                        <a class="dropdown-item" onclick="return confirm('Are you sure you want to delete this prefiltering?')" href="/fe/prefiltering/delete/?case_study_id={{ case_study_id }}&prefilter_id={{ monitoring.pk }}">Delete</a>
+                        <a class="dropdown-item" href="/fe/prefiltering/active/?case_study_id={{ case_study_id }}&prefilter_id={{ monitoring.pk }}">Set as active</a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>

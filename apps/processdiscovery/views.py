@@ -1,25 +1,23 @@
 import os
+import cv2
 import numpy as np
 import pandas as pd
-from django.shortcuts import render
-from core.utils import read_ui_log_as_dataframe
-# Front Platform Imports
-from django.http import HttpResponseRedirect
-from django.views.generic import ListView, CreateView
-from django.core.exceptions import ValidationError
-from .models import ProcessDiscovery
-from .forms import ProcessDiscoveryForm
-# State Discovery
-import cv2
-from tensorflow.keras.applications import VGG16
-# from sklearn.cluster import AgglomerativeClustering
-from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 import matplotlib.pyplot as plt
-# Process Discovery
+from tensorflow.keras.applications import VGG16
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+# from sklearn.cluster import AgglomerativeClustering
+from django.http import HttpResponseRedirect
+from django.views.generic import ListView, CreateView, DetailView
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy
+from core.utils import read_ui_log_as_dataframe
+from .models import ProcessDiscovery
+from .forms import ProcessDiscoveryForm
 
 def scene_level(log_path, root_path, special_colnames, configurations, skip, type):
     """
@@ -127,3 +125,30 @@ class ProcessDiscoveryListView(ListView):
         queryset = ProcessDiscovery.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
+    
+
+class ProcessDiscoveryDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
+        return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_process_discovery_active(request):
+    process_discovery_id = request.GET.get("processdiscovery_id")
+    case_study_id = request.GET.get("case_study_id")
+    process_discovery_list = ProcessDiscovery.objects.filter(case_study_id=case_study_id)
+    for m in process_discovery_list:
+        m.active = False
+        m.save()
+    process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
+    process_discovery.active = True
+    process_discovery.save()
+    return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
+    
+def delete_process_discovery(request):
+    process_discovery_id = request.GET.get("processdiscovery_id")
+    case_study_id = request.GET.get("case_study_id")
+    process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
+    if request.user.id != process_discovery.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    process_discovery.delete()
+    return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))

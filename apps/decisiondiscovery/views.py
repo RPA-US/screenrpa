@@ -1,24 +1,21 @@
-import pandas as pd
-import json
 import os
-from art import tprint
-from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, flattened_dataset_name
-from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
-from .flattening import flat_dataset_row
-from apps.chefboost import Chefboost as chef
-from apps.analyzer.models import CaseStudy 
-from core.utils import read_ui_log_as_dataframe
-from core.settings import metadata_location
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.core.exceptions import ValidationError
+from tqdm import tqdm
+from art import tprint
+import pandas as pd
+from apps.chefboost import Chefboost as chef
+from apps.analyzer.models import CaseStudy 
+from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, flattened_dataset_name
+from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
+from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
+from .flattening import flat_dataset_row
 from .utils import find_path_in_decision_tree, parse_decision_tree
-from tqdm import tqdm
-from apps.analyzer.models import CaseStudy
-from rest_framework.response import Response
-from rest_framework import generics, status, viewsets #, permissions
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -187,6 +184,34 @@ class ExtractTrainingDatasetListView(ListView):
 
         return queryset
     
+
+class ExtractTrainingDatasetDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        extracting_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
+        return render(request, "extracting_training_dataset/detail.html", {"extracting_training_dataset": extracting_training_dataset, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_extracting_training_dataset_active(request):
+    extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
+    case_study_id = request.GET.get("case_study_id")
+    extracting_training_dataset_list = ExtractTrainingDataset.objects.filter(case_study_id=case_study_id)
+    for m in extracting_training_dataset_list:
+        m.active = False
+        m.save()
+    extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
+    extracting_training_dataset.active = True
+    extracting_training_dataset.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
+    
+def delete_extracting_training_dataset(request):
+    extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
+    case_study_id = request.GET.get("case_study_id")
+    extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
+    if request.user.id != extracting_training_dataset.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    extracting_training_dataset.delete()
+    return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
+
+    
 class DecisionTreeTrainingCreateView(CreateView):
     model = DecisionTreeTraining
     form_class = DecisionTreeTrainingForm
@@ -220,6 +245,32 @@ class DecisionTreeTrainingListView(ListView):
 
         return queryset
 
+
+class DecisionTreeTrainingDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
+        return render(request, "decision_tree_training/detail.html", {"decision_tree_training": decision_tree_training, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_decision_tree_training_active(request):
+    decision_tree_training_id = request.GET.get("decision_tree_training_id")
+    case_study_id = request.GET.get("case_study_id")
+    decision_tree_training_list = DecisionTreeTraining.objects.filter(case_study_id=case_study_id)
+    for m in decision_tree_training_list:
+        m.active = False
+        m.save()
+    decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
+    decision_tree_training.active = True
+    decision_tree_training.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
+    
+def delete_decision_tree_training(request):
+    decision_tree_training_id = request.GET.get("decision_tree_training_id")
+    case_study_id = request.GET.get("case_study_id")
+    decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
+    if request.user.id != decision_tree_training.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    decision_tree_training.delete()
+    return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
 
 def decision_tree_feature_checker(feature_values, centroid_threshold, path):
     """

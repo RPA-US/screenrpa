@@ -67,13 +67,60 @@
                       {{ dtt.library }}
                   </td>
                   <td class="configuration">
-                    {{ dtt.configuration }}
+                    {{ dtt.configuration|truncatechars:100 }}
                   </td>
                   <td>
                     {{ dtt.one_hot_columns }}
                   </td>
                   <td>
                     {{ dtt.columns_to_drop_before_decision_point }}
+                  </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if dtt.active %}
+                      <i class="bg-success"></i>
+                      <span class="status">active</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">not active</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <span class="completion mr-2">{{ dtt.executed }}</span>
+                      <div>
+                        {% if dtt.executed == 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ dtt.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                        </div>
+                        {% elif dtt.executed == 100 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ dtt.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+                        </div>
+                        {% elif dtt.executed > 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ dtt.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-right">
+                    <div class="dropdown">
+                      <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </a>
+                      <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                        {% if dtt.executed > 0 %}
+                        <a class="dropdown-item" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">Details</a>
+                        {% elif dtt.executed == 0 %}
+                        <a class="dropdown-item" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">Details</a>
+                        <a class="dropdown-item" onclick="return confirm('Are you sure you want to delete this decision tree training?')" href="/dd/decision-tree-training/delete/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">Delete</a>
+                        <a class="dropdown-item" href="/dd/decision-tree-training/active/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">Set as active</a>
+                        {% endif %}
+                      </div>
+                    </div>
                   </td>
                 </tr>
                 {% endfor %}

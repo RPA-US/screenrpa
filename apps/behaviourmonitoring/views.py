@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.core.exceptions import ValidationError
 from .models import Monitoring
 from apps.analyzer.models import CaseStudy
@@ -40,7 +41,11 @@ class MonitoringListView(ListView):
         queryset = Monitoring.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
-    
+
+class MonitoringDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
+        return render(request, "monitoring/detail.html", {"monitoring": monitoring})
 
 def set_as_active(request):
     monitoring_id = request.GET.get("monitoring_id")

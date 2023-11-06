@@ -10,6 +10,8 @@ from .forms import UIElementsClassificationForm, UIElementsDetectionForm, Prefil
 from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
 from .utils import detect_fe_function, detect_agg_fe_function
 from .utils import draw_ui_compos_borders
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from rest_framework import status
 from apps.analyzer.models import CaseStudy
 
@@ -97,9 +99,35 @@ class FeatureExtractionTechniqueListView(ListView):
         queryset = FeatureExtractionTechnique.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
+
+class FeatureExtractionTechniqueDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        feature_extraction_technique = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
+        return render(request, "feature_extraction_technique/detail.html", {"feature_extraction_technique": feature_extraction_technique, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_feature_extraction_technique_active(request):
+    feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
+    case_study_id = request.GET.get("case_study_id")
+    feature_extraction_technique_list = FeatureExtractionTechnique.objects.filter(case_study_id=case_study_id)
+    for m in feature_extraction_technique_list:
+        m.active = False
+        m.save()
+    feature_extraction_technique = FeatureExtractionTechnique.objects.get(id=feature_extraction_technique_id)
+    feature_extraction_technique.active = True
+    feature_extraction_technique.save()
+    return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
     
+def delete_feature_extraction_technique(request):
+    feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
+    case_study_id = request.GET.get("case_study_id")
+    feature_extraction_technique = FeatureExtractionTechnique.objects.get(id=feature_extraction_technique_id)
+    if request.user.id != feature_extraction_technique.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    feature_extraction_technique.delete()
+    return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
+
 class UIElementsClassificationCreateView(CreateView):
-    model = UIElementsClassification
+    model = FeatureExtractionTechnique
     form_class = UIElementsClassificationForm
     template_name = "ui_elements_classification/create.html"
 
@@ -131,6 +159,34 @@ class UIElementsClassificationListView(ListView):
 
         return queryset
     
+    
+
+class UIElementsClassificationDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        ui_element_classification = get_object_or_404(UIElementsClassification, id=kwargs["ui_element_classification_id"])
+        return render(request, "ui_elements_classification/detail.html", {"ui_element_classification": ui_element_classification, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_ui_elements_classification_active(request):
+    ui_element_classification_id = request.GET.get("ui_element_classification_id")
+    case_study_id = request.GET.get("case_study_id")
+    ui_element_classification_list = UIElementsClassification.objects.filter(case_study_id=case_study_id)
+    for m in ui_element_classification_list:
+        m.active = False
+        m.save()
+    ui_element_classification = UIElementsClassification.objects.get(id=ui_element_classification_id)
+    ui_element_classification.active = True
+    ui_element_classification.save()
+    return HttpResponseRedirect(reverse("featureextraction:ui_classification_list", args=[case_study_id]))
+    
+def delete_ui_elements_classification(request):
+    ui_element_classification_id = request.GET.get("ui_element_classification_id")
+    case_study_id = request.GET.get("case_study_id")
+    ui_element_classification = UIElementsClassification.objects.get(id=ui_element_classification_id)
+    if request.user.id != ui_element_classification.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    ui_element_classification.delete()
+    return HttpResponseRedirect(reverse("featureextraction:ui_classification_list", args=[case_study_id]))
+
 class UIElementsDetectionCreateView(CreateView):
     model = UIElementsDetection
     form_class = UIElementsDetectionForm
@@ -163,6 +219,35 @@ class UIElementsDetectionListView(ListView):
         queryset = UIElementsDetection.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
+
+class UIElementsDetectionDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        ui_elements_detection = get_object_or_404(UIElementsDetection, id=kwargs["ui_element_detection_id"])
+        return render(request, "ui_elements_detection/detail.html", {"ui_elements_detection": ui_elements_detection, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_ui_elements_detection_active(request):
+    ui_elements_detection_id = request.GET.get("ui_elem_detection_id")
+    case_study_id = request.GET.get("case_study_id")
+    prefilter_list = UIElementsDetection.objects.filter(case_study_id=case_study_id)
+    for m in prefilter_list:
+        m.active = False
+        m.save()
+    ui_elements_detection = UIElementsDetection.objects.get(id=ui_elements_detection_id)
+    ui_elements_detection.active = True
+    ui_elements_detection.save()
+    return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
+    
+def delete_ui_elements_detection(request):
+    ui_element_detection_id = request.GET.get("ui_elem_detection_id")
+    case_study_id = request.GET.get("case_study_id")
+    ui_elements_detection = UIElementsDetection.objects.get(id=ui_element_detection_id)
+    if request.user.id != ui_elements_detection.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    ui_elements_detection.delete()
+    return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
+
+
+
 
 
 class PrefiltersCreateView(CreateView):
@@ -198,6 +283,35 @@ class PrefiltersListView(ListView):
 
         return queryset
 
+    
+class PrefiltersDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
+        return render(request, "prefiltering/detail.html", {"prefilter": prefilter, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_prefilters_active(request):
+    prefilter_id = request.GET.get("prefilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    prefilter_list = Prefilters.objects.filter(case_study_id=case_study_id)
+    for m in prefilter_list:
+        m.active = False
+        m.save()
+    prefilter = Prefilters.objects.get(id=prefilter_id)
+    prefilter.active = True
+    prefilter.save()
+    return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
+    
+def delete_prefilter(request):
+    prefilter_id = request.GET.get("prefilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    prefilter = Prefilters.objects.get(id=prefilter_id)
+    if request.user.id != prefilter.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    prefilter.delete()
+    return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
+
+
+
 class PostfiltersCreateView(CreateView):
     model = Postfilters
     form_class = PostfiltersForm
@@ -231,7 +345,36 @@ class PostfiltersListView(ListView):
 
         return queryset
     
+class PostfiltersDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        postfilter = get_object_or_404(Postfilters, id=kwargs["postfilter_id"])
+        return render(request, "postfiltering/detail.html", {"postfilter": postfilter, "case_study_id": kwargs["case_study_id"]})
+
+def set_as_postfilters_active(request):
+    postfilter_id = request.GET.get("postfilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    postfilter_list = Postfilters.objects.filter(case_study_id=case_study_id)
+    for m in postfilter_list:
+        m.active = False
+        m.save()
+    postfilter = Postfilters.objects.get(id=postfilter_id)
+    postfilter.active = True
+    postfilter.save()
+    return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
     
+def delete_postfilter(request):
+    postfilter_id = request.GET.get("postfilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    postfilter = Postfilters.objects.get(id=postfilter_id)
+    if request.user.id != postfilter.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    postfilter.delete()
+    return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
+
+#############################################################################################################
+###       DRAWING              ##############################################################################
+#############################################################################################################
+
 def draw_postfilter(request, case_study_id):
     st = status.HTTP_200_OK
     
