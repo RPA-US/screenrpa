@@ -1,5 +1,6 @@
 from django.http import HttpResponseRedirect
-from django.views.generic import ListView, CreateView
+from django.urls import reverse
+from django.views.generic import ListView, CreateView, UpdateView
 from django.core.exceptions import ValidationError
 from .models import Monitoring
 from apps.analyzer.models import CaseStudy
@@ -39,3 +40,25 @@ class MonitoringListView(ListView):
         queryset = Monitoring.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
+    
+
+def set_as_active(request):
+    monitoring_id = request.GET.get("monitoring_id")
+    case_study_id = request.GET.get("case_study_id")
+    monitoring_list = Monitoring.objects.filter(case_study_id=case_study_id)
+    for m in monitoring_list:
+        m.active = False
+        m.save()
+    monitoring = Monitoring.objects.get(id=monitoring_id)
+    monitoring.active = True
+    monitoring.save()
+    return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
+    
+def delete_monitoring(request):
+    monitoring_id = request.GET.get("monitoring_id")
+    case_study_id = request.GET.get("case_study_id")
+    monitoring = Monitoring.objects.get(id=monitoring_id)
+    if request.user.id != monitoring.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    monitoring.delete()
+    return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))

@@ -34,6 +34,7 @@ def default_filters_conf():
 
 class Prefilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
@@ -48,6 +49,7 @@ class Prefilters(models.Model):
 
 class UIElementsDetection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
     type = models.CharField(max_length=25, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
     configurations = JSONField(null=True, blank=True)
@@ -64,6 +66,7 @@ class UIElementsDetection(models.Model):
 
 class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
     model = models.CharField(max_length=255, default="resources/models/custom-v2.h5")
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
     type = models.CharField(max_length=25, default='rpa-us')
@@ -79,6 +82,7 @@ class UIElementsClassification(models.Model):
 
 class Postfilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
@@ -94,6 +98,7 @@ class Postfilters(models.Model):
 
 class FeatureExtractionTechnique(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
     identifier = models.CharField(max_length=25)
     type = models.CharField(max_length=255, default='SINGLE')
     technique_name = models.CharField(max_length=255, default='count')

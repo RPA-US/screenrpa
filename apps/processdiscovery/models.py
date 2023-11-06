@@ -11,6 +11,7 @@ def default_process_discovery():
 # Create your models here.
 class ProcessDiscovery(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
     type = models.CharField(max_length=25, default='rpa-us')
     configurations = JSONField(null=True, blank=True, default=default_process_discovery)
     skip = models.BooleanField(default=False)
