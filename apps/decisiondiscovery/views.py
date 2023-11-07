@@ -98,7 +98,7 @@ def decision_tree_training(case_study, path_scenario):
     columns_to_ignore = case_study.decision_tree_training.columns_to_drop_before_decision_point
     target_label = case_study.target_label
     one_hot_columns = case_study.decision_tree_training.one_hot_columns
-    cv = configuration["cv"] if "cv" in configuration else 3
+    k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
     algorithms = configuration["algorithms"] if "algorithms" in configuration else None
     centroid_threshold = int(configuration["centroid_threshold"]) if "centroid_threshold" in configuration else None
     feature_values = configuration["feature_values"] if "feature_values" in configuration else None
@@ -125,9 +125,9 @@ def decision_tree_training(case_study, path_scenario):
     # tree_levels = {}
     
     if implementation == 'sklearn':
-        res, times = sklearn_decision_tree(flattened_dataset, path, configuration, one_hot_columns, target_label, cv)
+        res, times = sklearn_decision_tree(flattened_dataset, path, configuration, one_hot_columns, target_label, k_fold_cross_validation)
     elif implementation == 'chefboost':
-        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label, cv)
+        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label, k_fold_cross_validation)
         # TODO: caculate number of tree levels automatically
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')

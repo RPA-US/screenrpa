@@ -72,7 +72,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 #     return accuracy_score, times
 
 
-def chefboost_decision_tree(df, param_path, configuration, target_label, cv):
+def chefboost_decision_tree(df, param_path, configuration, target_label, k_fold_cross_validation):
     """
     
     config = {
@@ -117,7 +117,7 @@ def chefboost_decision_tree(df, param_path, configuration, target_label, cv):
 
         X = df_aux.drop(columns=[target_label])
         y = df_aux[target_label]
-        accuracies[alg] = cross_validation(X, y, config, target_label, "chefboost", None, cv)
+        accuracies[alg] = cross_validation(X, y, config, target_label, "chefboost", None, k_fold_cross_validation)
         
         # => Feature importance
         fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
@@ -162,7 +162,7 @@ def plot_decision_tree(path: str,
 
     return image
 
-def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target_label, cv):
+def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target_label, k_fold_cross_validation):
     times = {}
     accuracies = {}
     
@@ -175,7 +175,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     #     df = pd.get_dummies(df, columns=columns_to_encode_one_hot)
     
     if "e50_" in param_path:
-        cv = 2
+        k_fold_cross_validation = 2
 
     # Extract features and target variable
     X = df.drop(columns=['Variant'])
@@ -189,9 +189,9 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
-    tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, cv)
+    tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, k_fold_cross_validation)
 
-    accuracies = cross_validation(X_df,pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,cv)
+    accuracies = cross_validation(X_df,pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # times["sklearn"]["encoders"] = {
     #     "enabled": status_encoder.fit_transform(["enabled"])[0], 
@@ -234,7 +234,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
 
     return accuracies, times
 
-def best_model_grid_search(X_train, y_train, tree_classifier, cv):
+def best_model_grid_search(X_train, y_train, tree_classifier, k_fold_cross_validation):
     # Define the hyperparameter grid for tuning
     param_grid = {
         'criterion': ['gini', 'entropy'],
@@ -245,7 +245,7 @@ def best_model_grid_search(X_train, y_train, tree_classifier, cv):
     }
 
     # Perform GridSearchCV to find the best hyperparameters
-    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, cv=cv)
+    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, k_fold_cross_validation=k_fold_cross_validation)
     grid_search.fit(X_train, y_train)
 
     # Get the best hyperparameters and train the final model
@@ -256,11 +256,11 @@ def best_model_grid_search(X_train, y_train, tree_classifier, cv):
     
     return best_tree_classifier, grid_search.best_params_
 
-def cross_validation(X, y, config, target_label, library, model, cv):
+def cross_validation(X, y, config, target_label, library, model, k_fold_cross_validation):
     # Cross-validation: accurracy + f1 score
     accuracies = {}
     
-    skf = StratifiedKFold(n_splits=cv)
+    skf = StratifiedKFold(n_splits=k_fold_cross_validation)
     # skf.get_n_splits(X, y)
 
     for i, (train_index, test_index) in enumerate(skf.split(X, y)):
