@@ -9,7 +9,7 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-lg-6 col-7">
-            <a href="/case-study/list/" class="btn btn-sm btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/case-study/detail/{{ case_study_id }}/" class="btn btn-sm btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>Go Back</a>
             <h6 class="h2 text-white d-inline-block mb-0">Case Studies</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
@@ -21,7 +21,8 @@
             </nav>
           </div>
           <div class="col-lg-6 col-5 text-right">
-            <a href="/monitoring/new/{{ case_study_id }}" class="btn btn-sm btn-neutral">New</a>
+            <a href="/monitoring/new/{{ case_study_id }}" class="btn btn-sm btn-neutral"><i class="fas fa-plus" style="margin-right: 5px;">
+            </i>New Behaviour Monitoring Configuration</a>
           </div>
         </div>
       </div>
@@ -35,7 +36,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Your configurations</h3>
+            <h3 class="mb-0">Behaviour Monitoring Configurations</h3>
           </div>
           <!-- Light table -->
           <div class="table-responsive">

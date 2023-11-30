@@ -10,18 +10,16 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-lg-6 col-7">
-            <a href="/case-study/list/" class="btn btn-sm btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-sm btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>Go Back</a>
             <h6 class="h2 text-white d-inline-block mb-0">Case Studies</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="#">New monitoring</a></li>
+                <li class="breadcrumb-item"><a href="{{ request.META.HTTP_REFERER }}">...</a></li>
+                <li class="breadcrumb-item"><a href="#">New Behaviour Monitoring</a></li>
               </ol>
             </nav>
-          </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/monitoring/new/{{ case_study_id }}/" class="btn btn-sm btn-neutral">New</a>
           </div>
         </div>
       </div>
@@ -35,7 +33,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Details</h3>
+            <h3 class="mb-0">New Behaviour Monitoring Configuration</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
@@ -59,7 +57,8 @@
                   </div>
                 </div>
               </div>
-              <button type="submit" value="submit" class="close">
+              <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+                <i class="fas fa-save"></i> 
                 Save
               </button>
             </form>

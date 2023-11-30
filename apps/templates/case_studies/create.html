@@ -21,7 +21,7 @@
             </nav>
           </div>
           <div class="col-lg-6 col-5 text-right">
-            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
+            <a href="/case-study/new/" class="btn btn-sm btn-neutral"><i class="fas fa-broom"></i> Clean fields</a>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Case study details</h3>
+            <h3 class="mb-0">New Case Study </h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
@@ -189,7 +189,8 @@
                   </div>
                 </div>
               </div> {% endcomment %}
-              <button type="submit" value="submit" class="close" >
+              <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+                <i class="fas fa-save"></i> 
                 Save
               </button>
               
