@@ -8,20 +8,20 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <a href="/case-study/detail/{{ case_study_id }}/" class="btn btn-sm btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back</a>
-            <h6 class="h2 text-white d-inline-block mb-0">Case Studies</h6>
+          <div class="col-lg-12 col-7">
+            <a href="/case-study/detail/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>Go Back to Case Study {{ case_study_id }} details</a>
+            <h6 class="h2 text-white d-inline-block mb-0">Reporting Configurations</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="#">Reporting</a></li>
+                <li class="breadcrumb-item"><a href="#">Reporting Configurations</a></li>
               </ol>
             </nav>
           </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/reporting/pdd/generate/{{ case_study_id }}/" class="btn btn-sm btn-neutral">
+          <div class="col-lg-12 col-5 text-right">
+            <a href="/reporting/pdd/generate/{{ case_study_id }}/" class="btn btn-neutral">
               <i class="fas fa-plus" style="margin-right: 5px;"></i>New Reporting Configuration</a>
           </div>
         </div>

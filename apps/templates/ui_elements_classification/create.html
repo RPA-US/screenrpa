@@ -9,21 +9,21 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-sm btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back</a>
-            <h6 class="h2 text-white d-inline-block mb-0">Case Studies</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
+          <div class="col-lg-12 col-7">
+            <a href="{{ request.META.HTTP_REFERER }}" class="btn  btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>Go Back to UI Elements Classification Configurations</a>
+            <h6 class="h2 text-white d-inline-block mb-0">New UI Elements Classification Configuration</h6>
+            <!-- <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="{{ request.META.HTTP_REFERER }}">...</a></li>
                 <li class="breadcrumb-item"><a href="#">New UI Elements Classification</a></li>
               </ol>
-            </nav>
+            </nav> -->
           </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/fe/ui-element-classification/new/{{ case_study_id }}/"   class="btn btn-sm btn-neutral"><i class="fas fa-broom"></i> Clean fields</a>
-          </div>
+          <!-- <div class="col-lg-6 col-5 text-right">
+            <a href="/fe/ui-element-classification/new/{{ case_study_id }}/"   class="btn  btn-neutral"><i class="fas fa-broom"></i> Clean fields</a>
+          </div> -->
         </div>
       </div>
     </div>
@@ -36,7 +36,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">New Elements UI Classification Configuration</h3>
+            <h3 class="mb-0">Create a new UI Elements Classification Configuration</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
