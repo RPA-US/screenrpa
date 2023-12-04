@@ -71,6 +71,11 @@ class FeatureExtractionTechniqueCreateView(CreateView):
     model = FeatureExtractionTechnique
     form_class = FeatureExtractionTechniqueForm
     template_name = "feature_extraction_technique/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(FeatureExtractionTechniqueCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -130,6 +135,11 @@ class UIElementsClassificationCreateView(CreateView):
     model = FeatureExtractionTechnique
     form_class = UIElementsClassificationForm
     template_name = "ui_elements_classification/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(UIElementsClassificationCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -191,6 +201,11 @@ class UIElementsDetectionCreateView(CreateView):
     model = UIElementsDetection
     form_class = UIElementsDetectionForm
     template_name = "ui_elements_detection/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context    
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -254,6 +269,11 @@ class PrefiltersCreateView(CreateView):
     model = Prefilters
     form_class = PrefiltersForm
     template_name = "prefiltering/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(PrefiltersCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context    
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -316,6 +336,11 @@ class PostfiltersCreateView(CreateView):
     model = Postfilters
     form_class = PostfiltersForm
     template_name = "postfiltering/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(PostfiltersCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context   
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:

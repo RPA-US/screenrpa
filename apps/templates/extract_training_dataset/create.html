@@ -10,20 +10,21 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12">
-            <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/dd/extract-training-dataset/list/{{ case_study_id }}/" class="btn btn-outline-dark"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>Go Back to Extract Training Dataset Configurations</a>
             <h6 class="h2 text-white d-inline-block mb-0">New Extract Training Dataset Configuration</h6>
-            <!-- <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="{{ request.META.HTTP_REFERER }}">...</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">Case Study {{ case_study_id }}</a></li>
+                <li class="breadcrumb-item"><a href="/dd/extract-training-dataset/list/{{ case_study_id }}/">Extract Training Dataset Configs</a></li>
                 <li class="breadcrumb-item"><a href="#">New Extract Training Dataset</a></li>
               </ol>
-            </nav> -->
+            </nav>
           </div>
-          <!-- <div class="col-lg-6 col-5 text-right">
-            <a href="/dd/extract-training-dataset/new/{{ case_study_id }}/" class="btn btn-sm btn-neutral"><i class="fas fa-broom"></i> Clean fields</a>
-          </div> -->
+          <div class="col-12 text-right">
+            <a href="/dd/extract-training-dataset/new/{{ case_study_id }}/" class="btn btn btn-light"><i class="fas fa-broom"></i> Restart fields</a>
+          </div>
         </div>
       </div>
     </div>
