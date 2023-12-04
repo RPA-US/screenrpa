@@ -187,8 +187,13 @@ def case_study_generator(data):
             match phase:
                 case "monitoring":
                     serializer = MonitoringSerializer(data=phases[phase])
+                    # Guarda el objeto de Monitoring de serializer, y asigna el objeto de case_study al campo case_study de Monitoring y el user a user de Monitoring
                     serializer.is_valid(raise_exception=True)
-                    case_study.monitoring = serializer.save()
+                    del serializer.validated_data['user']
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    monitoring = serializer.save()
+                    
                 case "info_prefiltering":
                     serializer = PrefiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
@@ -319,6 +324,8 @@ class CaseStudyView(generics.ListCreateAPIView):
             response_content = case_study_serialized.errors
             st=status.HTTP_400_BAD_REQUEST
         else:
+            # asignar el usuario al caso de estudio
+            case_study_serialized.validated_data['user'] = request.user
             execute_case_study = True
             try:
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):

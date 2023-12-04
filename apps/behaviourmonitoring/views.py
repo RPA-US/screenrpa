@@ -50,7 +50,18 @@ class MonitoringDetailView(DetailView):
 def set_as_active(request):
     monitoring_id = request.GET.get("monitoring_id")
     case_study_id = request.GET.get("case_study_id")
-    monitoring_list = Monitoring.objects.filter(case_study_id=case_study_id)
+    
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError("User must be authenticated.")
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError("Case Study doesn't belong to the authenticated user.")
+    if Monitoring.objects.get(pk=monitoring_id).user != request.user:  
+        raise ValidationError("Monitoring doesn't belong to the authenticated user.")
+    if Monitoring.objects.get(pk=monitoring_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError("Monitoring doesn't belong to the Case Study.")
+    
+    monitoring_list = Monitoring.objects.filter(case_study_id=case_study_id, active=True)
     for m in monitoring_list:
         m.active = False
         m.save()
