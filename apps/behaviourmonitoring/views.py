@@ -69,6 +69,14 @@ def set_as_active(request):
     monitoring.active = True
     monitoring.save()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
+
+def set_as_inactive(request):
+    monitoring_id = request.GET.get("monitoring_id")
+    case_study_id = request.GET.get("case_study_id")
+    monitoring = Monitoring.objects.get_object_or_404(id=monitoring_id, case_study__id=case_study_id)
+    monitoring.active = False
+    monitoring.save()
+    return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
     
 def delete_monitoring(request):
     monitoring_id = request.GET.get("monitoring_id")
