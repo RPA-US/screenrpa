@@ -9,18 +9,21 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <h6 class="h2 text-white d-inline-block mb-0">Case studies</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/list/" class="btn btn-outline-dark"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>Go Back to Case Studies</a>
+            <h6 class="h2 text-white d-inline-block mb-0">Case Study {{ case_study.id }} details</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="#">Case study {{ case_study.id }}</a></li>
               </ol>
             </nav>
           </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
-          </div>
+          <div class="col-12 text-right">
+            <a href="/case-study/new/" class="btn btn-success"><i class="fas fa-plus" style="margin-right: 5px;">
+            </i>New Case Study</a>
+            </div>
         </div>
       </div>
     </div>
@@ -33,7 +36,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Case study details</h3>
+            <h3 class="mb-0">Case study {{ case_study.id }} details</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
@@ -166,7 +169,7 @@
               </div>
               <hr class="my-4" />
               <!-- Phases to execute -->
-              <h6 class="heading-small text-muted mb-4">Related executions</h6>
+              <h6 class="heading-small text-muted mb-4">Set Up Phases</h6>
               <div class="pl-lg-4">
                 <div class="card-body">
                   <div class="row icon-examples">

@@ -97,6 +97,11 @@ class ProcessDiscoveryCreateView(CreateView):
     model = ProcessDiscovery
     form_class = ProcessDiscoveryForm
     template_name = "processdiscovery/create.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ProcessDiscoveryCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context    
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:

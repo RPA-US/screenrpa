@@ -8,18 +8,21 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <h6 class="h2 text-white d-inline-block mb-0">Case studies</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/detail/{{ case_study_id }}/" class="btn btn-outline-dark"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>Go Back to Case Study {{ case_study_id }} details</a>
+            <h6 class="h2 text-white d-inline-block mb-0">Postfiltering Configurations</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="#">Postfiltering</a></li>
+                <li class="breadcrumb-item"><a href="#">Postfiltering Configurations</a></li>
               </ol>
             </nav>
           </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/fe/postfiltering/new/{{ case_study_id }}/" class="btn btn-sm btn-neutral">New</a>
+          <div class="col-12 text-right">
+            <a href="/fe/postfiltering/new/{{ case_study_id }}/" class="btn btn-success"><i class="fas fa-plus" style="margin-right: 5px;">
+            </i>New Postfiltering Configuration</a>
           </div>
         </div>
       </div>
@@ -33,7 +36,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Your configurations</h3>
+            <h3 class="mb-0">Postfiltering Configurations</h3>
           </div>
           <!-- Light table -->
           <div class="table-responsive">

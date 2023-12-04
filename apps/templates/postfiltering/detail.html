@@ -9,18 +9,21 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <h6 class="h2 text-white d-inline-block mb-0">Case studies</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/fe/postfiltering/list/{{ case_study_id }}/" class="btn btn-outline-dark"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>Go Back to Post-Filtering configurations</a>
+            <h6 class="h2 text-white d-inline-block mb-0">Post-Filtering Configuration Details</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="#">Post-Filtering {{ postfilter.id }}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study.id }}">Case Study {{ case_study_id }}</a></li>
+                <li class="breadcrumb-item"><a href="/fe/postfiltering/list/{{ case_study_id }}/">Post-Filtering {{ postfiltering.case_study_id }}</a></li>
+                <li class="breadcrumb-item"><a href="#">Post-Filtering {{ postfilter.id }} details</a></li>
               </ol>
             </nav>
           </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
+          <div class="col-12 text-right">
+            <a href="#" class="btn btn btn-info"><i class="fas fa-broom"></i>Edit fields</a>
           </div>
         </div>
       </div>
@@ -34,7 +37,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Post-Filtering details</h3>
+            <h3 class="mb-0">Post-Filtering Configuration</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
