@@ -11,7 +11,7 @@ from core.settings import monitoring_imotions_needded_columns
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
-from apps.behaviourmonitoring.utils import get_monitoring_from_cs
+from apps.behaviourmonitoring.utils import get_monitoring
 
 ms_pattern = '%H-%M-%S.%f'
 # ui_log_timestamp_pattern = '%H:%M:%S %p'
@@ -409,7 +409,8 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
         
         monitoring_obj.executed = 100
         monitoring_obj.ub_log_path = root_path + "fixation.json"
-        monitoring.save()
+        # update monitoring_obj
+        monitoring_obj.save()
         
     else:
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")

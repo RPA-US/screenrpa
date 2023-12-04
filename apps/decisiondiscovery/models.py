@@ -5,6 +5,7 @@ from email.policy import default
 from xmlrpc.client import Boolean
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from apps.analyzer.models import CaseStudy
 from django.urls import reverse
@@ -112,8 +113,20 @@ class DecisionTreeTraining(models.Model):
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
+    def clean(self):
+        cleaned_data = super().clean()
+        if not ExtractTrainingDataset.objects.exists(case_study__id=self.case_study.id):
+            raise ValidationError("To be able to apply decision tree training, a extract training dataset has to exist")
+        return cleaned_data
+    
     def get_absolute_url(self):
         return reverse("decisiondiscovery:decision_tree_training_list", args=[str(self.case_study_id)])
+    
+    def delete(self):
+        
+        # TODO: si existe relacion con experiment
+        
+        super.delete()
     
     def __str__(self):
         return 'library: ' + self.library + ' - algs:' + str(self.configuration)
