@@ -264,7 +264,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'rim.log',
+            'filename': 'screenrpa.log',
         },
     },
     'loggers': {
