@@ -28,11 +28,9 @@ class CaseStudyForm(forms.ModelForm):
             # "exp_folder_complete_path",
             "scenarios_to_study",
             "special_colnames",
-            "text_classname",
-            "decision_point_activity",
+            # "text_classname",
+            # "decision_point_activity",
             "gui_class_success_regex",
-            "ui_elements_classification_image_shape",
-            "ui_elements_classification_classes",
             "target_label"
         )
 
@@ -75,47 +73,47 @@ class CaseStudyForm(forms.ModelForm):
                     "placeholder": "special_colnames"
                     }
             ),
-            "text_classname": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "text_classname"
-                    }
-            ),
-            "decision_point_activity": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "decision_point_activity"
-                    }
-            ),
+            # "text_classname": forms.TextInput(
+            #     attrs={
+            #         "class": "form-control",
+            #         "placeholder": "text_classname"
+            #         }
+            # ),
+            # "decision_point_activity": forms.TextInput(
+            #     attrs={
+            #         "class": "form-control",
+            #         "placeholder": "decision_point_activity"
+            #         }
+            # ),
             "gui_class_success_regex": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "gui_class_success_regex"
                     }
             ),
-            "ui_elements_classification_image_shape": forms.TextInput(
-                attrs={
-                    "class": "custom-select",
-                    "placeholder": "ui_elements_classification_image_shape"
-                    }
-            ),
-            "ui_elements_classification_classes": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "ui_elements_classification_classes"
-                    }
-            ),
+            # "ui_elements_classification_image_shape": forms.TextInput(
+            #     attrs={
+            #         "class": "custom-select",
+            #         "placeholder": "ui_elements_classification_image_shape"
+            #         }
+            # ),
+            # "ui_elements_classification_classes": forms.Textarea(
+            #     attrs={
+            #         "class": "form-control",
+            #         "placeholder": "ui_elements_classification_classes"
+            #         }
+            # ),
             "target_label": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "Variant"
                     }
             ),
-            # "ui_elements_detection": forms.Select(
-            #     attrs={
-            #         "class": "custom-select"
-            #         }
-            # ),
+            "model": forms.Select(
+                attrs={
+                    "class": "custom-select"
+                    }
+            ),
             # "monitoring": forms.Select(
             #     attrs={
             #         "class": "custom-select"

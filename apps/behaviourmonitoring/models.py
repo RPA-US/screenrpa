@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import JSONField
 from django.urls import reverse
 from apps.analyzer.models import CaseStudy
-
+from django.core.exceptions import ValidationError
 
 def default_monitoring_conf():
     return dict({
@@ -23,10 +23,20 @@ class Monitoring(models.Model):
     type = models.CharField(max_length=25, default='imotions')
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=False, editable=True)
-    ub_log_path = models.CharField(max_length=50, blank=True, null=True, default=None)
+    ub_log_path = models.CharField(max_length=250, blank=True, null=True, default=None)
     configurations = JSONField(null=True, blank=True, default=default_monitoring_conf)
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    def clean(self):
+        monitorings = Monitoring.objects.filter(case_study=self.case_study_id, active=True).exclude(id=self.id)
+        # If there is more than one active monitoring, raise an error
+        if self.active and len(monitorings) > 0:
+            raise ValidationError('There is already an active monitoring for this case study.')
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Monitoring, self).save(*args, **kwargs)
     
     def get_absolute_url(self):
         return reverse("behaviourmonitoring:monitoring_list", args=[str(self.case_study_id)])

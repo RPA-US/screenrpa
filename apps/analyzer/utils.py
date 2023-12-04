@@ -9,10 +9,10 @@ import base64
 import lxml.etree as ET
 from lxml import html
 from core.settings import sep
-from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs, case_study_has_ui_elements_detection_from_cs, get_ui_elements_detection_from_cs, case_study_has_ui_elements_classification_from_cs, get_ui_elements_classification_from_cs, case_study_has_info_postfiltering_from_cs, get_info_postfiltering_from_cs, case_study_has_info_prefiltering_from_cs, get_info_prefiltering_from_cs
-from apps.behaviourmonitoring.utils import get_monitoring_from_cs, case_study_has_monitoring_from_cs
-from apps.processdiscovery.utils import get_process_discovery_from_cs, case_study_has_process_discovery_from_cs
-from apps.decisiondiscovery.utils import get_extract_training_dataset_from_cs, case_study_has_extract_training_dataset_from_cs, get_decision_tree_training_from_cs, case_study_has_decision_tree_training_from_cs
+from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique, case_study_has_ui_elements_detection, get_ui_elements_detection, case_study_has_ui_elements_classification, get_ui_elements_classification, case_study_has_info_postfiltering, get_info_postfiltering, case_study_has_info_prefiltering, get_info_prefiltering
+from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
+from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery
+from apps.decisiondiscovery.utils import get_extract_training_dataset, case_study_has_extract_training_dataset, get_decision_tree_training, case_study_has_decision_tree_training
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 
@@ -186,6 +186,13 @@ def format_mht_file(mht_file_path, output_format, output_path, output_filename, 
 ###########################################################################################################################
 ###########################################################################################################################
 ###########################################################################################################################
+def get_format_pattern(datetime_parenthesis, sep):
+    if "â€Ž" in datetime_parenthesis:
+      format_pattern = 'â€Ž%d'+sep+'â€Ž%m'+sep+'â€Ž%Y %H:%M:%S'
+    elif "/" in datetime_parenthesis:
+      format_pattern = '\u200e%d'+sep+'\u200e%m'+sep+'\u200e%Y %H:%M:%S'
+    return format_pattern
+
 
 def get_mht_log_start_datetime(mht_file_path, pattern):
     with open(mht_file_path) as mht_file: 
@@ -208,9 +215,11 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
     if pattern:
       format_pattern = pattern
     elif "/" in datetime_parenthesis:
-      format_pattern = '\u200e%d/\u200e%m/\u200e%Y %H:%M:%S'
-    else: 
-      format_pattern = '\u200e%d-\u200e%m-\u200e%Y %H:%M:%S'
+      format_pattern = get_format_pattern(datetime_parenthesis, "/")
+    elif "-" in datetime_parenthesis: 
+      format_pattern = get_format_pattern(datetime_parenthesis, "-")
+    else:
+      raise Exception("The MHT file doesnt have a valid datetime format")
 
     return datetime.datetime.strptime(datetime_parenthesis, format_pattern)
 
@@ -221,15 +230,15 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
 def phases_to_execute_specs(case_study, path_scenario):
     to_exec_args = {}
     # We check this phase is present in case_study to avoid exceptions
-    if case_study_has_monitoring_from_cs:
-        aux_monitoring = get_monitoring_from_cs(case_study=case_study)
+    if case_study_has_monitoring(case_study):
+        aux_monitoring = get_monitoring(case_study=case_study)
         to_exec_args['monitoring'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
                                         aux_monitoring)
         
-    if case_study_has_info_postfiltering_from_cs:
-        aux_prefilters = get_info_prefiltering_from_cs(case_study=case_study)
+    if case_study_has_info_postfiltering(case_study):
+        aux_prefilters = get_info_prefiltering(case_study=case_study)
         to_exec_args['info_prefiltering'] =  (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -237,8 +246,8 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_prefilters.skip,
                                         aux_prefilters.type)
         
-    if case_study_has_ui_elements_detection_from_cs:
-        aux_ui_elements_detection = get_ui_elements_detection_from_cs(case_study=case_study)
+    if case_study_has_ui_elements_detection(case_study):
+        aux_ui_elements_detection = get_ui_elements_detection(case_study=case_study)
         to_exec_args['ui_elements_detection'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.ui_elements_detection.input_filename,
@@ -247,8 +256,8 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_ui_elements_detection.skip,
                                         aux_ui_elements_detection.type,
                                         case_study.text_classname)
-    if case_study_has_ui_elements_classification_from_cs:
-        aux_ui_elements_classification = get_ui_elements_classification_from_cs(case_study=case_study)
+    if case_study_has_ui_elements_classification(case_study):
+        aux_ui_elements_classification = get_ui_elements_classification(case_study=case_study)
         to_exec_args['ui_elements_classification'] = (case_study.ui_elements_classification.model, # specific extractors
                                         case_study.ui_elements_classification.model_properties,
                                         path_scenario + 'components_npy' + sep,
@@ -261,8 +270,8 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         case_study.ui_elements_classification_image_shape,
                                         aux_ui_elements_classification.type)
         
-    if case_study_has_info_postfiltering_from_cs:
-        aux_postfilters = get_info_postfiltering_from_cs(case_study=case_study)
+    if case_study_has_info_postfiltering(case_study):
+        aux_postfilters = get_info_postfiltering(case_study=case_study)
         to_exec_args['info_postfiltering'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -271,7 +280,7 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_postfilters.type)
         
     if case_study_has_feature_extraction_technique(case_study, 'SINGLE'):
-        aux_feature_extraction_technique = get_feature_extraction_technique_from_cs(case_study=case_study)
+        aux_feature_extraction_technique = get_feature_extraction_technique(case_study=case_study)
         to_exec_args['feature_extraction_technique'] = (case_study.ui_elements_classification_classes,
                                         case_study.decision_point_activity,
                                         case_study.special_colnames["Case"],
@@ -288,8 +297,8 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_feature_extraction_technique.skip,
                                         aux_feature_extraction_technique.technique_name)
         
-    if case_study_has_process_discovery_from_cs(case_study):
-        aux_process_discovery = get_process_discovery_from_cs(case_study=case_study)
+    if case_study_has_process_discovery(case_study):
+        aux_process_discovery = get_process_discovery(case_study=case_study)
         to_exec_args['process_discovery'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -297,8 +306,8 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_process_discovery.skip,
                                         aux_process_discovery.type)
         
-    if case_study_has_extract_training_dataset_from_cs(case_study):
-        aux_extract_training_dataset = get_extract_training_dataset_from_cs(case_study=case_study)
+    if case_study_has_extract_training_dataset(case_study):
+        aux_extract_training_dataset = get_extract_training_dataset(case_study=case_study)
         to_exec_args['extract_training_dataset'] = (case_study.decision_point_activity, 
                                         case_study.target_label,
                                         case_study.special_colnames,
@@ -308,7 +317,7 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_extract_training_dataset.columns_to_drop_before_decision_point)
         
     if case_study_has_feature_extraction_technique(case_study, 'AGGREGATE'):
-        aux_feature_extraction_technique = get_feature_extraction_technique_from_cs(case_study=case_study)
+        aux_feature_extraction_technique = get_feature_extraction_technique(case_study=case_study)
         to_exec_args['aggregate_features_as_dataset_columns'] = (case_study.ui_elements_classification_classes,
                                         case_study.decision_point_activity,
                                         case_study.special_colnames["Case"],
@@ -325,7 +334,7 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_feature_extraction_technique.skip,
                                         aux_feature_extraction_technique.technique_name)
         
-    if case_study_has_decision_tree_training_from_cs(case_study):
+    if case_study_has_decision_tree_training(case_study):
         to_exec_args['decision_tree_training'] = (case_study, path_scenario)
         
     return to_exec_args

@@ -44,7 +44,7 @@
 
     <script>
         // this array will store all the eye movements
-        var x = [];
+        var gaze_points = [];
 
         // start recording
         function recordGaze() {
@@ -52,16 +52,17 @@
                 if (data == null) {
                     return;
                 }
-                var xprediction = data.x; 
-                var yprediction = data.y;
+                var coordX = parseFloat(data.x.toFixed(2));
+                var coordY = parseFloat(data.y.toFixed(2));
+                var timestamp = Date.now();
 
                 var save_url = "http://127.0.0.1:8000/"+"?x="+xprediction+";y="+yprediction;
 
                 var temp_image = new Image();
 
                 temp_image.src= save_url;
-                x.push([xprediction, yprediction]);
-                console.log(xprediction + "," + yprediction);
+                gaze_points.push([coordX, coordY, timestamp]);
+                console.log(coordX + "," + coordY, + ","+ timestamp);
             }).begin();
         }
 

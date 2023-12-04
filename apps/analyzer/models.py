@@ -21,8 +21,6 @@ def unzip_file(zip_file_path, dest_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
         zip_ref.extractall(dest_folder_path)
 
-def get_ui_elements_classification_image_shape():
-    return [64, 64, 3]
 
 def default_special_colnames():
     return dict({
@@ -35,13 +33,6 @@ def default_special_colnames():
         "eyetracking_gaze_point_x": "Gaze point X",
         "eyetracking_gaze_point_y": "Gaze point Y"
     })
-
-def get_ui_elements_classification_old_classes():
-    return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
-'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
-
-def get_ui_elements_classification_classes():
-    return "Button, Checkbox, CheckedTextView, EditText, ImageButton, ImageView, NumberPicker, RadioButton, RatingBar, SeekBar, Spinner, Switch, TextView, ToggleButton".split(', ') # this returns a list
 
 def get_exp_foldername(exp_folder_complete_path):
     count = 0
@@ -70,12 +61,8 @@ class CaseStudy(models.Model):
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
-    text_classname = models.CharField(max_length=50, default="TextView")
     phases_to_execute = JSONField(null=True, blank=True)
-    decision_point_activity = models.CharField(max_length=255, default="C")
     gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
-    ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
-    ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
     target_label = models.CharField(max_length=50, default='Variant')
     # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
@@ -131,3 +118,19 @@ class CaseStudy(models.Model):
     
     def __str__(self):
         return self.title + ' - id:' + str(self.id)
+
+
+
+# TODO: Implement execution model
+# class Execution(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
+#     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='CaseStudy')
+#     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
+#     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
+#     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
+#     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
+#     postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
+#     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+#     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
+#     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
+#     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)

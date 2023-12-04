@@ -5,6 +5,7 @@ from email.policy import default
 from xmlrpc.client import Boolean
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from apps.analyzer.models import CaseStudy
@@ -54,6 +55,7 @@ class UIElementsDetection(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     type = models.CharField(max_length=25, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
+    decision_point_activity = models.CharField(max_length=255, blank=True)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
@@ -65,6 +67,27 @@ class UIElementsDetection(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
 
+def get_ui_elements_classification_image_shape():
+    return [64, 64, 3]
+
+
+def get_ui_elements_classification_old_classes():
+    return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
+'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
+
+def get_ui_elements_classification_classes():
+    return "Button, Checkbox, CheckedTextView, EditText, ImageButton, ImageView, NumberPicker, RadioButton, RatingBar, SeekBar, Spinner, Switch, TextView, ToggleButton".split(', ') # this returns a list
+
+class CNNModels(models.Model):
+    name = models.CharField(max_length=25, unique=True)
+    path = models.CharField(max_length=255, unique=True)
+    ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
+    ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
+    text_classname = models.CharField(max_length=50, default="TextView")
+   
+    def clean(self):
+        if (self.text_classname not in self.ui_elements_classification_classes):
+            raise ValidationError("text_classname must be one of the ui_elements_classification_classes")
 
 class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -113,6 +136,14 @@ class FeatureExtractionTechnique(models.Model):
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        if not UIElementsDetection.objects.exists(case_study__id=self.case_study.id):
+            raise ValidationError("To be able to apply a feature extraction technique, UI Element Detection has to be done")
+        if not UIElementsClassification.objects.exists(case_study__id=self.case_study.id):
+            raise ValidationError("To be able to apply a feature extraction technique, UI Element Classification has to be done")
+        return cleaned_data
     
     def get_absolute_url(self):
         return reverse("featureextraction:fe_technique_list", args=[str(self.case_study_id)])

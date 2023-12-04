@@ -18,7 +18,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.template import loader
 # Settings variables
-from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, scenario_nested_folder, active_celery
+from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, phases_objects, scenario_nested_folder, active_celery
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, aggregate_features_as_dataset_columns
@@ -30,6 +30,7 @@ from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy
 from apps.behaviourmonitoring.models import Monitoring
 from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
+from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
 from apps.analyzer.serializers import CaseStudySerializer
@@ -40,7 +41,7 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import init_generate_case_study
 from apps.analyzer.utils import get_foldernames_as_list, phases_to_execute_specs
 from apps.analyzer.collect_results import experiments_results_collectors
-from apps.featureextraction.utils import case_study_has_feature_extraction_technique_from_cs
+from apps.featureextraction.utils import case_study_has_feature_extraction_technique
 
 #============================================================================================================================
 #============================================================================================================================
@@ -121,8 +122,15 @@ def celery_task_process_case_study(case_study_id, phase):
         # print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
         
-        pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.prefilters or case_study.postfilters or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or case_study.report or case_study_has_feature_extraction_technique(case_study)
-        if pred:
+        execute = False
+        
+        # Check if exist a Monitoring, ExtractTrainingDataset, DecisionTreeTraining, ProcessDiscovery, FeatureExtractionTechnique, UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, Report with a case_study_id equal to case_study.id
+        for p in phases_objects:
+            if eval(p).objects.filter(case_study=case_study.id).exists():
+                execute = True
+                break
+        
+        if execute:
             if scenario_nested_folder:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
@@ -187,53 +195,72 @@ def case_study_generator(data):
             match phase:
                 case "monitoring":
                     serializer = MonitoringSerializer(data=phases[phase])
+                    # Guarda el objeto de Monitoring de serializer, y asigna el objeto de case_study al campo case_study de Monitoring y el user a user de Monitoring
                     serializer.is_valid(raise_exception=True)
-                    case_study.monitoring = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "info_prefiltering":
                     serializer = PrefiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.prefilters = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "ui_elements_detection":
                     serializer = UIElementsDetectionSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.ui_elements_detection = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.ui_elements_classification = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "info_postfiltering":
                     serializer = PostfiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.postfilters = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
                     serializer.validated_data['type'] = "SINGLE"
                     serializer.save()
                 case "process_discovery":
                     serializer = ProcessDiscoverySerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.process_discovery = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "extract_training_dataset":
                     serializer = ExtractTrainingDatasetSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.extract_training_dataset = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "aggregate_features_as_dataset_columns":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
                     serializer.validated_data['type'] = "AGGREGATE"
                     serializer.save()
                 case "decision_tree_training":
                     serializer = DecisionTreeTrainingSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.decision_tree_training = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case _:
                     pass
 
         # Updating the case study with the foreign keys of the phases to execute
-        case_study.save()
+        # case_study.save()
         transaction_works = True
     if active_celery:
         init_generate_case_study.delay(case_study.id, None)
@@ -289,6 +316,8 @@ def deleteCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
+    if cs.executed != 0:
+        raise Exception("This case study cannot be deleted because it has already been excecuted")
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
@@ -319,6 +348,8 @@ class CaseStudyView(generics.ListCreateAPIView):
             response_content = case_study_serialized.errors
             st=status.HTTP_400_BAD_REQUEST
         else:
+            # asignar el usuario al caso de estudio
+            case_study_serialized.validated_data['user'] = request.user
             execute_case_study = True
             try:
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
