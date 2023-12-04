@@ -316,6 +316,8 @@ def deleteCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
+    if cs.executed != 0:
+        raise Exception("This case study cannot be deleted because it has already been excecuted")
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
