@@ -23,6 +23,7 @@ class Monitoring(models.Model):
     type = models.CharField(max_length=25, default='imotions')
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=False, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     ub_log_path = models.CharField(max_length=250, blank=True, null=True, default=None)
     configurations = JSONField(null=True, blank=True, default=default_monitoring_conf)
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
@@ -33,7 +34,7 @@ class Monitoring(models.Model):
         # If there is more than one active monitoring, raise an error
         if self.active and len(monitorings) > 0:
             raise ValidationError('There is already an active monitoring for this case study.')
-    
+            
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Monitoring, self).save(*args, **kwargs)
