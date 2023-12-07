@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from apps.chefboost import Chefboost as chef
 from .utils import preprocess_data, create_and_fit_pipeline, def_preprocessor
-from core.settings import plot_decision_trees, several_iterations
+from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
@@ -37,9 +37,9 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 #         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
 #         enableParallelism = False
 #         config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'max_depth': 4}# 'num_cores': 2, 
-#         if several_iterations:
+#         if SEVERAL_ITERATIONS:
 #             durations = []
-#             for i in range(0, int(several_iterations)):
+#             for i in range(0, int(SEVERAL_ITERATIONS)):
 #                 start_t = time.time()
 #                 model, accuracy_score = chef.fit(df, config = config)
 #                 durations.append(float(time.time()) - float(start_t))
@@ -98,9 +98,9 @@ def chefboost_decision_tree(df, param_path, configuration, target_label, k_fold_
         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
         enableParallelism = False
         config = {'algorithm': alg, 'enableParallelism': enableParallelism }# 'num_cores': 2, 
-        if several_iterations:
+        if SEVERAL_ITERATIONS:
             durations = []
-            for i in range(0, int(several_iterations)):
+            for i in range(0, int(SEVERAL_ITERATIONS)):
                 start_t = time.time()
                 model = chef.fit(df, config = config, target_label = "Decision")
                 durations.append(float(time.time()) - float(start_t))
@@ -221,7 +221,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     # from IPython.display import Image
     # Image(filename = 'tree.png')
     
-    if plot_decision_trees:
+    if PLOT_DECISION_TREES:
         target = list(df[target_label].unique())
         target_casted = [str(t) for t in target]
         img = plot_decision_tree(

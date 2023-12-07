@@ -9,7 +9,7 @@ from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
 from apps.analyzer.models import CaseStudy 
-from core.settings import sep, decision_foldername, platform_name, flattening_phase_name, decision_model_discovery_phase_name, flattened_dataset_name
+from core.settings import sep, DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
@@ -66,7 +66,7 @@ def extract_training_dataset(decision_point_activity,
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
-    tprint("  " + platform_name + " - " + flattening_phase_name, "fancy60")
+    tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
     print(log_path+"\n")
 
     log = read_ui_log_as_dataframe(log_path)
@@ -103,13 +103,13 @@ def decision_tree_training(case_study, path_scenario):
     centroid_threshold = int(configuration["centroid_threshold"]) if "centroid_threshold" in configuration else None
     feature_values = configuration["feature_values"] if "feature_values" in configuration else None
     
-    tprint(platform_name + " - " + decision_model_discovery_phase_name, "fancy60")
+    tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
     print(flattened_json_log_path+"\n")
     
     flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
     # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
     
-    path += decision_foldername + sep
+    path += DECISION_FOLDERNAME + sep
     if not os.path.exists(path):
         os.mkdir(path)
     
@@ -119,7 +119,7 @@ def decision_tree_training(case_study, path_scenario):
     
     # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset.to_csv(path + flattened_dataset_name)
+    flattened_dataset.to_csv(path + FLATTENED_DATASET_NAME)
     columns_len = flattened_dataset.shape[1]
     flattened_dataset = flattened_dataset.fillna('NaN')
     # tree_levels = {}

@@ -18,7 +18,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.template import loader
 # Settings variables
-from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, phases_objects, scenario_nested_folder, active_celery
+from core.settings import PRIVATE_STORAGE_ROOT, METADATA_LOCATION, sep, DEFAULT_PHASES, PHASES_OBJECTS, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, aggregate_features_as_dataset_columns
@@ -38,7 +38,7 @@ from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsD
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
-from apps.analyzer.tasks import init_generate_case_study
+from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list, phases_to_execute_specs
 from apps.analyzer.collect_results import experiments_results_collectors
 from apps.featureextraction.utils import case_study_has_feature_extraction_technique
@@ -88,7 +88,7 @@ def generate_case_study(case_study, path_scenario, times, n, phase):
 #============================================================================================================================
 #============================================================================================================================
 
-def celery_task_process_case_study(case_study_id, phase):
+def case_study_generator_execution(case_study_id, phase):
     """
     This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
@@ -98,11 +98,11 @@ def celery_task_process_case_study(case_study_id, phase):
         decision_activity (string): activity where decision we want to study is taken. Example: 'B'
         scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
         special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: default_phases
+        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: DEFAULT_PHASES
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
-    metadata_path = metadata_location + sep # folder to store metadata that will be used in "results" mode
+    metadata_path = METADATA_LOCATION + sep # folder to store metadata that will be used in "results" mode
 
     if not os.path.exists(metadata_path):
         os.makedirs(metadata_path)
@@ -115,6 +115,8 @@ def celery_task_process_case_study(case_study_id, phase):
         aux_path = case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0]
     else:
         aux_path = case_study.exp_folder_complete_path
+    
+    # For BPM LOG GENERATOR (old AGOSUIRPA) files
     foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
     
     for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
@@ -125,13 +127,14 @@ def celery_task_process_case_study(case_study_id, phase):
         execute = False
         
         # Check if exist a Monitoring, ExtractTrainingDataset, DecisionTreeTraining, ProcessDiscovery, FeatureExtractionTechnique, UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, Report with a case_study_id equal to case_study.id
-        for p in phases_objects:
+        for p in PHASES_OBJECTS:
             if eval(p).objects.filter(case_study=case_study.id).exists():
                 execute = True
                 break
         
         if execute:
-            if scenario_nested_folder:
+            # For BPM LOG GENERATOR (old AGOSUIRPA) files
+            if SCENARIO_NESTED_FOLDER:
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
                 for n in foldername_logs_with_different_size_balance:
                     generate_case_study(case_study, path_scenario, times, n, phase)
@@ -160,23 +163,6 @@ def celery_task_process_case_study(case_study_id, phase):
 #============================================================================================================================
 
 def case_study_generator(data):
-    '''
-    Mandatory Attributes: title, exp_foldername, phases_to_execute, decision_point_activity, exp_folder_complete_path, gui_class_success_regex, gui_quantity_difference, scenarios_to_study, drop, special_colnames
-    Example values:
-    title = "case study 1"
-    decision_point_activity = "D"
-    path_to_save_experiment = None
-    gui_class_success_regex = "CheckBox_D or ImageView_D or TextView_D" # "(CheckBox_D or ImageView_D or TextView_D) and (ImageView_B or TextView_B)"
-    gui_quantity_difference = 1
-    drop = None  # Example: ["Advanced_10_Balanced", "Advanced_10_Imbalanced"]
-    interactive = False
-    phases_to_execute = {'ui_elements_detection': {},
-                   'ui_elements_classification': {},
-                   'extract_training_dataset': {},
-                   'decision_tree_training': {}
-                   }
-    scenarios = None # ["scenario_10","scenario_11","scenario_12","scenario_13"]
-    '''
     transaction_works = False
 
     with transaction.atomic():
@@ -262,10 +248,10 @@ def case_study_generator(data):
         # Updating the case study with the foreign keys of the phases to execute
         # case_study.save()
         transaction_works = True
-    if active_celery:
-        init_generate_case_study.delay(case_study.id, None)
+    if ACTIVE_CELERY:
+        celery_task_process_case_study.delay(case_study.id, None)
     else:
-        celery_task_process_case_study(case_study.id, None)
+        case_study_generator_execution(case_study.id, None)
         
     return transaction_works, case_study
 
@@ -313,10 +299,10 @@ def executeCaseStudy(request):
     print("Llego aqui")
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
-    if active_celery:
-        init_generate_case_study.delay(case_study_id, phase_id)
+    if ACTIVE_CELERY:
+        celery_task_process_case_study.delay(case_study_id, phase_id)
     else:
-        celery_task_process_case_study(case_study_id, phase_id)
+        case_study_generator_execution(case_study_id, phase_id)
         # monitoring.freeze = True
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
@@ -362,7 +348,7 @@ class CaseStudyView(generics.ListCreateAPIView):
             execute_case_study = True
             try:
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": f"phases_to_execute must be of type dict!!!!! and must be composed by phases contained in {default_phases}"}
+                    response_content = {"message": f"phases_to_execute must be of type dict!!!!! and must be composed by phases contained in {DEFAULT_PHASES}"}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
@@ -395,8 +381,8 @@ class CaseStudyView(generics.ListCreateAPIView):
                     return Response(response_content, st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in default_phases):
-                        response_content = {"message": f"phases_to_execute must be composed by phases contained in {default_phases}"}
+                    if not(phase in DEFAULT_PHASES):
+                        response_content = {"message": f"phases_to_execute must be composed by phases contained in {DEFAULT_PHASES}"}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)

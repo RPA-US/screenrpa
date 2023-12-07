@@ -25,33 +25,33 @@ DB_PORT =                       env('DB_PORT')
 DB_USER =                       env('DB_USER')
 DB_PASSWORD =                   env('DB_PASSWORD')
 API_VERSION =                   env('API_VERSION')
-active_celery =                 config('DISABLE_MULTITHREADING', default=False, cast=bool)
-scenario_nested_folder =        config('SCENARIO_NESTED_FOLDER', default=False, cast=bool)
-metadata_location =             env('METADATA_PATH')
-fixation_duration_threshold =   int(env('FIXATION_DURATION_THRESHOLD')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
-cropping_threshold =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
-gui_quantity_difference =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
-flattened_dataset_name =        env('FLATTENED_DATASET_NAME')
-several_iterations =            int(env('DECISION_TREE_TRAINING_ITERATIONS'))
-decision_foldername =           env('DECISION_TREE_TRAINING_FOLDERNAME')
-plot_decision_trees =           config('PLOT_DECISION_TREES', default=False, cast=bool)
+ACTIVE_CELERY =                 config('DISABLE_MULTITHREADING', default=False, cast=bool)
+SCENARIO_NESTED_FOLDER =        config('SCENARIO_NESTED_FOLDER', default=False, cast=bool)
+METADATA_LOCATION =             env('METADATA_PATH')
+FIXATION_DURATION_THRESHOLD =   int(env('FIXATION_DURATION_THRESHOLD')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
+CROPPING_THRESHOLD =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
+GUI_QUANTITY_DIFFERENCE =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
+FLATTENED_DATASET_NAME =        env('FLATTENED_DATASET_NAME')
+SEVERAL_ITERATIONS =            int(env('DECISION_TREE_TRAINING_ITERATIONS'))
+DECISION_FOLDERNAME =           env('DECISION_TREE_TRAINING_FOLDERNAME')
+PLOT_DECISION_TREES =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-platform_name =                         "SCREEN RPA"
-monitoring_phase_name =                 "monitoring"
-info_prefiltering_phase_name =          "preselection"
-detection_phase_name =                  "detection"
-classification_phase_name =             "classification"
-info_postfiltering_phase_name =             "selection"
-feature_extraction_phase_name =         "feature extraction"
-flattening_phase_name =                 "flattening"
-aggregate_feature_extraction_phase_name =         "aggreate feature extraction"
-decision_model_discovery_phase_name =   "decision model discovery"
+PLATFORM_NAME =                         "SCREEN RPA"
+MONITORING_PHASE_NAME =                 "monitoring"
+INFO_PREFILTERING_PHASE_NAME =          "preselection"
+DETECTION_PHASE_NAME =                  "detection"
+CLASSIFICATION_PHASE_NAME =             "classification"
+INFO_POSTFILTERING_PHASE_NAME =             "selection"
+FEATURE_EXTRACTION_PHASE_NAME =         "feature extraction"
+FLATTENING_PHASE_NAME =                 "flattening"
+AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =         "aggreate feature extraction"
+DECISION_MODEL_DISCOVERY_PHASE_NAME =   "decision model discovery"
 
 # System Default Phases
-default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
-phases_objects = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique','ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
-monitoring_imotions_needded_columns = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
+DEFAULT_PHASES = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
+PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique','ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
+MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
 #===================================================================================================
 #===================================================================================================

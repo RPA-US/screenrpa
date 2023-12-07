@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from dateutil import tz
 from core.utils import read_ui_log_as_dataframe
-from core.settings import monitoring_imotions_needded_columns
+from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
@@ -383,10 +383,10 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
 
     if monitoring_type == "imotions":
         # fixation.json to Dataframe checker
-        for col_name in monitoring_imotions_needded_columns:
+        for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
           if special_colnames[col_name] not in ui_log.columns:
-            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(monitoring_imotions_needded_columns))
-            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(monitoring_imotions_needded_columns))
+            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)

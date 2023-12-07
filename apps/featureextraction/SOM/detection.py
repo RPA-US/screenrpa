@@ -12,7 +12,7 @@ from art import tprint
 import logging
 import pickle
 from tqdm import tqdm
-from core.settings import cropping_threshold, platform_name, detection_phase_name
+from core.settings import CROPPING_THRESHOLD, PLATFORM_NAME, DETECTION_PHASE_NAME
 from apps.analyzer.utils import format_mht_file, read_ui_log_as_dataframe
 import apps.featureextraction.utils as utils
 from apps.featureextraction.SOM.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
@@ -326,10 +326,10 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
         for k in range(0, len(intervalo_y)):
             solapa_y = 0
             solapa_x = 0
-            y_min = min(intervalo_y[k])-cropping_threshold
-            y_max = max(intervalo_y[k])+cropping_threshold
-            x_min = min(intervalo_x[k])-cropping_threshold
-            x_max = max(intervalo_x[k])+cropping_threshold
+            y_min = min(intervalo_y[k])-CROPPING_THRESHOLD
+            y_max = max(intervalo_y[k])+CROPPING_THRESHOLD
+            x_min = min(intervalo_x[k])-CROPPING_THRESHOLD
+            x_max = max(intervalo_x[k])+CROPPING_THRESHOLD
             # and max([y-y_min, y_max-y, h-y_min, y_max-h])<=surrounding_max_diff
             solapa_y = (y_min <= y <= y_max) or (y_min <= h <= y_max)
             # and max([x-x_min, x_max-x, w-x_min, x_max-w])<=surrounding_max_diff
@@ -542,7 +542,7 @@ We make use of OpenCV to carry out the following tasks:
 
 
 def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", text_classname="text"):
-    tprint(platform_name + " - " + detection_phase_name, "fancy60")
+    tprint(PLATFORM_NAME + " - " + DETECTION_PHASE_NAME, "fancy60")
     print(param_img_root+"\n")
     
     if os.path.exists(param_log_path):
