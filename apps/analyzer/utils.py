@@ -232,6 +232,8 @@ def phases_to_execute_specs(case_study, path_scenario):
     # We check this phase is present in case_study to avoid exceptions
     if case_study_has_monitoring(case_study):
         aux_monitoring = get_monitoring(case_study=case_study)
+        aux_monitoring.freeze = True
+        aux_monitoring.save()
         to_exec_args['monitoring'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -239,6 +241,8 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_info_postfiltering(case_study):
         aux_prefilters = get_info_prefiltering(case_study=case_study)
+        aux_prefilters.freeze = True
+        aux_prefilters.save()
         to_exec_args['info_prefiltering'] =  (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -248,6 +252,9 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_ui_elements_detection(case_study):
         aux_ui_elements_detection = get_ui_elements_detection(case_study=case_study)
+        aux_ui_elements_detection.freeze = True
+        aux_ui_elements_detection.save()
+
         to_exec_args['ui_elements_detection'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.ui_elements_detection.input_filename,
@@ -258,6 +265,9 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         case_study.text_classname)
     if case_study_has_ui_elements_classification(case_study):
         aux_ui_elements_classification = get_ui_elements_classification(case_study=case_study)
+        aux_ui_elements_classification.freeze = True
+        aux_ui_elements_classification.save()
+
         to_exec_args['ui_elements_classification'] = (case_study.ui_elements_classification.model, # specific extractors
                                         case_study.ui_elements_classification.model_properties,
                                         path_scenario + 'components_npy' + sep,
@@ -272,6 +282,9 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_info_postfiltering(case_study):
         aux_postfilters = get_info_postfiltering(case_study=case_study)
+        aux_postfilters.freeze = True
+        aux_postfilters.save()
+
         to_exec_args['info_postfiltering'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -281,6 +294,9 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_feature_extraction_technique(case_study, 'SINGLE'):
         aux_feature_extraction_technique = get_feature_extraction_technique(case_study=case_study)
+        aux_feature_extraction_technique.freeze = True
+        aux_feature_extraction_technique.save()
+
         to_exec_args['feature_extraction_technique'] = (case_study.ui_elements_classification_classes,
                                         case_study.decision_point_activity,
                                         case_study.special_colnames["Case"],
@@ -299,6 +315,9 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_process_discovery(case_study):
         aux_process_discovery = get_process_discovery(case_study=case_study)
+        aux_process_discovery.freeze = True
+        aux_process_discovery.save()
+
         to_exec_args['process_discovery'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         case_study.special_colnames,
@@ -308,6 +327,9 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_extract_training_dataset(case_study):
         aux_extract_training_dataset = get_extract_training_dataset(case_study=case_study)
+        aux_extract_training_dataset.freeze = True
+        aux_extract_training_dataset.save()
+
         to_exec_args['extract_training_dataset'] = (case_study.decision_point_activity, 
                                         case_study.target_label,
                                         case_study.special_colnames,
@@ -318,6 +340,9 @@ def phases_to_execute_specs(case_study, path_scenario):
         
     if case_study_has_feature_extraction_technique(case_study, 'AGGREGATE'):
         aux_feature_extraction_technique = get_feature_extraction_technique(case_study=case_study)
+        aux_feature_extraction_technique.freeze = True
+        aux_feature_extraction_technique.save()
+
         to_exec_args['aggregate_features_as_dataset_columns'] = (case_study.ui_elements_classification_classes,
                                         case_study.decision_point_activity,
                                         case_study.special_colnames["Case"],
@@ -335,6 +360,9 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         aux_feature_extraction_technique.technique_name)
         
     if case_study_has_decision_tree_training(case_study):
-        to_exec_args['decision_tree_training'] = (case_study, path_scenario)
+      aux_decision_tree_training = get_decision_tree_training(case_study=case_study)
+      aux_decision_tree_training.freeze = True
+      aux_decision_tree_training.save()
+      to_exec_args['decision_tree_training'] = (case_study, path_scenario)
         
     return to_exec_args
