@@ -102,17 +102,3 @@ def delete_monitoring(request):
     monitoring.delete()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
 
-# def freeze_monitoring(request):
-#     monitoring_id = request.GET.get("monitoring_id")
-#     case_study_id = request.GET.get("case_study_id")
-#     monitoring = Monitoring.objects.get(id=monitoring_id)
-#     case_study = CaseStudy.objects.get(id=case_study_id)
-    
-#     #validations
-#     if request.user.id != monitoring.user.id:
-#         raise Exception("This object doesn't belong to the authenticated user")
-
-#     if case_study.executed > 0:    
-#         monitoring.freeze = True
-#         monitoring.save()
-#     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))

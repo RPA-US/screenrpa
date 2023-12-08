@@ -290,20 +290,13 @@ def executeCaseStudy(request):
     phase_id = request.GET.get("phase")
     cs = CaseStudy.objects.get(id=case_study_id)
     monitoring = Monitoring.objects.filter(case_study=cs.id, active=True)
-    print(request)
-    print("PASA POR AQUI")
-    print(request.GET)
-    print(monitoring)   
-    print("Ha pasado ya por monitoring") 
-    print(Monitoring.objects.all())
-    print("Llego aqui")
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
     if ACTIVE_CELERY:
         celery_task_process_case_study.delay(case_study_id, phase_id)
     else:
         case_study_generator_execution(case_study_id, phase_id)
-        # monitoring.freeze = True
+        
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
 def deleteCaseStudy(request):
