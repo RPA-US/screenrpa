@@ -115,7 +115,7 @@
                         {% if case_study.executed > 0 %}
                         <a class="dropdown-item " href="/case-study/detail/{{ case_study.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>Details</a>
-                        {% elif case_study.executed == 0 %}
+                        {% elif case_study.executed == 0 and case_study.phases_to_execute is not None %}
                         <div style="display: flex;">
                           <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
                             <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>Details</a>
@@ -125,6 +125,17 @@
                             <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>Generate report</a>
                           <a class="dropdown-item" href="/case-study/execute/?id={{ case_study.pk }}">
                             <i class="fas fa-play align-icon" style="color: green; vertical-align: 0%;"></i>Execute</a>
+                        </div>
+                        {% elif case_study.executed == 0 and case_study.phases_to_execute is None %}
+                        <div style="display: flex;">
+                          <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
+                            <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>Details</a>
+                          <a class="dropdown-item" onclick="return confirm('Are you sure you want to delete this case study?')" href="/case-study/delete/?id={{ case_study.pk }}">
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>Delete</a>
+                          <a class="dropdown-item" onclick="return confirm('Are you sure you want to generate the report?')" href="{% url 'reporting:report_generate' case_study_id=case_study.pk %}">
+                            <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>Generate report</a>
+                          <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
+                            <i class="fas fa-tools align-icon" style="color: grey; vertical-align: 0%;"></i>Set up at least one setup phase as active for execution.</a>
                         </div>
                         {% endif %}
                       </div>
