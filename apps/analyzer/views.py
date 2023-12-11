@@ -289,9 +289,10 @@ def executeCaseStudy(request):
     case_study_id = request.GET.get("id")
     phase_id = request.GET.get("phase")
     cs = CaseStudy.objects.get(id=case_study_id)
-    monitoring = Monitoring.objects.filter(case_study=cs.id, active=True)
     if request.user.id != cs.user.id:
         raise Exception("This case study doesn't belong to the authenticated user")
+    if cs.phases_to_execute is None: # if there is no phases to execute
+        raise Exception("There's no phase to execute");
     if ACTIVE_CELERY:
         celery_task_process_case_study.delay(case_study_id, phase_id)
     else:
