@@ -1,5 +1,5 @@
 from art import tprint
-from core.settings import sep, platform_name, classification_phase_name, feature_extraction_phase_name, aggregate_feature_extraction_phase_name
+from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from django.core.exceptions import ValidationError
@@ -21,7 +21,7 @@ def ui_elements_classification(*data):
     classifier_type = data_list.pop()
     data = tuple(data_list)
 
-    tprint(platform_name + " - " + classification_phase_name, "fancy60")
+    tprint(PLATFORM_NAME + " - " + CLASSIFICATION_PHASE_NAME, "fancy60")
     print(data_list[4]+"\n")
     
     match classifier_type:
@@ -38,7 +38,7 @@ def ui_elements_classification(*data):
     return output
 
 def feature_extraction_technique(*data):
-    tprint(platform_name + " - " + feature_extraction_phase_name, "fancy60")
+    tprint(PLATFORM_NAME + " - " + FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
 
     data_list = list(data)
     feature_extraction_technique_name = data_list.pop()
@@ -53,7 +53,7 @@ def feature_extraction_technique(*data):
     return output
 
 def aggregate_features_as_dataset_columns(*data):
-    tprint(platform_name + " - " + aggregate_feature_extraction_phase_name, "fancy60")
+    tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
 
     data_list = list(data)
     agg_feature_extraction_technique_name = data_list.pop()

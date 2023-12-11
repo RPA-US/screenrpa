@@ -7,7 +7,7 @@ from tqdm import tqdm
 from art import tprint
 from PIL import Image, ImageDraw
 from core.settings import sep
-from core.settings import platform_name, info_prefiltering_phase_name, sep
+from core.settings import PLATFORM_NAME, INFO_PREFILTERING_PHASE_NAME, sep
 from core.utils import read_ui_log_as_dataframe
 
 # TODO
@@ -81,7 +81,7 @@ def info_prefiltering(*data):
     skip = data_list.pop()
     data = tuple(data_list)
     if not skip:  
-        tprint(platform_name + " - " + info_prefiltering_phase_name, "fancy60")
+        tprint(PLATFORM_NAME + " - " + INFO_PREFILTERING_PHASE_NAME, "fancy60")
         
         match filters_format_type:
             case "rpa-us":
@@ -89,6 +89,6 @@ def info_prefiltering(*data):
             case _:
                 raise Exception("You select a type of prefilter that doesnt exists")
     else:
-        logging.info("Phase " + info_prefiltering_phase_name + " skipped!")
-        output = "Phase " + info_prefiltering_phase_name + " skipped!"
+        logging.info("Phase " + INFO_PREFILTERING_PHASE_NAME + " skipped!")
+        output = "Phase " + INFO_PREFILTERING_PHASE_NAME + " skipped!"
     return output

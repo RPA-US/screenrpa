@@ -10,7 +10,7 @@ from tqdm import tqdm
 from shapely.ops import unary_union
 from shapely.geometry import Point, Polygon, box
 from core.utils import read_ui_log_as_dataframe
-from core.settings import platform_name, info_postfiltering_phase_name, sep
+from core.settings import PLATFORM_NAME, INFO_POSTFILTERING_PHASE_NAME, sep
 from apps.featureextraction.utils import draw_geometry_over_image
 
 def calculate_intersection_area_v1(rect_x, rect_y, rect_width, rect_height, circle_x, circle_y, circle_radius):
@@ -275,7 +275,7 @@ def info_postfiltering(*data):
     skip = data_list.pop()
     data = tuple(data_list)
     if not skip:  
-        tprint(platform_name + " - " + info_postfiltering_phase_name, "fancy60")
+        tprint(PLATFORM_NAME + " - " + INFO_POSTFILTERING_PHASE_NAME, "fancy60")
         
         match filters_format_type:
             case "rpa-us":
@@ -283,8 +283,8 @@ def info_postfiltering(*data):
             case _:
                 raise Exception("You select a type of filter that doesnt exists")
     else:
-        logging.info("Phase " + info_postfiltering_phase_name + " skipped!")
-        output = "Phase " + info_postfiltering_phase_name + " skipped!"
+        logging.info("Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!")
+        output = "Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!"
     return output
 
 def draw_postfilter_relevant_ui_compos_borders(exp_path):

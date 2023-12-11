@@ -82,6 +82,7 @@ class CaseStudy(models.Model):
 
     def get_absolute_url(self):
         return reverse("home")
+    
 
     # def create(self, validated_data):
     #     CaseStudy.term_unique(self, validated_data.get("title"))
