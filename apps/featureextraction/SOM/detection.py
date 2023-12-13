@@ -460,10 +460,16 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "screen2som":
-                recortes, detections = screen2som_predict(param_img_root + image_names[img_index])
+                recortes, compos_json, som = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
+
+                with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
+                    json.dump(compos_json, outfile)
+
+                if not os.path.exists(path_to_save_components_json + "som/"):
+                    os.mkdir(path_to_save_components_json + "som/")
 
                 with open(path_to_save_components_json + "som/" + image_names[img_index] + '_som.json', "w") as outfile:
-                    json.dump(detections, outfile)
+                    json.dump(som, outfile)
 
             else:
                 raise Exception("You select a type of UI element detection that doesnt exists")

@@ -4,6 +4,7 @@ import json
 import cv2
 from .hierarchy_constructor import labels_to_soms
 from .utils import *
+from shapely.geometry import Polygon
 
 from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
@@ -18,7 +19,7 @@ TOP_MODEL = "checkpoints/screen2som/toplevel.pt"
 
 
 
-def predict(image_path):
+def predict(image_path, path_to_save_bordered_images):
     image_pil = cv2.imread(image_path)
 
     detections = dict()
@@ -45,6 +46,9 @@ def predict(image_path):
     toplevel_shapes = yolo_prediction(TOP_MODEL, image_pil, "seg", len(detections["shapes"]))
     detections["shapes"].extend(toplevel_shapes)
 
+    # Order shapes by area
+    detections["shapes"].sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
+
     # Image crops from shapes
     recortes = []
 
@@ -56,7 +60,10 @@ def predict(image_path):
     # SOM from shapes
     som = labels_to_soms(copy.deepcopy(detections))
 
-    return recortes, som
+    # Save bordered images
+    save_bordered_images(image_path, detections["shapes"], path_to_save_bordered_images)
+
+    return recortes, detections["shapes"], som
 
    
 def yolo_prediction(model_path, image_pil, type, id_start):
