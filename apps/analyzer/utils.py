@@ -257,27 +257,27 @@ def phases_to_execute_specs(case_study, path_scenario):
 
         to_exec_args['ui_elements_detection'] = (path_scenario +'log.csv',
                                         path_scenario,
-                                        case_study.ui_elements_detection.input_filename,
+                                        aux_ui_elements_detection.input_filename,
                                         case_study.special_colnames,
                                         aux_ui_elements_detection.configurations,
                                         aux_ui_elements_detection.skip,
-                                        aux_ui_elements_detection.type,
-                                        case_study.text_classname)
+                                        aux_ui_elements_detection.type)
+                                        
     if case_study_has_ui_elements_classification(case_study):
         aux_ui_elements_classification = get_ui_elements_classification(case_study=case_study)
         aux_ui_elements_classification.freeze = True
         aux_ui_elements_classification.save()
 
         to_exec_args['ui_elements_classification'] = (case_study.ui_elements_classification.model, # specific extractors
-                                        case_study.ui_elements_classification.model_properties,
+                                        aux_ui_elements_classification.model_properties,
                                         path_scenario + 'components_npy' + sep,
                                         path_scenario + 'components_json' + sep,
                                         path_scenario + 'log.csv',
                                         case_study.special_colnames["Screenshot"],
-                                        case_study.text_classname,
+                                        aux_ui_elements_classification.text_classname,
                                         aux_ui_elements_classification.skip,
-                                        case_study.ui_elements_classification_classes,
-                                        case_study.ui_elements_classification_image_shape,
+                                        aux_ui_elements_classification.ui_elements_classification_classes,
+                                        aux_ui_elements_classification.ui_elements_classification_image_shape,
                                         aux_ui_elements_classification.type)
         
     if case_study_has_info_postfiltering(case_study):
