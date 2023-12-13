@@ -139,6 +139,7 @@ CSV_exit
 resources/
 mockups
 privatefiles/
+checkpoints/
 
 # SQLite Database
 loggenerator.db
