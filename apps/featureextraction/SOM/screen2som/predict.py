@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import json
+import cv2
 from .hierarchy_constructor import labels_to_soms
 from .utils import *
 
@@ -44,9 +45,18 @@ def predict(image_path):
     toplevel_shapes = yolo_prediction(TOP_MODEL, image_pil, "seg", len(detections["shapes"]))
     detections["shapes"].extend(toplevel_shapes)
 
+    # Image crops from shapes
+    recortes = []
+
+    for i, shape in enumerate(detections["shapes"]):
+        x1, y1 = np.min(shape["points"], axis=0)
+        x2, y2 = np.max(shape["points"], axis=0)
+        recortes.append(image_pil[int(y1):int(y2), int(x1):int(x2)])
+
+    # SOM from shapes
     som = labels_to_soms(copy.deepcopy(detections))
 
-    return som
+    return recortes, som
 
    
 def yolo_prediction(model_path, image_pil, type, id_start):
