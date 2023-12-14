@@ -9,6 +9,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from django.shortcuts import get_object_or_404
 from .models import ExtractTrainingDataset, DecisionTreeTraining
+from django.utils.translation import gettext_lazy as _
 
 ###########################################################################################################################
 # case study get phases data  ###########################################################################################
@@ -208,7 +209,7 @@ def read_feature_column_name(column_name):
             centroid = [float(coincidences.group(aux1+2).split("-")[0]), float(coincidences.group(aux1+2).split("-")[1])]
         activity = coincidences.group(aux1+aux2+2)
     else:
-        raise Exception("El identificador no sigue el formato esperado.")
+        raise Exception(_("The identifier does not follow the pattern"))
 
     return suffix, feature, centroid, activity
   
