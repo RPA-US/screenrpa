@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 11:27+0000\n"
+"POT-Creation-Date: 2023-12-14 11:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/authentication/forms.py:16 apps/authentication/forms.py:47
 #: apps/authentication/forms.py:101
 msgid "Username"
@@ -46,18 +47,18 @@ msgstr "Verificación de contraseña"
 msgid "First name"
 msgstr "Nombre"
 
-#: apps/authentication/views.py:32
+#: apps/authentication/views.py:31
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: apps/authentication/views.py:34
+#: apps/authentication/views.py:33
 msgid "Error validating the form"
 msgstr "Error al validar el formulario"
 
-#: apps/authentication/views.py:55
+#: apps/authentication/views.py:54
 msgid "User created - please <a href=\"/login\">login</a>."
 msgstr "Usuario creado - por favor <a href=\"/login\">inicia sesión</a>."
 
-#: apps/authentication/views.py:61
+#: apps/authentication/views.py:60
 msgid "Form is not valid"
 msgstr "El formulario no es válido"
