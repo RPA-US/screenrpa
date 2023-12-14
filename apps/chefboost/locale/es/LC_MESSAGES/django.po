@@ -1,0 +1,142 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-12-14 15:03+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: apps/chefboost/Chefboost.py:65
+msgid "Please set the target_label"
+msgstr "Por favor, establezca la etiqueta objetivo"
+
+#: apps/chefboost/Chefboost.py:75
+msgid "Expected: Decision, Existing: "
+msgstr "Esperado: Decisión, Existente: "
+
+#: apps/chefboost/Chefboost.py:76
+msgid ""
+"Please confirm that name of the target column is \"Decision\" and it is put "
+"to the right in pandas data frame"
+msgstr ""
+"Por favor, confirme que el nombre de la columna objetivo es \"Decision\" y está colocado a la derecha en el marco de datos de pandas"
+
+#: apps/chefboost/Chefboost.py:114
+msgid ""
+"Invalid algorithm passed. You passed %(algorithm), but valid algorithms are "
+"%(valid_algorithms)"
+msgstr ""
+"Algoritmo inválido proporcionado. Usted proporcionó %(algorithm), pero los algoritmos válidos son %(valid_algorithms)"
+
+#: apps/chefboost/Chefboost.py:132
+msgid "[INFO]: &(cores) CPU cores will be allocated in parallel running"
+msgstr "[INFO]: Se asignarán &(cores) núcleos de CPU para ejecución en paralelo"
+
+#: apps/chefboost/Chefboost.py:143
+msgid ""
+"Regression trees cannot be applied for nominal target values! You can either "
+"change the algorithm or data set."
+msgstr ""
+"No se pueden aplicar árboles de regresión para valores objetivos nominales. Puede cambiar el algoritmo o el conjunto de datos."
+
+#: apps/chefboost/Chefboost.py:148
+msgid ""
+"WARNING: You set the algorithm to %(algorithm) but the Decision column of "
+"your data set has non-object type."
+msgstr ""
+"ADVERTENCIA: Usted configuró el algoritmo como %(algorithm) pero la columna Decision de su conjunto de datos tiene un tipo no objeto."
+
+#: apps/chefboost/Chefboost.py:149
+msgid "That's why, the algorithm is set to Regression to handle the data set."
+msgstr "Por eso, el algoritmo se establece como Regresión para manejar el conjunto de datos."
+
+#: apps/chefboost/Chefboost.py:156
+msgid "Gradient Boosting Machines..."
+msgstr "Máquinas de Refuerzo de Gradiente..."
+
+#: apps/chefboost/Chefboost.py:165
+msgid "Adaboost must be run on numeric data set for both features and target"
+msgstr "Adaboost debe ejecutarse en un conjunto de datos numéricos tanto para características como para el objetivo"
+
+#: apps/chefboost/Chefboost.py:169
+msgid "%(algorithm) tree is going to be built..."
+msgstr "Se va a construir un árbol %(algorithm) ..."
+
+#: apps/chefboost/commons/evaluate.py:17
+#, python-format
+msgid "Evaluate %(task) set"
+msgstr "Evaluar conjunto %(task)"
+
+#: apps/chefboost/commons/evaluate.py:47
+msgid "Labels: "
+msgstr "Etiquetas: "
+
+#: apps/chefboost/commons/evaluate.py:48
+msgid "Confusion matrix: "
+msgstr "Matriz de confusión: "
+
+#: apps/chefboost/commons/evaluate.py:77
+msgid "Decision "
+msgstr "Decisión "
+
+#: apps/chefboost/commons/evaluate.py:78
+msgid "Accuracy: "
+msgstr "Precisión: "
+
+#: apps/chefboost/commons/evaluate.py:81
+msgid "Precision: %(precision)\\%, Recall: %(recall)\\%, F1: %(f1_score)\\%"
+msgstr "Precisión: %(precision)\\%, Recuperación: %(recall)\\%, F1: %(f1_score)\\%"
+
+#: apps/chefboost/commons/functions.py:77
+msgid "WARNING: "
+msgstr "ADVERTENCIA: "
+
+#: apps/chefboost/tuning/adaboost.py:115
+#, python-format
+msgid "Epoch %(i)d. Loss: %(mae)d. Process: "
+msgstr "Época %(i)d. Pérdida: %(mae)d. Proceso: "
+
+#: apps/chefboost/tuning/adaboost.py:119
+msgid ""
+"The best epoch is %(best_epoch_idx) with the %(best_epoch_value) MAE score"
+msgstr ""
+"La mejor época es %(best_epoch_idx) con el puntaje MAE %(best_epoch_value)"
+
+#: apps/chefboost/tuning/gbm.py:160
+msgid "The best epoch is %(best_epoch_idx) with %(best_epoch_loss) loss value"
+msgstr "La mejor época es %(best_epoch_idx) con un valor de pérdida de %(best_epoch_loss)"
+
+#: apps/chefboost/tuning/gbm.py:164
+msgid ""
+"MSE of %(num_of_instances) instances are boosted from %(boosted_from) to "
+"%(best_epoch_loss) in %(epochs) epochs"
+msgstr ""
+"El error cuadrático medio (MSE) de %(num_of_instances) instancias se incrementó de %(boosted_from) a %(best_epoch_loss) en %(epochs) épocas"
+
+#: apps/chefboost/tuning/gbm.py:305
+#, python-format
+msgid "Epoch %(ep)d. Accuracy: %(ac)d. Process: "
+msgstr "Época %(ep)d. Precisión: %(ac)d. Proceso: "
+
+#: apps/chefboost/tuning/gbm.py:311
+msgid ""
+"The best accuracy got in %(best_accuracy_idx) epoch with the score "
+"%(best_accuracy_value)"
+msgstr ""
+"La mejor precisión se obtuvo en la época %(best_accuracy_idx) con el puntaje %(best_accuracy_value)"
+
+#: apps/chefboost/tuning/randomforest.py:31
+#, python-format
+msgid "Sub decision tree %(i)d is processing"
+msgstr "Se está procesando el subárbol de decisión %(i)d"
