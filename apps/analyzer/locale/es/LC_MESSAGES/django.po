@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 14:33+0000\n"
+"POT-Creation-Date: 2023-12-14 14:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,6 +30,8 @@ msgstr ""
 "lo esperado"
 
 #: apps/analyzer/collect_results.py:106
+#, fuzzy, python-format
+#| msgid "Condition %(expression) is not fulfilled"
 msgid "Condition %(expression) is not fulfilled"
 msgstr "La condición %(expression) no se cumple"
 
