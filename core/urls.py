@@ -8,11 +8,11 @@ from django.urls import path, include  # add this
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from .settings import API_VERSION
 from apps.analyzer.views import index
+from django.conf.urls.i18n import i18n_patterns as _
 
 urlpatterns = [
-    path('admin/', admin.site.urls),          # Django admin route
+    path('admin/', admin.site.urls),
     path("", index, name='home'),
-    path("", include("apps.authentication.urls")), # Auth routes - login / register
     path('case-study/', include("apps.analyzer.urls")),
     path('monitoring/', include("apps.behaviourmonitoring.urls")),
     path('fe/', include("apps.featureextraction.urls")),
@@ -23,3 +23,8 @@ urlpatterns = [
     path(API_VERSION+'docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path(API_VERSION+'redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc')
 ]
+
+urlpatterns += _(
+    path("", include("apps.authentication.urls")),
+)
+    
