@@ -6,6 +6,7 @@ Copyright (c) RPA-US
 from django import forms
 from .models import CaseStudy
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 class CaseStudyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -38,13 +39,13 @@ class CaseStudyForm(forms.ModelForm):
             "title": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Nice experiment title!"
+                    "placeholder": _("Nice experiment title!")
                     }
             ),
             "description": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Short experiment description..."
+                    "placeholder": _("Short experiment description...")
                     }
             ),
             'exp_file': forms.FileInput(
@@ -106,7 +107,7 @@ class CaseStudyForm(forms.ModelForm):
             "target_label": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Variant"
+                    "placeholder": _("Variant")
                     }
             ),
             "model": forms.Select(
@@ -145,7 +146,7 @@ class CaseStudyForm(forms.ModelForm):
         title = self.cleaned_data.get("title")
         qs = CaseStudy.objects.filter(title=title)
         if qs.exists():
-            raise forms.ValidationError("Title is taken")
+            raise forms.ValidationError(_("Title is taken"))
         return title
 
 

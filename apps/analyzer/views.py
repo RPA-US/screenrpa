@@ -11,6 +11,7 @@ from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
 # Home pages imports
@@ -119,7 +120,7 @@ def case_study_generator_execution(case_study_id, phase):
     # For BPM LOG GENERATOR (old AGOSUIRPA) files
     foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
     
-    for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
+    for scenario in tqdm(case_study.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
         # time.sleep(.1)
         # print("\nActual Scenario: " + str(scenario))
         # We check there is at least 1 phase to execute
@@ -142,7 +143,7 @@ def case_study_generator_execution(case_study_id, phase):
                 path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep
                 generate_case_study(case_study, path_scenario, times, scenario, phase)
         else:
-            raise Exception("There's no phase to execute or the specified phase doesnt corresponds to a supported one")
+            raise Exception(_("There's no phase to execute or the specified phase doesn't corresponds to a supported one"))
                 
 
     # Serializing json
@@ -156,7 +157,7 @@ def case_study_generator_execution(case_study_id, phase):
     with open(metadata_final_path, "w") as outfile:
         outfile.write(json_object)
         
-    return "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_final_path
+    return _(f"Case study '%(title)' executed!!. Case study foldername: %(exp_foldername). Metadata saved in: %(metadata_final_path)") % {"title": case_study.title, "exp_foldername": case_study.exp_foldername, "metadata_final_path": metadata_final_path}
 
 #============================================================================================================================
 #============================================================================================================================
@@ -270,7 +271,7 @@ class CaseStudyCreateView(CreateView):
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError("User must be authenticated.")
+            raise ValidationError(_("User must be authenticated."))
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         saved = self.object.save()
@@ -290,9 +291,9 @@ def executeCaseStudy(request):
     phase_id = request.GET.get("phase")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        raise Exception("This case study doesn't belong to the authenticated user")
+        raise Exception(_("This case study doesn't belong to the authenticated user"))
     if cs.phases_to_execute is None: # if there is no phases to execute
-        raise Exception("There's no phase to execute");
+        raise Exception(_("There's no phase to execute"));
     if ACTIVE_CELERY:
         celery_task_process_case_study.delay(case_study_id, phase_id)
     else:
@@ -304,9 +305,9 @@ def deleteCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        raise Exception("This case study doesn't belong to the authenticated user")
+        raise Exception(_("This case study doesn't belong to the authenticated user"))
     if cs.executed != 0:
-        raise Exception("This case study cannot be deleted because it has already been excecuted")
+        raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
@@ -342,20 +343,20 @@ class CaseStudyView(generics.ListCreateAPIView):
             execute_case_study = True
             try:
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": f"phases_to_execute must be of type dict!!!!! and must be composed by phases contained in {DEFAULT_PHASES}"}
+                    response_content = {"message": _("phases_to_execute must be of type dict!!!!! and must be composed by phases contained in %(DEFAULT_PHASES)s")} % {"DEFAULT_PHASES": DEFAULT_PHASES}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_detection') and (not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["legacy", "uied"]):
-                    response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
+                    response_content = {"message": _("Elements Detection algorithm must be one of ['legacy', 'uied']")}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_classification'):
                     if (not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["legacy", "uied"]):
-                        response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                        response_content = {"message": _("Elements Classification algorithm must be one of ['legacy', 'uied']")}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
@@ -363,20 +364,20 @@ class CaseStudyView(generics.ListCreateAPIView):
                     for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model'],
                              case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties']]:
                         if not os.path.exists(path):
-                            response_content = {"message": f"The following file or directory does not exists: {path}"}
+                            response_content = {"message": _("The following file or directory does not exists: %(path)") % {"path": path}}
                             st = status.HTTP_422_UNPROCESSABLE_ENTITY
                             execute_case_study = False
                             return Response(response_content, st)
 
                 if not os.path.exists(case_study_serialized.data['exp_folder_complete_path']):
-                    response_content = {"message": f"The following file or directory does not exists: {case_study_serialized.data['exp_folder_complete_path']}"}
+                    response_content = {"message": _("The following file or directory does not exists: %(path)") % {"path": case_study_serialized.data['exp_folder_complete_path']}}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
                     if not(phase in DEFAULT_PHASES):
-                        response_content = {"message": f"phases_to_execute must be composed by phases contained in {DEFAULT_PHASES}"}
+                        response_content = {"message": _("phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s") % {"DEFAULT_PHASES": DEFAULT_PHASES}}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
@@ -389,10 +390,10 @@ class CaseStudyView(generics.ListCreateAPIView):
                     if not transaction_works:
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     else:    
-                        response_content = {"message": f"Case study with id:{case_study.id} is being generated ..."}
+                        response_content = {"message": _("Case study with id:%(id) is being generated ...") % {"id": case_study.id}}
 
             except Exception as e:
-                response_content = {"message": "Some of the attributes are invalid: " + str(e) }
+                response_content = {"message": _("Some of the attributes are invalid: ") + str(e) }
                 st = status.HTTP_422_UNPROCESSABLE_ENTITY
 
         # # item = CaseStudy.objects.create(serializer)
@@ -411,7 +412,7 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
             return Response(response, status=st)
 
         except Exception as e:
-            response = {f"Case Study with id {case_study_id} not found"}
+            response = {_("Case Study with id %(id) not found") % {"id": case_study_id}}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
@@ -429,10 +430,10 @@ class ResultCaseStudyView(generics.ListCreateAPIView):
                 csv_data.to_csv(response, index=False)
                 return response
             else:
-                response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
+                response = {"message": _('The processing of this case study has not yet finished, please try again in a few minutes')}
 
         except Exception as e:
-            response = {"message": f"Case Study with id {case_study_id} raise an exception: " + str(e)}
+            response = {"message": _("Case Study with id %(id) raised an exception: ") % {"id": case_study_id} + str(e)}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
@@ -486,7 +487,7 @@ def exp_file_download(request, case_study_id):
     if cs.exists():
         unzipped_folder = cs[0].exp_folder_complete_path
     else:
-        raise Exception("You don't have permissions to access this files")
+        raise Exception(_("You don't have permissions to access this files"))
     
     # Create a temporary zip file containing the contents of the unzipped folder
     zip_filename = os.path.basename(unzipped_folder) + ".zip"
