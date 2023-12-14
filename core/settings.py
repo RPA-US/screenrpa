@@ -190,6 +190,7 @@ LANGUAGES = [
 ]
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'authentication', 'locale'),
     os.path.join(CORE_DIR, 'locale'),
 ]
 

@@ -6,20 +6,21 @@ Copyright (c) RPA-US
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 
 
 class LoginForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Username",
+                "placeholder": _("Username"),
                 "class": "form-control"
             }
         ))
     password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                "placeholder": "Password",
+                "placeholder": _("Password"),
                 "class": "form-control"
             }
         ))
@@ -29,42 +30,42 @@ class SignUpForm(UserCreationForm):
     firstname = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "First Name",
+                "placeholder": _("First Name"),
                 "class": "form-control"
             }
         ))
     lastname = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Last Name",
+                "placeholder": _("Last Name"),
                 "class": "form-control"
             }
         ))
     username = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Username",
+                "placeholder": _("Username"),
                 "class": "form-control"
             }
         ))
     email = forms.EmailField(
         widget=forms.EmailInput(
             attrs={
-                "placeholder": "Email",
+                "placeholder": _("Email"),
                 "class": "form-control"
             }
         ))
     password1 = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                "placeholder": "Password",
+                "placeholder": _("Password"),
                 "class": "form-control"
             }
         ))
     password2 = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                "placeholder": "Password check",
+                "placeholder": _("Password check"),
                 "class": "form-control"
             }
         ))
@@ -83,28 +84,28 @@ class UserForm(forms.ModelForm):
                 attrs={
                     "id": "input-first_name",
                     "class": "form-control",
-                    "placeholder": "First name"
+                    "placeholder": _("First name")
                     }
             ),
             "last_name": forms.TextInput(
                 attrs={
                     "id": "input-last_name",
                     "class": "form-control",
-                    "placeholder": "Last Name"
+                    "placeholder": _("Last Name")
                     }
             ),
             "username": forms.TextInput(
                 attrs={
                     "id": "input-username",
                     "class": "form-control",
-                    "placeholder": "Username"
+                    "placeholder": _("Username")
                     }
             ),
             "email": forms.EmailInput(
                 attrs={
                     "id": "input-email",
                     "class": "form-control",
-                    "placeholder": "Email"
+                    "placeholder": _("Email")
                     }
             )
             }
