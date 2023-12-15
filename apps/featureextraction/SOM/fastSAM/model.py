@@ -9,13 +9,13 @@ Usage - Predict:
     results = model.predict('ultralytics/assets/bus.jpg')
 """
 
-from ultralytics.yolo.cfg import get_cfg
-from ultralytics.yolo.engine.exporter import Exporter
-from ultralytics.yolo.engine.model import YOLO
-from ultralytics.yolo.utils import DEFAULT_CFG, LOGGER, ROOT, is_git_dir
-from ultralytics.yolo.utils.checks import check_imgsz
+from ultralytics.cfg import get_cfg
+from ultralytics.engine.exporter import Exporter
+from ultralytics import YOLO
+from ultralytics.utils import DEFAULT_CFG, LOGGER, ROOT, is_git_dir
+from ultralytics.utils.checks import check_imgsz
 
-from ultralytics.yolo.utils.torch_utils import model_info, smart_inference_mode
+from ultralytics.utils.torch_utils import model_info, smart_inference_mode
 from .predict import FastSAMPredictor
 
 
@@ -34,7 +34,7 @@ class FastSAM(YOLO):
                        Check the 'configuration' section in the documentation for all available options.
 
         Returns:
-            (List[ultralytics.yolo.engine.results.Results]): The prediction results.
+            (List[ultralytics.engine.results.Results]): The prediction results.
         """
         if source is None:
             source = ROOT / 'assets' if is_git_dir() else 'https://ultralytics.com/images/bus.jpg'

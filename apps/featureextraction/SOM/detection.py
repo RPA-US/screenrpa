@@ -19,6 +19,7 @@ from apps.featureextraction.SOM.segment_anything import sam_model_registry, SamA
 import apps.featureextraction.SOM.ip_draw as draw
 from apps.featureextraction.SOM.Component import Component 
 from apps.featureextraction.SOM.sam import get_sam_gui_components_crops 
+from apps.featureextraction.SOM.screen2som.predict import predict as screen2som_predict
 from .UiComponent import UiComponent #QUIT
 
 """
@@ -432,7 +433,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # store all bounding boxes from the ui elements that are in 'uicompos'
                 utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)
 
-            elif algorithm == "sam" or algorithm == "fast-sam": #TODO
+            elif algorithm == "sam" or algorithm == "fast-sam":
                 path_to_save_mask_npy=path_to_save_mask_elements+ image_names[img_index]
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/", sam_type=algorithm)
                 
@@ -457,6 +458,18 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
 
                 # save texts npy
                 # np.save(screenshot_texts_npy, text_or_not_text)
+
+            elif algorithm == "screen2som":
+                recortes, compos_json, som = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
+
+                with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
+                    json.dump(compos_json, outfile)
+
+                if not os.path.exists(path_to_save_components_json + "som/"):
+                    os.mkdir(path_to_save_components_json + "som/")
+
+                with open(path_to_save_components_json + "som/" + image_names[img_index] + '_som.json', "w") as outfile:
+                    json.dump(som, outfile)
 
             else:
                 raise Exception("You select a type of UI element detection that doesnt exists")

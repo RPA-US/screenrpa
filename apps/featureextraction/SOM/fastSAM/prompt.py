@@ -11,7 +11,7 @@ try:
     import clip  # for linear_assignment
 
 except (ImportError, AssertionError, AttributeError):
-    from ultralytics.yolo.utils.checks import check_requirements
+    from ultralytics.utils.checks import check_requirements
 
     check_requirements('git+https://github.com/openai/CLIP.git')  # required before installing lap from source
     import clip
