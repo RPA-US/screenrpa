@@ -191,7 +191,11 @@ LANGUAGES = [
 ]
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'analyzer', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'authentication', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'behaviourmonitoring', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'chefboost', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'decisiondiscovery', 'locale'),
     os.path.join(CORE_DIR, 'locale'),
 ]
 

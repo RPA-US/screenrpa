@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 from core.settings import sep
 from core.settings import PLATFORM_NAME, INFO_PREFILTERING_PHASE_NAME, sep
 from core.utils import read_ui_log_as_dataframe
+from django.utils.translation import gettext_lazy as _
 
 # TODO
 def rectangle_prefilter():
@@ -87,7 +88,7 @@ def info_prefiltering(*data):
             case "rpa-us":
                 output = apply_prefilters(*data)
             case _:
-                raise Exception("You select a type of prefilter that doesnt exists")
+                raise Exception(_("You select a type of prefilter that doesnt exists"))
     else:
         logging.info("Phase " + INFO_PREFILTERING_PHASE_NAME + " skipped!")
         output = "Phase " + INFO_PREFILTERING_PHASE_NAME + " skipped!"
