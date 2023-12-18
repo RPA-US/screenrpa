@@ -1,0 +1,204 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-12-18 10:44+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: apps/reporting/views.py:64 apps/reporting/views.py:81
+msgid "Process Definition Document"
+msgstr "Documento de Definición de Proceso"
+
+#: apps/reporting/views.py:65
+msgid "This is a first version of your RPA Process Definition Document."
+msgstr "Esta es la primera versión de su Documento de Definición de Proceso de RPA."
+
+#: apps/reporting/views.py:66
+msgid "PDDs"
+msgstr "DDPs"
+
+#: apps/reporting/views.py:82
+msgid "Version 1.0"
+msgstr "Versión 1.0"
+
+#: apps/reporting/views.py:90
+msgid "Table of Contents"
+msgstr "Índice de Contenidos"
+
+#: apps/reporting/views.py:110
+msgid "Right-click to update field."
+msgstr "Haga clic derecho para actualizar el campo."
+
+#: apps/reporting/views.py:140
+msgid "1. Introduction"
+msgstr "1. Introducción"
+
+#: apps/reporting/views.py:148
+msgid "This document outlines the process definition for..."
+msgstr "Este documento describe la definición del proceso para..."
+
+#: apps/reporting/views.py:160
+msgid "This process consists of the following steps:"
+msgstr "Este proceso consiste en los siguientes pasos:"
+
+#: apps/reporting/views.py:164
+msgid "Step 1: ..."
+msgstr "Paso 1: ..."
+
+#: apps/reporting/views.py:165
+msgid ""
+"\n"
+"Step 2: ..."
+msgstr ""
+"\n"
+"Paso 2: ..."
+
+#: apps/reporting/views.py:166
+msgid ""
+"\n"
+"Step 3: ..."
+msgstr ""
+"\n"
+"Paso 3: ..."
+
+#: apps/reporting/views.py:178
+msgid "The following roles and responsibilities are involved in this process:"
+msgstr "Los siguientes roles y responsabilidades están involucrados en este proceso:"
+
+#: apps/reporting/views.py:192
+msgid "Role"
+msgstr "Rol"
+
+#: apps/reporting/views.py:193
+msgid "Responsibilities"
+msgstr "Responsabilidades"
+
+#: apps/reporting/views.py:197
+msgid "Manager"
+msgstr "Gerente"
+
+#: apps/reporting/views.py:198
+msgid "Approves final output of the process"
+msgstr "Aprueba la salida final del proceso"
+
+#: apps/reporting/views.py:200
+msgid "Analyst"
+msgstr "Analista"
+
+#: apps/reporting/views.py:201
+msgid "Conducts analysis for the process"
+msgstr "Realiza análisis para el proceso"
+
+#: apps/reporting/views.py:203
+msgid "Developer"
+msgstr "Desarrollador"
+
+#: apps/reporting/views.py:204
+msgid "Implements changes to the process"
+msgstr "Implementa cambios en el proceso"
+
+#: apps/reporting/views.py:208
+msgid "4. Process Flow"
+msgstr "4. Flujo de Proceso"
+
+#: apps/reporting/views.py:216
+msgid "The process flow for this process is as follows:"
+msgstr "El flujo de proceso para este proceso es el siguiente:"
+
+#: apps/reporting/views.py:221
+msgid "5. Process Metrics"
+msgstr "5. Métricas del Proceso"
+
+#: apps/reporting/views.py:229
+msgid "The following metrics are tracked for this process:"
+msgstr "Se siguen las siguientes métricas para este proceso:"
+
+#: apps/reporting/views.py:234
+msgid "Metric 1: ..."
+msgstr "Métrica 1: ..."
+
+#: apps/reporting/views.py:235
+msgid ""
+"\n"
+"Metric 2: ..."
+msgstr ""
+"\n"
+"Métrica 2: ..."
+
+#: apps/reporting/views.py:236
+msgid ""
+"\n"
+"Metric 3: ..."
+msgstr ""
+"\n"
+"Métrica 3: ..."
+
+#: apps/reporting/views.py:240
+msgid "6. Process Improvement"
+msgstr "6. Mejora del Proceso"
+
+#: apps/reporting/views.py:248
+msgid ""
+"The following improvement opportunities have been identified for this "
+"process:"
+msgstr ""
+"Se han identificado las siguientes oportunidades de mejora para este proceso:"
+
+#: apps/reporting/views.py:254 apps/reporting/views.py:261
+#: apps/reporting/views.py:268
+msgid "Opportunity 1: ..."
+msgstr "Oportunidad 1: ..."
+
+#: apps/reporting/views.py:255 apps/reporting/views.py:262
+#: apps/reporting/views.py:269
+msgid "Opportunity 2: ..."
+msgstr "Oportunidad 2: ..."
+
+#: apps/reporting/views.py:256 apps/reporting/views.py:263
+#: apps/reporting/views.py:270
+msgid "Opportunity 3: ..."
+msgstr "Oportunidad 3: ..."
+
+#: apps/reporting/views.py:283
+msgid "The following terms are used throughout this document:"
+msgstr "Los siguientes términos se utilizan en todo este documento:"
+
+#: apps/reporting/views.py:298
+msgid "Term"
+msgstr "Término"
+
+#: apps/reporting/views.py:299
+msgid "Definition"
+msgstr "Definición"
+
+#: apps/reporting/views.py:303
+msgid "Process"
+msgstr "Proceso"
+
+#: apps/reporting/views.py:304
+msgid "A set of activities that transform inputs into outputs"
+msgstr "Un conjunto de actividades que transforman insumos en resultados"
+
+#: apps/reporting/views.py:306
+msgid "Metric"
+msgstr "Métrica"
+
+#: apps/reporting/views.py:307
+msgid "A quantifiable measure used to track the performance of a process"
+msgstr "Una medida cuantificable utilizada para seguir el rendimiento de un proceso"
+
+#: apps/reporting/views.py:344
+msgid "File does not exist"
+msgstr "El archivo no existe"
