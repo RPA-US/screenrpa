@@ -196,6 +196,7 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'apps', 'behaviourmonitoring', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'chefboost', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'decisiondiscovery', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'featureextraction', 'locale'),
     os.path.join(CORE_DIR, 'locale'),
 ]
 

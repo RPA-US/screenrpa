@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-15 08:43+0000\n"
+"POT-Creation-Date: 2023-12-15 08:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,21 +17,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/featureextraction/SOM/CNN/CompDetCNN.py:25
 msgid "*** No model loaded ***"
 msgstr "*** No se cargó ningún modelo ***"
 
 #: apps/featureextraction/SOM/detection.py:551
 msgid "Log already exists, it's not needed to execute format conversor"
-msgstr "El registro ya existe, no es necesario ejecutar el conversor de formato"
+msgstr ""
+"El registro ya existe, no es necesario ejecutar el conversor de formato"
 
 #: apps/featureextraction/SOM/detection.py:553
 msgid ""
 "apps/featureextraction/SOM/detection.py Format conversor executed! Type: "
 "%(format), Filename: %(filename)"
 msgstr ""
-"¡Se ejecutó el conversor de formato en apps/featureextraction/SOM/detection.py! Tipo: "
-"%(format), Nombre de archivo: %(filename)"
+"¡Se ejecutó el conversor de formato en apps/featureextraction/SOM/detection."
+"py! Tipo: %(format), Nombre de archivo: %(filename)"
 
 #: apps/featureextraction/SOM/detection.py:570
 msgid ""
@@ -69,9 +71,9 @@ msgstr "Componente vacío"
 
 #: apps/featureextraction/SOM/detection.py:618
 msgid ""
-"¿Quiere revisar otros componentes de la imagen? Indique otro nombre de archivo npy: "
+"Do you want to check another image components? Indicate another npy file "
+"name: "
 msgstr ""
-"¿Quiere revisar otros componentes de la imagen? Indique otro nombre de archivo npy: "
 
 #: apps/featureextraction/SOM/sam.py:190
 msgid "You selected a type of sam's checkpoint that does not exists"
@@ -84,3 +86,10 @@ msgstr "Ha seleccionado un tipo de filtro que no existe"
 #: apps/featureextraction/relevantinfoselection/prefilters.py:91
 msgid "You select a type of prefilter that doesnt exists"
 msgstr "Ha seleccionado un tipo de pre-filtro que no existe"
+
+#~ msgid ""
+#~ "¿Quiere revisar otros componentes de la imagen? Indique otro nombre de "
+#~ "archivo npy: "
+#~ msgstr ""
+#~ "¿Quiere revisar otros componentes de la imagen? Indique otro nombre de "
+#~ "archivo npy: "
