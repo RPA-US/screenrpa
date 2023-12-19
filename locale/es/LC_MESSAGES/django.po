@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 14:58+0000\n"
+"POT-Creation-Date: 2023-12-19 15:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -95,6 +95,7 @@ msgstr "Nuevo caso de estudio"
 
 #: apps/templates/case_studies/create.html:25
 #: apps/templates/decision_tree_training/create.html:27
+#: apps/templates/extract_training_dataset/create.html:27
 msgid "Restart fields"
 msgstr "Reiniciar campos"
 
@@ -113,6 +114,7 @@ msgstr "Configuración"
 
 #: apps/templates/case_studies/create.html:197
 #: apps/templates/decision_tree_training/create.html:83
+#: apps/templates/extract_training_dataset/create.html:67
 msgid "Save"
 msgstr "Guardar"
 
@@ -277,17 +279,20 @@ msgstr "Exportar datos del experimento"
 #: apps/templates/case_studies/exp_files.html:88
 #: apps/templates/case_studies/list.html:157
 #: apps/templates/decision_tree_training/list.html:141
+#: apps/templates/extract_training_dataset/list.html:133
 msgid "Previous"
 msgstr "Anterior"
 
 #: apps/templates/case_studies/exp_files.html:95
 #: apps/templates/decision_tree_training/list.html:148
+#: apps/templates/extract_training_dataset/list.html:140
 msgid "(current)"
 msgstr "(actual)"
 
 #: apps/templates/case_studies/exp_files.html:101
 #: apps/templates/case_studies/list.html:170
 #: apps/templates/decision_tree_training/list.html:154
+#: apps/templates/extract_training_dataset/list.html:146
 msgid "Next"
 msgstr "Siguiente"
 
@@ -297,11 +302,13 @@ msgstr "Tus casos de estudio"
 
 #: apps/templates/case_studies/list.html:44
 #: apps/templates/decision_tree_training/list.html:47
+#: apps/templates/extract_training_dataset/list.html:47
 msgid "Id"
 msgstr "ID"
 
 #: apps/templates/case_studies/list.html:46
 #: apps/templates/decision_tree_training/list.html:48
+#: apps/templates/extract_training_dataset/list.html:48
 msgid "Created at"
 msgstr "Creado en"
 
@@ -334,6 +341,8 @@ msgstr "pendiente"
 #: apps/templates/case_studies/list.html:133
 #: apps/templates/decision_tree_training/list.html:120
 #: apps/templates/decision_tree_training/list.html:122
+#: apps/templates/extract_training_dataset/list.html:112
+#: apps/templates/extract_training_dataset/list.html:114
 msgid "Details"
 msgstr "Detalles"
 
@@ -345,6 +354,7 @@ msgstr "¿Estás seguro de que quieres eliminar este caso de estudio?"
 #: apps/templates/case_studies/list.html:124
 #: apps/templates/case_studies/list.html:135
 #: apps/templates/decision_tree_training/list.html:123
+#: apps/templates/extract_training_dataset/list.html:115
 #: venv/lib/python3.10/site-packages/django/forms/formsets.py:496
 msgid "Delete"
 msgstr "Eliminar"
@@ -382,6 +392,8 @@ msgstr "Entrenamiento del árbol de decisiones"
 
 #: apps/templates/decision_tree_training/create.html:20
 #: apps/templates/decision_tree_training/list.html:19
+#: apps/templates/extract_training_dataset/create.html:20
+#: apps/templates/extract_training_dataset/list.html:19
 msgid "Case Study %(case_study_id)s"
 msgstr "Caso de estudio %(case_study.id)s"
 
@@ -395,9 +407,11 @@ msgstr "Nuevo entrenamiento del árbol de decisiones"
 
 #: apps/templates/decision_tree_training/create.html:41
 msgid "Create a new Decision Tree Training Configuration"
-msgstr "Crear una nueva configuración del entrenamiento del árbol de decisiones"
+msgstr ""
+"Crear una nueva configuración del entrenamiento del árbol de decisiones"
 
 #: apps/templates/decision_tree_training/list.html:14
+#: apps/templates/extract_training_dataset/list.html:14
 msgid "Go Back to Case Study %(case_study_id)s details"
 msgstr "Detalles del caso de estudio %(case_study.id)s"
 
@@ -427,21 +441,58 @@ msgid "One hot columns"
 msgstr "Columnas one hot"
 
 #: apps/templates/decision_tree_training/list.html:52
+#: apps/templates/extract_training_dataset/list.html:50
+#: apps/templates/extract_training_dataset/list.html:49
 msgid "Columns to drop before decision point"
 msgstr "Columnas a eliminar antes del punto de decisión"
 
 #: apps/templates/decision_tree_training/list.html:86
+#: apps/templates/extract_training_dataset/list.html:78
 msgid "active"
 msgstr "activo"
 
 #: apps/templates/decision_tree_training/list.html:89
-msgid "not executed"
-msgstr "no ejecutado"
+#: apps/templates/extract_training_dataset/list.html:81
+msgid "not active"
+msgstr "no activo"
 
 #: apps/templates/decision_tree_training/list.html:123
 msgid "Are you sure you want to delete this decision tree training?"
 msgstr "¿Estás seguro de que quieres eliminar este árbol de decisiones?"
 
 #: apps/templates/decision_tree_training/list.html:124
+#: apps/templates/extract_training_dataset/list.html:116
 msgid "Set as active"
 msgstr "Marcar como activo"
+
+#: apps/templates/extract_training_dataset/create.html:15
+msgid "Go Back to Extract Training Dataset Configurations"
+msgstr "Volver a Configuración de extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:16
+msgid "New Extract Training Dataset Configuration"
+msgstr "Nueva configuración de extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:21
+msgid "Extract Training Dataset Configs"
+msgstr "Extraer conjunto de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:22
+#: apps/templates/extract_training_dataset/list.html:26
+msgid "New Extract Training Dataset"
+msgstr "Nueva extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:41
+msgid "Create a new Extract Training Dataset Configuration"
+msgstr ""
+"Crear una nueva configuración de extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/list.html:15
+#: apps/templates/extract_training_dataset/list.html:20
+#: apps/templates/extract_training_dataset/list.html:40
+msgid "Extract Training Dataset Configurations"
+msgstr "Extraer configuración de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/list.html:115
+msgid "Are you sure you want to delete this extract training dataset?"
+msgstr "¿Estás seguro de que quieres eliminar esta extracción de datos?"
