@@ -2,6 +2,7 @@ from art import tprint
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
+from apps.utils import MultiFormsView
 from django.core.exceptions import ValidationError
 from apps.analyzer.models import CaseStudy
 from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
@@ -199,17 +200,19 @@ def delete_ui_elements_classification(request):
     ui_element_classification.delete()
     return HttpResponseRedirect(reverse("featureextraction:ui_classification_list", args=[case_study_id]))
 
-class UIElementsDetectionCreateView(CreateView):
-    model = UIElementsDetection
-    form_class = UIElementsDetectionForm
+class UIElementsDetectionCreateView(MultiFormsView):
+    form_classes = {
+        'ui_elements_detection': UIElementsDetectionForm,
+        'ui_elements_classification': UIElementsClassificationForm,
+    }
     template_name = "ui_elements_detection/create.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
-        return context    
+        return context
 
-    def form_valid(self, form):
+    def ui_elements_detection_form_valid(self, form):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
@@ -217,6 +220,35 @@ class UIElementsDetectionCreateView(CreateView):
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+    
+    def ui_elements_classification_form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+# class UIElementsDetectionCreateView(CreateView):
+#     model = UIElementsDetection
+#     form_class = UIElementsDetectionForm
+#     template_name = "ui_elements_detection/create.html"
+    
+#     def get_context_data(self, **kwargs):
+#         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
+#         context['case_study_id'] = self.kwargs.get('case_study_id')
+#         return context    
+
+#     def form_valid(self, form):
+#         if not self.request.user.is_authenticated:
+#             raise ValidationError("User must be authenticated.")
+#         self.object = form.save(commit=False)
+#         self.object.user = self.request.user
+#         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
+#         saved = self.object.save()
+#         return HttpResponseRedirect(self.get_success_url())
 
 class UIElementsDetectionListView(ListView):
     model = UIElementsDetection

@@ -50,10 +50,21 @@ class Prefilters(models.Model):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 class UIElementsDetection(models.Model):
+    ui_elm_det_types = (
+        ('rpa-us', 'Kevin Moran'),
+        ('uied', 'UIED'),
+        ('sam', 'SAM'),
+        ('fast-sam', 'Fast-SAM'),
+        ('screen2som', 'Screen2SOM'),
+    )
+
+    title = models.CharField(max_length=255)
+    # TODO: Add optional OCR
+    ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    type = models.CharField(max_length=25, default='rpa-us')
+    type = models.CharField(max_length=25, choices=ui_elm_det_types, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
     decision_point_activity = models.CharField(max_length=255, blank=True)
     configurations = JSONField(null=True, blank=True)
@@ -93,7 +104,8 @@ class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    model = models.CharField(max_length=255, default="resources/models/custom-v2.h5")
+    # TODO: Change this to a foreign key
+    model = models.CharField(max_length=255)
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)

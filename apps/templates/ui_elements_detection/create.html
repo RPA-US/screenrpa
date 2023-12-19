@@ -42,19 +42,41 @@
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
               <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-6">
+                <div class="col">
+                  <div class="col-12">
                     <div class="form-group">
-                      {{ form.type.label_tag }}
-                      {{ form.type }}
-                      <div class="form-validation">{{ form.type.errors }}</div>
+                      {{ forms.ui_elements_detection.title.label_tag }}
+                      {{ forms.ui_elements_detection.title }}
+                      <div class="form-validation">{{ forms.ui_elements_detection.title.errors }}</div>
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-12">
                     <div class="form-group">
-                      {{ form.skip.label_tag }}
-                      {{ form.skip }}
-                      <div class="form-validation">{{ form.skip.errors }}</div>
+                      {{ forms.ui_elements_detection.type.label_tag }}
+                      {{ forms.ui_elements_detection.type }}
+                      <div class="form-validation">{{ forms.ui_elements_detection.type.errors }}</div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-group">
+                      {{ forms.ui_elements_classification.model.label_tag }}
+                      {{ forms.ui_elements_classification.model }}
+                      <div class="form-validation">{{ forms.ui_elements_classification.model.errors }}</div>
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="col-12">
+                    <div class="form-group">
+                      {{ forms.ui_elements_detection.ocr.label_tag }}
+                      {{ forms.ui_elements_detection.ocr }}
+                      <div class="form-validation">{{ forms.ui_elements_detection.ocr.errors }}</div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-group">
+                      {{ forms.ui_elements_detection.configurations.label_tag }}
+                      {{ forms.ui_elements_detection.configurations }}
+                      <div class="form-validation">{{ forms.ui_elements_detection.configurations.errors }}</div>
                     </div>
                   </div>
                 </div>
