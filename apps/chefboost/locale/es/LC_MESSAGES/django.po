@@ -76,7 +76,7 @@ msgstr "Se va a construir un árbol %(algorithm) ..."
 #: apps/chefboost/commons/evaluate.py:17
 #, python-format
 msgid "Evaluate %(task) set"
-msgstr "Evaluar conjunto %(task)"
+msgstr "Evaluar conjunto %(task)s"
 
 #: apps/chefboost/commons/evaluate.py:47
 msgid "Labels: "
