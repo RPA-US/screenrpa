@@ -62,7 +62,7 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       <label class="form-control-label" for="input-exp_folder_complete_path">Folder path</label>
                       <input type="text" id="input-exp_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ case_study.exp_folder_complete_path }}">
@@ -70,13 +70,7 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-decision_point_activity">Decision-point to study</label>
-                      <input type="text" id="input-decision_point_activity" class="form-control" placeholder="4_D" value="{{ case_study.decision_point_activity }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       <label class="form-control-label" for="input-gui_class_success_regex">Decision Oracle</label> <!-- Regular expression to evaluate decision discovered -->
                       <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="CheckBox_4_D and ImageView_2_B" value="{{ case_study.gui_class_success_regex }}">
@@ -107,47 +101,7 @@
               </div>
               <div class="pl-lg-4">
                 <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_image_shape">UI Elements image shape (for classificaiton)</label>
-                      <input id="input-ui_elements_classification_image_shape" class="form-control" placeholder="[64, 64, 3]" value="{{ case_study.ui_elements_classification_image_shape }}" type="text">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_classes">UI Elements image shape (for classificaiton)</label>
-                      <textarea id="input-ui_elements_classification_classes" class="form-control" value="{{ case_study.ui_elements_classification_classes }}" type="text" 
-                      placeholder="[
-                        'Button',
-                        'Checkbox',
-                        'CheckedTextView',
-                        'EditText',
-                        'ImageButton',
-                        'ImageView',
-                        'NumberPicker',
-                        'RadioButton',
-                        'RatingBar',
-                        'SeekBar',
-                        'Spinner',
-                        'Switch',
-                        'TextView',
-                        'ToggleButton'
-                      ]"
-                      >{{ case_study.ui_elements_classification_classes }}
-                    </textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-text_classname">Text UI elements class name</label>
-                      <input type="text" id="input-text_classname" class="form-control" placeholder="text" value="{{ case_study.text_classname }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       <label class="form-control-label" for="input-target_label">Target label column name</label>
                       <input type="text" id="input-target_label" class="form-control" placeholder="Variant" value="{{ case_study.target_label }}">
