@@ -41,43 +41,45 @@
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <div class="pl-lg-4">
-                <div class="col">
-                  <div class="col-12">
-                    <div class="form-group">
-                      {{ forms.ui_elements_detection.title.label_tag }}
-                      {{ forms.ui_elements_detection.title }}
-                      <div class="form-validation">{{ forms.ui_elements_detection.title.errors }}</div>
-                    </div>
+              <h6 class="heading-small text-muted mb-4">General information</h6>
+              <div class="pl-lg-2">
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-title">Title <b class="text-red">*</b></label>
+                    {{ forms.ui_elements_detection.title }}
+                    <div class="form-validation">{{ forms.ui_elements_detection.title.errors }}</div>
                   </div>
-                  <div class="col-12">
-                    <div class="form-group">
-                      {{ forms.ui_elements_detection.type.label_tag }}
-                      {{ forms.ui_elements_detection.type }}
-                      <div class="form-validation">{{ forms.ui_elements_detection.type.errors }}</div>
-                    </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-title">Technique <b class="text-red">*</b></label>
+                    {{ forms.ui_elements_detection.type }}
+                    <div class="form-validation">{{ forms.ui_elements_detection.type.errors }}</div>
                   </div>
-                  <div class="col-12">
-                    <div class="form-group">
-                      {{ forms.ui_elements_classification.model.label_tag }}
-                      {{ forms.ui_elements_classification.model }}
-                      <div class="form-validation">{{ forms.ui_elements_classification.model.errors }}</div>
-                    </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-title">Classification Model</label>
+                    {{ forms.ui_elements_classification.model }}
+                    <div class="form-validation">{{ forms.ui_elements_classification.model.errors }}</div>
                   </div>
-                  <hr>
+                </div>
+              </div>
+              <hr>
+              <h6 class="heading-small text-muted mb-4">Configuration</h6>
+              <div class="pl-lg-2">
                   <div class="col-12">
                     <div class="form-group">
-                      {{ forms.ui_elements_detection.ocr.label_tag }}
                       {{ forms.ui_elements_detection.ocr }}
+                      <label class="form-control-label" for="input-title">Apply OCR <b class="text-red">*</b></label>
                       <div class="form-validation">{{ forms.ui_elements_detection.ocr.errors }}</div>
                     </div>
                   </div>
                   <div class="col-12">
                     <div class="form-group">
-                      {{ forms.ui_elements_detection.configurations.label_tag }}
+                      <label class="form-control-label" for="input-title">Additional Configurations</label>
                       {{ forms.ui_elements_detection.configurations }}
                       <div class="form-validation">{{ forms.ui_elements_detection.configurations.errors }}</div>
-                    </div>
                   </div>
                 </div>
               </div>

@@ -113,7 +113,8 @@ class ProcessMultipleFormsView(ProcessFormView):
     def _process_all_forms(self, form_classes):
         forms = self.get_forms(form_classes, None, True)
         if all([form.is_valid() for form in forms.values()]):
-            return self.forms_valid(forms)
+            for form_name, form in forms.items():
+                return self.forms_valid(forms, form_name)
         else:
             return self.forms_invalid(forms)
  

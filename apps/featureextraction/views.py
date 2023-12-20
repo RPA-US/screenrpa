@@ -206,10 +206,13 @@ class UIElementsDetectionCreateView(MultiFormsView):
         'ui_elements_classification': UIElementsClassificationForm,
     }
     template_name = "ui_elements_detection/create.html"
+    # Current url is /new/<id>/ so we need to redirect to /list/<id>
+
 
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
+        self.success_url = f"../../list/{context['case_study_id']}"
         return context
 
     def ui_elements_detection_form_valid(self, form):
