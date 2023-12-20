@@ -212,8 +212,15 @@ class UIElementsDetectionCreateView(MultiFormsView):
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
-        self.success_url = f"../../list/{context['case_study_id']}"
         return context
+
+    def forms_valid(self, forms):
+        ui_elements_detection_form = forms['ui_elements_detection']
+        ui_elements_classification_form = forms['ui_elements_classification']
+        self.ui_elements_detection_form_valid(ui_elements_detection_form)
+        self.ui_elements_classification_form_valid(ui_elements_classification_form)
+        self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"
+        return HttpResponseRedirect(self.get_success_url())
 
     def ui_elements_detection_form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -222,7 +229,6 @@ class UIElementsDetectionCreateView(MultiFormsView):
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
-        return HttpResponseRedirect(self.get_success_url())
     
     def ui_elements_classification_form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -230,8 +236,8 @@ class UIElementsDetectionCreateView(MultiFormsView):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
+        self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"
         saved = self.object.save()
-        return HttpResponseRedirect(self.get_success_url())
 
 
 # class UIElementsDetectionCreateView(CreateView):

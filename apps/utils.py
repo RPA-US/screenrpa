@@ -30,12 +30,12 @@ class MultiFormMixin(ContextMixin):
 
         return kwargs
     
-    def forms_valid(self, forms, form_name):
-        form_valid_method = '%s_form_valid' % form_name
+    def forms_valid(self, forms):
+        form_valid_method = 'forms_valid'
         if hasattr(self, form_valid_method):
-            return getattr(self, form_valid_method)(forms[form_name])
+            return getattr(self, form_valid_method)(forms)
         else:
-            return HttpResponseRedirect(self.get_success_url(form_name))
+            return HttpResponseRedirect(self.get_success_url(forms))
      
     def forms_invalid(self, forms):
         return self.render_to_response(self.get_context_data(forms=forms))
@@ -113,8 +113,7 @@ class ProcessMultipleFormsView(ProcessFormView):
     def _process_all_forms(self, form_classes):
         forms = self.get_forms(form_classes, None, True)
         if all([form.is_valid() for form in forms.values()]):
-            for form_name, form in forms.items():
-                return self.forms_valid(forms, form_name)
+            return self.forms_valid(forms)
         else:
             return self.forms_invalid(forms)
  
