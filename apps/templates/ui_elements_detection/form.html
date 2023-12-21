@@ -1,0 +1,63 @@
+<form id="form" method="POST" enctype="multipart/form-data">{% csrf_token %}
+  <h6 class="heading-small text-muted mb-4">General information</h6>
+  <div class="pl-lg-2">
+    <div class="col-12">
+      <div class="form-group">
+        <label class="form-control-label" for="input-title">Title <b class="text-red">*</b></label>
+        {{ forms.ui_elements_detection.title }}
+        <div class="form-validation">{{ forms.ui_elements_detection.title.errors }}</div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <label class="form-control-label" for="input-title">Technique <b class="text-red">*</b></label>
+        {{ forms.ui_elements_detection.type }}
+        <div class="form-validation">{{ forms.ui_elements_detection.type.errors }}</div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <label class="form-control-label" for="input-title">Classification Model</label>
+        {{ forms.ui_elements_classification.model }}
+        <div class="form-validation">{{ forms.ui_elements_classification.model.errors }}</div>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <h6 class="heading-small text-muted mb-4">Configuration</h6>
+  <div class="pl-lg-2">
+    <div class="col-12">
+      <div class="form-group">
+        {{ forms.ui_elements_detection.ocr }}
+        <label class="form-control-label" for="input-title">Apply OCR <b class="text-red">*</b></label>
+        <div class="form-validation">{{ forms.ui_elements_detection.ocr.errors }}</div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <label class="form-control-label" for="input-title">Additional Configurations</label>
+        {{ forms.ui_elements_detection.configurations }}
+        <div class="form-validation">{{ forms.ui_elements_detection.configurations.errors }}</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-success" style="float: right;" type="submit" value="submit">
+    <i class="fas fa-save"></i>
+    Save
+  </button>
+</form>
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const technique = document.getElementById('id_type')
+      if (technique.value == 'screen2som') {
+        document.getElementById('id_model').disabled = true;
+      }
+
+      document.getElementById('form').onsubmit = function() {
+        document.getElementById('id_model').disabled = false;
+      }
+    })
+  </script>
+{% endblock javascripts %}

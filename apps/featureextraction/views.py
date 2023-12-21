@@ -208,7 +208,6 @@ class UIElementsDetectionCreateView(MultiFormsView):
     template_name = "ui_elements_detection/create.html"
     # Current url is /new/<id>/ so we need to redirect to /list/<id>
 
-
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -262,10 +261,76 @@ class UIElementsDetectionListView(ListView):
 
         return queryset
 
-class UIElementsDetectionDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        ui_elements_detection = get_object_or_404(UIElementsDetection, id=kwargs["ui_element_detection_id"])
-        return render(request, "ui_elements_detection/detail.html", {"ui_elements_detection": ui_elements_detection, "case_study_id": kwargs["case_study_id"]})
+class UIElementsDetectionDetailView(MultiFormsView):
+    form_classes = {
+        'ui_elements_detection': UIElementsDetectionForm,
+        'ui_elements_classification': UIElementsClassificationForm,
+    }
+    template_name = "ui_elements_detection/details.html"
+    # Current url is /new/<id>/ so we need to redirect to /list/<id>
+
+    def get_context_data(self, **kwargs):
+        context = super(UIElementsDetectionDetailView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
+    def get_ui_elements_detection_initial(self):
+        ui_elements_detection = get_object_or_404(UIElementsDetection, id=self.kwargs["ui_elements_detection_id"])
+        # Return serialized
+        return {
+            "initial": {
+                "title": ui_elements_detection.title,
+                "type": ui_elements_detection.type,
+                "configurations": ui_elements_detection.configurations,
+                "ocr": ui_elements_detection.ocr,
+            },
+            "instance": ui_elements_detection,
+        }
+
+    def get_ui_elements_classification_initial(self):
+        ui_elements_detection = get_object_or_404(UIElementsDetection, id=self.kwargs["ui_elements_detection_id"])
+        if ui_elements_detection.ui_elements_classification:
+            ui_elements_classification = ui_elements_detection.ui_elements_classification
+        else:
+            ui_elements_classification = UIElementsClassification()
+        # Return serialized
+        return {
+            "initial": {
+                "model": ui_elements_classification.model,
+            },
+            "instance": ui_elements_classification,
+        }
+    
+    def forms_valid(self, forms):
+        ui_elements_detection_form = forms['ui_elements_detection']
+        ui_elements_classification_form = forms['ui_elements_classification']
+        ui_elem_det_obj = self.ui_elements_detection_form_valid(ui_elements_detection_form)
+        self.ui_elements_classification_form_valid(ui_elements_classification_form, ui_elem_det_obj)
+        self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"
+        return HttpResponseRedirect(self.get_success_url())
+
+    def ui_elements_detection_form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save()
+        return self.object
+    
+    def ui_elements_classification_form_valid(self, form, ui_elem_det_obj):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        if self.object.model == 'IGNORE':
+            self.object.delete()
+            return
+
+        if not ui_elem_det_obj.ui_elements_classification:
+            self.object.user = self.request.user
+            self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
+            self.object.save()
+            ui_elem_det_obj.ui_elements_classification = self.object
+            ui_elem_det_obj.save()
+        else:
+            self.object.save()
 
 def set_as_ui_elements_detection_active(request):
     ui_elements_detection_id = request.GET.get("ui_elem_detection_id")

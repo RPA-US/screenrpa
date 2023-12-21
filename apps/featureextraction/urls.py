@@ -7,7 +7,7 @@ urlpatterns = [
     # UI Element Detection
     path('ui-element-detection/list/<int:case_study_id>/', views.UIElementsDetectionListView.as_view(), name='ui_detection_list'),
     path('ui-element-detection/new/<int:case_study_id>/', views.UIElementsDetectionCreateView.as_view(), name='ui_detection_create'),
-    path('ui-element-detection/detail/<int:case_study_id>/<int:ui_element_detection_id>/', views.UIElementsDetectionDetailView.as_view(), name='ui_element_detection_detail'),
+    path('ui-element-detection/detail/<int:case_study_id>/<int:ui_elements_detection_id>/', views.UIElementsDetectionDetailView.as_view(), name='ui_element_detection_detail'),
     path('ui-element-detection/active/', views.set_as_ui_elements_detection_active, name='ui_element_detection_set_as_active'),
     path('ui-element-detection/delete/', views.delete_ui_elements_detection, name='ui_element_detection_delete'),
     ##

@@ -22,7 +22,7 @@ class MultiFormMixin(ContextMixin):
     
     def get_form_kwargs(self, form_name, bind_form=False):
         kwargs = {}
-        kwargs.update({'initial':self.get_initial(form_name)})
+        kwargs.update(self.get_initial(form_name))
         kwargs.update({'prefix':self.get_prefix(form_name)})
         
         if bind_form:
