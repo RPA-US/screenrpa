@@ -306,31 +306,41 @@ class UIElementsDetectionDetailView(MultiFormsView):
         ui_elements_classification_form = forms['ui_elements_classification']
         ui_elem_det_obj = self.ui_elements_detection_form_valid(ui_elements_detection_form)
         self.ui_elements_classification_form_valid(ui_elements_classification_form, ui_elem_det_obj)
-        self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"
+        self.success_url = f"../../../list/{self.kwargs.get('case_study_id')}"
+        if ui_elem_det_obj.active:
+            # TODO: Re-activate the configuration in case a new UI Element Classification is created
+            pass
         return HttpResponseRedirect(self.get_success_url())
 
     def ui_elements_detection_form_valid(self, form):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
-        self.object = form.save()
-        return self.object
+        self.object = UIElementsDetection.objects.filter(pk=self.kwargs["ui_elements_detection_id"], user=self.request.user)
+        if self.object.exists():
+            self.object.update(**form.cleaned_data)
+        else:
+            raise ValidationError("This object doesn't belong to the authenticated user")
+        return self.object.first()
     
     def ui_elements_classification_form_valid(self, form, ui_elem_det_obj):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
-        self.object = form.save(commit=False)
-        if self.object.model == 'IGNORE':
-            self.object.delete()
-            return
 
+        self.object = form.save(commit=False)
         if not ui_elem_det_obj.ui_elements_classification:
+            if self.object.model == 'IGNORE':
+                return
+
             self.object.user = self.request.user
             self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
             self.object.save()
             ui_elem_det_obj.ui_elements_classification = self.object
             ui_elem_det_obj.save()
+        elif self.object.model == 'IGNORE':
+            ui_elem_det_obj.ui_elements_classification.delete()
         else:
-            self.object.save()
+            ui_elem_det_obj.ui_elements_classification.update(**form.cleaned_data)
+
 
 def set_as_ui_elements_detection_active(request):
     ui_elements_detection_id = request.GET.get("ui_elem_detection_id")
