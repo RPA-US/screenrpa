@@ -217,8 +217,8 @@ class UIElementsDetectionCreateView(MultiFormsView):
     def forms_valid(self, forms):
         ui_elements_detection_form = forms['ui_elements_detection']
         ui_elements_classification_form = forms['ui_elements_classification']
-        self.ui_elements_detection_form_valid(ui_elements_detection_form)
-        self.ui_elements_classification_form_valid(ui_elements_classification_form)
+        ui_elem_det_obj = self.ui_elements_detection_form_valid(ui_elements_detection_form)
+        self.ui_elements_classification_form_valid(ui_elements_classification_form, ui_elem_det_obj)
         self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"
         return HttpResponseRedirect(self.get_success_url())
 
@@ -228,38 +228,20 @@ class UIElementsDetectionCreateView(MultiFormsView):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
-        saved = self.object.save()
+        self.object.save()
+        return self.object
     
-    def ui_elements_classification_form_valid(self, form):
+    def ui_elements_classification_form_valid(self, form, ui_elem_det_obj):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         if self.object.model == 'IGNORE':
-            pass
+            return
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
-        self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"
-        saved = self.object.save()
-
-
-# class UIElementsDetectionCreateView(CreateView):
-#     model = UIElementsDetection
-#     form_class = UIElementsDetectionForm
-#     template_name = "ui_elements_detection/create.html"
-    
-#     def get_context_data(self, **kwargs):
-#         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
-#         context['case_study_id'] = self.kwargs.get('case_study_id')
-#         return context    
-
-#     def form_valid(self, form):
-#         if not self.request.user.is_authenticated:
-#             raise ValidationError("User must be authenticated.")
-#         self.object = form.save(commit=False)
-#         self.object.user = self.request.user
-#         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
-#         saved = self.object.save()
-#         return HttpResponseRedirect(self.get_success_url())
+        self.object.save()
+        ui_elem_det_obj.ui_elements_classification = self.object
+        ui_elem_det_obj.save()
 
 class UIElementsDetectionListView(ListView):
     model = UIElementsDetection
@@ -295,6 +277,14 @@ def set_as_ui_elements_detection_active(request):
     ui_elements_detection = UIElementsDetection.objects.get(id=ui_elements_detection_id)
     ui_elements_detection.active = True
     ui_elements_detection.save()
+    
+    # UI Elements Classification
+    UIElementsClassification.objects.filter(case_study_id=case_study_id, active=True).update(active=False)
+    if ui_elements_detection.ui_elements_classification:
+        ui_elements_classification = ui_elements_detection.ui_elements_classification
+        ui_elements_classification.active = True
+        ui_elements_classification.save()
+
     return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
     
 def delete_ui_elements_detection(request):
@@ -305,9 +295,6 @@ def delete_ui_elements_detection(request):
         raise Exception("This object doesn't belong to the authenticated user")
     ui_elements_detection.delete()
     return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
-
-
-
 
 
 class PrefiltersCreateView(CreateView):
