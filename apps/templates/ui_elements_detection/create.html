@@ -102,10 +102,10 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
   <script>
-    document.onload = function() {
-      document.getElementByid('form').onsubmit = function() {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('form').onsubmit = function() {
         document.getElementById('id_model').disabled = false;
       }
-    }
+    })
   </script>
 {% endblock javascripts %}
