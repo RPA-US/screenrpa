@@ -234,6 +234,8 @@ class UIElementsDetectionCreateView(MultiFormsView):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
+        if self.object.model == 'IGNORE':
+            pass
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         self.success_url = f"../../list/{self.kwargs.get('case_study_id')}"

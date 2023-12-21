@@ -42,7 +42,7 @@ class UIElementsDetectionForm(forms .ModelForm):
                     # If value is screen2som, disable CNN model selectable
                     "onchange": """
                         if (this.value == 'screen2som') {
-                            document.getElementById('id_model').value = '';
+                            document.getElementById('id_model').value = 'IGNORE';
                             document.getElementById('id_model').disabled = true;
                         } else {
                             document.getElementById('id_model').disabled = false;
@@ -153,9 +153,10 @@ class UIElementsClassificationForm(forms .ModelForm):
             ),
             "model": forms.Select(
                 # TODO: Use foreign key models
-                choices=[(None, '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/custom-v2.h5', 'UIED')],
+                choices=[('IGNORE', '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/custom-v2.h5', 'UIED')],
                 attrs={
                     "class": "form-control",
+                    "required": "false"
                     }
             ),
         }
