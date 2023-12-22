@@ -4,19 +4,12 @@ from . import views
 app_name = 'featureextraction'
 
 urlpatterns = [
-    # UI Element Detection
+    # UI Element Detection & Classification
     path('ui-element-detection/list/<int:case_study_id>/', views.UIElementsDetectionListView.as_view(), name='ui_detection_list'),
     path('ui-element-detection/new/<int:case_study_id>/', views.UIElementsDetectionCreateView.as_view(), name='ui_detection_create'),
     path('ui-element-detection/detail/<int:case_study_id>/<int:ui_elements_detection_id>/', views.UIElementsDetectionDetailView.as_view(), name='ui_element_detection_detail'),
     path('ui-element-detection/active/', views.set_as_ui_elements_detection_active, name='ui_element_detection_set_as_active'),
     path('ui-element-detection/delete/', views.delete_ui_elements_detection, name='ui_element_detection_delete'),
-    ##
-    # UI Element Classification
-    path('ui-element-classification/list/<int:case_study_id>/', views.UIElementsClassificationListView.as_view(), name='ui_classification_list'),
-    path('ui-element-classification/new/<int:case_study_id>/', views.UIElementsClassificationCreateView.as_view(), name='ui_classification_create'),
-    path('ui-element-classification/detail/<int:case_study_id>/<int:ui_element_classification_id>/', views.UIElementsClassificationDetailView.as_view(), name='ui_element_classification_detail'),
-    path('ui-element-classification/active/', views.set_as_ui_elements_classification_active, name='ui_element_classification_set_as_active'),
-    path('ui-element-classification/delete/', views.delete_ui_elements_classification, name='ui_element_classification_delete'),
     ##
     # Pre-Filtering
     path('prefiltering/list/<int:case_study_id>/', views.PrefiltersListView.as_view(), name='prefilters_list'),
