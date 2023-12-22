@@ -308,8 +308,8 @@ class UIElementsDetectionDetailView(MultiFormsView):
         self.ui_elements_classification_form_valid(ui_elements_classification_form, ui_elem_det_obj)
         self.success_url = f"../../../list/{self.kwargs.get('case_study_id')}"
         if ui_elem_det_obj.active:
-            # TODO: Re-activate the configuration in case a new UI Element Classification is created
-            pass
+            # Redirect to set as active with GET parameters case_study_id and ui_elem_detection_id
+            self.success_url = f"../../../active/?case_study_id={self.kwargs.get('case_study_id')}&ui_elem_detection_id={ui_elem_det_obj.id}"
         return HttpResponseRedirect(self.get_success_url())
 
     def ui_elements_detection_form_valid(self, form):
