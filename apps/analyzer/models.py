@@ -11,11 +11,11 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from core.settings import PRIVATE_STORAGE_ROOT, sep
-# from apps.processdiscovery.models import ProcessDiscovery
-# from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
-# from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
-# from apps.behaviourmonitoring.models import Monitoring
-# from apps.reporting.models import PDD
+from apps.processdiscovery.models import ProcessDiscovery
+from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
+from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
+from apps.behaviourmonitoring.models import Monitoring
+from apps.reporting.models import PDD
 
 def unzip_file(zip_file_path, dest_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
@@ -121,17 +121,79 @@ class CaseStudy(models.Model):
         return self.title + ' - id:' + str(self.id)
 
 
+class Execution(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='executions')
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
 
-# TODO: Implement execution model
-# class Execution(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
-#     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='CaseStudy')
-#     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
-#     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
-#     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
-#     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
-#     postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
-#     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
-#     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
-#     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
-#     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+    monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
+    prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
+    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
+    ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
+    postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
+    feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+    process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
+    extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
+    decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+    
+    # Check phases dependencies and restrictions
+    # To execute feature extraction, UIElementsDetection and UIElementsClassification must be executed
+    # To execute decision tree training, Decision Tree training must be executed
+    def clean(self):
+        if not self.monitoring or not self.prefilters or not self.ui_elements_detection or not self.ui_elements_classification or not self.postfilters or not self.feature_extraction_technique or not self.process_discovery or not self.extract_training_dataset or not self.decision_tree_training:
+            raise ValidationError('At least one phase must be executed.')
+        if self.feature_extraction_technique and not (self.ui_elements_detection and self.ui_elements_classification):
+            raise ValidationError('UI Elements Detection  and Classification  must be executed before Feature Extraction.')
+        if self.decision_tree_training and not self.extract_training_dataset:
+            raise ValidationError('Extract Training Dataset must be executed before Decision Tree Training.')
+
+    def save(self, *args, **kwargs):
+        # Retrieve active configurations and set them to the execution
+        self.monitoring = Monitoring.objects.filter(case_study=self.case_study, active=True).first()
+        self.prefilters = Prefilters.objects.filter(case_study=self.case_study, active=True).first()
+        self.ui_elements_detection = UIElementsDetection.objects.filter(case_study=self.case_study, active=True).first()
+        self.ui_elements_classification = UIElementsClassification.objects.filter(case_study=self.case_study, active=True).first()
+        self.postfilters = Postfilters.objects.filter(case_study=self.case_study, active=True).first()
+        self.feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True).first()
+        self.process_discovery = ProcessDiscovery.objects.filter(case_study=self.case_study, active=True).first()
+        self.extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self.case_study, active=True).first()
+        self.decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self.case_study, active=True).first()
+
+        self.clean()
+
+        if self.monitoring:
+            self.monitoring.freeze = True
+            self.monitoring.save()
+
+        if self.prefilters:
+            self.prefilters.freeze = True
+            self.prefilters.save()
+        
+        if self.ui_elements_detection:
+            self.ui_elements_detection.freeze = True
+            self.ui_elements_detection.save()
+        
+        if self.ui_elements_classification:
+            self.ui_elements_classification.freeze = True
+            self.ui_elements_classification.save()
+    
+        if self.postfilters:
+            self.postfilters.freeze = True
+            self.postfilters.save()
+
+        if self.feature_extraction_technique:
+            self.feature_extraction_technique.freeze = True
+            self.feature_extraction_technique.save()
+
+        if self.process_discovery:
+            self.process_discovery.freeze = True
+            self.process_discovery.save()
+        
+        if self.extract_training_dataset:
+            self.extract_training_dataset.freeze = True
+            self.extract_training_dataset.save()
+        
+        if self.decision_tree_training:
+            self.decision_tree_training.freeze = True
+            self.decision_tree_training.save()
+
+        super().save(*args, **kwargs)
