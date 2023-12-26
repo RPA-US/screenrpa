@@ -1,3 +1,4 @@
+{% load i18n %}
 <nav class="navbar navbar-top navbar-expand navbar-dark bg-primary border-bottom">
   <div class="container-fluid">
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -39,7 +40,7 @@
           <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
             <!-- Dropdown header -->
             <div class="px-3 py-3">
-              <h6 class="text-sm text-muted m-0">You have <strong class="text-primary">13</strong> notifications.</h6>
+              <h6 class="text-sm text-muted m-0">{% blocktranslate %}You have {% endblocktranslate %}<strong class="text-primary">13</strong>{% blocktranslate %} notifications.{% endblocktranslate %}</h6>
             </div>
             <!-- List group -->
             <div class="list-group list-group-flush">
@@ -140,7 +141,7 @@
               </a>
             </div>
             <!-- View all -->
-            <a href="#!" class="dropdown-item text-center text-primary font-weight-bold py-3">Close</a>
+            <a href="#!" class="dropdown-item text-center text-primary font-weight-bold py-3">{% blocktranslate %}Close{% endblocktranslate %}</a>
           </div>
         </li>
         {% comment %} <li class="nav-item dropdown">
@@ -205,20 +206,20 @@
           </a>
           <div class="dropdown-menu  dropdown-menu-right ">
             <div class="dropdown-header noti-title">
-              <h6 class="text-overflow m-0">Welcome!</h6>
+              <h6 class="text-overflow m-0">{% blocktranslate %}Welcome!{% endblocktranslate %}</h6>
             </div>
             <a href="/profile" class="dropdown-item">
               <i class="ni ni-single-02"></i>
-              <span>My profile</span>
+              <span>{% blocktranslate %}My profile{% endblocktranslate %}</span>
             </a>
             <a target="_blank" href="https://github.com/RPA-US/rim/issues/new" class="dropdown-item">
               <i class="ni ni-support-16"></i>
-              <span>Any issue?</span>
+              <span>{% blocktranslate %}Any issue?{% endblocktranslate %}</span>
             </a>
             <div class="dropdown-divider"></div>
             <a href="{% url 'logout' %}" class="dropdown-item">
               <i class="ni ni-user-run text-red"></i>
-              <span>Logout</span>
+              <span>{% blocktranslate %}Logout{% endblocktranslate %}</span>
             </a>
           </div>
         </li>

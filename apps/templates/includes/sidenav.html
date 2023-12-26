@@ -1,3 +1,4 @@
+{% load i18n %}
 <nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
   <div class="scrollbar-inner">
     <!-- Brand -->
@@ -22,19 +23,19 @@
           <li class="nav-item">
             <a class="nav-link" href="/case-study/list/">
               <i class="ni ni-bullet-list-67 text-default"></i>
-              <span class="nav-link-text">My Case Studies</span>
+              <span class="nav-link-text">{% blocktranslate %}My Case Studies{% endblocktranslate %}</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/case-study/executions/">
               <i class="ni ni-button-play text-red"></i>
-              <span class="nav-link-text">New Case Study</span>
+              <span class="nav-link-text">{% blocktranslate %}New Case Study{% endblocktranslate %}</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/case-study/files/list/">
               <i class="ni ni-folder-17 text-pink"></i>
-              <span class="nav-link-text">My files</span>
+              <span class="nav-link-text">{% blocktranslate %}My files{% endblocktranslate %}</span>
             </a>
           </li>
           {% comment %} <li class="nav-item">
@@ -100,7 +101,7 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">
               <i class="ni ni-user-run text-red"></i>
-              <span class="nav-link-text">Logout</span>
+              <span class="nav-link-text">{% blocktranslate %}Logout{% endblocktranslate %}</span>
             </a>
           </li>            
         </ul>
@@ -108,7 +109,7 @@
         <hr class="my-3">
         <!-- Heading -->
         <h6 class="navbar-heading p-0 text-muted">
-          <span class="docs-normal">Resources</span>
+          <span class="docs-normal">{% blocktranslate %}Resources{% endblocktranslate %}</span>
         </h6>
         <!-- Navigation -->
         <ul class="navbar-nav mb-md-3">
@@ -118,7 +119,7 @@
                target="_blank" 
                href="https://canela.lsi.us.es">
               <i class="ni ni-archive-2"></i>
-              <span class="nav-link-text">More solutions</span>
+              <span class="nav-link-text">{% blocktranslate %}More solutions{% endblocktranslate %}</span>
             </a>
           </li>
 
@@ -127,7 +128,7 @@
                target="_blank" 
                href="https://grupo.us.es/es3uses/contacto/">
               <i class="ni ni-spaceship text-red"></i>
-              <span class="nav-link-text text-red">PRO Version</span>
+              <span class="nav-link-text text-red">{% blocktranslate %}PRO Version{% endblocktranslate %}</span>
             </a>
           </li>
 
