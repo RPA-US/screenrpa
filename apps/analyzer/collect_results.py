@@ -9,7 +9,7 @@ from datetime import datetime
 from core.settings import METADATA_LOCATION, sep, DECISION_FOLDERNAME, GUI_QUANTITY_DIFFERENCE, DEFAULT_PHASES, SEVERAL_ITERATIONS
 import csv
 from apps.analyzer.utils import get_foldernames_as_list
-from apps.featureextraction.utils import case_study_has_feature_extraction_technique
+from apps.featureextraction.utils import execution_has_feature_extraction_technique
 
 
 def times_duration(times, phases_info, scenario, phase):
@@ -213,7 +213,7 @@ def experiments_results_collectors_old_structure(case_study, decision_tree_filen
 
     return df, csv_filename
 
-def experiments_results_collectors(case_study, decision_tree_filename):
+def experiments_results_collectors(execution, decision_tree_filename):
     """
     Calculates the results of a given case_study
 
@@ -222,8 +222,8 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     :returns: Path leading to the csv containing the results
     :rtype: str
     """
-    exp_foldername_timestamp = case_study.exp_foldername + '_' + str(case_study.id)
-    csv_filename = case_study.exp_folder_complete_path + sep + exp_foldername_timestamp + "_results.csv"
+    exp_foldername_timestamp = execution.exp_foldername + '_' + str(execution.id)
+    csv_filename = execution.exp_folder_complete_path + sep + exp_foldername_timestamp + "_results.csv"
     times_info_path = METADATA_LOCATION + sep
     
     # print("Scenarios: " + str(scenarios))
@@ -244,8 +244,8 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     # tree_training_time = []
     tree_training_accuracy = []
 
-    decision_tree_algorithms = case_study.decision_tree_training.configuration["algorithms"] if (case_study.decision_tree_training and case_study.decision_tree_training.configuration and 
-                                                                                "algorithms" in case_study.decision_tree_training.configuration) else None
+    decision_tree_algorithms = execution.decision_tree_training.configuration["algorithms"] if (execution.decision_tree_training and execution.decision_tree_training.configuration and 
+                                                                                "algorithms" in execution.decision_tree_training.configuration) else None
 
     if decision_tree_algorithms:
         accuracy = {}
@@ -253,11 +253,11 @@ def experiments_results_collectors(case_study, decision_tree_filename):
         accuracy = []
 
     # TODO: new experiment files structure
-    scenarios = get_foldernames_as_list(case_study.exp_folder_complete_path, sep)
+    scenarios = get_foldernames_as_list(execution.exp_folder_complete_path, sep)
     for scenario in tqdm(scenarios, desc="Experiment results that have been processed"):
         time.sleep(.1)
-        scenario_path = case_study.exp_folder_complete_path + sep + scenario
-        json_f = open(times_info_path+str(case_study.id)+"-metainfo.json")
+        scenario_path = execution.exp_folder_complete_path + sep + scenario
+        json_f = open(times_info_path+str(execution.id)+"-metainfo.json")
         times = json.load(json_f)
         metainfo = scenario.split("_")
         decision_tree_path = scenario_path + sep
@@ -267,17 +267,17 @@ def experiments_results_collectors(case_study, decision_tree_filename):
         # 1 == Balanced, 0 == Imbalanced
         balanced.append(1 if metainfo[3] == "Balanced" else 0)
 
-        if case_study_has_feature_extraction_technique(case_study):
+        if execution_has_feature_extraction_technique(execution):
             num_UI_elements.append(times[scenario]["feature_extraction_technique"]["num_UI_elements"])
             num_screenshots.append(times[scenario]["feature_extraction_technique"]["num_screenshots"])
             max_ui_elements_number.append(times[scenario]["feature_extraction_technique"]["max_#UI_elements"])
             min_ui_elements_number.append(times[scenario]["feature_extraction_technique"]["min_#UI_elements"])
             density.append(times[scenario]["feature_extraction_technique"]["num_UI_elements"]/times[scenario]["feature_extraction_technique"]["num_screenshots"])
-        if case_study.decision_tree_training:
+        if execution.decision_tree_training:
             columns_len.append(times[scenario]["decision_tree_training"]["columns_len"])
             tree_training_accuracy.append(times[scenario]["decision_tree_training"]["accuracy"])
             
-        phases = [phase for phase in DEFAULT_PHASES if getattr(case_study, phase) is not None]
+        phases = [phase for phase in DEFAULT_PHASES if getattr(execution, phase) is not None]
         for phase in phases:
             if not (phase == 'decision_tree_training' and decision_tree_algorithms):
                 if phase in phases_info:
@@ -310,7 +310,7 @@ def experiments_results_collectors(case_study, decision_tree_filename):
             # Calculate level of accuracy
             # accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, None))
     
-    family_id = 'cs_' + str(case_study.id) + '_' + case_study.exp_foldername
+    family_id = 'cs_' + str(execution.case_study.id) + '_' + execution.exp_foldername
     
     dict_results = {
         family_id: scenarios,
@@ -320,14 +320,14 @@ def experiments_results_collectors(case_study, decision_tree_filename):
     }
     
     
-    if case_study_has_feature_extraction_technique(case_study):
+    if execution_has_feature_extraction_technique(execution):
         dict_results['num_UI_elements'] =  num_UI_elements
         dict_results['num_screenshots'] =  num_screenshots
         dict_results['density'] =  density
         dict_results['max_#UI_elements'] =  max_ui_elements_number
         dict_results['min_#UI_elements'] =  min_ui_elements_number
         
-    if case_study.decision_tree_training:
+    if execution.decision_tree_training:
         dict_results['columns_len'] =  columns_len
         dict_results['tree_training_accuracy'] = tree_training_accuracy
           

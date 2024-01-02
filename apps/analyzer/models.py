@@ -124,6 +124,9 @@ class CaseStudy(models.Model):
 class Execution(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='executions')
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
+    executed = models.IntegerField(default=0, editable=True)
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
+    exp_folder_complete_path = models.CharField(max_length=255)
 
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
@@ -195,5 +198,9 @@ class Execution(models.Model):
         if self.decision_tree_training:
             self.decision_tree_training.freeze = True
             self.decision_tree_training.save()
+
+        # Folder names
+        self.exp_foldername = self.case_study.exp_foldername + '_exec_' + str(self.id)
+        self.exp_folder_complete_path = self.case_study.exp_folder_complete_path + '_exec_' + str(self.id)
 
         super().save(*args, **kwargs)

@@ -92,12 +92,7 @@ def case_study_generator_execution(execution: Execution):
     This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
     Args:
-        exp_foldername (string): name of the folder where all case study data is stored. Example 'case_study_data'
-        exp_folder_complete_path (string): complete path to the folder where all case study data is stored, including the name of the folder in this path. Example 'C:\\John\\Desktop\\case_study_data'
-        decision_activity (string): activity where decision we want to study is taken. Example: 'B'
-        scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
-        special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: DEFAULT_PHASES
+        execution (Execution): Execution object that contains the case study and active phases to be executed
     """
     times = {}
     metadata_path = METADATA_LOCATION + sep # folder to store metadata that will be used in "results" mode
@@ -109,10 +104,10 @@ def case_study_generator_execution(execution: Execution):
     # year = datetime.now().date().strftime("%Y")
     tprint("RPA-US     SCREEN RPA", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
-    if execution.case_study.scenarios_to_study:
-        aux_path = execution.case_study.exp_folder_complete_path + sep + execution.case_study.scenarios_to_study[0]
+    if execution:
+        aux_path = execution.exp_folder_complete_path + sep + execution.case_study.scenarios_to_study[0]
     else:
-        aux_path = execution.case_study.exp_folder_complete_path
+        aux_path = execution.exp_folder_complete_path
     
     # For BPM LOG GENERATOR (old AGOSUIRPA) files
     foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
@@ -120,26 +115,25 @@ def case_study_generator_execution(execution: Execution):
     for scenario in tqdm(execution.case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
         # For BPM LOG GENERATOR (old AGOSUIRPA) files
         if SCENARIO_NESTED_FOLDER:
-            path_scenario = execution.case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
+            path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
             for n in foldername_logs_with_different_size_balance:
                 generate_case_study(execution, path_scenario, times)
         else:
-            path_scenario = execution.case_study.exp_folder_complete_path + sep + scenario + sep
+            path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
             generate_case_study(execution, path_scenario, times)
+        execution.executed = (execution.case_study.scenarios_to_study.index(scenario) / len(execution.case_study.scenarios_to_study)) * 100
+        execution.save()
                 
 
     # Serializing json
     json_object = json.dumps(times, indent=4)
     # Writing to .json
-
-    execution.case_study.executed = 100
-    execution.case_study.save()
     
     metadata_final_path = metadata_path + str(execution.case_study.id) + "-metainfo.json"
     with open(metadata_final_path, "w") as outfile:
         outfile.write(json_object)
         
-    return "Case study '"+execution.case_study.title+"' executed!!. Case study foldername: "+execution.case_study.exp_foldername+". Metadata saved in: "+metadata_final_path
+    return "Case study '"+execution.case_study.title+"' executed!!. Case study foldername: "+execution.exp_foldername+". Metadata saved in: "+metadata_final_path
 
 #============================================================================================================================
 #============================================================================================================================
@@ -410,22 +404,22 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
         return Response(response, status=st)
 
 class ResultCaseStudyView(generics.ListCreateAPIView):
-    def get(self, request, case_study_id, *args, **kwargs):
+    def get(self, request, execution_id, *args, **kwargs):
         st = status.HTTP_200_OK
         
         try:
-            case_study = CaseStudy.objects.get(id=case_study_id)
-            if case_study.executed:
-                csv_data, csv_filename = experiments_results_collectors(case_study, "descision_tree.log")
+            execution = Execution.objects.get(id=execution)
+            if execution.executed:
+                csv_data, csv_filename = experiments_results_collectors(execution, "descision_tree.log")
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = 'attachment; filename="'+case_study.title+'.csv"'
+                response["Content-Disposition"] = 'attachment; filename="'+execution.case_study.title+'.csv"'
                 csv_data.to_csv(response, index=False)
                 return response
             else:
                 response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
 
         except Exception as e:
-            response = {"message": f"Case Study with id {case_study_id} raise an exception: " + str(e)}
+            response = {"message": f"Case Study with id {execution.case_study.id} raised an exception: " + str(e)}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)

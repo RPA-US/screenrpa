@@ -53,13 +53,13 @@ def case_study_has_feature_extraction_technique(case_study):
 # Feature extraction techniques ###########################################################################################
 ###########################################################################################################################
 
-def case_study_has_feature_extraction_technique(case_study, type="ANY"):
+def execution_has_feature_extraction_technique(execution, type="ANY"):
     if type=="SINGLE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE").exists()
+        res = execution.feature_extraction_technique and execution.feature_extraction_technique.type=="SINGLE"
     elif type=="AGGREGATE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE").exists()
+        res = execution.feature_extraction_technique and execution.feature_extraction_technique.type=="AGGREGATE"
     else:
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
+        res = execution.feature_extraction_technique
     return res
 
 def detect_fe_function(text):
