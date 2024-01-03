@@ -167,41 +167,12 @@ class Execution(models.Model):
 
         self.clean()
 
-        if self.monitoring:
-            self.monitoring.freeze = True
-            self.monitoring.save()
-
-        if self.prefilters:
-            self.prefilters.freeze = True
-            self.prefilters.save()
-        
-        if self.ui_elements_detection:
-            self.ui_elements_detection.freeze = True
-            self.ui_elements_detection.save()
-        
-        if self.ui_elements_classification:
-            self.ui_elements_classification.freeze = True
-            self.ui_elements_classification.save()
-    
-        if self.postfilters:
-            self.postfilters.freeze = True
-            self.postfilters.save()
-
-        if self.feature_extraction_technique:
-            self.feature_extraction_technique.freeze = True
-            self.feature_extraction_technique.save()
-
-        if self.process_discovery:
-            self.process_discovery.freeze = True
-            self.process_discovery.save()
-        
-        if self.extract_training_dataset:
-            self.extract_training_dataset.freeze = True
-            self.extract_training_dataset.save()
-        
-        if self.decision_tree_training:
-            self.decision_tree_training.freeze = True
-            self.decision_tree_training.save()
+        for stage in [self.monitoring, self.prefilters, self.ui_elements_detection,
+                      self.ui_elements_classification, self.postfilters, self.feature_extraction_technique, 
+                      self.process_discovery, self.extract_training_dataset, self.decision_tree_training]:
+            if stage:
+                stage.freeze = True
+                stage.save()
 
         super().save(*args, **kwargs)
 
