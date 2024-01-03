@@ -127,6 +127,7 @@ class Execution(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
+    # TODO: Add copy of the rest of fields from the case study
 
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
@@ -142,8 +143,11 @@ class Execution(models.Model):
     # To execute feature extraction, UIElementsDetection and UIElementsClassification must be executed
     # To execute decision tree training, Decision Tree training must be executed
     def clean(self):
-        if not self.monitoring or not self.prefilters or not self.ui_elements_detection or not self.ui_elements_classification or not self.postfilters or not self.feature_extraction_technique or not self.process_discovery or not self.extract_training_dataset or not self.decision_tree_training:
+        # Check if at least one phase is executed
+        if not (self.monitoring or self.prefilters or self.ui_elements_detection or self.ui_elements_classification or self.postfilters or self.feature_extraction_technique or self.process_discovery or self.extract_training_dataset or self.decision_tree_training):
             raise ValidationError('At least one phase must be executed.')
+        
+        # Check phases dependencies and restrictions
         if self.feature_extraction_technique and not (self.ui_elements_detection and self.ui_elements_classification):
             raise ValidationError('UI Elements Detection  and Classification  must be executed before Feature Extraction.')
         if self.decision_tree_training and not self.extract_training_dataset:
@@ -199,8 +203,20 @@ class Execution(models.Model):
             self.decision_tree_training.freeze = True
             self.decision_tree_training.save()
 
-        # Folder names
-        self.exp_foldername = self.case_study.exp_foldername + '_exec_' + str(self.id)
-        self.exp_folder_complete_path = self.case_study.exp_folder_complete_path + '_exec_' + str(self.id)
-
         super().save(*args, **kwargs)
+
+        if not self.exp_folder_complete_path:
+            self.create_folder_structure()
+    
+    def create_folder_structure(self):
+        self.exp_foldername = f"exec_{self.id}"
+        self.exp_folder_complete_path = os.path.join(self.case_study.exp_folder_complete_path, 'executions', self.exp_foldername)
+
+        if not os.path.exists(self.exp_folder_complete_path):
+            os.makedirs(self.exp_folder_complete_path)
+
+        # Create a symbolic link to the case study folder inside the execution folder
+        os.symlink(
+            os.path.join(self.case_study.exp_folder_complete_path, self.case_study.exp_foldername),
+            os.path.join(self.exp_folder_complete_path, self.case_study.exp_foldername)
+            )

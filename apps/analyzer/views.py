@@ -99,13 +99,14 @@ def case_study_generator_execution(execution: Execution):
 
     if not os.path.exists(metadata_path):
         os.makedirs(metadata_path)
- 
 
     # year = datetime.now().date().strftime("%Y")
     tprint("RPA-US     SCREEN RPA", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
     if execution:
         aux_path = execution.exp_folder_complete_path + sep + execution.case_study.scenarios_to_study[0]
+        if not os.path.exists(aux_path):
+            os.makedirs(aux_path)
     else:
         aux_path = execution.exp_folder_complete_path
     
@@ -225,10 +226,14 @@ def case_study_generator(data):
         # Updating the case study with the foreign keys of the phases to execute
         # case_study.save()
         transaction_works = True
-    if ACTIVE_CELERY:
-        celery_task_process_case_study.delay(case_study.id, None)
-    else:
-        case_study_generator_execution(case_study.id, None)
+    with transaction.atomic():
+        execution = Execution(user=case_study.user, case_study=case_study)
+        execution.save()
+
+        if ACTIVE_CELERY:
+            celery_task_process_case_study.delay(execution)
+        else:
+            case_study_generator_execution(execution)
         
     return transaction_works, case_study
 
