@@ -288,11 +288,11 @@ def info_postfiltering(*data):
     return output
 
 def draw_postfilter_relevant_ui_compos_borders(exp_path):
-    root_path = exp_path + sep + "components_json" + sep
+    root_path = exp_path + "_results" + sep + "components_json" + sep
     arr = os.listdir(root_path)
 
-    if not os.path.exists(exp_path + sep + "compo_json_borders"):
-        os.mkdir(exp_path + sep + "compo_json_borders")
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
     
     for compo_json_filename in arr:
         with open(root_path + compo_json_filename, 'r') as f:
@@ -325,7 +325,7 @@ def draw_postfilter_relevant_ui_compos_borders(exp_path):
 
             
         # Save the image with component borders
-        output_path = exp_path + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        output_path = exp_path + "_results" + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
         cv2.imwrite(output_path, image)
         image = None
 

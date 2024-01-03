@@ -32,8 +32,8 @@ urlpatterns = [
     path('postfiltering/detail/<int:case_study_id>/<int:postfilter_id>/', views.PostfiltersDetailView.as_view(), name='prefilters_detail'),
     path('postfiltering/active/', views.set_as_postfilters_active, name='postfilters_set_as_active'),
     path('postfiltering/delete/', views.delete_postfilter, name='postfilters_delete'),
-    path('postfiltering/draw/<int:case_study_id>/', views.draw_postfilter, name='postfilters_draw'),
-    path('draw/<int:case_study_id>/', views.draw_ui_compos, name='ui_compos_draw'),
+    path('postfiltering/draw/<int:execution_id>/', views.draw_postfilter, name='postfilters_draw'),
+    path('draw/<int:execution_id>/', views.draw_ui_compos, name='ui_compos_draw'),
     # path('postfiltering/list/', views.PostfiltersListView.as_view(), name='postfilters_list'),
     ##
     # Feature Extraction Technique
