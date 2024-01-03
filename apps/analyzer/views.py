@@ -95,10 +95,6 @@ def case_study_generator_execution(execution: Execution):
         execution (Execution): Execution object that contains the case study and active phases to be executed
     """
     times = {}
-    metadata_path = METADATA_LOCATION + sep # folder to store metadata that will be used in "results" mode
-
-    if not os.path.exists(metadata_path):
-        os.makedirs(metadata_path)
 
     # year = datetime.now().date().strftime("%Y")
     tprint("RPA-US     SCREEN RPA", "tarty1")
@@ -130,7 +126,11 @@ def case_study_generator_execution(execution: Execution):
     json_object = json.dumps(times, indent=4)
     # Writing to .json
     
-    metadata_final_path = metadata_path + str(execution.case_study.id) + "-metainfo.json"
+    metadata_final_path = os.path.join(
+        execution.exp_folder_complete_path,
+        f"times-cs_{execution.case_study.id}-exec_{execution.id}-metainfo.json"
+        )
+
     with open(metadata_final_path, "w") as outfile:
         outfile.write(json_object)
         
