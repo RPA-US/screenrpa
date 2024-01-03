@@ -215,8 +215,9 @@ class Execution(models.Model):
         if not os.path.exists(self.exp_folder_complete_path):
             os.makedirs(self.exp_folder_complete_path)
 
-        # Create a symbolic link to the case study folder inside the execution folder
-        os.symlink(
-            os.path.join(self.case_study.exp_folder_complete_path, self.case_study.exp_foldername),
-            os.path.join(self.exp_folder_complete_path, self.case_study.exp_foldername)
-            )
+        # Create a symbolic link to the case study scenarios to study inside the execution folder
+        for scenario in self.case_study.scenarios_to_study:
+            os.symlink(
+                os.path.join(self.case_study.exp_folder_complete_path, scenario),
+                os.path.join(self.exp_folder_complete_path, scenario)
+                )
