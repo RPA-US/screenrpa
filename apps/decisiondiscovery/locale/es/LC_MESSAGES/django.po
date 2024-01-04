@@ -53,7 +53,7 @@ msgstr "Columnas a eliminar antes del punto de decisión"
 
 #: apps/decisiondiscovery/forms.py:58
 msgid "Library"
-msgstr "Biblioteca"
+msgstr "Librería"
 
 #: apps/decisiondiscovery/forms.py:59
 msgid "Configuration"
