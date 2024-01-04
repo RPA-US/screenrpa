@@ -44,7 +44,7 @@
               <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
               <div class="pl-lg-4">
                 <div class="row">
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       {{ form.title.label_tag }}
                       {{ form.title }}
@@ -78,14 +78,7 @@
                   </div> {% endcomment %}
                 </div>
                 <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.decision_point_activity.label_tag }}
-                      {{ form.decision_point_activity }}
-                      <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       {{ form.gui_class_success_regex.label_tag }}
                       {{ form.gui_class_success_regex }}
@@ -106,32 +99,7 @@
               </div>
               <div class="pl-lg-4">
                 <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      {{ form.ui_elements_classification_image_shape.label_tag }}
-                      {{ form.ui_elements_classification_image_shape }}
-                      <div class="form-validation">{{ form.ui_elements_classification_image_shape.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      {{ form.ui_elements_classification_classes.label_tag }}
-                      {{ form.ui_elements_classification_classes }}
-                      <div class="form-validation">{{ form.ui_elements_classification_classes.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.text_classname.label_tag }}
-                      {{ form.text_classname }}
-                      <div class="form-validation">{{ form.text_classname.errors }}</div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       {{ form.target_label.label_tag }}
                       {{ form.target_label }}

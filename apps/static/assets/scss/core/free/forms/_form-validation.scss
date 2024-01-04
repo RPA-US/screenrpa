@@ -76,3 +76,16 @@
         }
     }
 }
+
+.form-validation {
+	ul {
+		list-style: none;
+		padding-left: 0;
+		margin-bottom: 0;
+	}
+	li {
+		color: $red;
+		font-size: 80%;
+		font-weight: 600;
+	}
+}

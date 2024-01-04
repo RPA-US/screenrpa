@@ -45,9 +45,13 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Type{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Skip{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Technique{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Classification{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -63,13 +67,31 @@
                     </div>
                   </th>
                   <td>
+                    <a href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">{{ ui_elem_detec.title }} </a>
+                  </td>
+                  <td>
                     {{ ui_elem_detec.created_at }}
                   </td>
                   <td>
                     {{ ui_elem_detec.type }}
                   </td>
                   <td>
-                    {{ ui_elem_detec.skip }}
+                    {% if ui_elem_detec.ui_elements_classification %}
+                      {% blocktranslate %}Yes{% endblocktranslate %}
+                    {% elif ui_elem_detec.type == 'screen2som' %}
+                      {% blocktranslate %}Yes{% endblocktranslate %}
+                    {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div>
+                      {% if ui_elem_detec.executed == 0 %}
+                        Not executed
+                      {% else %}
+                        Already executed
+                      {% endif %}
+                    </div>
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
@@ -81,26 +103,6 @@
                       <span class="status">{% blocktranslate %}not active{% endblocktranslate %}</span>
                       {% endif %}
                     </span>
-                  </td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <span class="completion mr-2">{{ ui_elem_detec.executed }}</span>
-                      <div>
-                        {% if ui_elem_detec.executed == 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ ui_elem_detec.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
-                        </div>
-                        {% elif ui_elem_detec.executed == 100 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ ui_elem_detec.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                        </div>
-                        {% elif ui_elem_detec.executed > 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ ui_elem_detec.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                        </div>
-                        {% endif %}
-                      </div>
-                    </div>
                   </td>
                   <td class="text-right">
                     <div class="dropdown">

@@ -63,7 +63,7 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       <label class="form-control-label" for="input-exp_folder_complete_path">{% blocktranslate %}Folder path{% endblocktranslate %}</label>
                       <input type="text" id="input-exp_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ case_study.exp_folder_complete_path }}">
@@ -71,13 +71,7 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-decision_point_activity">{% blocktranslate %}Decision-point to study{% endblocktranslate %}</label>
-                      <input type="text" id="input-decision_point_activity" class="form-control" placeholder="4_D" value="{{ case_study.decision_point_activity }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       <label class="form-control-label" for="input-gui_class_success_regex">{% blocktranslate %}Decision Oracle{% endblocktranslate %}</label> <!-- Regular expression to evaluate decision discovered -->
                       <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="{% blocktranslate %}CheckBox_4_D and ImageView_2_B{% endblocktranslate %}" value="{{ case_study.gui_class_success_regex }}">
@@ -108,47 +102,7 @@
               </div>
               <div class="pl-lg-4">
                 <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_image_shape">{% blocktranslate %}UI Elements image shape (for classification){% endblocktranslate %}</label>
-                      <input id="input-ui_elements_classification_image_shape" class="form-control" placeholder="[64, 64, 3]" value="{{ case_study.ui_elements_classification_image_shape }}" type="text">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_classes">{% blocktranslate %}UI Elements image shape (for classification){% endblocktranslate %}</label>
-                      <textarea id="input-ui_elements_classification_classes" class="form-control" value="{{ case_study.ui_elements_classification_classes }}" type="text" 
-                      placeholder="[
-                        'Button',
-                        'Checkbox',
-                        'CheckedTextView',
-                        'EditText',
-                        'ImageButton',
-                        'ImageView',
-                        'NumberPicker',
-                        'RadioButton',
-                        'RatingBar',
-                        'SeekBar',
-                        'Spinner',
-                        'Switch',
-                        'TextView',
-                        'ToggleButton'
-                      ]"
-                      >{{ case_study.ui_elements_classification_classes }}
-                    </textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-text_classname">{% blocktranslate %}Text UI elements class name{% endblocktranslate %}</label>
-                      <input type="text" id="input-text_classname" class="form-control" placeholder="{% blocktranslate %}text{% endblocktranslate %}" value="{{ case_study.text_classname }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-12">
                     <div class="form-group">
                       <label class="form-control-label" for="input-target_label">{% blocktranslate %}Target label column name{% endblocktranslate %}</label>
                       <input type="text" id="input-target_label" class="form-control" placeholder="{% blocktranslate %}Variant{% endblocktranslate %}" value="{{ case_study.target_label }}">
@@ -171,105 +125,68 @@
                 <div class="card-body">
                   <div class="row icon-examples">
                     <div class="col-lg-3 col-md-6">
-                      <button type="button" class="btn-icon-clipboard">
+                      <a href="/monitoring/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
                         <div>
-                          <i class="ni ni-laptop"></i>
-                          <a class="nav-link" href="/monitoring/list/{{ case_study.id }}">
-                            <span>{% blocktranslate %}Behaviour Monitoring{% endblocktranslate %}</span>
-                          </a>
+                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Behaviour Monitoring{% endblocktranslate %}</span>
                         </div>
-                      </button>
+                      </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <button type="button" class="btn-icon-clipboard">
+                      <a href="/fe/prefiltering/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
                         <div>
-                          <i class="ni ni-zoom-split-in"></i>
-                          <a class="nav-link" href="/fe/prefiltering/list/{{ case_study.id }}">
-                            <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
-                          </a>
+                          <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
                         </div>
-                      </button>
+                      </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <button type="button" class="btn-icon-clipboard">
+                      <a href="/fe/ui-element-detection/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
                         <div>
-                          <i class="ni ni-image"></i>
-                          <a class="nav-link" href="/fe/ui-element-detection/list/{{ case_study.id }}">
-                            <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
-                          </a>
+                          <i class="ni ni-image"></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
                         </div>
-                      </button>
+                      </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <button type="button" class="btn-icon-clipboard">
+                      <a href="/fe/postfiltering/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
                         <div>
-                          <i class="ni ni-album-2"></i>
-                          <a class="nav-link" href="/fe/ui-element-classification/list/{{ case_study.id }}">
-                            <span>{% blocktranslate %}UI Elements Classification{% endblocktranslate %}</span>
-                          </a>
+                        <i class="ni ni-zoom-split-in"></i> <span>Post-filtering</span>
                         </div>
-                      </button>
+                      </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <button type="button" class="btn-icon-clipboard">
+                      <a href="/fe/feature-extraction-technique/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
                         <div>
-                          <i class="ni ni-zoom-split-in"></i>
-                          <a class="nav-link" href="/fe/postfiltering/list/{{ case_study.id }}">
-                            <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
-                          </a>
-                          </div>
-                        </button>
-                      </div>
-                      <div class="col-lg-3 col-md-6">
-                        <button type="button" class="btn-icon-clipboard">
-                          <div>
-                            <i class="ni ni-money-coins"></i>
-                            <a class="nav-link" href="/fe/feature-extraction-technique/list/{{ case_study.id }}">
-                              <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
-                            </a>
-                            </div>
-                          </button>
+                          <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                          <button type="button" class="btn-icon-clipboard">
-                          <div>
-                            <i class="ni ni-sound-wave"></i>
-                            <a class="nav-link" href="/pd/bpmn/list/{{ case_study.id }}">
-                              <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
-                            </a>
-                          </div>
-                          </button>
+                      </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <a href="/pd/bpmn/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-sound-wave"></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                          <button type="button" class="btn-icon-clipboard">
-                          <div>
-                            <i class="ni ni-settings"></i>
-                            <a class="nav-link" href="/dd/extract-training-dataset/list/{{ case_study.id }}">
-                              <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
-                            </a>
-                          </div>
-                          </button>
+                      </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <a href="/dd/extract-training-dataset/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-settings"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                          <button type="button" class="btn-icon-clipboard">
-                            <div>
-                              <i class="ni ni-vector"></i>
-                              <a class="nav-link" href="/dd/decision-tree-training/list/{{ case_study.id }}">
-                                <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
-                              </a>
-                            </div>
-                          </button>
+                      </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <a href="/dd/decision-tree-training/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-vector"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                          <button type="button" class="btn-icon-clipboard">
-                            <div>
-                              <i class="ni ni-single-copy-04"></i>
-                              <a class="nav-link" href="/reporting/pdd/list/{{ case_study.id }}">
-                                <span>{% blocktranslate %}Reporting{% endblocktranslate %}</span>
-                              </a>
-                            </div>
-                          </button>
+                      </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                      <a href="/reporting/pdd/list/{{ case_study.id }}"type="button" class="btn-icon-clipboard">
+                        <div>
+                          <i class="ni ni-single-copy-04"></i> <span>{% blocktranslate %}Reporting{% endblocktranslate %}</span>
                         </div>
+                      </a>
+                    </div>
                   </div>
                 </div>
                 
