@@ -77,11 +77,11 @@
                   </td>
                   <td>
                     {% if ui_elem_detec.ui_elements_classification %}
-                      {{ ui_elem_detec.ui_elements_classification.type }}
+                      {% blocktranslate %}Yes{% endblocktranslate %}
                     {% elif ui_elem_detec.type == 'screen2som' %}
-                      screen2som
+                      {% blocktranslate %}Yes{% endblocktranslate %}
                     {% else %}
-                      None
+                      {% blocktranslate %}No{% endblocktranslate %}
                     {% endif %}
                   </td>
                   <td>

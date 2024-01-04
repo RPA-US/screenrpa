@@ -174,7 +174,7 @@ class UIElementsClassificationForm(forms .ModelForm):
             ),
             "model": forms.Select(
                 # TODO: Use foreign key models
-                choices=[('IGNORE', '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/custom-v2.h5', 'UIED')],
+                choices=[('IGNORE', '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/uied.h5', 'UIED')],
                 attrs={
                     "class": "form-control",
                     "required": "false"

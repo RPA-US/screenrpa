@@ -1069,11 +1069,11 @@ msgstr "Nueva detección de elementos de UI"
 
 #: apps/templates/ui_elements_detection/list.html:50
 msgid "Technique"
-msgstr "Nombre de la técnica"
+msgstr "Técnica"
 
 #: apps/templates/ui_elements_detection/list.html:51
 msgid "Classification"
-msgstr "Clasificación de elementos de UI"
+msgstr "Clasificación"
 
 #: apps/templates/ui_elements_detection/list.html:117
 msgid "Are you sure you want to delete this ui element detection?"
