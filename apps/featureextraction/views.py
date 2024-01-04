@@ -171,6 +171,8 @@ class UIElementsDetectionCreateView(MultiFormsView):
         self.object = form.save(commit=False)
         if self.object.model == 'IGNORE':
             return
+        else:
+            self.object.type = ui_elem_det_obj.type
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         self.object.save()
@@ -272,9 +274,9 @@ class UIElementsDetectionDetailView(MultiFormsView):
             ui_elem_det_obj.ui_elements_classification = self.object
             ui_elem_det_obj.save()
         elif self.object.model == 'IGNORE':
-            ui_elem_det_obj.ui_elements_classification.delete()
+            UIElementsClassification.objects.filter(pk=ui_elem_det_obj.ui_elements_classification.id).delete()
         else:
-            ui_elem_det_obj.ui_elements_classification.update(**form.cleaned_data)
+            UIElementsClassification.objects.filter(pk=ui_elem_det_obj.ui_elements_classification.id).update(**form.cleaned_data)
 
 
 def set_as_ui_elements_detection_active(request):

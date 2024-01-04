@@ -75,7 +75,7 @@ class UIElementsDetection(models.Model):
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    ui_elements_classification = models.ForeignKey('UIElementsClassification', on_delete=models.CASCADE, null=True)
+    ui_elements_classification = models.ForeignKey('UIElementsClassification', on_delete=models.SET_NULL, null=True)
 
     # Delete ui_elements_classification when deleting UIElementsDetection
     def delete(self, *args, **kwargs):
