@@ -34,6 +34,21 @@ class CaseStudyForm(forms.ModelForm):
             "gui_class_success_regex",
             "target_label"
         )
+        labels = {
+            "title": _("Title"),
+            "description": _("Description"),
+            "exp_file": _("Experiment file"),
+            # "exp_foldername": _("Experiment foldername"),
+            # "exp_folder_complete_path": _("Experiment folder complete path"),
+            "scenarios_to_study": _("Scenarios to study"),
+            "special_colnames": _("Special colnames"),
+            # "text_classname": _("Text classname"),
+            # "decision_point_activity": _("Decision point activity"),
+            "gui_class_success_regex": _("GUI class success regex"),
+            # "ui_elements_classification_image_shape": _("UI elements classification image shape"),
+            # "ui_elements_classification_classes": _("UI elements classification classes"),
+            "target_label": _("Target label")
+        }
 
         widgets = {
             "title": forms.TextInput(

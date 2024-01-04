@@ -73,12 +73,24 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2')
+        labels = {
+            "username": _("Username"),
+            "email": _("Email"),
+            "password1": _("Password"),
+            "password2": _("Password check")
+        }
 
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
         exclude = ('is_staff', 'is_active', 'is_superuser')
         fields = ('username', 'email', 'first_name', 'last_name')
+        labels = {
+            "username": _("Username"),
+            "email": _("Email"),
+            "first_name": _("First name"),
+            "last_name": _("Last name")
+        }
         widgets = {
             "first_name": forms.TextInput(
                 attrs={

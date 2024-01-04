@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-15 08:50+0000\n"
+"POT-Creation-Date: 2024-01-04 09:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,6 +79,37 @@ msgstr ""
 msgid "You selected a type of sam's checkpoint that does not exists"
 msgstr "Ha seleccionado un tipo de punto de control de SAM que no existe"
 
+#: apps/featureextraction/forms.py:22 apps/featureextraction/forms.py:54
+#: apps/featureextraction/forms.py:91 apps/featureextraction/forms.py:129
+msgid "Type"
+msgstr "Tipo"
+
+#: apps/featureextraction/forms.py:23 apps/featureextraction/forms.py:55
+#: apps/featureextraction/forms.py:92 apps/featureextraction/forms.py:130
+#: apps/featureextraction/forms.py:177
+msgid "Skip"
+msgstr "Saltar"
+
+#: apps/featureextraction/forms.py:56 apps/featureextraction/forms.py:93
+msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/featureextraction/forms.py:131
+msgid "Model"
+msgstr "Modelo"
+
+#: apps/featureextraction/forms.py:132
+msgid "Model properties"
+msgstr "Propiedades del modelo"
+
+#: apps/featureextraction/forms.py:176
+msgid "Technique name"
+msgstr "Nombre de la técnica"
+
+#: apps/featureextraction/forms.py:178
+msgid "Identifier"
+msgstr "Identificador"
+
 #: apps/featureextraction/relevantinfoselection/postfilters.py:285
 msgid "You select a type of filter that doesnt exists"
 msgstr "Ha seleccionado un tipo de filtro que no existe"
@@ -86,10 +117,3 @@ msgstr "Ha seleccionado un tipo de filtro que no existe"
 #: apps/featureextraction/relevantinfoselection/prefilters.py:91
 msgid "You select a type of prefilter that doesnt exists"
 msgstr "Ha seleccionado un tipo de pre-filtro que no existe"
-
-#~ msgid ""
-#~ "¿Quiere revisar otros componentes de la imagen? Indique otro nombre de "
-#~ "archivo npy: "
-#~ msgstr ""
-#~ "¿Quiere revisar otros componentes de la imagen? Indique otro nombre de "
-#~ "archivo npy: "

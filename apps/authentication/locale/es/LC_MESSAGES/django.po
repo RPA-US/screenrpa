@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 11:50+0000\n"
+"POT-Creation-Date: 2024-01-04 08:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,11 +19,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: apps/authentication/forms.py:16 apps/authentication/forms.py:47
-#: apps/authentication/forms.py:101
+#: apps/authentication/forms.py:77 apps/authentication/forms.py:89
+#: apps/authentication/forms.py:113
 msgid "Username"
 msgstr "Nombre de usuario"
 
 #: apps/authentication/forms.py:23 apps/authentication/forms.py:61
+#: apps/authentication/forms.py:79
 msgid "Password"
 msgstr "Contraseña"
 
@@ -31,21 +33,26 @@ msgstr "Contraseña"
 msgid "First Name"
 msgstr "Nombre"
 
-#: apps/authentication/forms.py:40 apps/authentication/forms.py:94
+#: apps/authentication/forms.py:40 apps/authentication/forms.py:106
 msgid "Last Name"
 msgstr "Apellido"
 
-#: apps/authentication/forms.py:54 apps/authentication/forms.py:108
+#: apps/authentication/forms.py:54 apps/authentication/forms.py:78
+#: apps/authentication/forms.py:90 apps/authentication/forms.py:120
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: apps/authentication/forms.py:68
+#: apps/authentication/forms.py:68 apps/authentication/forms.py:80
 msgid "Password check"
 msgstr "Verificación de contraseña"
 
-#: apps/authentication/forms.py:87
+#: apps/authentication/forms.py:91 apps/authentication/forms.py:99
 msgid "First name"
 msgstr "Nombre"
+
+#: apps/authentication/forms.py:92
+msgid "Last name"
+msgstr "Apellido"
 
 #: apps/authentication/views.py:31
 msgid "Invalid credentials"

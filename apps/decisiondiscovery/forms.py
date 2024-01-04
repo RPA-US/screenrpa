@@ -6,6 +6,7 @@ Copyright (c) RPA-US
 from django import forms
 from .models import ExtractTrainingDataset, DecisionTreeTraining
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 class ExtractTrainingDatasetForm(forms.ModelForm):
     class Meta:
@@ -17,6 +18,10 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             "columns_to_drop",
             "columns_to_drop_before_decision_point"
         )
+        labels = {
+            "columns_to_drop": _("Columns to drop"),
+            "columns_to_drop_before_decision_point": _("Columns to drop before decision point")
+        }
 
         widgets = {
             "columns_to_drop": forms.TextInput(
@@ -49,6 +54,12 @@ class DecisionTreeTrainingForm(forms.ModelForm):
             "one_hot_columns",
             "columns_to_drop_before_decision_point"
         )
+        labels = {
+            "library": _("Library"),
+            "configuration": _("Configuration"),
+            "one_hot_columns": _("One hot columns"),
+            "columns_to_drop_before_decision_point": _("Columns to drop before decision point")
+        }
 
         widgets = {
             "library": forms.TextInput(

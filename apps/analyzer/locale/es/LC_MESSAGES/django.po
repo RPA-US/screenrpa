@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 14:45+0000\n"
+"POT-Creation-Date: 2024-01-04 08:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,19 +43,47 @@ msgstr "Resultados del experimento que han sido procesados"
 msgid "DECISION TREE results collection fail! :("
 msgstr "¡Fallo en la recolección de resultados del ÁRBOL DE DECISIÓN! :("
 
-#: apps/analyzer/forms.py:42
+#: apps/analyzer/forms.py:38
+msgid "Title"
+msgstr "Título"
+
+#: apps/analyzer/forms.py:39
+msgid "Description"
+msgstr "Descripción"
+
+#: apps/analyzer/forms.py:40
+msgid "Experiment file"
+msgstr "Archivo del experimento"
+
+#: apps/analyzer/forms.py:43
+msgid "Scenarios to study"
+msgstr "Escenarios a estudiar"
+
+#: apps/analyzer/forms.py:44
+msgid "Special colnames"
+msgstr "Nombres de columna especiales"
+
+#: apps/analyzer/forms.py:47
+msgid "GUI class success regex"
+msgstr "Expresión regular de éxito de la clase de la interfaz gráfica"
+
+#: apps/analyzer/forms.py:50
+msgid "Target label"
+msgstr "Etiqueta objetivo"
+
+#: apps/analyzer/forms.py:57
 msgid "Nice experiment title!"
 msgstr "Un buen título para el experimento"
 
-#: apps/analyzer/forms.py:48
+#: apps/analyzer/forms.py:63
 msgid "Short experiment description..."
 msgstr "Descripción breve del experimento..."
 
-#: apps/analyzer/forms.py:110
+#: apps/analyzer/forms.py:125
 msgid "Variant"
 msgstr "Variante"
 
-#: apps/analyzer/forms.py:149
+#: apps/analyzer/forms.py:164
 msgid "Title is taken"
 msgstr "El título ya ha sido utilizado"
 

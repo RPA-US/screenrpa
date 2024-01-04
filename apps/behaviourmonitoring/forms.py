@@ -5,6 +5,7 @@ Copyright (c) RPA-US
 
 from django import forms
 from .models import Monitoring
+from django.utils.translation import gettext_lazy as _
 
 class MonitoringForm(forms .ModelForm):
     class Meta:
@@ -17,6 +18,10 @@ class MonitoringForm(forms .ModelForm):
             "type",
             "configurations"
         )
+        labels = {
+            "type": _("Type"),
+            "configurations": _("Configurations")
+        }
 
         widgets = {
             "type": forms.TextInput(

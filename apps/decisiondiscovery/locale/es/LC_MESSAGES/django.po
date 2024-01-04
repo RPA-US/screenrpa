@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 15:25+0000\n"
+"POT-Creation-Date: 2024-01-04 09:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/decisiondiscovery/decision_trees.py:254
 msgid "Grid Search Best Params:\n"
 msgstr "Mejores parámetros de búsqueda en cuadrícula:\n"
@@ -42,12 +43,33 @@ msgstr "Opción de modelo de decisión no válida"
 msgid "  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) "
 msgstr "  K-Fold Estratificado:  precisión=%(acc) puntaje_f1=%(f1) "
 
+#: apps/decisiondiscovery/forms.py:22
+msgid "Columns to drop"
+msgstr "Columnas a eliminar"
+
+#: apps/decisiondiscovery/forms.py:23 apps/decisiondiscovery/forms.py:61
+msgid "Columns to drop before decision point"
+msgstr "Columnas a eliminar antes del punto de decisión"
+
+#: apps/decisiondiscovery/forms.py:58
+msgid "Library"
+msgstr "Biblioteca"
+
+#: apps/decisiondiscovery/forms.py:59
+msgid "Configuration"
+msgstr "Configuración"
+
+#: apps/decisiondiscovery/forms.py:60
+msgid "One hot columns"
+msgstr "Columnas one hot"
+
 #: apps/decisiondiscovery/models.py:120
 msgid ""
 "To be able to apply decision tree training, a extract training dataset has "
 "to exist"
 msgstr ""
-"Para poder aplicar el entrenamiento del árbol de decisiones, tiene que existir un conjunto de datos de entrenamiento extraído"
+"Para poder aplicar el entrenamiento del árbol de decisiones, tiene que "
+"existir un conjunto de datos de entrenamiento extraído"
 
 #: apps/decisiondiscovery/utils.py:212
 msgid "The identifier does not follow the pattern"
