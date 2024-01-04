@@ -547,7 +547,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     print(param_img_root+"\n")
     
     if os.path.exists(param_log_path):
-        logging.info_(("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor"))
+        logging.info(_("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor"))
         print(_("Log already exists, it's not needed to execute format conversor"))
     elif "format" in configurations:
         logging.info(_("apps/featureextraction/SOM/detection.py Format conversor executed! Type: %(format), Filename: %(filename)") % {"format": configurations["format"], "filename": configurations["formatted_log_name"]})

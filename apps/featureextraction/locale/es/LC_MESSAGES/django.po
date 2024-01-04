@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 09:04+0000\n"
+"POT-Creation-Date: 2024-01-04 09:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,14 @@ msgstr ""
 #: apps/featureextraction/SOM/CNN/CompDetCNN.py:25
 msgid "*** No model loaded ***"
 msgstr "*** No se cargó ningún modelo ***"
+
+#: apps/featureextraction/SOM/detection.py:550
+msgid ""
+"apps/featureextraction/SOM/detection.py Log already exists, it's not needed "
+"to execute format conversor"
+msgstr ""
+"apps/featureextraction/SOM/detection.py El registro ya existe, no es necesario "
+"ejecutar el conversor de formato"
 
 #: apps/featureextraction/SOM/detection.py:551
 msgid "Log already exists, it's not needed to execute format conversor"
