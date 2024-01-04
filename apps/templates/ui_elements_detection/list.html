@@ -1,6 +1,7 @@
 {% extends 'layouts/base.html' %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -10,19 +11,19 @@
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
             <a href="/case-study/detail/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back to Case Study {{ case_study_id }} details</a>
-            <h6 class="h2 text-white d-inline-block mb-0">UI Elements Detection Configurations</h6>
+            </i>{% blocktranslate %}Go Back to Case Study {{ case_study_id }} details{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}UI Elements Detection Configurations{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark" style="margin-top: 10px;">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="#">UI Elements Detection Configurations</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}UI Elements Detection Configurations{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
           <div class="col-12 text-right">
             <a href="/fe/ui-element-detection/new/{{ case_study_id }}/"  class="btn btn-success">
-              <i class="fas fa-plus" style="margin-right: 5px;"></i>New UI Elements Detection</a>
+              <i class="fas fa-plus" style="margin-right: 5px;"></i>{% blocktranslate %}New UI Elements Detection{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
@@ -36,20 +37,20 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">UI Elements Detection Configurations</h3>
+            <h3 class="mb-0">{% blocktranslate %}UI Elements Detection Configurations{% endblocktranslate %}</h3>
           </div>
           <!-- Light table -->
           <div class="table-responsive">
             <table class="table align-items-center table-flush">
               <thead class="thead-light">
                 <tr>
-                  <th scope="col" class="sort" data-sort="id">Id</th>
-                  <th scope="col" class="sort" data-sort="type">Title</th>
-                  <th scope="col" class="sort" data-sort="created_at">Created at</th>
-                  <th scope="col" class="sort" data-sort="type">Technique</th>
-                  <th scope="col" class="sort" data-sort="type">Classification</th>
-                  <th scope="col" class="sort" data-sort="type">Executed</th>
-                  <th scope="col" class="sort" data-sort="type">Status</th>
+                  <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Title{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Technique{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Classification{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type"></th>
                 </tr>
               </thead>
@@ -96,10 +97,10 @@
                     <span class="badge badge-dot mr-4">
                       {% if ui_elem_detec.active %}
                       <i class="bg-success"></i>
-                      <span class="status">active</span>
+                      <span class="status">{% blocktranslate %}active{% endblocktranslate %}</span>
                       {% else %}
                       <i class="bg-danger"></i>
-                      <span class="status">not active</span>
+                      <span class="status">{% blocktranslate %}not active{% endblocktranslate %}</span>
                       {% endif %}
                     </span>
                   </td>
@@ -110,11 +111,11 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         {% if ui_elem_detec.executed > 0 %}
-                        <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">Details</a>
+                        <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
                         {% elif ui_elem_detec.executed == 0 %}
-                        <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">Details</a>
-                        <a class="dropdown-item" onclick="return confirm('Are you sure you want to delete this ui element detection?')" href="/fe/ui-element-detection/delete/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">Delete</a>
-                        <a class="dropdown-item" href="/fe/ui-element-detection/active/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">Set as active</a>
+                        <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this ui element detection?{% endblocktranslate %}')" href="/fe/ui-element-detection/delete/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                        <a class="dropdown-item" href="/fe/ui-element-detection/active/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">{% blocktranslate %}Set as active{% endblocktranslate %}</a>
                         {% endif %}
                       </div>
                     </div>
@@ -131,20 +132,20 @@
                 <li class="page-item disabled">
                   <a class="page-link" href="#" tabindex="-1">
                     <i class="fas fa-angle-left"></i>
-                    <span class="sr-only">Previous</span>
+                    <span class="sr-only">{% blocktranslate %}Previous{% endblocktranslate %}</span>
                   </a>
                 </li>
                 <li class="page-item active">
                   <a class="page-link" href="#">1</a>
                 </li>
                 <li class="page-item">
-                  <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
+                  <a class="page-link" href="#">2 <span class="sr-only">{% blocktranslate %}(current){% endblocktranslate %}</span></a>
                 </li>
                 <li class="page-item"><a class="page-link" href="#">3</a></li>
                 <li class="page-item">
                   <a class="page-link" href="#">
                     <i class="fas fa-angle-right"></i>
-                    <span class="sr-only">Next</span>
+                    <span class="sr-only">{% blocktranslate %}Next{% endblocktranslate %}</span>
                   </a>
                 </li>
               </ul>

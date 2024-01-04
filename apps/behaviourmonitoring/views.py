@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from .models import Monitoring
 from apps.analyzer.models import CaseStudy
 from .forms import MonitoringForm
+from django.utils.translation import gettext_lazy as _
 
 # Create your views here.
     
@@ -59,13 +60,13 @@ def set_as_active(request):
     
     # Validations
     if not request.user.is_authenticated:
-        raise ValidationError("User must be authenticated.")
+        raise ValidationError(_("User must be authenticated."))
     if CaseStudy.objects.get(pk=case_study_id).user != request.user:
-        raise ValidationError("Case Study doesn't belong to the authenticated user.")
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
     if Monitoring.objects.get(pk=monitoring_id).user != request.user:  
-        raise ValidationError("Monitoring doesn't belong to the authenticated user.")
+        raise ValidationError(_("Monitoring doesn't belong to the authenticated user."))
     if Monitoring.objects.get(pk=monitoring_id).case_study != CaseStudy.objects.get(pk=case_study_id):
-        raise ValidationError("Monitoring doesn't belong to the Case Study.")
+        raise ValidationError(_("Monitoring doesn't belong to the Case Study."))
     
     monitoring_list = Monitoring.objects.filter(case_study_id=case_study_id, active=True)
     for m in monitoring_list:
@@ -81,13 +82,13 @@ def set_as_inactive(request):
     case_study_id = request.GET.get("case_study_id")
     # Validations
     if not request.user.is_authenticated:
-        raise ValidationError("User must be authenticated.")
+        raise ValidationError(_("User must be authenticated."))
     if CaseStudy.objects.get(pk=case_study_id).user != request.user:
-        raise ValidationError("Case Study doesn't belong to the authenticated user.")
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
     if Monitoring.objects.get(pk=monitoring_id).user != request.user:  
-        raise ValidationError("Monitoring doesn't belong to the authenticated user.")
+        raise ValidationError(_("Monitoring doesn't belong to the authenticated user."))
     if Monitoring.objects.get(pk=monitoring_id).case_study != CaseStudy.objects.get(pk=case_study_id):
-        raise ValidationError("Monitoring doesn't belong to the Case Study.")
+        raise ValidationError(_("Monitoring doesn't belong to the Case Study."))
     monitoring = Monitoring.objects.get(id=monitoring_id)
     monitoring.active = False
     monitoring.save()
@@ -98,7 +99,7 @@ def delete_monitoring(request):
     case_study_id = request.GET.get("case_study_id")
     monitoring = Monitoring.objects.get(id=monitoring_id)
     if request.user.id != monitoring.user.id:
-        raise Exception("This object doesn't belong to the authenticated user")
+        raise Exception(_("This object doesn't belong to the authenticated user"))
     monitoring.delete()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
 

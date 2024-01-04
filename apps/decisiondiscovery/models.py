@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from apps.analyzer.models import CaseStudy
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 
@@ -116,7 +117,7 @@ class DecisionTreeTraining(models.Model):
     def clean(self):
         cleaned_data = super().clean()
         if not ExtractTrainingDataset.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError("To be able to apply decision tree training, a extract training dataset has to exist")
+            raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
         return cleaned_data
     
     def get_absolute_url(self):

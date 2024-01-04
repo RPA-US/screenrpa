@@ -6,6 +6,7 @@ Copyright (c) RPA-US
 from django import forms
 from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 class UIElementsDetectionForm(forms .ModelForm):
     class Meta:
@@ -19,6 +20,10 @@ class UIElementsDetectionForm(forms .ModelForm):
             "configurations",
             "ocr"
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip")
+        }
 
         labels = {
             "title": "Title *",
@@ -75,6 +80,11 @@ class PrefiltersForm(forms .ModelForm):
             "skip",
             "configurations",
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip"),
+            "configurations": _("Configurations")
+        }
 
         widgets = {
             "type": forms.TextInput(
@@ -107,6 +117,11 @@ class PostfiltersForm(forms .ModelForm):
             "skip",
             "configurations",
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip"),
+            "configurations": _("Configurations")
+        }
 
         widgets = {
             "type": forms.TextInput(
@@ -138,6 +153,12 @@ class UIElementsClassificationForm(forms .ModelForm):
             "model",
             "type",
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip"),
+            "model": _("Model"),
+            "model_properties": _("Model properties")
+        }
 
         labels = {
             "model": "Classification model *",
@@ -175,6 +196,11 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "skip",
             "identifier"
         )
+        labels = {
+            "technique_name": _("Technique name"),
+            "skip": _("Skip"),
+            "identifier": _("Identifier")
+        }
 
         widgets = {
             "technique_name": forms.TextInput(

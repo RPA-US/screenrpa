@@ -1,7 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -11,19 +12,19 @@
         <div class="row align-items-center py-4">
           <div class="col-12">
             <a href="/fe/postfiltering/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back to Post-Filtering Configurations</a>
-            <h6 class="h2 text-white d-inline-block mb-0">New Post-filtering Configuration</h6>
+            </i>{% blocktranslate %}Go Back to Post-Filtering Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}New Post-filtering Configuration{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="/fe/postfiltering/list/{{ case_study_id }}/">Post-Filtering Configs</a></li>
-                <li class="breadcrumb-item"><a href="#">New Post-Filtering</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/fe/postfiltering/list/{{ case_study_id }}/">{% blocktranslate %}Post-Filtering Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}New Post-Filtering{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
           <div class="col-12 text-right">
-            <a href="/fe/postfiltering/new/{{ case_study_id }}/" class="btn btn-light"><i class="fas fa-broom" style="margin-right: 5px;"></i>Restart fields</a>
+            <a href="/fe/postfiltering/new/{{ case_study_id }}/" class="btn btn-light"><i class="fas fa-broom" style="margin-right: 5px;"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
@@ -37,7 +38,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Create a new Postfilter Configuration</h3>
+            <h3 class="mb-0">{% blocktranslate %}Create a new Postfilter Configuration{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
@@ -72,7 +73,7 @@
               </div>
               <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
                 <i class="fas fa-save"></i> 
-                Save
+                {% blocktranslate %}Save{% endblocktranslate %}
               </button>
             </form>
           </div>

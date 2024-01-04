@@ -1,9 +1,10 @@
+{% load i18n %}
 <nav id="navbar-main" class="navbar navbar-horizontal navbar-transparent navbar-main navbar-expand-lg navbar-light">
   <div class="container">
     <a class="navbar-brand" href="/">
       <img src="/static/assets/img/brand/big-logo.png" alt="ScreenRPA Logo">ScreenRPA
     </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="{% blocktranslate %}Toggle navigation{% endblocktranslate %}">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="navbar-collapse navbar-custom-collapse collapse" id="navbar-collapse">
@@ -15,7 +16,7 @@
             </a>
           </div>
           <div class="col-6 collapse-close">
-            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="{% blocktranslate %}Toggle navigation{% endblocktranslate %}">
               <span></span>
               <span></span>
             </button>
@@ -25,20 +26,35 @@
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
           <a href="{% url 'login' %}" class="nav-link">
-            <span class="nav-link-inner--text">Login</span>
+            <span class="nav-link-inner--text">{% blocktranslate %}Login{% endblocktranslate %}</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="{% url 'register' %}" class="nav-link">
-            <span class="nav-link-inner--text">Register</span>
+            <span class="nav-link-inner--text">{% blocktranslate %}Register{% endblocktranslate %}</span>
           </a>
         </li>
       </ul>
       <hr class="d-lg-none" />
       <ul class="navbar-nav align-items-lg-center ml-lg-auto">
+        <li class="nav-item dropdown">
+          <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+            <input name="next" type="hidden" value="{{ redirect_to }}">
+            <select name="language" class="form-control" onchange="this.form.submit()">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                {% get_language_info_list for LANGUAGES as languages %}
+                {% for language in languages %}
+                    <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                        {{ language.name_local }} ({{ language.code }})
+                    </option>
+                {% endfor %}
+            </select>
+          </form>
+        </li>
         <li class="nav-item">
           <a class="nav-link nav-link-icon" href="https://twitter.com/rpa_us" 
-             target="_blank" data-toggle="tooltip" data-original-title="Follow us on Twitter">
+             target="_blank" data-toggle="tooltip" data-original-title="{% blocktranslate %}Follow us on Twitter{% endblocktranslate %}">
             <i class="fab fa-twitter-square"></i>
             <span class="nav-link-inner--text d-lg-none">Twitter</span>
           </a>
@@ -49,7 +65,7 @@
             <span class="btn-inner--icon">
               <i class="fas fa-rocket mr-2"></i>
             </span>
-            <span class="nav-link-inner--text">PRO Version</span>
+            <span class="nav-link-inner--text">{% blocktranslate %}PRO Version{% endblocktranslate %}</span>
           </a>
         </li>
       </ul>

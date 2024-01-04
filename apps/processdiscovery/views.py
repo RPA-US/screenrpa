@@ -18,6 +18,7 @@ from apps.analyzer.models import CaseStudy
 from core.utils import read_ui_log_as_dataframe
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
+from django.utils.translation import gettext_lazy as _
 
 def scene_level(log_path, root_path, special_colnames, configurations, skip, type):
     """
@@ -53,9 +54,9 @@ def scene_level(log_path, root_path, special_colnames, configurations, skip, typ
         if ("draw_dendogram" in configurations) and (configurations["draw_dendogram"] == "True"):
             plt.figure(figsize=(10, 5))
             dendrogram(distance_matrix)
-            plt.title('Dendrogram')
-            plt.xlabel('Screenshots')
-            plt.ylabel('Distance')
+            plt.title(_('Dendrogram'))
+            plt.xlabel(_('Screenshots'))
+            plt.ylabel(_('Distance'))
             plt.savefig(os.path.join(root_path + 'ui_log_states_dendrogram.png'))
 
         # Obtener los clusters utilizando un umbral de distancia
@@ -63,7 +64,7 @@ def scene_level(log_path, root_path, special_colnames, configurations, skip, typ
             threshold = float(configurations["similarity_th"]) * np.max(distance_matrix[:, 2])
         else:
             threshold = 0.1 * np.max(distance_matrix[:, 2])
-            print("Threshold: " + str(threshold))
+            print(_("Threshold: ") + str(threshold))
         cluster_labels = fcluster(distance_matrix, threshold, criterion='distance')
 
         # Agregar los clusters al dataframe de UI log
@@ -73,7 +74,7 @@ def scene_level(log_path, root_path, special_colnames, configurations, skip, typ
         # Guardar el resultado en un nuevo archivo CSV
         ui_log.to_csv(root_path + 'ui_log_clustered.csv', index=False)
     else:
-        raise Exception("You selected a process discovery type that doesnt exist")
+        raise Exception(_("You selected a process discovery type that does not exist"))
 
 
 def process_level(log_path, root_path, special_colnames, configurations, type):
@@ -105,7 +106,7 @@ class ProcessDiscoveryCreateView(CreateView):
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError("User must be authenticated.")
+            raise ValidationError(_("User must be authenticated."))
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))

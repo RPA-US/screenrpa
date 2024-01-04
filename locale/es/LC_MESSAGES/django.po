@@ -1,0 +1,2916 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-04 09:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/templates/accounts/login.html:7
+#: apps/templates/accounts/register.html:129
+#: apps/templates/includes/navigation-fullscreen.html:29
+msgid "Login"
+msgstr "Iniciar sesión"
+
+#: apps/templates/accounts/login.html:22
+msgid "Welcome to ScreenRPA!"
+msgstr "Bienvienid@ a ScreenRPA"
+
+#: apps/templates/accounts/login.html:32
+msgid "Add your credentials"
+msgstr "Añadir credenciales"
+
+#: apps/templates/accounts/login.html:61
+msgid "Remember me"
+msgstr "Recordarme"
+
+#: apps/templates/accounts/login.html:65
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+#: apps/templates/accounts/login.html:72
+#: apps/templates/accounts/register.html:7
+#: apps/templates/includes/navigation-fullscreen.html:34
+msgid "Register"
+msgstr "Registrarse"
+
+#: apps/templates/accounts/login.html:75
+#: apps/templates/accounts/register.html:132
+msgid "Get Support"
+msgstr "Obtener soporte"
+
+#: apps/templates/accounts/register.html:23
+msgid "Let's join to ScreenRPA!"
+msgstr "Es hora de unirse a ScreenRPA!"
+
+#: apps/templates/accounts/register.html:32
+msgid "Add your information"
+msgstr "Añade tu información"
+
+#: apps/templates/accounts/register.html:108
+msgid "I agree with the "
+msgstr "Estoy de acuerdo con la "
+
+#: apps/templates/accounts/register.html:108
+msgid "Privacy Policy"
+msgstr "Política de Privacidad"
+
+#: apps/templates/accounts/register.html:114
+msgid "Create account"
+msgstr "Crear cuenta"
+
+#: apps/templates/case_studies/create.html:5
+#: apps/templates/case_studies/detail.html:5
+#: apps/templates/case_studies/exp_files.html:5
+#: apps/templates/case_studies/list.html:4
+#: apps/templates/decision_tree_training/create.html:5
+#: apps/templates/feature_extraction_technique/create.html:5
+#: apps/templates/feature_extraction_technique/list.html:4
+#: apps/templates/monitoring/create.html:5
+#: apps/templates/monitoring/list.html:4
+#: apps/templates/postfiltering/create.html:5
+#: apps/templates/postfiltering/detail.html:5
+#: apps/templates/postfiltering/list.html:4
+#: apps/templates/prefiltering/create.html:5
+#: apps/templates/prefiltering/list.html:4
+#: apps/templates/processdiscovery/create.html:5
+#: apps/templates/processdiscovery/list.html:4
+#: apps/templates/reporting/list.html:4
+#: apps/templates/ui_elements_classification/create.html:5
+#: apps/templates/ui_elements_classification/list.html:4
+#: apps/templates/ui_elements_detection/create.html:5
+#: apps/templates/ui_elements_detection/list.html:4
+msgid "Case studies"
+msgstr "Casos de estudio"
+
+#: apps/templates/case_studies/create.html:15
+#: apps/templates/case_studies/detail.html:15
+#: apps/templates/case_studies/exp_files.html:15
+msgid "Go Back to Case Studies"
+msgstr "Volver a Casos de estudio"
+
+#: apps/templates/case_studies/create.html:16
+#: apps/templates/case_studies/exp_files.html:26
+#: apps/templates/case_studies/list.html:23
+#: apps/templates/includes/sidenav.html:32
+msgid "New Case Study"
+msgstr "Nuevo caso de estudio"
+
+#: apps/templates/case_studies/create.html:20
+msgid "New case study"
+msgstr "Nuevo caso de estudio"
+
+#: apps/templates/case_studies/create.html:25
+#: apps/templates/decision_tree_training/create.html:27
+#: apps/templates/extract_training_dataset/create.html:27
+#: apps/templates/feature_extraction_technique/create.html:27
+#: apps/templates/monitoring/create.html:27
+#: apps/templates/postfiltering/create.html:27
+#: apps/templates/prefiltering/create.html:27
+#: apps/templates/processdiscovery/create.html:27
+#: apps/templates/ui_elements_classification/create.html:27
+#: apps/templates/ui_elements_detection/create.html:27
+msgid "Restart fields"
+msgstr "Reiniciar campos"
+
+#: apps/templates/case_studies/create.html:39
+msgid "Create a new Case Study"
+msgstr "Crear un nuevo caso de estudio"
+
+#: apps/templates/case_studies/create.html:44
+#: apps/templates/case_studies/detail.html:41
+#: apps/templates/monitoring/detail.html:46
+#: apps/templates/postfiltering/detail.html:46
+#: apps/templates/prefiltering/detail.html:46
+msgid "General information"
+msgstr "Información general"
+
+#: apps/templates/case_studies/create.html:100
+#: apps/templates/case_studies/detail.html:90
+msgid "Configuration"
+msgstr "Configuración"
+
+#: apps/templates/case_studies/create.html:197
+#: apps/templates/decision_tree_training/create.html:83
+#: apps/templates/extract_training_dataset/create.html:67
+#: apps/templates/feature_extraction_technique/create.html:74
+#: apps/templates/monitoring/create.html:67
+#: apps/templates/postfiltering/create.html:76
+#: apps/templates/prefiltering/create.html:74
+#: apps/templates/processdiscovery/create.html:67
+#: apps/templates/ui_elements_classification/create.html:81
+#: apps/templates/ui_elements_detection/create.html:65
+msgid "Save"
+msgstr "Guardar"
+
+#: apps/templates/case_studies/detail.html:16
+#, python-format
+msgid "Case Study %(case_study.id)s details"
+msgstr "Detalles del caso de estudio %(case_study.id)s"
+
+#: apps/templates/case_studies/detail.html:20
+#, python-format
+msgid "Case study %(case_study.id)s"
+msgstr "Caso de estudio %(case_study.id)s"
+
+#: apps/templates/case_studies/detail.html:36
+#, python-format
+msgid "Case study %(case_study.id)s details"
+msgstr "Detalles del caso de estudio %(case_study.id)s"
+
+#: apps/templates/case_studies/detail.html:46
+#: apps/templates/case_studies/list.html:45
+msgid "Title"
+msgstr "Título"
+
+#: apps/templates/case_studies/detail.html:47
+msgid "Nice Case Study"
+msgstr "Buen caso de estudio"
+
+#: apps/templates/case_studies/detail.html:52
+msgid "Author"
+msgstr "Autor"
+
+#: apps/templates/case_studies/detail.html:60
+msgid "Description"
+msgstr "Descripción"
+
+#: apps/templates/case_studies/detail.html:61
+msgid "This is a case study full of data..."
+msgstr "Este es un caso de estudio lleno de datos..."
+
+#: apps/templates/case_studies/detail.html:68
+msgid "Folder path"
+msgstr "Ruta de la carpeta"
+
+#: apps/templates/case_studies/detail.html:76
+msgid "Decision-point to study"
+msgstr "Punto de decisión a estudiar"
+
+#: apps/templates/case_studies/detail.html:82
+msgid "Decision Oracle"
+msgstr "Oráculo de decisión"
+
+#: apps/templates/case_studies/detail.html:83
+msgid "CheckBox_4_D and ImageView_2_B"
+msgstr "CheckBox_4_D e ImageView_2_B"
+
+#: apps/templates/case_studies/detail.html:93
+msgid "Special columns names"
+msgstr "Nombres de columnas especiales"
+
+#: apps/templates/case_studies/detail.html:113
+#: apps/templates/case_studies/detail.html:121
+msgid "UI Elements image shape (for classification)"
+msgstr "Forma de imagen de elementos de UI (para clasificación)"
+
+#: apps/templates/case_studies/detail.html:147
+msgid "Text UI elements class name"
+msgstr "Nombre de clase de elementos de UI de texto"
+
+#: apps/templates/case_studies/detail.html:148
+msgid "text"
+msgstr "texto"
+
+#: apps/templates/case_studies/detail.html:153
+msgid "Target label column name"
+msgstr "Nombre de columna de etiqueta objetivo"
+
+#: apps/templates/case_studies/detail.html:154
+msgid "Variant"
+msgstr "Variante"
+
+#: apps/templates/case_studies/detail.html:161
+msgid "Scenarios to study"
+msgstr "Escenarios a estudiar"
+
+#: apps/templates/case_studies/detail.html:162
+msgid "['scenario1', 'scenario2']"
+msgstr "['escenario1', 'escenario2']"
+
+#: apps/templates/case_studies/detail.html:169
+msgid "Set Up Phases"
+msgstr "Fases de configuración"
+
+#: apps/templates/case_studies/detail.html:178
+#: apps/templates/monitoring/detail.html:21
+#: apps/templates/monitoring/list.html:20
+msgid "Behaviour Monitoring"
+msgstr "Monitoreo de comportamiento"
+
+#: apps/templates/case_studies/detail.html:188
+msgid "Pre-Filtering"
+msgstr "Pre-filtrado"
+
+#: apps/templates/case_studies/detail.html:198
+msgid "UI Elements Detection"
+msgstr "Detección de elementos de UI"
+
+#: apps/templates/case_studies/detail.html:208
+msgid "UI Elements Classification"
+msgstr "Clasificación de elementos de UI"
+
+#: apps/templates/case_studies/detail.html:218
+msgid "Post-filtering"
+msgstr "Post-filtrado"
+
+#: apps/templates/case_studies/detail.html:228
+msgid "Feature extraction"
+msgstr "Extracción de características"
+
+#: apps/templates/case_studies/detail.html:238
+msgid "Process Discovery"
+msgstr "Descubrimiento de procesos"
+
+#: apps/templates/case_studies/detail.html:248
+msgid "Extract training dataset"
+msgstr "Extraer conjunto de datos de entrenamiento"
+
+#: apps/templates/case_studies/detail.html:258
+msgid "Decision tree training"
+msgstr "Entrenamiento del árbol de decisiones"
+
+#: apps/templates/case_studies/detail.html:268
+msgid "Reporting"
+msgstr "Generación de informes"
+
+#: apps/templates/case_studies/exp_files.html:16
+#: apps/templates/case_studies/list.html:13
+msgid "Case Studies"
+msgstr "Casos de estudio"
+
+#: apps/templates/case_studies/exp_files.html:20
+#: apps/templates/includes/sidenav.html:38
+msgid "My files"
+msgstr "Mis archivos"
+
+#: apps/templates/case_studies/exp_files.html:40
+msgid "Your files"
+msgstr "Tus archivos"
+
+#: apps/templates/case_studies/exp_files.html:47
+msgid "Filename"
+msgstr "Nombre de archivo"
+
+#: apps/templates/case_studies/exp_files.html:48
+msgid "Path"
+msgstr "Ruta"
+
+#: apps/templates/case_studies/exp_files.html:49
+msgid "Size (KB)"
+msgstr "Tamaño (KB)"
+
+#: apps/templates/case_studies/exp_files.html:71
+msgid "Download input data"
+msgstr "Descargar datos de entrada"
+
+#: apps/templates/case_studies/exp_files.html:72
+msgid "Export experiment data"
+msgstr "Exportar datos del experimento"
+
+#: apps/templates/case_studies/exp_files.html:88
+#: apps/templates/case_studies/list.html:157
+#: apps/templates/decision_tree_training/list.html:141
+#: apps/templates/extract_training_dataset/list.html:133
+#: apps/templates/feature_extraction_technique/list.html:137
+#: apps/templates/monitoring/list.html:149
+#: apps/templates/postfiltering/list.html:133
+#: apps/templates/prefiltering/list.html:133
+#: apps/templates/processdiscovery/list.html:133
+#: apps/templates/reporting/list.html:96
+#: apps/templates/ui_elements_classification/list.html:141
+#: apps/templates/ui_elements_detection/list.html:133
+msgid "Previous"
+msgstr "Anterior"
+
+#: apps/templates/case_studies/exp_files.html:95
+#: apps/templates/decision_tree_training/list.html:148
+#: apps/templates/extract_training_dataset/list.html:140
+#: apps/templates/feature_extraction_technique/list.html:144
+#: apps/templates/monitoring/list.html:156
+#: apps/templates/postfiltering/list.html:140
+#: apps/templates/prefiltering/list.html:140
+#: apps/templates/processdiscovery/list.html:140
+#: apps/templates/reporting/list.html:103
+#: apps/templates/ui_elements_classification/list.html:148
+#: apps/templates/ui_elements_detection/list.html:140
+msgid "(current)"
+msgstr "(actual)"
+
+#: apps/templates/case_studies/exp_files.html:101
+#: apps/templates/case_studies/list.html:170
+#: apps/templates/decision_tree_training/list.html:154
+#: apps/templates/extract_training_dataset/list.html:146
+#: apps/templates/feature_extraction_technique/list.html:150
+#: apps/templates/monitoring/list.html:162
+#: apps/templates/postfiltering/list.html:146
+#: apps/templates/prefiltering/list.html:146
+#: apps/templates/processdiscovery/list.html:146
+#: apps/templates/reporting/list.html:109
+#: apps/templates/ui_elements_classification/list.html:154
+#: apps/templates/ui_elements_detection/list.html:146
+msgid "Next"
+msgstr "Siguiente"
+
+#: apps/templates/case_studies/list.html:37
+msgid "Your case studies"
+msgstr "Tus casos de estudio"
+
+#: apps/templates/case_studies/list.html:44
+#: apps/templates/decision_tree_training/list.html:47
+#: apps/templates/extract_training_dataset/list.html:47
+#: apps/templates/feature_extraction_technique/list.html:47
+#: apps/templates/monitoring/detail.html:51
+#: apps/templates/monitoring/list.html:47
+#: apps/templates/postfiltering/detail.html:51
+#: apps/templates/postfiltering/list.html:47
+#: apps/templates/prefiltering/detail.html:51
+#: apps/templates/prefiltering/list.html:47
+#: apps/templates/processdiscovery/list.html:47
+#: apps/templates/reporting/list.html:47
+#: apps/templates/ui_elements_classification/list.html:47
+#: apps/templates/ui_elements_detection/list.html:47
+msgid "Id"
+msgstr "ID"
+
+#: apps/templates/case_studies/list.html:46
+#: apps/templates/decision_tree_training/list.html:48
+#: apps/templates/extract_training_dataset/list.html:48
+#: apps/templates/feature_extraction_technique/list.html:48
+#: apps/templates/monitoring/list.html:48
+#: apps/templates/postfiltering/list.html:48
+#: apps/templates/prefiltering/list.html:48
+#: apps/templates/processdiscovery/list.html:48
+#: apps/templates/reporting/list.html:48
+#: apps/templates/ui_elements_classification/list.html:48
+#: apps/templates/ui_elements_detection/list.html:48
+msgid "Created at"
+msgstr "Creado en"
+
+#: apps/templates/case_studies/list.html:47
+msgid "Foldername"
+msgstr "Nombre de carpeta"
+
+#: apps/templates/case_studies/list.html:48
+#: apps/templates/monitoring/list.html:52
+msgid "Status"
+msgstr "Estado"
+
+#: apps/templates/case_studies/list.html:49
+msgid "Progress"
+msgstr "Progreso"
+
+#: apps/templates/case_studies/list.html:80
+msgid "not executed"
+msgstr "no ejecutado"
+
+#: apps/templates/case_studies/list.html:83
+msgid "executed"
+msgstr "ejecutado"
+
+#: apps/templates/case_studies/list.html:86
+msgid "pending"
+msgstr "pendiente"
+
+#: apps/templates/case_studies/list.html:118
+#: apps/templates/case_studies/list.html:122
+#: apps/templates/case_studies/list.html:133
+#: apps/templates/decision_tree_training/list.html:120
+#: apps/templates/decision_tree_training/list.html:122
+#: apps/templates/extract_training_dataset/list.html:112
+#: apps/templates/extract_training_dataset/list.html:114
+#: apps/templates/feature_extraction_technique/list.html:116
+#: apps/templates/feature_extraction_technique/list.html:118
+#: apps/templates/monitoring/list.html:107
+#: apps/templates/monitoring/list.html:114
+#: apps/templates/postfiltering/list.html:112
+#: apps/templates/postfiltering/list.html:114
+#: apps/templates/prefiltering/list.html:112
+#: apps/templates/prefiltering/list.html:114
+#: apps/templates/processdiscovery/list.html:112
+#: apps/templates/processdiscovery/list.html:114
+#: apps/templates/ui_elements_classification/list.html:120
+#: apps/templates/ui_elements_classification/list.html:122
+#: apps/templates/ui_elements_detection/list.html:112
+#: apps/templates/ui_elements_detection/list.html:114
+msgid "Details"
+msgstr "Detalles"
+
+#: apps/templates/case_studies/list.html:123
+#: apps/templates/case_studies/list.html:134
+msgid "Are you sure you want to delete this case study?"
+msgstr "¿Estás seguro de que quieres eliminar este caso de estudio?"
+
+#: apps/templates/case_studies/list.html:124
+#: apps/templates/case_studies/list.html:135
+#: apps/templates/decision_tree_training/list.html:123
+#: apps/templates/extract_training_dataset/list.html:115
+#: apps/templates/monitoring/list.html:123
+#: apps/templates/monitoring/list.html:130
+#: apps/templates/postfiltering/list.html:115
+#: apps/templates/prefiltering/list.html:115
+#: apps/templates/processdiscovery/list.html:115
+#: apps/templates/ui_elements_classification/list.html:123
+#: apps/templates/ui_elements_detection/list.html:115
+#: venv/lib/python3.10/site-packages/django/forms/formsets.py:496
+msgid "Delete"
+msgstr "Eliminar"
+
+#: apps/templates/case_studies/list.html:125
+#: apps/templates/case_studies/list.html:136
+msgid "Are you sure you want to generate the report?"
+msgstr "¿Estás seguro de que quieres generar el informe?"
+
+#: apps/templates/case_studies/list.html:126
+#: apps/templates/case_studies/list.html:137
+msgid "Generate report"
+msgstr "Generar reporte"
+
+#: apps/templates/case_studies/list.html:128
+msgid "Execute"
+msgstr "Ejecutar"
+
+#: apps/templates/case_studies/list.html:139
+msgid "Set up at least one setup phase as active for execution."
+msgstr ""
+"Configure al menos una fase de configuración como activa para la ejecución."
+
+#: apps/templates/case_studies/list.html:164
+msgid "current"
+msgstr "actual"
+
+#: apps/templates/decision_tree_training/create.html:15
+msgid "Go Back to Decision Tree Training Configurations"
+msgstr "Volver a Configuración del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/create.html:16
+msgid "New Decision Tree Training Configuration"
+msgstr "Entrenamiento del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/create.html:20
+#: apps/templates/decision_tree_training/list.html:19
+#: apps/templates/extract_training_dataset/create.html:20
+#: apps/templates/extract_training_dataset/list.html:19
+#: apps/templates/feature_extraction_technique/create.html:20
+#: apps/templates/feature_extraction_technique/list.html:19
+#: apps/templates/monitoring/create.html:20
+#: apps/templates/monitoring/list.html:19
+#: apps/templates/postfiltering/create.html:20
+#: apps/templates/postfiltering/detail.html:20
+#: apps/templates/postfiltering/list.html:19
+#: apps/templates/prefiltering/create.html:20
+#: apps/templates/prefiltering/detail.html:20
+#: apps/templates/prefiltering/list.html:19
+#: apps/templates/processdiscovery/create.html:20
+#: apps/templates/processdiscovery/list.html:19
+#: apps/templates/reporting/list.html:19
+#: apps/templates/ui_elements_classification/create.html:20
+#: apps/templates/ui_elements_classification/list.html:19
+#: apps/templates/ui_elements_detection/create.html:20
+#: apps/templates/ui_elements_detection/list.html:19
+#, fuzzy, python-format
+#| msgid "Case Study %(case_study_id)s"
+msgid "Case Study %(case_study_id)s"
+msgstr "Caso de estudio %(case_study.id)s"
+
+#: apps/templates/decision_tree_training/create.html:21
+msgid "Decision Tree Traning Configs"
+msgstr "Configuración del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/create.html:22
+msgid "New decision tree training"
+msgstr "Nuevo entrenamiento del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/create.html:41
+msgid "Create a new Decision Tree Training Configuration"
+msgstr ""
+"Crear una nueva configuración del entrenamiento del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/list.html:14
+#: apps/templates/extract_training_dataset/list.html:14
+#: apps/templates/feature_extraction_technique/list.html:14
+#: apps/templates/monitoring/list.html:14
+#: apps/templates/postfiltering/list.html:14
+#: apps/templates/prefiltering/list.html:14
+#: apps/templates/processdiscovery/list.html:14
+#: apps/templates/reporting/list.html:14
+#: apps/templates/ui_elements_classification/list.html:14
+#: apps/templates/ui_elements_detection/list.html:14
+#, python-format
+msgid "Go Back to Case Study %(case_study_id)s details"
+msgstr "Detalles del caso de estudio %(case_study_id)s"
+
+#: apps/templates/decision_tree_training/list.html:15
+#: apps/templates/decision_tree_training/list.html:20
+msgid "Decision Tree Training Configurations"
+msgstr "Configuración del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/list.html:26
+msgid "New Decision Tree Training"
+msgstr "Entrenamiento del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/list.html:40
+msgid "Your configurations"
+msgstr "Configuración"
+
+#: apps/templates/decision_tree_training/list.html:49
+msgid "library"
+msgstr "librería"
+
+#: apps/templates/decision_tree_training/list.html:50
+msgid "Algorithms"
+msgstr "Algoritmos"
+
+#: apps/templates/decision_tree_training/list.html:51
+msgid "One hot columns"
+msgstr "Columnas one hot"
+
+#: apps/templates/decision_tree_training/list.html:52
+#: apps/templates/extract_training_dataset/list.html:50
+msgid "Columns to drop before decision point"
+msgstr "Columnas a eliminar antes del punto de decisión"
+
+#: apps/templates/decision_tree_training/list.html:86
+#: apps/templates/extract_training_dataset/list.html:78
+#: apps/templates/feature_extraction_technique/list.html:82
+#: apps/templates/postfiltering/list.html:78
+#: apps/templates/prefiltering/list.html:78
+#: apps/templates/processdiscovery/list.html:78
+#: apps/templates/ui_elements_classification/list.html:86
+#: apps/templates/ui_elements_detection/list.html:78
+msgid "active"
+msgstr "activo"
+
+#: apps/templates/decision_tree_training/list.html:89
+#: apps/templates/extract_training_dataset/list.html:81
+#: apps/templates/feature_extraction_technique/list.html:85
+#: apps/templates/postfiltering/list.html:81
+#: apps/templates/prefiltering/list.html:81
+#: apps/templates/processdiscovery/list.html:81
+#: apps/templates/ui_elements_classification/list.html:89
+#: apps/templates/ui_elements_detection/list.html:81
+msgid "not active"
+msgstr "no activo"
+
+#: apps/templates/decision_tree_training/list.html:123
+msgid "Are you sure you want to delete this decision tree training?"
+msgstr "¿Estás seguro de que quieres eliminar este árbol de decisiones?"
+
+#: apps/templates/decision_tree_training/list.html:124
+#: apps/templates/extract_training_dataset/list.html:116
+#: apps/templates/feature_extraction_technique/list.html:120
+#: apps/templates/postfiltering/list.html:116
+#: apps/templates/prefiltering/list.html:116
+#: apps/templates/processdiscovery/list.html:116
+#: apps/templates/ui_elements_classification/list.html:124
+#: apps/templates/ui_elements_detection/list.html:116
+msgid "Set as active"
+msgstr "Marcar como activo"
+
+#: apps/templates/extract_training_dataset/create.html:15
+msgid "Go Back to Extract Training Dataset Configurations"
+msgstr "Volver a Configuración de extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:16
+msgid "New Extract Training Dataset Configuration"
+msgstr "Nueva configuración de extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:21
+msgid "Extract Training Dataset Configs"
+msgstr "Extraer conjunto de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:22
+#: apps/templates/extract_training_dataset/list.html:26
+msgid "New Extract Training Dataset"
+msgstr "Nueva extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/create.html:41
+msgid "Create a new Extract Training Dataset Configuration"
+msgstr "Crear una nueva configuración de extracción de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/list.html:15
+#: apps/templates/extract_training_dataset/list.html:20
+#: apps/templates/extract_training_dataset/list.html:40
+msgid "Extract Training Dataset Configurations"
+msgstr "Extraer configuración de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/list.html:49
+msgid "Columns to drop"
+msgstr "Columnas a descartar"
+
+#: apps/templates/extract_training_dataset/list.html:115
+msgid "Are you sure you want to delete this extract training dataset?"
+msgstr "¿Estás seguro de que quieres eliminar esta extracción de datos?"
+
+#: apps/templates/feature_extraction_technique/create.html:15
+msgid "Go Back to Feature Extraction Technique Configurations"
+msgstr "Volver a Configuración de técnicas de extracción de características"
+
+#: apps/templates/feature_extraction_technique/create.html:16
+msgid "New Feature Extraction Technique Configuration"
+msgstr "Nueva configuración de técnicas de extracción de características"
+
+#: apps/templates/feature_extraction_technique/create.html:21
+msgid "Feature Extraction Technique Configs"
+msgstr "Configuraciones de técnicas de extracción de características"
+
+#: apps/templates/feature_extraction_technique/create.html:22
+#: apps/templates/feature_extraction_technique/list.html:26
+msgid "New Feature Extraction Technique"
+msgstr "Nueva técnica de extracción de características"
+
+#: apps/templates/feature_extraction_technique/create.html:41
+msgid "Create a new Feature Extraction Technique Configuration"
+msgstr ""
+"Crear una nueva configuración de técnicas de extracción de características"
+
+#: apps/templates/feature_extraction_technique/list.html:15
+#: apps/templates/feature_extraction_technique/list.html:20
+#: apps/templates/feature_extraction_technique/list.html:40
+msgid "Feature Extraction Technique Configurations"
+msgstr "Configuraciones de técnicas de extracción de características"
+
+#: apps/templates/feature_extraction_technique/list.html:49
+msgid "Technique name"
+msgstr "Nombre de la técnica"
+
+#: apps/templates/feature_extraction_technique/list.html:50
+msgid "Identifier"
+msgstr "Identificador"
+
+#: apps/templates/feature_extraction_technique/list.html:51
+#: apps/templates/ui_elements_classification/list.html:52
+#: apps/templates/ui_elements_detection/list.html:50
+msgid "Skip"
+msgstr "Saltar"
+
+#: apps/templates/feature_extraction_technique/list.html:119
+msgid "Are you sure you want to delete this feature extraction technique?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta técnica de extracción de "
+"características?"
+
+#: apps/templates/includes/footer-fullscreen.html:9
+#: apps/templates/includes/footer.html:8
+msgid "More Solutions"
+msgstr "Más soluciones"
+
+#: apps/templates/includes/navigation-fullscreen.html:7
+#: apps/templates/includes/navigation-fullscreen.html:19
+msgid "Toggle navigation"
+msgstr "Alternar navegación"
+
+#: apps/templates/includes/navigation-fullscreen.html:57
+msgid "Follow us on Twitter"
+msgstr "Síguenos en Twitter"
+
+#: apps/templates/includes/navigation-fullscreen.html:68
+#: apps/templates/includes/sidenav.html:132
+msgid "PRO Version"
+msgstr "Versión PRO"
+
+#: apps/templates/includes/navigation.html:58
+msgid "You have "
+msgstr "Tienes "
+
+#: apps/templates/includes/navigation.html:58
+msgid " notifications."
+msgstr " notificaciones."
+
+#: apps/templates/includes/navigation.html:159
+msgid "Close"
+msgstr "Cerrar"
+
+#: apps/templates/includes/navigation.html:225
+msgid "Welcome!"
+msgstr "¡Bienvenid@!"
+
+#: apps/templates/includes/navigation.html:229
+msgid "My profile"
+msgstr "Mis datos"
+
+#: apps/templates/includes/navigation.html:233
+msgid "Any issue?"
+msgstr "¿Algún problema?"
+
+#: apps/templates/includes/navigation.html:238
+#: apps/templates/includes/sidenav.html:105
+msgid "Logout"
+msgstr "Cerrar sesión"
+
+#: apps/templates/includes/sidenav.html:26
+msgid "My Case Studies"
+msgstr "Mis casos de estudio"
+
+#: apps/templates/includes/sidenav.html:113
+msgid "Resources"
+msgstr "Recursos"
+
+#: apps/templates/includes/sidenav.html:123
+msgid "More solutions"
+msgstr "Configuración"
+
+#: apps/templates/layouts/base-fullscreen.html:55
+msgid ""
+"\n"
+"                A Task Mining framework to discover the <a target=\"_blank\" "
+"class=\"text-white\" href=\"https://doi."
+"org/10.1007/978-3-031-16103-2_8\">why</a> behind decision points in business "
+"processes in a machine-and-human-readable form to  \n"
+"                support RPA projects.\n"
+"                "
+msgstr ""
+"\n"
+"                Un marco de trabajo de minería de tareas para descubrir el "
+"<a target=\"_blank\" class=\"text-white\" href=\"https://doi."
+"org/10.1007/978-3-031-16103-2_8\">por qué</a> detrás de los puntos de "
+"decisión en los procesos de negocio en una forma legible por máquina y "
+"humana para apoyar proyectos de RPA.\n"
+"                "
+
+#: apps/templates/monitoring/create.html:15
+#: apps/templates/monitoring/detail.html:15
+msgid "Go Back to Behaviour Monitoring Configurations"
+msgstr "Volver a Configuración de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/create.html:16
+#: apps/templates/monitoring/list.html:26
+msgid "New Behaviour Monitoring Configuration"
+msgstr "Nueva configuración de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/create.html:21
+msgid "Behaviour Monitoring Configs"
+msgstr "Configuraciones de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/create.html:22
+msgid "New Behaviour Monitoring"
+msgstr "Nuevo monitoreo de comportamiento"
+
+#: apps/templates/monitoring/create.html:41
+msgid "Create a new Behaviour Monitoring Configuration"
+msgstr "Crear una nueva configuración de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/detail.html:16
+#: apps/templates/monitoring/detail.html:41
+msgid "Behaviour Monitoring Configuration Details"
+msgstr "Detalles de la configuración de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/detail.html:20
+#, python-format
+msgid "Case Study %(monitoring.case_study.id)s"
+msgstr "Caso de estudio %(monitoring.case_study.id)s"
+
+#: apps/templates/monitoring/detail.html:22
+#, python-format
+msgid "Monitoring %(monitoring.id)s"
+msgstr "Monitoreo %(monitoring.id)s"
+
+#: apps/templates/monitoring/detail.html:27
+#: apps/templates/postfiltering/detail.html:27
+#: apps/templates/prefiltering/detail.html:27
+msgid "Edit fields"
+msgstr "Editar campos"
+
+#: apps/templates/monitoring/detail.html:57
+#: apps/templates/monitoring/list.html:49
+#: apps/templates/postfiltering/detail.html:57
+#: apps/templates/postfiltering/list.html:49
+#: apps/templates/prefiltering/detail.html:57
+#: apps/templates/prefiltering/list.html:49
+#: apps/templates/processdiscovery/list.html:49
+#: apps/templates/reporting/list.html:49
+#: apps/templates/ui_elements_classification/list.html:51
+#: apps/templates/ui_elements_detection/list.html:49
+msgid "Type"
+msgstr "Tipo"
+
+#: apps/templates/monitoring/detail.html:65
+#: apps/templates/monitoring/list.html:50
+#: apps/templates/postfiltering/detail.html:65
+#: apps/templates/postfiltering/list.html:50
+#: apps/templates/prefiltering/detail.html:65
+#: apps/templates/prefiltering/list.html:50
+#: apps/templates/processdiscovery/list.html:50
+#: apps/templates/reporting/list.html:50
+msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/templates/monitoring/list.html:15
+#: apps/templates/monitoring/list.html:40
+msgid "Behaviour Monitoring Configurations"
+msgstr "Configuraciones de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/list.html:51
+msgid "Executed"
+msgstr "Ejecutado"
+
+#: apps/templates/monitoring/list.html:81
+msgid "Already Executed"
+msgstr "Ya ejecutado"
+
+#: apps/templates/monitoring/list.html:84
+msgid "Not Executed"
+msgstr "No ejecutado"
+
+#: apps/templates/monitoring/list.html:92
+msgid "Active"
+msgstr "activo"
+
+#: apps/templates/monitoring/list.html:95
+msgid "Not Active"
+msgstr "no activo"
+
+#: apps/templates/monitoring/list.html:109
+#: apps/templates/monitoring/list.html:116
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#: apps/templates/monitoring/list.html:111
+msgid "Inactivate"
+msgstr "Inactivo"
+
+#: apps/templates/monitoring/list.html:118
+#: apps/templates/monitoring/list.html:132
+msgid "Activate"
+msgstr "Activar"
+
+#: apps/templates/monitoring/list.html:121
+#: apps/templates/monitoring/list.html:128
+msgid "Edit"
+msgstr "Editar"
+
+#: apps/templates/monitoring/list.html:122
+#: apps/templates/monitoring/list.html:129
+msgid "Are you sure you want to delete this monitoring log mapping?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar este mapeo de registro de monitoreo?"
+
+#: apps/templates/monitoring/list.html:125
+msgid "Inacivate"
+msgstr "Inactivo"
+
+#: apps/templates/postfiltering/create.html:15
+msgid "Go Back to Post-Filtering Configurations"
+msgstr "Volver a Configuración de post-filtrado"
+
+#: apps/templates/postfiltering/create.html:16
+msgid "New Post-filtering Configuration"
+msgstr "Nueva configuración de post-filtrado"
+
+#: apps/templates/postfiltering/create.html:21
+msgid "Post-Filtering Configs"
+msgstr "Configuraciones de post-filtrado"
+
+#: apps/templates/postfiltering/create.html:22
+msgid "New Post-Filtering"
+msgstr "Nuevo post-filtrado"
+
+#: apps/templates/postfiltering/create.html:41
+msgid "Create a new Postfilter Configuration"
+msgstr "Crear una nueva configuración de post-filtrado"
+
+#: apps/templates/postfiltering/detail.html:15
+msgid "Go Back to Post-Filtering configurations"
+msgstr "Volver a configuraciones de post-filtrado"
+
+#: apps/templates/postfiltering/detail.html:16
+msgid "Post-Filtering Configuration Details"
+msgstr "Detalles de la configuración de post-filtrado"
+
+#: apps/templates/postfiltering/detail.html:21
+#, python-format
+msgid "Post-Filtering %(postfiltering.case_study_id)s"
+msgstr "Post-filtrado %(postfiltering.case_study_id)s"
+
+#: apps/templates/postfiltering/detail.html:22
+#, python-format
+msgid "Post-Filtering %(postfilter.id)s details"
+msgstr "Detalles de post-filtrado %(postfilter.id)s"
+
+#: apps/templates/postfiltering/detail.html:41
+msgid "Post-Filtering Configuration"
+msgstr "Configuración de post-filtrado"
+
+#: apps/templates/postfiltering/list.html:15
+#: apps/templates/postfiltering/list.html:20
+#: apps/templates/postfiltering/list.html:40
+msgid "Postfiltering Configurations"
+msgstr "Configuraciones de post-filtrado"
+
+#: apps/templates/postfiltering/list.html:26
+msgid "New Postfiltering Configuration"
+msgstr "Nueva configuración de post-filtrado"
+
+#: apps/templates/postfiltering/list.html:115
+msgid "Are you sure you want to delete this postfiltering?"
+msgstr "¿Estás seguro de que quieres eliminar este post-filtrado?"
+
+#: apps/templates/prefiltering/create.html:15
+msgid "Go Back to Prefiltering Configurations"
+msgstr "Volver a Configuraciones de pre-filtrado"
+
+#: apps/templates/prefiltering/create.html:16
+#: apps/templates/prefiltering/list.html:26
+msgid "New Prefiltering Configuration"
+msgstr "Nueva configuración de pre-filtrado"
+
+#: apps/templates/prefiltering/create.html:21
+msgid "Pre-Filtering Configs"
+msgstr "Configuraciones de pre-filtrado"
+
+#: apps/templates/prefiltering/create.html:22
+msgid "New Pre-Filtering"
+msgstr "Nuevo pre-filtrado"
+
+#: apps/templates/prefiltering/create.html:41
+msgid "Create a new Prefiltering Configuration"
+msgstr "Crear una nueva configuración de pre-filtrado"
+
+#: apps/templates/prefiltering/detail.html:15
+msgid "Go Back"
+msgstr "Volver"
+
+#: apps/templates/prefiltering/detail.html:16
+msgid "Pre-Filtering Configuration Details"
+msgstr "Detalles de la configuración de pre-filtrado"
+
+#: apps/templates/prefiltering/detail.html:21
+#, python-format
+msgid "Pre-Filtering %(prefiltering.case_study_id)s"
+msgstr "Pre-filtrado %(prefiltering.case_study_id)s"
+
+#: apps/templates/prefiltering/detail.html:22
+#, python-format
+msgid "Pre-Filtering %(prefilter.id)s details"
+msgstr "Detalles de pre-filtrado %(prefilter.id)s"
+
+#: apps/templates/prefiltering/detail.html:41
+msgid "Pre-Filtering Configuration"
+msgstr "Configuración de pre-filtrado"
+
+#: apps/templates/prefiltering/list.html:15
+msgid "Prefiltering Configurations"
+msgstr "Configuraciones de pre-filtrado"
+
+#: apps/templates/prefiltering/list.html:20
+msgid "Pre-filtering Configurations"
+msgstr "Configuraciones de pre-filtrado"
+
+#: apps/templates/prefiltering/list.html:40
+msgid "Prefilter Configurations"
+msgstr "Configuraciones de pre-filtrado"
+
+#: apps/templates/prefiltering/list.html:115
+msgid "Are you sure you want to delete this prefiltering?"
+msgstr "¿Estás seguro de que quieres eliminar este pre-filtrado?"
+
+#: apps/templates/processdiscovery/create.html:15
+msgid "Go Back to Process Discovery Configurations"
+msgstr "Volver a Configuración del descubrimiento de procesos"
+
+#: apps/templates/processdiscovery/create.html:16
+msgid "New Process Discovery Configuration"
+msgstr "Nueva configuración de descubrimiento de procesos"
+
+#: apps/templates/processdiscovery/create.html:21
+msgid "Process Discovery Configs"
+msgstr "Configuraciones de descubrimiento de procesos"
+
+#: apps/templates/processdiscovery/create.html:22
+#: apps/templates/processdiscovery/list.html:26
+msgid "New Process Discovery"
+msgstr "Nuevo descubrimiento de procesos"
+
+#: apps/templates/processdiscovery/create.html:41
+msgid "Create a new Process Discovery Configuration"
+msgstr "Crear una nueva configuración de descubrimiento de procesos"
+
+#: apps/templates/processdiscovery/list.html:15
+#: apps/templates/processdiscovery/list.html:20
+#: apps/templates/processdiscovery/list.html:40
+msgid "Process Discovery Configurations"
+msgstr "Configuraciones de descubrimiento de procesos"
+
+#: apps/templates/processdiscovery/list.html:115
+msgid "Are you sure you want to delete this process discovery?"
+msgstr "¿Estás seguro de que quieres eliminar este descubrimiento de procesos?"
+
+#: apps/templates/reporting/list.html:15 apps/templates/reporting/list.html:20
+#: apps/templates/reporting/list.html:40
+msgid "Reporting Configurations"
+msgstr "Configuraciones de generación de informes"
+
+#: apps/templates/reporting/list.html:26
+msgid "New Reporting Configuration"
+msgstr "Nueva configuración de generación de informes"
+
+#: apps/templates/reporting/list.html:80
+msgid "Download report"
+msgstr "Descargar informe"
+
+#: apps/templates/ui_elements_classification/create.html:15
+msgid "Go Back to UI Elements Classification Configurations"
+msgstr "Volver a Configuración de clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/create.html:16
+msgid "New UI Elements Classification Configuration"
+msgstr "Nueva configuración de clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/create.html:21
+msgid "UI Elements Classification Configs"
+msgstr "Configuraciones de clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/create.html:22
+msgid "New UI Element Classification"
+msgstr "Nueva clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/create.html:41
+msgid "Create a new UI Elements Classification Configuration"
+msgstr "Crear una nueva configuración de clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/list.html:15
+#: apps/templates/ui_elements_classification/list.html:20
+#: apps/templates/ui_elements_classification/list.html:40
+msgid "UI Elements Classification Configurations"
+msgstr "Configuraciones de clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/list.html:26
+msgid "New UI Elements Classification"
+msgstr "Nueva clasificación de elementos de UI"
+
+#: apps/templates/ui_elements_classification/list.html:49
+msgid "Model"
+msgstr "Modelo"
+
+#: apps/templates/ui_elements_classification/list.html:50
+msgid "Model properties"
+msgstr "Propiedades del modelo"
+
+#: apps/templates/ui_elements_classification/list.html:123
+msgid "Are you sure you want to delete this UI element detection?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta detección de elementos de UI?"
+
+#: apps/templates/ui_elements_detection/create.html:15
+msgid "Go Back to UI Elements Detection Configurations"
+msgstr "Volver a configuraciones de detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/create.html:16
+msgid "New UI Elements Detection Configuration"
+msgstr "Nueva configuración de detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/create.html:21
+msgid "UI Elements Detection Configs"
+msgstr "Configuraciones de detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/create.html:22
+msgid "New UI Element Detection"
+msgstr "Nueva detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/create.html:41
+msgid "Create a new UI Elements Detection Configuration"
+msgstr "Crear una nueva configuración de detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/list.html:15
+#: apps/templates/ui_elements_detection/list.html:20
+#: apps/templates/ui_elements_detection/list.html:40
+msgid "UI Elements Detection Configurations"
+msgstr "Configuraciones de detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/list.html:26
+msgid "New UI Elements Detection"
+msgstr "Nueva detección de elementos de UI"
+
+#: apps/templates/ui_elements_detection/list.html:115
+msgid "Are you sure you want to delete this ui element detection?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta detección de elementos de UI?"
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:420
+msgid "open('foo"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:424
+msgid "open(\"foo"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:428
+#, python-format
+msgid "%ls foo"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:563
+msgid "a[0]."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:570
+msgid "a[0].r"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:578
+msgid "a[0].from_"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:585
+msgid "assert str.star"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:592
+msgid "d['a b'].str"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1552
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1574
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1577
+msgid "do not suppress"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1553
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1565
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1568
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1571
+msgid "suppress all"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1554
+msgid "suppress all but a"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1555
+msgid "suppress all but c"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1603
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1606
+msgid "---"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:1609
+msgid "--"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_termui_impl.py:496
+#, python-brace-format
+msgid "{editor}: Editing failed"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_termui_impl.py:500
+#, python-brace-format
+msgid "{editor}: Editing failed: {e}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1097
+msgid "Aborted!"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1282
+#: venv/lib/python3.10/site-packages/click/decorators.py:495
+msgid "Show this message and exit."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1313
+#: venv/lib/python3.10/site-packages/click/core.py:1339
+#, python-brace-format
+msgid "(Deprecated) {text}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1357
+msgid "Options"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1383
+#, python-brace-format
+msgid "Got unexpected extra argument ({args})"
+msgid_plural "Got unexpected extra arguments ({args})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1399
+msgid "DeprecationWarning: The command {name!r} is deprecated."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1605
+msgid "Commands"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1637
+msgid "Missing command."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1715
+msgid "No such command {name!r}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2271
+msgid "Value must be an iterable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2291
+#, python-brace-format
+msgid "Takes {nargs} values but 1 was given."
+msgid_plural "Takes {nargs} values but {len} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2734
+#, python-brace-format
+msgid "env var: {var}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2764
+msgid "(dynamic)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2777
+#, python-brace-format
+msgid "default: {default}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2790
+msgid "required"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/decorators.py:400
+#, python-format
+msgid "%(prog)s, version %(version)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/decorators.py:464
+msgid "Show the version and exit."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:43
+#: venv/lib/python3.10/site-packages/click/exceptions.py:79
+#, python-brace-format
+msgid "Error: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:71
+#, python-brace-format
+msgid "Try '{command} {option}' for help."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:120
+#, python-brace-format
+msgid "Invalid value: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:122
+#, python-brace-format
+msgid "Invalid value for {param_hint}: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:178
+msgid "Missing argument"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:180
+msgid "Missing option"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:182
+msgid "Missing parameter"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:184
+#, python-brace-format
+msgid "Missing {param_type}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:191
+#, python-brace-format
+msgid "Missing parameter: {param_name}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:211
+#, python-brace-format
+msgid "No such option: {name}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:223
+#, python-brace-format
+msgid "Did you mean {possibility}?"
+msgid_plural "(Possible options: {possibilities})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:261
+msgid "unknown error"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:268
+msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/parser.py:231
+msgid "Argument {name!r} takes {nargs} values."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/parser.py:413
+msgid "Option {name!r} does not take a value."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/parser.py:474
+msgid "Option {name!r} requires an argument."
+msgid_plural "Option {name!r} requires {nargs} arguments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/shell_completion.py:316
+msgid "Shell completion is not supported for Bash versions older than 4.4."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/shell_completion.py:322
+msgid "Couldn't detect Bash version, shell completion is not supported."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:160
+#, fuzzy
+#| msgid "Reporting Configurations"
+msgid "Repeat for confirmation"
+msgstr "Configuraciones de generación de informes"
+
+#: venv/lib/python3.10/site-packages/click/termui.py:176
+msgid "Error: The value you entered was invalid."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:178
+#, python-brace-format
+msgid "Error: {e.message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:189
+msgid "Error: The two entered values do not match."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:245
+msgid "Error: invalid input"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:776
+msgid "Press any key to continue..."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:265
+#, python-brace-format
+msgid ""
+"Choose from:\n"
+"\t{choices}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:297
+msgid "{value!r} is not {choice}."
+msgid_plural "{value!r} is not one of {choices}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:387
+msgid "{value!r} does not match the format {format}."
+msgid_plural "{value!r} does not match the formats {formats}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:409
+msgid "{value!r} is not a valid {number_type}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:465
+#, python-brace-format
+msgid "{value} is not in the range {range}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:606
+msgid "{value!r} is not a valid boolean."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:630
+msgid "{value!r} is not a valid UUID."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:811
+#, fuzzy
+#| msgid "My files"
+msgid "file"
+msgstr "Mis archivos"
+
+#: venv/lib/python3.10/site-packages/click/types.py:813
+msgid "directory"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:815
+msgid "path"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:861
+msgid "{name} {filename!r} does not exist."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:870
+msgid "{name} {filename!r} is a file."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:878
+#, python-brace-format
+msgid "{name} '{filename}' is a directory."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:887
+msgid "{name} {filename!r} is not readable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:896
+msgid "{name} {filename!r} is not writable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:905
+msgid "{name} {filename!r} is not executable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:972
+#, python-brace-format
+msgid "{len_type} values are required, but {len_value} was given."
+msgid_plural "{len_type} values are required, but {len_value} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/contrib/messages/apps.py:15
+msgid "Messages"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/contrib/sitemaps/apps.py:8
+msgid "Site Maps"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/contrib/staticfiles/apps.py:9
+msgid "Static Files"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/contrib/syndication/apps.py:7
+#, fuzzy
+#| msgid " notifications."
+msgid "Syndication"
+msgstr " notificaciones."
+
+#. Translators: String used to replace omitted page numbers in elided page
+#. range generated by paginators, e.g. [1, 2, '…', 5, 6, 7, '…', 9, 10].
+#: venv/lib/python3.10/site-packages/django/core/paginator.py:30
+msgid "…"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/paginator.py:50
+msgid "That page number is not an integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/paginator.py:52
+msgid "That page number is less than 1"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/paginator.py:57
+msgid "That page contains no results"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:22
+msgid "Enter a valid value."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:104
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:751
+msgid "Enter a valid URL."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:164
+msgid "Enter a valid integer."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:175
+msgid "Enter a valid email address."
+msgstr ""
+
+#. Translators: "letters" means latin letters: a-z and A-Z.
+#: venv/lib/python3.10/site-packages/django/core/validators.py:256
+msgid ""
+"Enter a valid “slug” consisting of letters, numbers, underscores or hyphens."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:264
+msgid ""
+"Enter a valid “slug” consisting of Unicode letters, numbers, underscores, or "
+"hyphens."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:276
+#: venv/lib/python3.10/site-packages/django/core/validators.py:284
+#: venv/lib/python3.10/site-packages/django/core/validators.py:313
+msgid "Enter a valid IPv4 address."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:293
+#: venv/lib/python3.10/site-packages/django/core/validators.py:314
+msgid "Enter a valid IPv6 address."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:305
+#: venv/lib/python3.10/site-packages/django/core/validators.py:312
+msgid "Enter a valid IPv4 or IPv6 address."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:348
+msgid "Enter only digits separated by commas."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:354
+#, python-format
+msgid "Ensure this value is %(limit_value)s (it is %(show_value)s)."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:389
+#, python-format
+msgid "Ensure this value is less than or equal to %(limit_value)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:398
+#, python-format
+msgid "Ensure this value is greater than or equal to %(limit_value)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:407
+#, python-format
+msgid "Ensure this value is a multiple of step size %(limit_value)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:417
+#, python-format
+msgid ""
+"Ensure this value has at least %(limit_value)d character (it has "
+"%(show_value)d)."
+msgid_plural ""
+"Ensure this value has at least %(limit_value)d characters (it has "
+"%(show_value)d)."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:435
+#, python-format
+msgid ""
+"Ensure this value has at most %(limit_value)d character (it has "
+"%(show_value)d)."
+msgid_plural ""
+"Ensure this value has at most %(limit_value)d characters (it has "
+"%(show_value)d)."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:458
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:347
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:386
+msgid "Enter a number."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:460
+#, python-format
+msgid "Ensure that there are no more than %(max)s digit in total."
+msgid_plural "Ensure that there are no more than %(max)s digits in total."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:465
+#, python-format
+msgid "Ensure that there are no more than %(max)s decimal place."
+msgid_plural "Ensure that there are no more than %(max)s decimal places."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:470
+#, python-format
+msgid ""
+"Ensure that there are no more than %(max)s digit before the decimal point."
+msgid_plural ""
+"Ensure that there are no more than %(max)s digits before the decimal point."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:539
+#, python-format
+msgid ""
+"File extension “%(extension)s” is not allowed. Allowed extensions are: "
+"%(allowed_extensions)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/core/validators.py:600
+msgid "Null characters are not allowed."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/base.py:1401
+#: venv/lib/python3.10/site-packages/django/forms/models.py:899
+msgid "and"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/base.py:1403
+#, python-format
+msgid "%(model_name)s with this %(field_labels)s already exists."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/constraints.py:17
+#, python-format
+msgid "Constraint “%(name)s” is violated."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:129
+#, python-format
+msgid "Value %(value)r is not a valid choice."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:130
+msgid "This field cannot be null."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:131
+msgid "This field cannot be blank."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:132
+#, python-format
+msgid "%(model_name)s with this %(field_label)s already exists."
+msgstr ""
+
+#. Translators: The 'lookup_type' is one of 'date', 'year' or
+#. 'month'. Eg: "Title must be unique for pub_date year"
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:136
+#, python-format
+msgid ""
+"%(field_label)s must be unique for %(date_field_label)s %(lookup_type)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:174
+#, python-format
+msgid "Field of type: %(field_type)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1065
+#, python-format
+msgid "“%(value)s” value must be either True or False."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1066
+#, python-format
+msgid "“%(value)s” value must be either True, False, or None."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1068
+msgid "Boolean (Either True or False)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1118
+#, python-format
+msgid "String (up to %(max_length)s)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1222
+msgid "Comma-separated integers"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1323
+#, python-format
+msgid ""
+"“%(value)s” value has an invalid date format. It must be in YYYY-MM-DD "
+"format."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1327
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1462
+#, python-format
+msgid ""
+"“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid "
+"date."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1331
+msgid "Date (without time)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1458
+#, python-format
+msgid ""
+"“%(value)s” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[."
+"uuuuuu]][TZ] format."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1466
+#, python-format
+msgid ""
+"“%(value)s” value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]]"
+"[TZ]) but it is an invalid date/time."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1471
+#, fuzzy
+#| msgid "I agree with the "
+msgid "Date (with time)"
+msgstr "Estoy de acuerdo con la "
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1595
+#, python-format
+msgid "“%(value)s” value must be a decimal number."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1597
+msgid "Decimal number"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1754
+#, python-format
+msgid ""
+"“%(value)s” value has an invalid format. It must be in [DD] [[HH:]MM:]ss[."
+"uuuuuu] format."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1758
+#, fuzzy
+#| msgid "Configuration"
+msgid "Duration"
+msgstr "Configuración"
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1810
+msgid "Email address"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1835
+#, fuzzy
+#| msgid "Folder path"
+msgid "File path"
+msgstr "Ruta de la carpeta"
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1913
+#, python-format
+msgid "“%(value)s” value must be a float."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1915
+msgid "Floating point number"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1955
+#, python-format
+msgid "“%(value)s” value must be an integer."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1957
+msgid "Integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2049
+msgid "Big (8 byte) integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2066
+msgid "Small integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2074
+msgid "IPv4 address"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2105
+msgid "IP address"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2198
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2199
+#, python-format
+msgid "“%(value)s” value must be either None, True or False."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2201
+msgid "Boolean (Either True, False or None)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2252
+msgid "Positive big integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2267
+msgid "Positive integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2282
+msgid "Positive small integer"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2298
+#, python-format
+msgid "Slug (up to %(max_length)s)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2334
+msgid "Text"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2409
+#, python-format
+msgid ""
+"“%(value)s” value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] "
+"format."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2413
+#, python-format
+msgid ""
+"“%(value)s” value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an "
+"invalid time."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2417
+msgid "Time"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2525
+msgid "URL"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2549
+msgid "Raw binary data"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2614
+#, python-format
+msgid "“%(value)s” is not a valid UUID."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:2616
+msgid "Universally unique identifier"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/files.py:232
+#, fuzzy
+#| msgid "Filename"
+msgid "File"
+msgstr "Nombre de archivo"
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/files.py:392
+msgid "Image"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/json.py:18
+msgid "A JSON object"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/json.py:20
+msgid "Value must be valid JSON."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/related.py:920
+#, python-format
+msgid "%(model)s instance with %(field)s %(value)r does not exist."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/related.py:922
+msgid "Foreign Key (type determined by related field)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/related.py:1229
+msgid "One-to-one relationship"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/related.py:1286
+#, python-format
+msgid "%(from)s-%(to)s relationship"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/related.py:1288
+#, python-format
+msgid "%(from)s-%(to)s relationships"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/db/models/fields/related.py:1336
+msgid "Many-to-many relationship"
+msgstr ""
+
+#. Translators: If found as last label character, these punctuation
+#. characters will prevent the default label_suffix to be appended to the label
+#: venv/lib/python3.10/site-packages/django/forms/boundfield.py:176
+msgid ":?.!"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:91
+msgid "This field is required."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:298
+msgid "Enter a whole number."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:467
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:1240
+msgid "Enter a valid date."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:490
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:1241
+msgid "Enter a valid time."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:517
+msgid "Enter a valid date/time."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:551
+msgid "Enter a valid duration."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:552
+#, python-brace-format
+msgid "The number of days must be between {min_days} and {max_days}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:618
+msgid "No file was submitted. Check the encoding type on the form."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:619
+msgid "No file was submitted."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:620
+msgid "The submitted file is empty."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:622
+#, python-format
+msgid "Ensure this filename has at most %(max)d character (it has %(length)d)."
+msgid_plural ""
+"Ensure this filename has at most %(max)d characters (it has %(length)d)."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:627
+msgid "Please either submit a file or check the clear checkbox, not both."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:693
+msgid ""
+"Upload a valid image. The file you uploaded was either not an image or a "
+"corrupted image."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:856
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:948
+#: venv/lib/python3.10/site-packages/django/forms/models.py:1572
+#, python-format
+msgid "Select a valid choice. %(value)s is not one of the available choices."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:950
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:1069
+#: venv/lib/python3.10/site-packages/django/forms/models.py:1570
+msgid "Enter a list of values."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:1070
+msgid "Enter a complete value."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:1309
+msgid "Enter a valid UUID."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/fields.py:1339
+msgid "Enter a valid JSON."
+msgstr ""
+
+#. Translators: This is the default suffix added to form field labels
+#: venv/lib/python3.10/site-packages/django/forms/forms.py:98
+msgid ":"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/forms.py:248
+#: venv/lib/python3.10/site-packages/django/forms/forms.py:332
+#, python-format
+msgid "(Hidden field %(name)s) %(error)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/formsets.py:63
+#, python-format
+msgid ""
+"ManagementForm data is missing or has been tampered with. Missing fields: "
+"%(field_names)s. You may need to file a bug report if the issue persists."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/formsets.py:67
+#, python-format
+msgid "Please submit at most %(num)d form."
+msgid_plural "Please submit at most %(num)d forms."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/forms/formsets.py:72
+#, python-format
+msgid "Please submit at least %(num)d form."
+msgid_plural "Please submit at least %(num)d forms."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/forms/formsets.py:483
+#: venv/lib/python3.10/site-packages/django/forms/formsets.py:490
+msgid "Order"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:892
+#, python-format
+msgid "Please correct the duplicate data for %(field)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:897
+#, python-format
+msgid "Please correct the duplicate data for %(field)s, which must be unique."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:904
+#, python-format
+msgid ""
+"Please correct the duplicate data for %(field_name)s which must be unique "
+"for the %(lookup)s in %(date_field)s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:913
+msgid "Please correct the duplicate values below."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:1344
+msgid "The inline value did not match the parent instance."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:1435
+msgid "Select a valid choice. That choice is not one of the available choices."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/models.py:1574
+#, python-format
+msgid "“%(pk)s” is not a valid value."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/utils.py:226
+#, python-format
+msgid ""
+"%(datetime)s couldn’t be interpreted in time zone %(current_timezone)s; it "
+"may be ambiguous or it may not exist."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:439
+msgid "Clear"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:440
+#, fuzzy
+#| msgid "current"
+msgid "Currently"
+msgstr "actual"
+
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:441
+msgid "Change"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:770
+msgid "Unknown"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:771
+msgid "Yes"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:772
+msgid "No"
+msgstr ""
+
+#. Translators: Please do not add spaces around commas.
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:853
+msgid "yes,no,maybe"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:883
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:900
+#, python-format
+msgid "%(size)d byte"
+msgid_plural "%(size)d bytes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:902
+#, python-format
+msgid "%s KB"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:904
+#, python-format
+msgid "%s MB"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:906
+#, python-format
+msgid "%s GB"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:908
+#, python-format
+msgid "%s TB"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/template/defaultfilters.py:910
+#, python-format
+msgid "%s PB"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dateformat.py:77
+msgid "p.m."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dateformat.py:78
+msgid "a.m."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dateformat.py:83
+msgid "PM"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dateformat.py:84
+msgid "AM"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dateformat.py:155
+msgid "midnight"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dateformat.py:157
+msgid "noon"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:7
+#: venv/lib/python3.10/site-packages/tornado/locale.py:295
+msgid "Monday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:8
+#: venv/lib/python3.10/site-packages/tornado/locale.py:296
+msgid "Tuesday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:9
+#: venv/lib/python3.10/site-packages/tornado/locale.py:297
+msgid "Wednesday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:10
+#: venv/lib/python3.10/site-packages/tornado/locale.py:298
+msgid "Thursday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:11
+#: venv/lib/python3.10/site-packages/tornado/locale.py:299
+msgid "Friday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:12
+#: venv/lib/python3.10/site-packages/tornado/locale.py:300
+msgid "Saturday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:13
+#: venv/lib/python3.10/site-packages/tornado/locale.py:301
+msgid "Sunday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:16
+msgid "Mon"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:17
+msgid "Tue"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:18
+msgid "Wed"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:19
+msgid "Thu"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:20
+msgid "Fri"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:21
+#, fuzzy
+#| msgid "Status"
+msgid "Sat"
+msgstr "Estado"
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:22
+msgid "Sun"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:25
+#: venv/lib/python3.10/site-packages/tornado/locale.py:281
+msgid "January"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:26
+#: venv/lib/python3.10/site-packages/tornado/locale.py:282
+msgid "February"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:27
+#: venv/lib/python3.10/site-packages/tornado/locale.py:283
+msgid "March"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:28
+#: venv/lib/python3.10/site-packages/tornado/locale.py:284
+msgid "April"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:29
+#: venv/lib/python3.10/site-packages/tornado/locale.py:285
+msgid "May"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:30
+#: venv/lib/python3.10/site-packages/tornado/locale.py:286
+msgid "June"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:31
+#: venv/lib/python3.10/site-packages/tornado/locale.py:287
+msgid "July"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:32
+#: venv/lib/python3.10/site-packages/tornado/locale.py:288
+msgid "August"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:33
+#: venv/lib/python3.10/site-packages/tornado/locale.py:289
+#, fuzzy
+#| msgid "Remember me"
+msgid "September"
+msgstr "Recordarme"
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:34
+#: venv/lib/python3.10/site-packages/tornado/locale.py:290
+msgid "October"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:35
+#: venv/lib/python3.10/site-packages/tornado/locale.py:291
+msgid "November"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:36
+#: venv/lib/python3.10/site-packages/tornado/locale.py:292
+#, fuzzy
+#| msgid "Remember me"
+msgid "December"
+msgstr "Recordarme"
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:39
+msgid "jan"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:40
+msgid "feb"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:41
+msgid "mar"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:42
+msgid "apr"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:43
+msgid "may"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:44
+msgid "jun"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:45
+msgid "jul"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:46
+msgid "aug"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:47
+msgid "sep"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:48
+msgid "oct"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:49
+msgid "nov"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:50
+msgid "dec"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:53
+msgctxt "abbrev. month"
+msgid "Jan."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:54
+msgctxt "abbrev. month"
+msgid "Feb."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:55
+msgctxt "abbrev. month"
+msgid "March"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:56
+msgctxt "abbrev. month"
+msgid "April"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:57
+msgctxt "abbrev. month"
+msgid "May"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:58
+msgctxt "abbrev. month"
+msgid "June"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:59
+msgctxt "abbrev. month"
+msgid "July"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:60
+msgctxt "abbrev. month"
+msgid "Aug."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:61
+msgctxt "abbrev. month"
+msgid "Sept."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:62
+msgctxt "abbrev. month"
+msgid "Oct."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:63
+msgctxt "abbrev. month"
+msgid "Nov."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:64
+msgctxt "abbrev. month"
+msgid "Dec."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:67
+msgctxt "alt. month"
+msgid "January"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:68
+msgctxt "alt. month"
+msgid "February"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:69
+msgctxt "alt. month"
+msgid "March"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:70
+msgctxt "alt. month"
+msgid "April"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:71
+msgctxt "alt. month"
+msgid "May"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:72
+msgctxt "alt. month"
+msgid "June"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:73
+msgctxt "alt. month"
+msgid "July"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:74
+msgctxt "alt. month"
+msgid "August"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:75
+#, fuzzy
+#| msgid "Remember me"
+msgctxt "alt. month"
+msgid "September"
+msgstr "Recordarme"
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:76
+msgctxt "alt. month"
+msgid "October"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:77
+msgctxt "alt. month"
+msgid "November"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/dates.py:78
+#, fuzzy
+#| msgid "Remember me"
+msgctxt "alt. month"
+msgid "December"
+msgstr "Recordarme"
+
+#: venv/lib/python3.10/site-packages/django/utils/ipv6.py:8
+msgid "This is not a valid IPv6 address."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/text.py:76
+#, python-format
+msgctxt "String to return when truncating text"
+msgid "%(truncated_text)s…"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/text.py:252
+msgid "or"
+msgstr ""
+
+#. Translators: This string is used as a separator between list elements
+#: venv/lib/python3.10/site-packages/django/utils/text.py:271
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:94
+msgid ", "
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:9
+#, python-format
+msgid "%(num)d year"
+msgid_plural "%(num)d years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:10
+#, python-format
+msgid "%(num)d month"
+msgid_plural "%(num)d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:11
+#, python-format
+msgid "%(num)d week"
+msgid_plural "%(num)d weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:12
+#, python-format
+msgid "%(num)d day"
+msgid_plural "%(num)d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:13
+#, python-format
+msgid "%(num)d hour"
+msgid_plural "%(num)d hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/utils/timesince.py:14
+#, python-format
+msgid "%(num)d minute"
+msgid_plural "%(num)d minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:111
+msgid "Forbidden"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:112
+msgid "CSRF verification failed. Request aborted."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:116
+msgid ""
+"You are seeing this message because this HTTPS site requires a “Referer "
+"header” to be sent by your web browser, but none was sent. This header is "
+"required for security reasons, to ensure that your browser is not being "
+"hijacked by third parties."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:122
+msgid ""
+"If you have configured your browser to disable “Referer” headers, please re-"
+"enable them, at least for this site, or for HTTPS connections, or for “same-"
+"origin” requests."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:127
+msgid ""
+"If you are using the <meta name=\"referrer\" content=\"no-referrer\"> tag or "
+"including the “Referrer-Policy: no-referrer” header, please remove them. The "
+"CSRF protection requires the “Referer” header to do strict referer checking. "
+"If you’re concerned about privacy, use alternatives like <a rel=\"noreferrer"
+"\" …> for links to third-party sites."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:136
+msgid ""
+"You are seeing this message because this site requires a CSRF cookie when "
+"submitting forms. This cookie is required for security reasons, to ensure "
+"that your browser is not being hijacked by third parties."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:142
+msgid ""
+"If you have configured your browser to disable cookies, please re-enable "
+"them, at least for this site, or for “same-origin” requests."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/csrf.py:148
+msgid "More information is available with DEBUG=True."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:44
+msgid "No year specified"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:64
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:115
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:214
+msgid "Date out of range"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:94
+msgid "No month specified"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:147
+msgid "No day specified"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:194
+msgid "No week specified"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:349
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:380
+#, python-format
+msgid "No %(verbose_name_plural)s available"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:652
+#, python-format
+msgid ""
+"Future %(verbose_name_plural)s not available because %(class_name)s."
+"allow_future is False."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/dates.py:692
+#, python-format
+msgid "Invalid date string “%(datestr)s” given format “%(format)s”"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/detail.py:56
+#, python-format
+msgid "No %(verbose_name)s found matching the query"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/list.py:70
+msgid "Page is not “last”, nor can it be converted to an int."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/list.py:77
+#, python-format
+msgid "Invalid page (%(page_number)s): %(message)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/generic/list.py:169
+#, python-format
+msgid "Empty list and “%(class_name)s.allow_empty” is False."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/static.py:38
+msgid "Directory indexes are not allowed here."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/static.py:40
+#, python-format
+msgid "“%(path)s” does not exist"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/static.py:79
+#, python-format
+msgid "Index of %(directory)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:7
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:221
+msgid "The install worked successfully! Congratulations!"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:207
+#, python-format
+msgid ""
+"View <a href=\"https://docs.djangoproject.com/en/%(version)s/releases/\" "
+"target=\"_blank\" rel=\"noopener\">release notes</a> for Django %(version)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:222
+#, python-format
+msgid ""
+"You are seeing this page because <a href=\"https://docs.djangoproject.com/en/"
+"%(version)s/ref/settings/#debug\" target=\"_blank\" rel=\"noopener"
+"\">DEBUG=True</a> is in your settings file and you have not configured any "
+"URLs."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:230
+msgid "Django Documentation"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:231
+msgid "Topics, references, &amp; how-to’s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:239
+msgid "Tutorial: A Polling App"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:240
+msgid "Get started with Django"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:248
+msgid "Django Community"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/django/views/templates/default_urlconf.html:249
+msgid "Connect, get help, or contribute"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/drf_spectacular/openapi.py:1272
+#: venv/lib/python3.10/site-packages/drf_spectacular/openapi.py:1325
+#: venv/lib/python3.10/site-packages/drf_spectacular/openapi.py:1329
+#: venv/lib/python3.10/site-packages/drf_spectacular/openapi.py:1333
+msgid "No response body"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/drf_spectacular/openapi.py:1297
+#: venv/lib/python3.10/site-packages/drf_spectacular/openapi.py:1349
+msgid "Unspecified response body"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/drf_spectacular/plumbing.py:420
+#, python-format
+msgid "Token-based authentication with required prefix \"%s\""
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/drf_spectacular/views.py:43
+msgid ""
+"\n"
+"    OpenApi3 schema for this API. Format can be selected via content "
+"negotiation.\n"
+"\n"
+"    - YAML: application/vnd.oai.openapi\n"
+"    - JSON: application/vnd.oai.openapi+json\n"
+"    "
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:408
+#, python-format
+msgid "Content purported to be compressed with %s but failed to decompress."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:572
+#, python-format
+msgid "Unsupported value for qop: %s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:576
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:654
+#, python-format
+msgid "Unsupported value for algorithm: %s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:649
+msgid "The challenge doesn't contain a server nonce, or this one is empty."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:659
+#, python-format
+msgid "Unsupported value for pw-algorithm: %s."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/httplib2/__init__.py:1468
+msgid "Redirected but the response is missing a Location: header."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/kombu/transport/qpid.py:1309
+#, python-format
+msgid "Attempting to connect to qpid with SASL mechanism %s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/kombu/transport/qpid.py:1314
+#, python-format
+msgid "Connected to qpid with SASL mechanism %s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/kombu/transport/qpid.py:1332
+#, python-format
+msgid "Unable to connect to qpid with SASL mechanism %s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/nipype/sphinxext/apidoc/docstring.py:15
+#: venv/lib/python3.10/site-packages/nipype/sphinxext/apidoc/docstring.py:16
+#: venv/lib/python3.10/site-packages/nipype/sphinxext/apidoc/docstring.py:17
+msgid "Parameters"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/nipype/sphinxext/documenter.py:80
+#, python-format
+msgid "Bases: %s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/semantic_version/django_fields.py:50
+msgid "Enter a valid version number in X.Y.Z format."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/semantic_version/django_fields.py:52
+#, fuzzy
+#| msgid "PRO Version"
+msgid "Version"
+msgstr "Versión PRO"
+
+#: venv/lib/python3.10/site-packages/semantic_version/django_fields.py:86
+msgid "Enter a valid version number spec list in ==X.Y.Z,>=A.B.C format."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/semantic_version/django_fields.py:88
+msgid "Version specification list"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:371
+msgid "1 second ago"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:377
+msgid "1 minute ago"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:382
+msgid "1 hour ago"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:385
+#, python-format
+msgid "%(time)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:387
+msgid "yesterday"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:387
+#, python-format
+msgid "yesterday at %(time)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:389
+#, python-format
+msgid "%(weekday)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:389
+#, python-format
+msgid "%(weekday)s at %(time)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:392
+#: venv/lib/python3.10/site-packages/tornado/locale.py:445
+#, python-format
+msgid "%(month_name)s %(day)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:394
+#, python-format
+msgid "%(month_name)s %(day)s at %(time)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:399
+#, python-format
+msgid "%(month_name)s %(day)s, %(year)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:401
+#, python-format
+msgid "%(month_name)s %(day)s, %(year)s at %(time)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:439
+#, python-format
+msgid "%(weekday)s, %(month_name)s %(day)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/locale.py:462
+#, python-format
+msgid "%(commas)s and %(last)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/test/locale_test.py:68
+msgctxt "law"
+msgid "right"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/test/locale_test.py:69
+msgctxt "good"
+msgid "right"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/test/locale_test.py:70
+#: venv/lib/python3.10/site-packages/tornado/test/locale_test.py:72
+msgctxt "organization"
+msgid "club"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/tornado/test/locale_test.py:74
+#: venv/lib/python3.10/site-packages/tornado/test/locale_test.py:75
+msgctxt "stick"
+msgid "club"
+msgstr ""

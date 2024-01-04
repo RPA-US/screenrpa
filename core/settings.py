@@ -10,6 +10,7 @@ import sys
 import environ
 from django.core.management.utils import get_random_secret_key
 import logging.config
+from django.utils.translation import gettext_lazy as _
 
 #===================================================================================================
 #===================================================================================================
@@ -37,16 +38,16 @@ DECISION_FOLDERNAME =           env('DECISION_TREE_TRAINING_FOLDERNAME')
 PLOT_DECISION_TREES =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-PLATFORM_NAME =                         "SCREEN RPA"
-MONITORING_PHASE_NAME =                 "monitoring"
-INFO_PREFILTERING_PHASE_NAME =          "preselection"
-DETECTION_PHASE_NAME =                  "detection"
-CLASSIFICATION_PHASE_NAME =             "classification"
-INFO_POSTFILTERING_PHASE_NAME =             "selection"
-FEATURE_EXTRACTION_PHASE_NAME =         "feature extraction"
-FLATTENING_PHASE_NAME =                 "flattening"
-AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =         "aggreate feature extraction"
-DECISION_MODEL_DISCOVERY_PHASE_NAME =   "decision model discovery"
+PLATFORM_NAME =                             "SCREEN RPA"
+MONITORING_PHASE_NAME =                     _("monitoring")
+INFO_PREFILTERING_PHASE_NAME =              _("preselection")
+DETECTION_PHASE_NAME =                      _("detection")
+CLASSIFICATION_PHASE_NAME =                 _("classification")
+INFO_POSTFILTERING_PHASE_NAME =             _("selection")
+FEATURE_EXTRACTION_PHASE_NAME =             _("feature extraction")
+FLATTENING_PHASE_NAME =                     _("flattening")
+AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =   _("aggreate feature extraction")
+DECISION_MODEL_DISCOVERY_PHASE_NAME =       _("decision model discovery")
 
 # System Default Phases
 DEFAULT_PHASES = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
@@ -100,6 +101,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -125,6 +127,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -179,11 +182,26 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
+LANGUAGE_CODE = 'en'
+LANGUAGES = [
+    ('en', _('English')),
+    ('es', _('Spanish'))
+]
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'analyzer', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'authentication', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'behaviourmonitoring', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'chefboost', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'decisiondiscovery', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'featureextraction', 'locale'),
+    os.path.join(CORE_DIR, 'locale'),
+]
+
 USE_TZ = True
+TIME_ZONE = 'UTC'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

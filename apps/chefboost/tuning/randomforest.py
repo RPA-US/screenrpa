@@ -9,6 +9,7 @@ from apps.chefboost import Chefboost as cb
 from tqdm import tqdm
 import imp
 import os
+from django.utils.translation import gettext_lazy as _
 
 def apply(df, config, header, dataset_features, validation_df = None, process_id = None):
 
@@ -27,7 +28,7 @@ def apply(df, config, header, dataset_features, validation_df = None, process_id
 
 	pbar = tqdm(range(0, num_of_trees), desc='Bagging')
 	for i in pbar:
-		pbar.set_description("Sub decision tree %d is processing" % (i+1))
+		pbar.set_description(_("Sub decision tree %(i)d is processing") % {"i": i+1})
 		subset = df.sample(frac=1/num_of_trees)
 
 		root = 1

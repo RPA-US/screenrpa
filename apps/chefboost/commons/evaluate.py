@@ -1,4 +1,5 @@
 import math
+from django.utils.translation import gettext_lazy as _
 
 def evaluate(df, task = 'train'):
 	acc_total = 0.
@@ -13,7 +14,7 @@ def evaluate(df, task = 'train'):
 	instances = df.shape[0]
 	
 	print("-------------------------")
-	print("Evaluate ",task,"set")
+	print(_("Evaluate %(task) set") % {'task': task})
 	print("-------------------------")
 	
 	if problem_type == 'classification':
@@ -43,8 +44,8 @@ def evaluate(df, task = 'train'):
 				confusion_row.append(item)
 			confusion_matrix.append(confusion_row)
 		
-		print("Labels: ", labels)
-		print("Confusion matrix: ",confusion_matrix)
+		print(_("Labels: "), labels)
+		print(_("Confusion matrix: "),confusion_matrix)
 		
 		#-----------------------------
 		#precision and recall
@@ -73,11 +74,11 @@ def evaluate(df, task = 'train'):
 			
    
 			if len(labels) >= 3:
-				print("Decision ", decision_class, " => ",end = '')
-				print("Accuray: ", accuracy,"%, ", end = '')
+				print(_("Decision "), decision_class, " => ",end = '')
+				print(_("Accuracy: "), accuracy,"%, ", end = '')
 				# print("tp:"+str(tp)+", tn:"+str(tn)+", fp:"+str(fp)+", fn:"+str(fn))
 			
-			print("Precision: ", precision,"%, Recall: ", recall,"%, F1: ", f1_score,"%")
+			print(_("Precision: %(precision)\%, Recall: %(recall)\%, F1: %(f1_score)\%") % {'precision': precision, 'recall': recall, 'f1_score': f1_score})
 			#print("TP: ",tp,", TN: ",tn,", FP: ", fp,", FN: ",fn)
 			
 			if len(labels) < 3:

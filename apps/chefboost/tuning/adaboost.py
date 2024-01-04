@@ -4,6 +4,7 @@ import numpy as np
 from apps.chefboost.commons import functions, evaluate
 from apps.chefboost.training import Training
 from apps.chefboost import Chefboost as cb
+from django.utils.translation import gettext_lazy as _
 
 import imp
 import math
@@ -111,11 +112,11 @@ def apply(df, config, header, dataset_features, validation_df = None, process_id
 			best_epoch_value = mae * 1
 			best_epoch_idx = i * 1
 		
-		pbar.set_description("Epoch %d. Loss: %d. Process: " % (i+1, mae))
+		pbar.set_description(_("Epoch %(i)d. Loss: %(mae)d. Process: ") % {'i': i, 'mae': mae})
 	
 	#------------------------------
 	
-	print("The best epoch is ",best_epoch_idx," with the ",best_epoch_value," MAE score")
+	print(_("The best epoch is %(best_epoch_idx) with the %(best_epoch_value) MAE score") % {'best_epoch_idx': best_epoch_idx, 'best_epoch_value': best_epoch_value})
 	
 	models = models[0: best_epoch_idx+1]
 	alphas = alphas[0: best_epoch_idx+1]

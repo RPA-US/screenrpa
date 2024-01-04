@@ -1,0 +1,51 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-04 08:58+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/behaviourmonitoring/forms.py:22
+msgid "Type"
+msgstr "Tipo"
+
+#: apps/behaviourmonitoring/forms.py:23
+msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/behaviourmonitoring/models.py:37
+msgid "There is already an active monitoring for this case study."
+msgstr "Ya existe un monitoreo activo para este caso de estudio."
+
+#: apps/behaviourmonitoring/views.py:63 apps/behaviourmonitoring/views.py:85
+msgid "User must be authenticated."
+msgstr "El usuario debe estar autenticado."
+
+#: apps/behaviourmonitoring/views.py:65 apps/behaviourmonitoring/views.py:87
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr "El caso de estudio no pertenece al usuario autenticado."
+
+#: apps/behaviourmonitoring/views.py:67 apps/behaviourmonitoring/views.py:89
+msgid "Monitoring doesn't belong to the authenticated user."
+msgstr "El monitoreo no pertenece al usuario autenticado."
+
+#: apps/behaviourmonitoring/views.py:69 apps/behaviourmonitoring/views.py:91
+msgid "Monitoring doesn't belong to the Case Study."
+msgstr "El monitoreo no pertenece al caso de estudio."
+
+#: apps/behaviourmonitoring/views.py:102
+msgid "This object doesn't belong to the authenticated user"
+msgstr "Este objeto no pertenece al usuario autenticado"

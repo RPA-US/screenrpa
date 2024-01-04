@@ -1,6 +1,7 @@
 from tensorflow.keras.models import Model,load_model
 import numpy as np
 import cv2
+from django.utils.translation import gettext_lazy as _
 
 from apps.featureextraction.SOM.CNN.ConfigCNN import Config
 
@@ -21,7 +22,7 @@ class CompDetCNN:
 
     def predict(self, imgs):
         if self.model is None:
-            print("*** No model loaded ***")
+            print(_("*** No model loaded ***"))
             return
         result = []
         for i in range(len(imgs)):

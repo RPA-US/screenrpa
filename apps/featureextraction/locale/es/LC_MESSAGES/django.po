@@ -1,0 +1,127 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-04 09:16+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/featureextraction/SOM/CNN/CompDetCNN.py:25
+msgid "*** No model loaded ***"
+msgstr "*** No se cargó ningún modelo ***"
+
+#: apps/featureextraction/SOM/detection.py:550
+msgid ""
+"apps/featureextraction/SOM/detection.py Log already exists, it's not needed "
+"to execute format conversor"
+msgstr ""
+"apps/featureextraction/SOM/detection.py El registro ya existe, no es necesario "
+"ejecutar el conversor de formato"
+
+#: apps/featureextraction/SOM/detection.py:551
+msgid "Log already exists, it's not needed to execute format conversor"
+msgstr ""
+"El registro ya existe, no es necesario ejecutar el conversor de formato"
+
+#: apps/featureextraction/SOM/detection.py:553
+msgid ""
+"apps/featureextraction/SOM/detection.py Format conversor executed! Type: "
+"%(format), Filename: %(filename)"
+msgstr ""
+"¡Se ejecutó el conversor de formato en apps/featureextraction/SOM/detection."
+"py! Tipo: %(format), Nombre de archivo: %(filename)"
+
+#: apps/featureextraction/SOM/detection.py:570
+msgid ""
+"\n"
+"\n"
+"Reading images OCR info from file..."
+msgstr ""
+"\n"
+"\n"
+"Leyendo información OCR de las imágenes desde el archivo..."
+
+#: apps/featureextraction/SOM/detection.py:605
+msgid "Enter path to images numpy arrays location: "
+msgstr "Ingrese la ruta a la ubicación de los arrays numpy de imágenes: "
+
+#: apps/featureextraction/SOM/detection.py:606
+msgid "Enter numpy array file name: "
+msgstr "Ingrese el nombre del archivo de array numpy: "
+
+#: apps/featureextraction/SOM/detection.py:609
+msgid "Length: "
+msgstr "Longitud: "
+
+#: apps/featureextraction/SOM/detection.py:611
+msgid ""
+"\n"
+"Component: "
+msgstr ""
+"\n"
+"Componente: "
+
+#: apps/featureextraction/SOM/detection.py:615
+msgid "Empty component"
+msgstr "Componente vacío"
+
+#: apps/featureextraction/SOM/detection.py:618
+msgid ""
+"Do you want to check another image components? Indicate another npy file "
+"name: "
+msgstr ""
+
+#: apps/featureextraction/SOM/sam.py:190
+msgid "You selected a type of sam's checkpoint that does not exists"
+msgstr "Ha seleccionado un tipo de punto de control de SAM que no existe"
+
+#: apps/featureextraction/forms.py:22 apps/featureextraction/forms.py:54
+#: apps/featureextraction/forms.py:91 apps/featureextraction/forms.py:129
+msgid "Type"
+msgstr "Tipo"
+
+#: apps/featureextraction/forms.py:23 apps/featureextraction/forms.py:55
+#: apps/featureextraction/forms.py:92 apps/featureextraction/forms.py:130
+#: apps/featureextraction/forms.py:177
+msgid "Skip"
+msgstr "Saltar"
+
+#: apps/featureextraction/forms.py:56 apps/featureextraction/forms.py:93
+msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/featureextraction/forms.py:131
+msgid "Model"
+msgstr "Modelo"
+
+#: apps/featureextraction/forms.py:132
+msgid "Model properties"
+msgstr "Propiedades del modelo"
+
+#: apps/featureextraction/forms.py:176
+msgid "Technique name"
+msgstr "Nombre de la técnica"
+
+#: apps/featureextraction/forms.py:178
+msgid "Identifier"
+msgstr "Identificador"
+
+#: apps/featureextraction/relevantinfoselection/postfilters.py:285
+msgid "You select a type of filter that doesnt exists"
+msgstr "Ha seleccionado un tipo de filtro que no existe"
+
+#: apps/featureextraction/relevantinfoselection/prefilters.py:91
+msgid "You select a type of prefilter that doesnt exists"
+msgstr "Ha seleccionado un tipo de pre-filtro que no existe"
