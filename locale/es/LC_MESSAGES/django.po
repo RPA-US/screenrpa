@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 08:55+0000\n"
+"POT-Creation-Date: 2024-01-04 09:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -138,6 +138,7 @@ msgid "General information"
 msgstr "Información general"
 
 #: apps/templates/case_studies/create.html:100
+#: apps/templates/case_studies/detail.html:90
 msgid "Configuration"
 msgstr "Configuración"
 
@@ -205,6 +206,10 @@ msgstr "Oráculo de decisión"
 #: apps/templates/case_studies/detail.html:83
 msgid "CheckBox_4_D and ImageView_2_B"
 msgstr "CheckBox_4_D e ImageView_2_B"
+
+#: apps/templates/case_studies/detail.html:93
+msgid "Special columns names"
+msgstr "Nombres de columnas especiales"
 
 #: apps/templates/case_studies/detail.html:113
 #: apps/templates/case_studies/detail.html:121
