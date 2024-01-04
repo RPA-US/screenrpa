@@ -5,6 +5,7 @@ Copyright (c) RPA-US
 
 from django import forms
 from .models import ProcessDiscovery
+from django.utils.translation import gettext_lazy as _
 
 class ProcessDiscoveryForm(forms .ModelForm):
     class Meta:
@@ -17,6 +18,10 @@ class ProcessDiscoveryForm(forms .ModelForm):
             "type",
             "configurations"
         )
+        labels = {
+            "type": _("Type"),
+            "configurations": _("Configurations")
+        }
 
         widgets = {
             "type": forms.TextInput(

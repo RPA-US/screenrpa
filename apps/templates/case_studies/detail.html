@@ -1,7 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -11,12 +12,12 @@
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
             <a href="/case-study/list/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back to Case Studies</a>
-            <h6 class="h2 text-white d-inline-block mb-0">Case Study {{ case_study.id }} details</h6>
+            </i>{% blocktranslate %}Go Back to Case Studies{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Case Study {{ case_study.id }} details{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="#">Case study {{ case_study.id }}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Case study {{ case_study.id }}{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
@@ -32,23 +33,23 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Case study {{ case_study.id }} details</h3>
+            <h3 class="mb-0">{% blocktranslate %}Case study {{ case_study.id }} details{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
               <!-- General information -->
-              <h6 class="heading-small text-muted mb-4">General information</h6>
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
               <div class="pl-lg-4">
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-title">Title</label>
-                      <input type="text" id="input-title" class="form-control" placeholder="Nice Case Study" value="{{ case_study.title }}">
+                      <label class="form-control-label" for="input-title">{% blocktranslate %}Title{% endblocktranslate %}</label>
+                      <input type="text" id="input-title" class="form-control" placeholder="{% blocktranslate %}Nice Case Study{% endblocktranslate %}" value="{{ case_study.title }}">
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-title">Author</label>
+                      <label class="form-control-label" for="input-title">{% blocktranslate %}Author{% endblocktranslate %}</label>
                       <input type="text" class="form-control" disabled value="{{ case_study.user.username }}">
                     </div>
                   </div>
@@ -56,15 +57,15 @@
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-description">Description</label>
-                      <textarea id="input-description" class="form-control" description="This is a case study full of data...">{{ case_study.description }}</textarea>
+                      <label class="form-control-label" for="input-description">{% blocktranslate %}Description{% endblocktranslate %}</label>
+                      <textarea id="input-description" class="form-control" description="{% blocktranslate %}This is a case study full of data...{% endblocktranslate %}">{{ case_study.description }}</textarea>
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-exp_folder_complete_path">Folder path</label>
+                      <label class="form-control-label" for="input-exp_folder_complete_path">{% blocktranslate %}Folder path{% endblocktranslate %}</label>
                       <input type="text" id="input-exp_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ case_study.exp_folder_complete_path }}">
                     </div>
                   </div>
@@ -72,24 +73,24 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-decision_point_activity">Decision-point to study</label>
+                      <label class="form-control-label" for="input-decision_point_activity">{% blocktranslate %}Decision-point to study{% endblocktranslate %}</label>
                       <input type="text" id="input-decision_point_activity" class="form-control" placeholder="4_D" value="{{ case_study.decision_point_activity }}">
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-gui_class_success_regex">Decision Oracle</label> <!-- Regular expression to evaluate decision discovered -->
-                      <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="CheckBox_4_D and ImageView_2_B" value="{{ case_study.gui_class_success_regex }}">
+                      <label class="form-control-label" for="input-gui_class_success_regex">{% blocktranslate %}Decision Oracle{% endblocktranslate %}</label> <!-- Regular expression to evaluate decision discovered -->
+                      <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="{% blocktranslate %}CheckBox_4_D and ImageView_2_B{% endblocktranslate %}" value="{{ case_study.gui_class_success_regex }}">
                     </div>
                   </div>
                 </div>
               </div>
               <hr class="my-4" />
               <!-- Configuration -->
-              <h6 class="heading-small text-muted mb-4">Configuration</h6>
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
               <div class="pl-lg-4">
                 <div class="form-group">
-                  <label class="form-control-label">Special columns names</label>
+                  <label class="form-control-label">{% blocktranslate %}Special columns names{% endblocktranslate %}</label>
                   <textarea rows="4" class="form-control" 
                   placeholder="{
                     'Case': 'Case',
@@ -109,7 +110,7 @@
                 <div class="row">
                   <div class="col-md-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_image_shape">UI Elements image shape (for classificaiton)</label>
+                      <label class="form-control-label" for="input-ui_elements_classification_image_shape">{% blocktranslate %}UI Elements image shape (for classification){% endblocktranslate %}</label>
                       <input id="input-ui_elements_classification_image_shape" class="form-control" placeholder="[64, 64, 3]" value="{{ case_study.ui_elements_classification_image_shape }}" type="text">
                     </div>
                   </div>
@@ -117,7 +118,7 @@
                 <div class="row">
                   <div class="col-md-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_classes">UI Elements image shape (for classificaiton)</label>
+                      <label class="form-control-label" for="input-ui_elements_classification_classes">{% blocktranslate %}UI Elements image shape (for classification){% endblocktranslate %}</label>
                       <textarea id="input-ui_elements_classification_classes" class="form-control" value="{{ case_study.ui_elements_classification_classes }}" type="text" 
                       placeholder="[
                         'Button',
@@ -143,29 +144,29 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-text_classname">Text UI elements class name</label>
-                      <input type="text" id="input-text_classname" class="form-control" placeholder="text" value="{{ case_study.text_classname }}">
+                      <label class="form-control-label" for="input-text_classname">{% blocktranslate %}Text UI elements class name{% endblocktranslate %}</label>
+                      <input type="text" id="input-text_classname" class="form-control" placeholder="{% blocktranslate %}text{% endblocktranslate %}" value="{{ case_study.text_classname }}">
                     </div>
                   </div>
                   <div class="col-lg-6">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-target_label">Target label column name</label>
-                      <input type="text" id="input-target_label" class="form-control" placeholder="Variant" value="{{ case_study.target_label }}">
+                      <label class="form-control-label" for="input-target_label">{% blocktranslate %}Target label column name{% endblocktranslate %}</label>
+                      <input type="text" id="input-target_label" class="form-control" placeholder="{% blocktranslate %}Variant{% endblocktranslate %}" value="{{ case_study.target_label }}">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-scenarios_to_study">Scenarios to study</label>
-                      <input type="text" id="input-scenarios_to_study" class="form-control" placeholder="['scenario1', 'scenario2']" value="{{ case_study.scenarios_to_study }}">
+                      <label class="form-control-label" for="input-scenarios_to_study">{% blocktranslate %}Scenarios to study{% endblocktranslate %}</label>
+                      <input type="text" id="input-scenarios_to_study" class="form-control" placeholder="{% blocktranslate %}['scenario1', 'scenario2']{% endblocktranslate %}" value="{{ case_study.scenarios_to_study }}">
                     </div>
                   </div>
                 </div>
               </div>
               <hr class="my-4" />
               <!-- Phases to execute -->
-              <h6 class="heading-small text-muted mb-4">Set Up Phases</h6>
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Set Up Phases{% endblocktranslate %}</h6>
               <div class="pl-lg-4">
                 <div class="card-body">
                   <div class="row icon-examples">
@@ -174,7 +175,7 @@
                         <div>
                           <i class="ni ni-laptop"></i>
                           <a class="nav-link" href="/monitoring/list/{{ case_study.id }}">
-                            <span>Behaviour Monitoring</span>
+                            <span>{% blocktranslate %}Behaviour Monitoring{% endblocktranslate %}</span>
                           </a>
                         </div>
                       </button>
@@ -184,7 +185,7 @@
                         <div>
                           <i class="ni ni-zoom-split-in"></i>
                           <a class="nav-link" href="/fe/prefiltering/list/{{ case_study.id }}">
-                            <span>Pre-Filtering</span>
+                            <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
                           </a>
                         </div>
                       </button>
@@ -194,7 +195,7 @@
                         <div>
                           <i class="ni ni-image"></i>
                           <a class="nav-link" href="/fe/ui-element-detection/list/{{ case_study.id }}">
-                            <span>UI Elements Detection</span>
+                            <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
                           </a>
                         </div>
                       </button>
@@ -204,7 +205,7 @@
                         <div>
                           <i class="ni ni-album-2"></i>
                           <a class="nav-link" href="/fe/ui-element-classification/list/{{ case_study.id }}">
-                            <span>UI Elements Classification</span>
+                            <span>{% blocktranslate %}UI Elements Classification{% endblocktranslate %}</span>
                           </a>
                         </div>
                       </button>
@@ -214,7 +215,7 @@
                         <div>
                           <i class="ni ni-zoom-split-in"></i>
                           <a class="nav-link" href="/fe/postfiltering/list/{{ case_study.id }}">
-                            <span>Post-filtering</span>
+                            <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
                           </a>
                           </div>
                         </button>
@@ -224,7 +225,7 @@
                           <div>
                             <i class="ni ni-money-coins"></i>
                             <a class="nav-link" href="/fe/feature-extraction-technique/list/{{ case_study.id }}">
-                              <span>Feature extraction</span>
+                              <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
                             </a>
                             </div>
                           </button>
@@ -234,7 +235,7 @@
                           <div>
                             <i class="ni ni-sound-wave"></i>
                             <a class="nav-link" href="/pd/bpmn/list/{{ case_study.id }}">
-                              <span>Process Discovery</span>
+                              <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
                             </a>
                           </div>
                           </button>
@@ -244,7 +245,7 @@
                           <div>
                             <i class="ni ni-settings"></i>
                             <a class="nav-link" href="/dd/extract-training-dataset/list/{{ case_study.id }}">
-                              <span>Extract training dataset</span>
+                              <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
                             </a>
                           </div>
                           </button>
@@ -254,7 +255,7 @@
                             <div>
                               <i class="ni ni-vector"></i>
                               <a class="nav-link" href="/dd/decision-tree-training/list/{{ case_study.id }}">
-                                <span>Decision tree training</span>
+                                <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
                               </a>
                             </div>
                           </button>
@@ -264,7 +265,7 @@
                             <div>
                               <i class="ni ni-single-copy-04"></i>
                               <a class="nav-link" href="/reporting/pdd/list/{{ case_study.id }}">
-                                <span>Reporting</span>
+                                <span>{% blocktranslate %}Reporting{% endblocktranslate %}</span>
                               </a>
                             </div>
                           </button>

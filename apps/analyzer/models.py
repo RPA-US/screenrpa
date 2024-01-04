@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from core.settings import PRIVATE_STORAGE_ROOT, sep
+from django.utils.translation import gettext_lazy as _
 # from apps.processdiscovery.models import ProcessDiscovery
 # from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 # from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
@@ -46,13 +47,13 @@ def get_exp_foldername(exp_folder_complete_path):
         count+=1
         aux = "\\"
     if count>1:
-         raise ValidationError("exp_folder_complete_path separators not coherent")
+         raise ValidationError(_("exp_folder_complete_path separators not coherent"))
     splitted_s = exp_folder_complete_path.split(aux)
     return splitted_s[len(splitted_s) - 1]
 
 class CaseStudy(models.Model):
     title = models.CharField(max_length=255)
-    description = models.CharField(max_length=255, default="This is a nice experiment...")
+    description = models.CharField(max_length=255, default=_("This is a nice experiment..."))
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=True, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -62,7 +63,7 @@ class CaseStudy(models.Model):
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
     phases_to_execute = JSONField(null=True, blank=True)
-    gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
+    gui_class_success_regex = models.CharField(max_length=255, default=_("CheckBox_4_D or ImageView_4_D or TextView_4_D"))
     target_label = models.CharField(max_length=50, default='Variant')
     # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
@@ -77,8 +78,8 @@ class CaseStudy(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
     class Meta:
-        verbose_name = "Case study"
-        verbose_name_plural = "Case studies"
+        verbose_name = _("Case study")
+        verbose_name_plural = _("Case studies")
 
     def get_absolute_url(self):
         return reverse("home")
@@ -114,7 +115,7 @@ class CaseStudy(models.Model):
     
     def term_unique(self, title):
         if CaseStudy.objects.filter(term=title).exists():
-            raise ValidationError('The title of the case study already exists')
+            raise ValidationError(_('The title of the case study already exists'))
 
     
     def __str__(self):

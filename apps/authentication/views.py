@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from apps.analyzer.models import CaseStudy
 from django.http import HttpResponseRedirect
-
+from django.utils.translation import gettext_lazy as _
 
 def login_view(request):
     form = LoginForm(request.POST or None)
@@ -28,9 +28,9 @@ def login_view(request):
                 login(request, user)
                 return redirect("/")
             else:
-                msg = 'Invalid credentials'
+                msg = _('Invalid credentials')
         else:
-            msg = 'Error validating the form'
+            msg = _('Error validating the form')
 
     return render(request, "accounts/login.html", {"form": form, "msg": msg})
 
@@ -51,13 +51,13 @@ def register_user(request):
             user.first_name = firstname
             user.last_name = lastname
             user.save()
-            msg = 'User created - please <a href="/login">login</a>.'
+            msg = _('User created - please <a href="/login">login</a>.')
             success = True
 
             # return redirect("/login/")
 
         else:
-            msg = 'Form is not valid'
+            msg = _('Form is not valid')
     else:
         form = SignUpForm()
 

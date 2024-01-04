@@ -12,6 +12,7 @@ import json
 from apps.chefboost.commons import functions, evaluate as eval
 from apps.chefboost.training import Preprocess, Training
 from apps.chefboost.tuning import gbm, adaboost, randomforest
+from django.utils.translation import gettext_lazy as _
 
 #------------------------
 
@@ -61,7 +62,7 @@ def fit(df, config = {}, target_label = 'Decision', validation_df = None):
 			#print(new_column_order)
 			df = df[new_column_order]
 		else:
-			raise ValueError('Please set the target_label')
+			raise ValueError(_('Please set the target_label'))
 
 	#------------------------
 
@@ -71,8 +72,8 @@ def fit(df, config = {}, target_label = 'Decision', validation_df = None):
 
 	target_label = df.columns[len(df.columns)-1]
 	if target_label != 'Decision':
-		print("Expected: Decision, Existing: ",target_label)
-		raise ValueError('Please confirm that name of the target column is "Decision" and it is put to the right in pandas data frame')
+		print(_("Expected: Decision, Existing: "),target_label)
+		raise ValueError(_('Please confirm that name of the target column is "Decision" and it is put to the right in pandas data frame'))
 
 	#------------------------
 	#handle NaN values
@@ -110,7 +111,7 @@ def fit(df, config = {}, target_label = 'Decision', validation_df = None):
 	valid_algorithms = ['ID3', 'C4.5', 'CART', 'CHAID', 'Regression']
 
 	if algorithm not in valid_algorithms:
-		raise ValueError('Invalid algorithm passed. You passed ', algorithm," but valid algorithms are ",valid_algorithms)
+		raise ValueError(_('Invalid algorithm passed. You passed %(algorithm), but valid algorithms are %(valid_algorithms)') % {'algorithm': algorithm, 'valid_algorithms': valid_algorithms})
 
 	#------------------------
 
@@ -128,7 +129,7 @@ def fit(df, config = {}, target_label = 'Decision', validation_df = None):
 	#------------------------
 
 	if enableParallelism == True:
-		print("[INFO]: ",config["num_cores"],"CPU cores will be allocated in parallel running")
+		print(_("[INFO]: &(cores) CPU cores will be allocated in parallel running") % {'cores': config["num_cores"]})
 
 		from multiprocessing import set_start_method, freeze_support
 		set_start_method("spawn", force=True)
@@ -139,20 +140,20 @@ def fit(df, config = {}, target_label = 'Decision', validation_df = None):
 
 	if algorithm == 'Regression':
 		if df['Decision'].dtypes == 'object':
-			raise ValueError('Regression trees cannot be applied for nominal target values! You can either change the algorithm or data set.')
+			raise ValueError(_('Regression trees cannot be applied for nominal target values! You can either change the algorithm or data set.'))
 
 	if df['Decision'].dtypes != 'object': #this must be regression tree even if it is not mentioned in algorithm
 
 		if algorithm != 'Regression':
-			print("WARNING: You set the algorithm to ", algorithm," but the Decision column of your data set has non-object type.")
-			print("That's why, the algorithm is set to Regression to handle the data set.")
+			print(_("WARNING: You set the algorithm to %(algorithm) but the Decision column of your data set has non-object type.") % {'algorithm': algorithm})
+			print(_("That's why, the algorithm is set to Regression to handle the data set."))
 
 		algorithm = 'Regression'
 		config['algorithm'] = 'Regression'
 		global_stdev = df['Decision'].std(ddof=0)
 
 	if enableGBM == True:
-		print("Gradient Boosting Machines...")
+		print(_("Gradient Boosting Machines..."))
 		algorithm = 'Regression'
 		config['algorithm'] = 'Regression'
 
@@ -161,11 +162,11 @@ def fit(df, config = {}, target_label = 'Decision', validation_df = None):
 		for j in range(0, num_of_columns):
 			column_name = df.columns[j]
 			if df[column_name].dtypes  == 'object':
-				raise ValueError('Adaboost must be run on numeric data set for both features and target')
+				raise ValueError(_('Adaboost must be run on numeric data set for both features and target'))
 
 	#-------------------------
 
-	print(algorithm," tree is going to be built...")
+	print(_("%(algorithm) tree is going to be built...") % {'algorithm': algorithm})
 
 	dataset_features = dict() #initialize a dictionary. this is going to be used to check features numeric or nominal. numeric features should be transformed to nominal values based on scales.
 

@@ -13,6 +13,7 @@ from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
 from .models import PDD
 from apps.analyzer.models import CaseStudy
+from django.utils.translation import gettext_lazy as _
     
 
 
@@ -61,9 +62,9 @@ def pdd_define_style(document):
 def pdd_define_properties(document):
     # add document properties
     document.core_properties.author = "Antonio Martinez Rojas"
-    document.core_properties.title = "Process Definition Document"
-    document.core_properties.comments = "This is a first version of your RPA Process Definition Document."
-    document.core_properties.category = "PDDs"
+    document.core_properties.title = _("Process Definition Document")
+    document.core_properties.comments = _("This is a first version of your RPA Process Definition Document.")
+    document.core_properties.category = _("PDDs")
     document.core_properties.created = datetime.datetime.now()
     
     return document
@@ -78,8 +79,8 @@ def pdd_add_cover(document, custom_style):
     
     # Add a cover page
     document.add_picture('cover_image.png', width=Inches(6))
-    document.add_paragraph('Process Definition Document', custom_style).alignment = WD_ALIGN_PARAGRAPH.CENTER
-    document.add_paragraph('Version 1.0', custom_style).alignment = WD_ALIGN_PARAGRAPH.CENTER
+    document.add_paragraph(_('Process Definition Document'), custom_style).alignment = WD_ALIGN_PARAGRAPH.CENTER
+    document.add_paragraph(_('Version 1.0'), custom_style).alignment = WD_ALIGN_PARAGRAPH.CENTER
     document.add_page_break()
     
     return document
@@ -87,7 +88,7 @@ def pdd_add_cover(document, custom_style):
 def pdd_table_of_contents(document):
     # add a table of contents
     paragraph = document.add_paragraph()
-    run = paragraph.add_run('Table of Contents')
+    run = paragraph.add_run(_('Table of Contents'))
     paragraph.style = 'indice'
     # paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     paragraph.paragraph_format.space_after = Inches(0.2)
@@ -107,7 +108,7 @@ def pdd_table_of_contents(document):
     fldChar2.set(qn('w:fldCharType'), 'separate')
 
     fldChar3 = OxmlElement('w:t')
-    fldChar3.text = "Right-click to update field."
+    fldChar3.text = _("Right-click to update field.")
 
     fldChar2.append(fldChar3)
 
@@ -137,7 +138,7 @@ def ui_screen_trace_back_reporting(case_study_id):
     # SECTIONS
 
     # add section 1: introduction
-    document.add_heading('1. Introduction', level=1).style = 'Section Heading'
+    document.add_heading(_('1. Introduction'), level=1).style = 'Section Heading'
     # section_heading = document.add_paragraph()
     # section_heading.style = 'Section Heading'
     # section_heading.add_run('1. Introduction')
@@ -145,7 +146,7 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 1
     body_text = document.add_paragraph()
     body_text.style = 'Body Text'
-    body_text.add_run('This document outlines the process definition for...')
+    body_text.add_run(_('This document outlines the process definition for...'))
     document.add_page_break()
 
     # add section 2: process overview
@@ -157,17 +158,17 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 2
     body_text = document.add_paragraph()
     body_text.style = 'normal'
-    body_text.add_run('This process consists of the following steps:')
+    body_text.add_run(_('This process consists of the following steps:'))
     # add a numbered list for the steps in section 2
     numbered_list = document.add_paragraph()
     numbered_list.style = 'List Number'
-    numbered_list.add_run('Step 1: ...')
-    numbered_list.add_run('\nStep 2: ...')
-    numbered_list.add_run('\nStep 3: ...')
+    numbered_list.add_run(_('Step 1: ...'))
+    numbered_list.add_run(_('\nStep 2: ...'))
+    numbered_list.add_run(_('\nStep 3: ...'))
     
     # add section 3: roles and responsibilities
     document.add_page_break()
-    document.add_heading('3. Roles and Responsibilities', level=1).style = 'Section Heading'
+    document.add_heading(_(), level=1).style = 'Section Heading'
     # section_heading = document.add_paragraph()
     # section_heading.style = 'Section Heading'
     # section_heading.add_run('3. Roles and Responsibilities')
@@ -175,7 +176,7 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 3
     body_text = document.add_paragraph()
     body_text.style = 'Body Text'
-    body_text.add_run('The following roles and responsibilities are involved in this process:')
+    body_text.add_run(_('The following roles and responsibilities are involved in this process:'))
 
     # add a table for the roles and responsibilities in section 3
     table = document.add_table(rows=4, cols=2)
@@ -189,23 +190,23 @@ def ui_screen_trace_back_reporting(case_study_id):
 
     # add the header row for the table
     heading_cells = table.rows[0].cells
-    heading_cells[0].text = 'Role'
-    heading_cells[1].text = 'Responsibilities'
+    heading_cells[0].text = _('Role')
+    heading_cells[1].text = _('Responsibilities')
 
     # add the content for the remaining rows in the table
     row_cells = table.rows[1].cells
-    row_cells[0].text = 'Manager'
-    row_cells[1].text = 'Approves final output of the process'
+    row_cells[0].text = _('Manager')
+    row_cells[1].text = _('Approves final output of the process')
     row_cells = table.rows[2].cells
-    row_cells[0].text = 'Analyst'
-    row_cells[1].text = 'Conducts analysis for the process'
+    row_cells[0].text = _('Analyst')
+    row_cells[1].text = _('Conducts analysis for the process')
     row_cells = table.rows[3].cells
-    row_cells[0].text = 'Developer'
-    row_cells[1].text = 'Implements changes to the process'
+    row_cells[0].text = _('Developer')
+    row_cells[1].text = _('Implements changes to the process')
 
     # add section 4: process flow
     document.add_page_break()
-    document.add_heading('4. Process Flow', level=1).style = 'Section Heading'
+    document.add_heading(_('4. Process Flow'), level=1).style = 'Section Heading'
     # section_heading = document.add_paragraph()
     # section_heading.style = 'Section Heading'
     # section_heading.add_run('4. Process Flow')
@@ -213,12 +214,12 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 4
     body_text = document.add_paragraph()
     body_text.style = 'Body Text'
-    body_text.add_run('The process flow for this process is as follows:')
+    body_text.add_run(_('The process flow for this process is as follows:'))
     # add an image for the process flow in section 4
     document.add_picture('process_flow.png', width=Inches(6))
     # add section 5: process metrics
     document.add_page_break()
-    document.add_heading('5. Process Metrics', level=1).style = 'Section Heading'
+    document.add_heading(_('5. Process Metrics'), level=1).style = 'Section Heading'
     # section_heading = document.add_paragraph()
     # section_heading.style = 'Section Heading'
     # section_heading.add_run('5. Process Metrics')
@@ -226,18 +227,18 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 5
     body_text = document.add_paragraph()
     body_text.style = 'Body Text'
-    body_text.add_run('The following metrics are tracked for this process:')
+    body_text.add_run(_('The following metrics are tracked for this process:'))
     # add a bulleted list for the metrics in section 5
     bulleted_list = document.add_paragraph()
     bulleted_list.style = 'List Bullet'
     # add the metrics to the bulleted list
-    bulleted_list.add_run('Metric 1: ...')
-    bulleted_list.add_run('\nMetric 2: ...')
-    bulleted_list.add_run('\nMetric 3: ...')
+    bulleted_list.add_run(_('Metric 1: ...'))
+    bulleted_list.add_run(_('\nMetric 2: ...'))
+    bulleted_list.add_run(_('\nMetric 3: ...'))
     
     # add section 6: process improvement
     document.add_page_break()
-    document.add_heading('6. Process Improvement', level=1).style = 'Section Heading'
+    document.add_heading(_('6. Process Improvement'), level=1).style = 'Section Heading'
     # section_heading = document.add_paragraph()
     # section_heading.style = 'Section Heading'
     # section_heading.add_run('6. Process Improvement')
@@ -245,34 +246,34 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 6
     body_text = document.add_paragraph()
     body_text.style = 'Body Text'
-    body_text.add_run('The following improvement opportunities have been identified for this process:')
+    body_text.add_run(_('The following improvement opportunities have been identified for this process:'))
     # add a numbered list for the improvement opportunities in section 6
 
     # Adding list of style name 'List Number'
     document.add_heading('Style: List Number', 3)
     # Adding points to the list named 'List Number'
-    document.add_paragraph('Opportunity 1: ...', style='List Number')
-    document.add_paragraph('Opportunity 2: ...', style='List Number')
-    document.add_paragraph('Opportunity 3: ...', style='List Number')
+    document.add_paragraph(_('Opportunity 1: ...'), style='List Number')
+    document.add_paragraph(_('Opportunity 2: ...'), style='List Number')
+    document.add_paragraph(_('Opportunity 3: ...'), style='List Number')
     
     # Adding list of style name 'List Number 2'
     document.add_heading('Style: List Number 2', 3)
     # Adding points to the list named 'List Number 2'
-    document.add_paragraph('Opportunity 1: ...', style='List Number 2')
-    document.add_paragraph('Opportunity 2: ...', style='List Number 2')
-    document.add_paragraph('Opportunity 3: ...', style='List Number 2')
+    document.add_paragraph(_('Opportunity 1: ...'), style='List Number 2')
+    document.add_paragraph(_('Opportunity 2: ...'), style='List Number 2')
+    document.add_paragraph(_('Opportunity 3: ...'), style='List Number 2')
     
     # Adding list of style name 'List Number 3'
     document.add_heading('Style: List Number 3', 3)
     # Adding points to the list named 'List Number 3'
-    document.add_paragraph('Opportunity 1: ...', style='List Number 3')
-    document.add_paragraph('Opportunity 2: ...', style='List Number 3')
-    document.add_paragraph('Opportunity 3: ...', style='List Number 3')    
+    document.add_paragraph(_('Opportunity 1: ...'), style='List Number 3')
+    document.add_paragraph(_('Opportunity 2: ...'), style='List Number 3')
+    document.add_paragraph(_('Opportunity 3: ...'), style='List Number 3')    
 
 
     # add section 7: glossary
     document.add_page_break()
-    document.add_heading('7. Glossary', level=1).style = 'Section Heading'
+    document.add_heading(_(), level=1).style = 'Section Heading'
     # section_heading = document.add_paragraph()
     # section_heading.style = 'Section Heading'
     # section_heading.add_run('7. Glossary')
@@ -280,7 +281,7 @@ def ui_screen_trace_back_reporting(case_study_id):
     # add body text for section 7
     body_text = document.add_paragraph()
     body_text.style = 'Body Text'
-    body_text.add_run('The following terms are used throughout this document:')
+    body_text.add_run(_('The following terms are used throughout this document:'))
     
     # add a table for the glossary in section 7
     table = document.add_table(rows=3, cols=2)
@@ -295,16 +296,16 @@ def ui_screen_trace_back_reporting(case_study_id):
             
     # add the header row for the table
     heading_cells = table.rows[0].cells
-    heading_cells[0].text = 'Term'
-    heading_cells[1].text = 'Definition'
+    heading_cells[0].text = _('Term')
+    heading_cells[1].text = _('Definition')
     
     # add the content for the remaining rows in the table
     row_cells = table.rows[1].cells
-    row_cells[0].text = 'Process'
-    row_cells[1].text = 'A set of activities that transform inputs into outputs'
+    row_cells[0].text = _('Process')
+    row_cells[1].text = _('A set of activities that transform inputs into outputs')
     row_cells = table.rows[2].cells
-    row_cells[0].text = 'Metric'
-    row_cells[1].text = 'A quantifiable measure used to track the performance of a process'
+    row_cells[0].text = _('Metric')
+    row_cells[1].text = _('A quantifiable measure used to track the performance of a process')
 
     # save the document
     document.save('Process Definition Document.docx')
@@ -341,7 +342,7 @@ class ReportDownloadView(DetailView):
         
         # check if the file exists
         if not os.path.exists(pdd.pdd.file.path):
-            return HttpResponse("File does not exist", status=404)
+            return HttpResponse(_("File does not exist"), status=404)
 
         # set the file content type and headers
         response = HttpResponse(content_type='application/pdf')

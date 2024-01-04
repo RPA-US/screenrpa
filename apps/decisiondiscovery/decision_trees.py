@@ -14,6 +14,7 @@ from .utils import preprocess_data, create_and_fit_pipeline, def_preprocessor
 from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from django.utils.translation import gettext_lazy as _
 
 # def chefboost_decision_tree(df, param_path, algorithms, target_label):
 #     """
@@ -250,7 +251,7 @@ def best_model_grid_search(X_train, y_train, tree_classifier, k_fold_cross_valid
 
     # Get the best hyperparameters and train the final model
     best_tree_classifier = grid_search.best_estimator_
-    print("Grid Search Best Params:\n", grid_search.best_params_)
+    print(_("Grid Search Best Params:\n"), grid_search.best_params_)
     
     best_tree_classifier.fit(X_train, y_train)
     
@@ -264,9 +265,9 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
     # skf.get_n_splits(X, y)
 
     for i, (train_index, test_index) in enumerate(skf.split(X, y)):
-        print(f"Fold {i}:")
-        print(f"  Train: index={train_index}")
-        print(f"  Test:  index={test_index}")
+        print(_("Fold %(i):") % {'i': i})
+        print(_("  Train: index=%(train_index)") % {'train_index': train_index})
+        print(_("  Test:  index=%(test_index)") % {'test_index': test_index})
         X_train_fold, X_test_fold = X.iloc[train_index], X.iloc[test_index]
         y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
         
@@ -275,7 +276,7 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
         elif library == "sklearn":
             current_iteration_model = model.fit(X_train_fold, y_train_fold)
         else:
-            raise Exception("Decision Model Option Not Valid")
+            raise Exception(_("Decision Model Option Not Valid"))
 
         metrics_acc = []
         metrics_precision = []
@@ -289,7 +290,7 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
         elif library == "sklearn":
             y_pred = current_iteration_model.predict(X_test_fold)
         else:
-            raise Exception("Decision Model Option Not Valid")
+            raise Exception(_("Decision Model Option Not Valid"))
             
         metrics_acc.append(accuracy_score(y_test_fold, y_pred))
         metrics_precision.append(precision_score(y_test_fold, y_pred, average='weighted'))
@@ -301,5 +302,5 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
     accuracies['recall'] = np.mean(metrics_recall)
     accuracies['f1_score'] = np.mean(metrics_f1)
     
-    print(f"  Stratified K-Fold:  accuracy={accuracies['accuracy']} f1_score={accuracies['f1_score']} ")
+    print(_("  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) ") % {'acc': accuracies['accuracy'], 'f1': accuracies['f1_score']})
     return accuracies

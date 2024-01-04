@@ -21,6 +21,7 @@ from apps.featureextraction.SOM.Component import Component
 from apps.featureextraction.SOM.sam import get_sam_gui_components_crops 
 from apps.featureextraction.SOM.screen2som.predict import predict as screen2som_predict
 from .UiComponent import UiComponent #QUIT
+from django.utils.translation import gettext_lazy as _
 
 """
 Text boxes detection: KERAS_OCR
@@ -559,10 +560,10 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     print(param_img_root+"\n")
     
     if os.path.exists(param_log_path):
-        logging.info("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor")
-        print("Log already exists, it's not needed to execute format conversor")
+        logging.info(_("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor"))
+        print(_("Log already exists, it's not needed to execute format conversor"))
     elif "format" in configurations:
-        logging.info("apps/featureextraction/SOM/detection.py Format conversor executed! Type: " + configurations["format"] + ", Filename: "  + configurations["formatted_log_name"])
+        logging.info(_("apps/featureextraction/SOM/detection.py Format conversor executed! Type: %(format), Filename: %(filename)") % {"format": configurations["format"], "filename": configurations["formatted_log_name"]})
         if "formatted_log_name" in configurations:
             log_filename = configurations["formatted_log_name"]
         else:
@@ -579,7 +580,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     metadata = { 'screenshots': {} } 
     
     if file_exists:
-        print("\n\nReading images OCR info from file...")
+        print(_("\n\nReading images OCR info from file..."))
         with open(param_img_root + "images_ocr_info.txt", "rb") as fp:   # Unpickling
             text_corners = pickle.load(fp)
     else:
@@ -614,18 +615,18 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
 
 def check_npy_components_of_capture(image_name="1.png.npy", image_path="media/screenshots/components_npy/", interactive=False):
     if interactive:
-        image_path = input("Enter path to images numpy arrays location: ")
-        image_name = input("Enter numpy array file name: ")
+        image_path = input(_("Enter path to images numpy arrays location: "))
+        image_name = input(_("Enter numpy array file name: "))
     recortes = np.load(image_path+image_name, allow_pickle=True)
     for i in range(0, len(recortes)):
-        print("Length: " + str(len(recortes)))
+        print(_("Length: ") + str(len(recortes)))
         if recortes[i].any():
-            print("\nComponent: ", i+1)
+            print(_("\nComponent: "), i+1)
             plt.imshow(recortes[i], interpolation='nearest')
             plt.show()
         else:
-            print("Empty component")
+            print(_("Empty component"))
     if interactive:
         image_path = input(
-            "Do you want to check another image components? Indicate another npy file name: ")
+            _("Do you want to check another image components? Indicate another npy file name: "))
         check_npy_components_of_capture(image_path, None, True)
