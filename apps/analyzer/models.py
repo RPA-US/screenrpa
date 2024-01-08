@@ -62,6 +62,7 @@ class CaseStudy(models.Model):
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
     phases_to_execute = JSONField(null=True, blank=True)
+    gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
     target_label = models.CharField(max_length=50, default='Variant')
     # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
@@ -127,7 +128,6 @@ class Execution(models.Model):
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
-    # TODO: Add copy of the rest of fields from the case study
 
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
