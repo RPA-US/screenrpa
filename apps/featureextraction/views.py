@@ -412,7 +412,7 @@ def draw_postfilter(request, execution_id):
             # cs = CaseStudy.objects.filter(user=user, id=execution_id)
             # if cs.exists() :
             # cs = cs[0]
-            for scenario in execution.case_study.scenarios_to_study:
+            for scenario in execution.scenarios_to_study:
                 draw_postfilter_relevant_ui_compos_borders(execution.exp_folder_complete_path + sep + scenario)
 
             # else:
@@ -437,7 +437,7 @@ def draw_ui_compos(request, execution_id):
             # cs = CaseStudy.objects.filter(user=user, id=execution_id)
             # if cs.exists() :
             # cs = cs[0]
-            for scenario in execution.case_study.scenarios_to_study:
+            for scenario in execution.scenarios_to_study:
                 draw_ui_compos_borders(execution.exp_folder_complete_path + sep + scenario)
 
             # else:

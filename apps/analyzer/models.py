@@ -62,7 +62,6 @@ class CaseStudy(models.Model):
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
     phases_to_execute = JSONField(null=True, blank=True)
-    gui_class_success_regex = models.CharField(max_length=255, default="CheckBox_4_D or ImageView_4_D or TextView_4_D")
     target_label = models.CharField(max_length=50, default='Variant')
     # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
@@ -127,6 +126,7 @@ class Execution(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
+    scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     # TODO: Add copy of the rest of fields from the case study
 
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
@@ -165,6 +165,8 @@ class Execution(models.Model):
         self.extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self.case_study, active=True).first()
         self.decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self.case_study, active=True).first()
 
+        self.scenarios_to_study = self.case_study.scenarios_to_study
+
         self.clean()
 
         for stage in [self.monitoring, self.prefilters, self.ui_elements_detection,
@@ -187,7 +189,7 @@ class Execution(models.Model):
             os.makedirs(self.exp_folder_complete_path)
 
         # Create a symbolic link to the case study scenarios to study inside the execution folder
-        for scenario in self.case_study.scenarios_to_study:
+        for scenario in self.scenarios_to_study:
             os.symlink(
                 os.path.join(self.case_study.exp_folder_complete_path, scenario),
                 os.path.join(self.exp_folder_complete_path, scenario)

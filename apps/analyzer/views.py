@@ -100,7 +100,7 @@ def case_study_generator_execution(execution: Execution):
     tprint("RPA-US     SCREEN RPA", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
     if execution:
-        aux_path = execution.exp_folder_complete_path + sep + execution.case_study.scenarios_to_study[0]
+        aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
         if not os.path.exists(aux_path):
             os.makedirs(aux_path)
     else:
@@ -109,7 +109,7 @@ def case_study_generator_execution(execution: Execution):
     # For BPM LOG GENERATOR (old AGOSUIRPA) files
     foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
     
-    for scenario in tqdm(execution.case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
+    for scenario in tqdm(execution.scenarios_to_study, desc="Scenarios that have been processed: "):
         # For BPM LOG GENERATOR (old AGOSUIRPA) files
         if SCENARIO_NESTED_FOLDER:
             path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
@@ -118,7 +118,7 @@ def case_study_generator_execution(execution: Execution):
         else:
             path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
             generate_case_study(execution, path_scenario, times)
-        execution.executed = (execution.case_study.scenarios_to_study.index(scenario) / len(execution.case_study.scenarios_to_study)) * 100
+        execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
         execution.save()
                 
 
