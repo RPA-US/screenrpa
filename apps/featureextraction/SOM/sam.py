@@ -12,6 +12,7 @@ from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from .fastSAM import FastSAM, FastSAMPrompt
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
+from django.utils.translation import gettext_lazy as _
 
 #AUXILIAR FUNCTIONS#######################
 def nesting_compos(uicompos):
@@ -186,7 +187,7 @@ def get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy):
             sam_checkpoint = "sam_vit_l_0b3195.pth"
             model_type = "vit_l"
         case _:
-            raise Exception("You select a type of sam's checkpoint that doesnt exists")
+            raise Exception(_("You selected a type of sam's checkpoint that does not exists"))
 
     # torch.cuda.set_per_process_memory_fraction(fraction=0.55, device=0)
     sam = sam_model_registry[model_type](checkpoint=checkpoint_path+sam_checkpoint)

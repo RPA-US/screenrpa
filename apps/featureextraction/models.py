@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import models
 
 # Create your models here.
@@ -32,6 +33,15 @@ def default_filters_conf():
                 }
                 })
 
+
+UI_ELM_DET_TYPES = (
+    ('rpa-us', 'Kevin Moran'),
+    ('uied', 'UIED'),
+    ('sam', 'SAM'),
+    ('fast-sam', 'Fast-SAM'),
+    ('screen2som', 'Screen2SOM'),
+)
+
 class Prefilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
@@ -49,16 +59,27 @@ class Prefilters(models.Model):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 class UIElementsDetection(models.Model):
+
+    title = models.CharField(max_length=255)
+    # TODO: Add optional OCR
+    ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    type = models.CharField(max_length=25, default='rpa-us')
+    type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
     decision_point_activity = models.CharField(max_length=255, blank=True)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    ui_elements_classification = models.ForeignKey('UIElementsClassification', on_delete=models.SET_NULL, null=True)
+
+    # Delete ui_elements_classification when deleting UIElementsDetection
+    def delete(self, *args, **kwargs):
+        self.ui_elements_classification.delete()
+        super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("featureextraction:ui_detection_list", args=[str(self.case_study_id)])
@@ -92,7 +113,8 @@ class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    model = models.CharField(max_length=255, default="resources/models/custom-v2.h5")
+    # TODO: Change this to a foreign key
+    model = models.CharField(max_length=255)
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)

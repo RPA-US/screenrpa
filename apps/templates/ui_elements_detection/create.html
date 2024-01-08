@@ -1,7 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -11,19 +12,19 @@
         <div class="row align-items-center py-4">
           <div class="col-12">
             <a href="/fe/ui-element-detection/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back to UI Elements Detection Configurations</a>
-            <h6 class="h2 text-white d-inline-block mb-0">New UI Elements Detection Configuration</h6>
+            </i>{% blocktranslate %}Go Back to UI Elements Detection Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}New UI Elements Detection Configuration{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="/fe/ui-element-detection/list/{{ case_study_id }}/">UI Elements Detection Configs</a></li>
-                <li class="breadcrumb-item"><a href="#">New UI Element Detection </a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/fe/ui-element-detection/list/{{ case_study_id }}/">{% blocktranslate %}UI Elements Detection Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}New UI Element Detection{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
           <div class="col-12 text-right">
-            <a href="/fe/ui-element-detection/new/{{ case_study_id }}/" class="btn btn btn-light"><i class="fas fa-broom"></i> Restart fields</a>
+            <a href="/fe/ui-element-detection/new/{{ case_study_id }}/" class="btn btn btn-light"><i class="fas fa-broom"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
@@ -37,33 +38,10 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Create a new UI Elements Detection Configuration</h3>
+            <h3 class="mb-0">{% blocktranslate %}Create a new UI Elements Detection Configuration{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.type.label_tag }}
-                      {{ form.type }}
-                      <div class="form-validation">{{ form.type.errors }}</div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.skip.label_tag }}
-                      {{ form.skip }}
-                      <div class="form-validation">{{ form.skip.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
-                <i class="fas fa-save"></i> 
-                Save
-              </button>
-            </form>
+            {% include "ui_elements_detection/form.html" %}
           </div>
         </div>
       </div>
@@ -76,4 +54,12 @@
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('form').onsubmit = function() {
+        document.getElementById('id_model').disabled = false;
+      }
+    })
+  </script>
+{% endblock javascripts %}

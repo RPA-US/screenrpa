@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import JSONField
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 def default_monitoring_conf():
     return dict({
@@ -32,7 +33,7 @@ class Monitoring(models.Model):
         monitorings = Monitoring.objects.filter(case_study=self.case_study_id, active=True).exclude(id=self.id)
         # If there is more than one active monitoring, raise an error
         if self.active and len(monitorings) > 0:
-            raise ValidationError('There is already an active monitoring for this case study.')
+            raise ValidationError(_('There is already an active monitoring for this case study.'))
             
     def save(self, *args, **kwargs):
         self.full_clean()

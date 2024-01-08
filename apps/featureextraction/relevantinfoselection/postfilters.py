@@ -12,6 +12,7 @@ from shapely.geometry import Point, Polygon, box
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PLATFORM_NAME, INFO_POSTFILTERING_PHASE_NAME, sep
 from apps.featureextraction.utils import draw_geometry_over_image
+from django.utils.translation import gettext_lazy as _
 
 def calculate_intersection_area_v1(rect_x, rect_y, rect_width, rect_height, circle_x, circle_y, circle_radius):
     # Calcular las coordenadas del rectángulo y el círculo
@@ -281,7 +282,7 @@ def info_postfiltering(*data):
             case "rpa-us":
                 output = apply_filters(*data)
             case _:
-                raise Exception("You select a type of filter that doesnt exists")
+                raise Exception(_("You select a type of filter that doesnt exists"))
     else:
         logging.info("Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!")
         output = "Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!"

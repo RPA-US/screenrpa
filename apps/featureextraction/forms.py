@@ -6,6 +6,7 @@ Copyright (c) RPA-US
 from django import forms
 from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 class UIElementsDetectionForm(forms .ModelForm):
     class Meta:
@@ -14,24 +15,58 @@ class UIElementsDetectionForm(forms .ModelForm):
             "user",
             )
         fields = (
+            "title",
             "type",
-            "skip" 
+            "configurations",
+            "ocr"
         )
-
-        widgets = {
-            "type": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "uied"
-                    }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
-            )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip")
         }
 
+        labels = {
+            "title": "Title *",
+            "type": "Technique *",
+            "configurations": "Additional Configurations",
+            "ocr": "Apply OCR *",
+        }
+
+        widgets = {
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "UI Elements Detection"
+                    }
+            ),
+            # type is a selectable
+            "type": forms.Select(
+                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
+                attrs={
+                    "class": "form-control",
+                    # If value is screen2som, disable CNN model selectable
+                    "onchange": """
+                        if (this.value == 'screen2som') {
+                            document.getElementById('id_model').value = 'IGNORE';
+                            document.getElementById('id_model').disabled = true;
+                        } else {
+                            document.getElementById('id_model').disabled = false;
+                        }
+                        """
+                    }
+            ),
+            "configurations": forms.Textarea(attrs={
+                'class': 'form-control',
+                'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
+            }),
+            "ocr": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox", "checked": "checked"}
+            ),
+        }
+    
     def __init__(self, *args, **kwargs):
         super(UIElementsDetectionForm, self).__init__(*args, **kwargs)
+        self.fields['configurations'].initial = dict()
 
 class PrefiltersForm(forms .ModelForm):
     class Meta:
@@ -45,6 +80,11 @@ class PrefiltersForm(forms .ModelForm):
             "skip",
             "configurations",
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip"),
+            "configurations": _("Configurations")
+        }
 
         widgets = {
             "type": forms.TextInput(
@@ -77,6 +117,11 @@ class PostfiltersForm(forms .ModelForm):
             "skip",
             "configurations",
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip"),
+            "configurations": _("Configurations")
+        }
 
         widgets = {
             "type": forms.TextInput(
@@ -106,10 +151,19 @@ class UIElementsClassificationForm(forms .ModelForm):
             )
         fields = (
             "model",
-            "model_properties",
             "type",
-            "skip"
         )
+        labels = {
+            "type": _("Type"),
+            "skip": _("Skip"),
+            "model": _("Model"),
+            "model_properties": _("Model properties")
+        }
+
+        labels = {
+            "model": "Classification model *",
+            "type": "Technique *",
+        }
 
         widgets = {
             "type": forms.TextInput(
@@ -118,27 +172,18 @@ class UIElementsClassificationForm(forms .ModelForm):
                     "placeholder": "uied"
                     }
             ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
-            ),
-            "model": forms.TextInput(
+            "model": forms.Select(
+                # TODO: Use foreign key models
+                choices=[('IGNORE', '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/uied.h5', 'UIED')],
                 attrs={
                     "class": "form-control",
-                    "placeholder": "resources/models/custom-v2.h5"
+                    "required": "false"
                     }
             ),
-            "model_properties": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "resources/models/custom-v2-properties.json"
-                    }
-            )
         }
 
     def __init__(self, *args, **kwargs):
         super(UIElementsClassificationForm, self).__init__(*args, **kwargs)
-   
-
   
 class FeatureExtractionTechniqueForm(forms.ModelForm):
     class Meta:
@@ -151,6 +196,11 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "skip",
             "identifier"
         )
+        labels = {
+            "technique_name": _("Technique name"),
+            "skip": _("Skip"),
+            "identifier": _("Identifier")
+        }
 
         widgets = {
             "technique_name": forms.TextInput(

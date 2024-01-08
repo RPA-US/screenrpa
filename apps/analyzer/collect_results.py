@@ -10,6 +10,7 @@ from core.settings import METADATA_LOCATION, sep, DECISION_FOLDERNAME, GUI_QUANT
 import csv
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.featureextraction.utils import execution_has_feature_extraction_technique
+from django.utils.translation import gettext_lazy as _
 
 
 def times_duration(times, phases_info, scenario, phase):
@@ -49,7 +50,7 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, algorithm):
                 positions = [m.start() for m in re.finditer(gui_component_name_to_find, f)]
                 number_of_nodes = int(len(positions)/2)
                 if len(positions) != 2:
-                    print("Warning: GUI component appears more than twice")
+                    print(_("Warning: GUI component appears more than twice"))
                 for n_nod in range(0, number_of_nodes):
                     res_partial = {}
                     for index, position_i in enumerate(positions):
@@ -62,7 +63,7 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, algorithm):
                             quantity = quantity.replace(c, '')
                             res_partial[index] = quantity
                     if float(res_partial[0])-float(res_partial[1]) > GUI_QUANTITY_DIFFERENCE:
-                        print("GUI component quantity difference greater than the expected")
+                        print(_("GUI component quantity difference greater than the expected"))
                         res[gui_component_name_to_find] = "False"
                     else:
                         res[gui_component_name_to_find] = "True"
@@ -102,7 +103,7 @@ def calculate_accuracy_per_tree(decision_tree_path, expression, algorithm):
     res = eval(s)
 
     if not res:
-      print("Condition " + str(expression) + " is not fulfilled")
+      print(_("Condition %(expression) is not fulfilled") % {'expression': str(expression)})
     return int(res)
 
 
@@ -143,7 +144,7 @@ def experiments_results_collectors_old_structure(case_study, decision_tree_filen
 
     # TODO: new experiment files structure
     for scenario in tqdm(case_study.scenarios_to_study,
-                         desc="Experiment results that have been processed"):
+                         desc=_("Experiment results that have been processed")):
         time.sleep(.1)
         scenario_path = case_study.exp_folder_complete_path + sep + scenario
         family_size_balance_variations = get_foldernames_as_list(scenario_path, sep)
@@ -254,7 +255,7 @@ def experiments_results_collectors(execution, decision_tree_filename):
 
     # TODO: new experiment files structure
     scenarios = get_foldernames_as_list(execution.exp_folder_complete_path, sep)
-    for scenario in tqdm(scenarios, desc="Experiment results that have been processed"):
+    for scenario in tqdm(scenarios, desc=_("Experiment results that have been processed")):
         time.sleep(.1)
         scenario_path = execution.exp_folder_complete_path + sep + scenario
         json_f = open(times_info_path+str(execution.id)+"-metainfo.json")
@@ -306,7 +307,7 @@ def experiments_results_collectors(execution, decision_tree_filename):
                     # accuracy[alg+'_tree_training_time'] = [times[scenario]['decision_tree_training'][alg]["tree_levels"]]
                     # accuracy[alg+'_accuracy'] = [calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, alg)]
         else:
-            print("DECISION TREE results collection fail! :(")
+            print(_("DECISION TREE results collection fail! :("))
             # Calculate level of accuracy
             # accuracy.append(calculate_accuracy_per_tree(decision_tree_path, case_study.gui_class_success_regex, None))
     

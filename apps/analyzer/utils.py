@@ -15,6 +15,7 @@ from apps.processdiscovery.utils import get_process_discovery, case_study_has_pr
 from apps.decisiondiscovery.utils import get_extract_training_dataset, case_study_has_extract_training_dataset, get_decision_tree_training, case_study_has_decision_tree_training
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
+from django.utils.translation import gettext_lazy as _
 
 def get_foldernames_as_list(path, sep):
     folders_and_files = os.listdir(path)
@@ -40,8 +41,8 @@ def store_screenshots(payload, path_to_store_screenshots):
     if "Content-Location" in payload[i]:
       filename = part["Content-Location"]
     else:
-      logging.exception("analyzer/utils/store_screenshots. line 49. MIME Html format not contains Content-Location header in screenshots")
-      raise Exception("MIME Html format not contains Content-Location header in screenshots")
+      logging.exception(_("analyzer/utils/store_screenshots. line 49. MIME Html format not contains Content-Location header in screenshots"))
+      raise Exception(_("MIME Html format not contains Content-Location header in screenshots"))
     image_data = part.get_payload()
 
     # Decode the image data from base64 encoding
@@ -179,8 +180,8 @@ def format_mht_file(mht_file_path, output_format, output_path, output_filename, 
   elif output_format == "mht_csv":
     res_path = from_html_to_csv(org_resource, myhtml, output_path, output_filename)
   else:
-    logging.exception("analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt exists")
-    raise Exception("You select a format mht file that doesnt exists")
+    logging.exception(_("analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt exists"))
+    raise Exception(_("You select a format mht file that doesnt exists"))
   
   return res_path
 ###########################################################################################################################
@@ -209,8 +210,8 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
     if dateRegistered:
         datetime_parenthesis = dateRegistered.group(1)
     else:
-        logging.exception("analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the format:'Step 1: (datetime)'")
-        raise Exception("The MHT file doesnt have '(datetime)' after 'Step 1:'")
+        logging.exception(_("analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the format:'Step 1: (datetime)'"))
+        raise Exception(_("The MHT file doesnt have '(datetime)' after 'Step 1:'"))
       
     if pattern:
       format_pattern = pattern
@@ -219,7 +220,7 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
     elif "-" in datetime_parenthesis: 
       format_pattern = get_format_pattern(datetime_parenthesis, "-")
     else:
-      raise Exception("The MHT file doesnt have a valid datetime format")
+      raise Exception(_("The MHT file doesnt have a valid datetime format"))
 
     return datetime.datetime.strptime(datetime_parenthesis, format_pattern)
 

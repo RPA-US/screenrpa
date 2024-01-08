@@ -16,6 +16,7 @@ from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from .utils import find_path_in_decision_tree, parse_decision_tree
+from django.utils.translation import gettext_lazy as _
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -134,7 +135,7 @@ def decision_tree_training(case_study, path_scenario):
             # rules_info_json = json.load(rules_info)
             # tree_levels[alg] = len(rules_info_json.keys())            
     else:
-        raise Exception("Decision model chosen is not an option")
+        raise Exception(_("Decision model chosen is not an option"))
     
     if feature_values:
         fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, path)
@@ -163,7 +164,7 @@ class ExtractTrainingDatasetCreateView(CreateView):
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError("User must be authenticated.")
+            raise ValidationError(_("User must be authenticated."))
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
@@ -229,7 +230,7 @@ class DecisionTreeTrainingCreateView(CreateView):
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError("User must be authenticated.")
+            raise ValidationError(_("User must be authenticated."))
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
@@ -278,7 +279,7 @@ def delete_decision_tree_training(request):
     case_study_id = request.GET.get("case_study_id")
     decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
     if request.user.id != decision_tree_training.user.id:
-        raise Exception("This object doesn't belong to the authenticated user")
+        raise Exception(_("This object doesn't belong to the authenticated user"))
     decision_tree_training.delete()
     return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
 
