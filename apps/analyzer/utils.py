@@ -262,7 +262,8 @@ def phases_to_execute_specs(case_study, path_scenario):
                                         case_study.special_colnames,
                                         aux_ui_elements_detection.configurations,
                                         aux_ui_elements_detection.skip,
-                                        aux_ui_elements_detection.type)
+                                        aux_ui_elements_detection.type,
+                                        aux_ui_elements_detection.ocr)
                                         
     if case_study_has_ui_elements_classification(case_study):
         aux_ui_elements_classification = get_ui_elements_classification(case_study=case_study)

@@ -223,7 +223,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     return clips, uicompos, times
 
 
-def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, img_index, text_classname):
+def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, img_index, text_classname, applied_ocr=False):
     '''
     Analyzes an image and extracts its UI components
 
@@ -254,25 +254,26 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     global_x = []
     words[img_index] = {}
 
-    for j in range(0, len(texto_detectado_ocr[img_index])):
-        coordenada_y = []
-        coordenada_x = []
+    if applied_ocr:
+        for j in range(0, len(texto_detectado_ocr[img_index])):
+            coordenada_y = []
+            coordenada_x = []
 
-        for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
-            coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
-            coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
+            for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
+                coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
+                coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
 
-        word = texto_detectado_ocr[img_index][j][0]
-        centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
-        if word in words[img_index]:
-            words[img_index][word] += [centroid]
-        else:
-            words[img_index][word] = [centroid]
+            word = texto_detectado_ocr[img_index][j][0]
+            centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+            if word in words[img_index]:
+                words[img_index][word] += [centroid]
+            else:
+                words[img_index][word] = [centroid]
 
-        global_y.append(coordenada_y)
-        global_x.append(coordenada_x)
-        # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
-        # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+            global_y.append(coordenada_y)
+            global_x.append(coordenada_x)
+            # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+            # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
 
     # print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
 
@@ -378,7 +379,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations):
+def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations, applied_ocr):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -415,7 +416,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
         if overwrite:
             start_t = time.time()
             if algorithm == "rpa-us":
-                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname)
+                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname, applied_ocr=applied_ocr)
                 
                 # save metadata json
                 with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
@@ -432,7 +433,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     recortes, uicompos, times = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index, times)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
-                utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)
+                utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname, applied_ocr)
 
             elif algorithm == "sam" or algorithm == "fast-sam":
                 path_to_save_mask_npy=path_to_save_mask_elements+ image_names[img_index]
@@ -555,7 +556,7 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", text_classname="text"):
+def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", apply_ocr=False, text_classname="text"):
     tprint(PLATFORM_NAME + " - " + DETECTION_PHASE_NAME, "fancy60")
     print(param_img_root+"\n")
     
@@ -574,7 +575,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     log = read_ui_log_as_dataframe(param_log_path)
     # Extract the names of the screenshots associated to each of the rows in the log
     image_names = log.loc[:, special_colnames["Screenshot"]].values.tolist()
-    pipeline = keras_ocr.pipeline.Pipeline()
+    text_corners = []
     file_exists = os.path.exists(param_img_root + "images_ocr_info.txt")
 
     metadata = { 'screenshots': {} } 
@@ -583,8 +584,8 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         print(_("\n\nReading images OCR info from file..."))
         with open(param_img_root + "images_ocr_info.txt", "rb") as fp:   # Unpickling
             text_corners = pickle.load(fp)
-    else:
-        text_corners = []
+    elif apply_ocr:
+        pipeline = keras_ocr.pipeline.Pipeline()
         for img in image_names:
             start_t = time.time()
             ocr_result = get_ocr_image(pipeline, param_img_root, img)
@@ -604,7 +605,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
             os.mkdir(p)
 
     start_t = time.time()
-    metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations)
+    metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations, apply_ocr)
     metadata["duration"] = float(time.time()) - float(start_t)
     return metadata
 

@@ -62,7 +62,6 @@ class Prefilters(models.Model):
 class UIElementsDetection(models.Model):
 
     title = models.CharField(max_length=255)
-    # TODO: Add optional OCR
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
