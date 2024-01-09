@@ -134,7 +134,7 @@ def case_study_generator_execution(execution: Execution):
     with open(metadata_final_path, "w") as outfile:
         outfile.write(json_object)
         
-    return _(f"Case study '%(title)' executed!!. Case study foldername: %(exp_foldername). Metadata saved in: %(metadata_final_path)") % {"title": execution.case_study.title, "exp_foldername": execution.exp_foldername, "metadata_final_path": metadata_final_path}
+    print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
 
 #============================================================================================================================
 #============================================================================================================================
