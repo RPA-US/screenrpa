@@ -192,6 +192,6 @@ class Execution(models.Model):
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
             os.symlink(
-                os.path.join(self.case_study.exp_folder_complete_path, scenario),
+                os.path.join('../../', scenario),
                 os.path.join(self.exp_folder_complete_path, scenario)
                 )
