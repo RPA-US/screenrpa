@@ -1,8 +1,10 @@
 import os
 import json
 import time
+import threading
 from tqdm import tqdm
 from art import tprint
+from asgiref.sync import async_to_sync, sync_to_async, sync_to_async
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User 
 from django.shortcuts import render, get_object_or_404
@@ -17,6 +19,7 @@ from rest_framework.response import Response
 # Home pages imports
 from django import template
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template import loader
 # Settings variables
 from core.settings import PRIVATE_STORAGE_ROOT, METADATA_LOCATION, sep, DEFAULT_PHASES, PHASES_OBJECTS, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY
@@ -231,7 +234,7 @@ def case_study_generator(data):
         execution.save()
 
         if ACTIVE_CELERY:
-            celery_task_process_case_study.delay(execution)
+            celery_task_process_case_study.delay(execution.id)
         else:
             case_study_generator_execution(execution)
         
@@ -258,7 +261,7 @@ class CaseStudyCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class CaseStudyListView(ListView):
+class CaseStudyListView(ListView, LoginRequiredMixin):
     model = CaseStudy
     template_name = "case_studies/list.html"
     paginate_by = 50
@@ -266,7 +269,7 @@ class CaseStudyListView(ListView):
     def get_queryset(self):
         return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
-    
+
 def executeCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
@@ -277,18 +280,11 @@ def executeCaseStudy(request):
         execution.save()
 
         if ACTIVE_CELERY:
-            celery_task_process_case_study.delay(execution)
+            celery_task_process_case_study.delay(execution.id)
         else:
-            case_study_generator_execution(execution)
+            threading.Thread(target=case_study_generator_execution, args=(execution,)).start()
 
-
-    # phase_id = request.GET.get("phase")
-    # if cs.phases_to_execute is None: # if there is no phases to execute
-    #     raise Exception("There's no phase to execute");
-    # if ACTIVE_CELERY:
-    #     celery_task_process_case_study.delay(case_study_id, phase_id)
-    # else:
-    #     case_study_generator_execution(case_study_id, phase_id)
+    # Return a response immediately, without waiting for the execution to finish
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
 def deleteCaseStudy(request):
