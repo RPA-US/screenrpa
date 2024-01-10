@@ -28,7 +28,7 @@ from apps.featureextraction.relevantinfoselection.prefilters import info_prefilt
 from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, Execution   
 from apps.behaviourmonitoring.models import Monitoring
 from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
 from apps.processdiscovery.models import ProcessDiscovery
@@ -48,17 +48,14 @@ from apps.featureextraction.utils import case_study_has_feature_extraction_techn
 #============================================================================================================================
 #============================================================================================================================
 
-def generate_case_study(case_study, path_scenario, times, n, phase):
-    times[n] = {}
+def generate_case_study(execution, path_scenario, times,):
     
-    to_exec_args = phases_to_execute_specs(case_study, path_scenario)
+    to_exec_args = phases_to_execute_specs(execution, path_scenario)
     
-    # execute only one phase
-    if phase:
-        to_exec_args = to_exec_args[phase]
-
+    n = 0
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
+        times[n] = {}
         if function_to_exec == "decision_tree_training":
             res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times
@@ -82,6 +79,8 @@ def generate_case_study(case_study, path_scenario, times, n, phase):
             start_t = time.time()
             output = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+
+        n += 1
         
     return times
 
@@ -89,74 +88,53 @@ def generate_case_study(case_study, path_scenario, times, n, phase):
 #============================================================================================================================
 #============================================================================================================================
 
-def case_study_generator_execution(case_study_id, phase):
+def case_study_generator_execution(execution: Execution):
     """
     This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
     Args:
-        exp_foldername (string): name of the folder where all case study data is stored. Example 'case_study_data'
-        exp_folder_complete_path (string): complete path to the folder where all case study data is stored, including the name of the folder in this path. Example 'C:\\John\\Desktop\\case_study_data'
-        decision_activity (string): activity where decision we want to study is taken. Example: 'B'
-        scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
-        special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: DEFAULT_PHASES
+        execution (Execution): Execution object that contains the case study and active phases to be executed
     """
-    case_study = CaseStudy.objects.get(id=case_study_id)
     times = {}
-    metadata_path = METADATA_LOCATION + sep # folder to store metadata that will be used in "results" mode
-
-    if not os.path.exists(metadata_path):
-        os.makedirs(metadata_path)
- 
 
     # year = datetime.now().date().strftime("%Y")
     tprint("RPA-US     SCREEN RPA", "tarty1")
     # tprint("Relevance Information Miner", "pepper")
-    if case_study.scenarios_to_study:
-        aux_path = case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0]
+    if execution:
+        aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
+        if not os.path.exists(aux_path):
+            os.makedirs(aux_path)
     else:
-        aux_path = case_study.exp_folder_complete_path
+        aux_path = execution.exp_folder_complete_path
     
     # For BPM LOG GENERATOR (old AGOSUIRPA) files
     foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
     
-    for scenario in tqdm(case_study.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
-        # time.sleep(.1)
-        # print("\nActual Scenario: " + str(scenario))
-        # We check there is at least 1 phase to execute
-        
-        execute = False
-        
-        # Check if exist a Monitoring, ExtractTrainingDataset, DecisionTreeTraining, ProcessDiscovery, FeatureExtractionTechnique, UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, Report with a case_study_id equal to case_study.id
-        for p in PHASES_OBJECTS:
-            if eval(p).objects.filter(case_study=case_study.id).exists():
-                execute = True
-                break
-        
-        if execute:
-            # For BPM LOG GENERATOR (old AGOSUIRPA) files
-            if SCENARIO_NESTED_FOLDER:
-                path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
-                for n in foldername_logs_with_different_size_balance:
-                    generate_case_study(case_study, path_scenario, times, n, phase)
-            else:
-                path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep
-                generate_case_study(case_study, path_scenario, times, scenario, phase)
+    for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
+        # For BPM LOG GENERATOR (old AGOSUIRPA) files
+        if SCENARIO_NESTED_FOLDER:
+            path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
+            for n in foldername_logs_with_different_size_balance:
+                generate_case_study(execution, path_scenario, times)
         else:
-            raise Exception(_("There's no phase to execute or the specified phase doesn't corresponds to a supported one"))
-                
+            path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
+            generate_case_study(execution, path_scenario, times)
+        execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
+        execution.save()
 
     # Serializing json
     json_object = json.dumps(times, indent=4)
     # Writing to .json
-
-    case_study.executed = 100
-    case_study.save()
     
-    metadata_final_path = metadata_path + str(case_study.id) + "-metainfo.json"
+    metadata_final_path = os.path.join(
+        execution.exp_folder_complete_path,
+        f"times-cs_{execution.case_study.id}-exec_{execution.id}-metainfo.json"
+        )
+
     with open(metadata_final_path, "w") as outfile:
         outfile.write(json_object)
         
+    print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
 
 #============================================================================================================================
 #============================================================================================================================
@@ -248,10 +226,14 @@ def case_study_generator(data):
         # Updating the case study with the foreign keys of the phases to execute
         # case_study.save()
         transaction_works = True
-    if ACTIVE_CELERY:
-        celery_task_process_case_study.delay(case_study.id, None)
-    else:
-        case_study_generator_execution(case_study.id, None)
+    with transaction.atomic():
+        execution = Execution(user=case_study.user, case_study=case_study)
+        execution.save()
+
+        if ACTIVE_CELERY:
+            celery_task_process_case_study.delay(execution)
+        else:
+            case_study_generator_execution(execution)
         
     return transaction_works, case_study
 
@@ -287,17 +269,26 @@ class CaseStudyListView(ListView):
     
 def executeCaseStudy(request):
     case_study_id = request.GET.get("id")
-    phase_id = request.GET.get("phase")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise Exception(_("This case study doesn't belong to the authenticated user"))
-    if cs.phases_to_execute is None: # if there is no phases to execute
-        raise Exception(_("There's no phase to execute"));
-    if ACTIVE_CELERY:
-        celery_task_process_case_study.delay(case_study_id, phase_id)
-    else:
-        case_study_generator_execution(case_study_id, phase_id)
-        
+    with transaction.atomic():
+        execution = Execution(user=request.user, case_study=CaseStudy.objects.get(id=case_study_id))
+        execution.save()
+
+        if ACTIVE_CELERY:
+            celery_task_process_case_study.delay(execution)
+        else:
+            case_study_generator_execution(execution)
+
+
+    # phase_id = request.GET.get("phase")
+    # if cs.phases_to_execute is None: # if there is no phases to execute
+    #     raise Exception("There's no phase to execute");
+    # if ACTIVE_CELERY:
+    #     celery_task_process_case_study.delay(case_study_id, phase_id)
+    # else:
+    #     case_study_generator_execution(case_study_id, phase_id)
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
 def deleteCaseStudy(request):
@@ -417,22 +408,22 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
         return Response(response, status=st)
 
 class ResultCaseStudyView(generics.ListCreateAPIView):
-    def get(self, request, case_study_id, *args, **kwargs):
+    def get(self, request, execution_id, *args, **kwargs):
         st = status.HTTP_200_OK
         
         try:
-            case_study = CaseStudy.objects.get(id=case_study_id)
-            if case_study.executed:
-                csv_data, csv_filename = experiments_results_collectors(case_study, "descision_tree.log")
+            execution = Execution.objects.get(id=execution)
+            if execution.executed:
+                csv_data, csv_filename = experiments_results_collectors(execution, "descision_tree.log")
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = 'attachment; filename="'+case_study.title+'.csv"'
+                response["Content-Disposition"] = 'attachment; filename="'+execution.case_study.title+'.csv"'
                 csv_data.to_csv(response, index=False)
                 return response
             else:
                 response = {"message": _('The processing of this case study has not yet finished, please try again in a few minutes')}
 
         except Exception as e:
-            response = {"message": _("Case Study with id %(id) raised an exception: ") % {"id": case_study_id} + str(e)}
+            response = {"message": _("Case Study with id %(id) raised an exception: ") % {"id": execution.case_study.id} + str(e)}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)

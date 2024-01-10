@@ -53,13 +53,13 @@ def case_study_has_feature_extraction_technique(case_study):
 # Feature extraction techniques ###########################################################################################
 ###########################################################################################################################
 
-def case_study_has_feature_extraction_technique(case_study, type="ANY"):
+def execution_has_feature_extraction_technique(execution, type="ANY"):
     if type=="SINGLE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE").exists()
+        res = execution.feature_extraction_technique and execution.feature_extraction_technique.type=="SINGLE"
     elif type=="AGGREGATE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE").exists()
+        res = execution.feature_extraction_technique and execution.feature_extraction_technique.type=="AGGREGATE"
     else:
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
+        res = execution.feature_extraction_technique
     return res
 
 def detect_fe_function(text):
@@ -549,11 +549,11 @@ def scale_coordinates(coord, src_resolution, dest_resolution):
 
 
 def draw_ui_compos_borders(exp_path):
-    root_path = exp_path + sep + "components_json" + sep
+    root_path = exp_path + "_results" + sep + "components_json" + sep
     arr = os.listdir(root_path)
 
-    if not os.path.exists(exp_path + sep + "compo_json_borders"):
-        os.mkdir(exp_path + sep + "compo_json_borders")
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
     
     for compo_json_filename in arr:
         with open(root_path + compo_json_filename, 'r') as f:
@@ -596,7 +596,7 @@ def draw_ui_compos_borders(exp_path):
 
             
         # Save the image with component borders
-        output_path = exp_path + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        output_path = exp_path + "_results" + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
         cv2.imwrite(output_path, image)
         image = None
 
