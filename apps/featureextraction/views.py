@@ -14,7 +14,7 @@ from .utils import draw_ui_compos_borders
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from rest_framework import status
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, Execution
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -444,19 +444,18 @@ def delete_postfilter(request):
 ###       DRAWING              ##############################################################################
 #############################################################################################################
 
-def draw_postfilter(request, case_study_id):
+def draw_postfilter(request, execution_id):
     st = status.HTTP_200_OK
     
     try:
-        case_study = CaseStudy.objects.get(id=case_study_id)
-        if case_study.executed:
+        execution = Execution.objects.get(id=execution_id)
+        if execution.executed:
             # user = request.user
-            # cs = CaseStudy.objects.filter(user=user, id=case_study_id)
+            # cs = CaseStudy.objects.filter(user=user, id=execution_id)
             # if cs.exists() :
             # cs = cs[0]
-            cs = case_study
-            for scenario in cs.scenarios_to_study:
-                draw_postfilter_relevant_ui_compos_borders(cs.exp_folder_complete_path + sep + scenario)
+            for scenario in execution.scenarios_to_study:
+                draw_postfilter_relevant_ui_compos_borders(execution.exp_folder_complete_path + sep + scenario)
 
             # else:
             #     raise Exception("You don't have permissions to access this files")
@@ -465,24 +464,23 @@ def draw_postfilter(request, case_study_id):
             response = 'The processing of this case study has not yet finished, please try again in a few minutes'
 
     except Exception as e:
-        response = f"Case Study with id {case_study_id} raise an exception: " + str(e)
+        response = f"Case Study with id {execution_id} raise an exception: " + str(e)
         st = status.HTTP_404_NOT_FOUND
 
     return HttpResponse(response, status=st)
 
-def draw_ui_compos(request, case_study_id):
+def draw_ui_compos(request, execution_id):
     st = status.HTTP_200_OK
     
     try:
-        case_study = CaseStudy.objects.get(id=case_study_id)
-        if case_study.executed:
+        execution = Execution.objects.get(id=execution_id)
+        if execution.executed:
             # user = request.user
-            # cs = CaseStudy.objects.filter(user=user, id=case_study_id)
+            # cs = CaseStudy.objects.filter(user=user, id=execution_id)
             # if cs.exists() :
             # cs = cs[0]
-            cs = case_study
-            for scenario in cs.scenarios_to_study:
-                draw_ui_compos_borders(cs.exp_folder_complete_path + sep + scenario)
+            for scenario in execution.scenarios_to_study:
+                draw_ui_compos_borders(execution.exp_folder_complete_path + sep + scenario)
 
             # else:
             #     raise Exception("You don't have permissions to access this files")
@@ -491,7 +489,7 @@ def draw_ui_compos(request, case_study_id):
             response = 'The processing of this case study has not yet finished, please try again in a few minutes'
 
     except Exception as e:
-        response = f"Case Study with id {case_study_id} raise an exception: " + str(e)
+        response = f"Case Study with id {execution_id} raise an exception: " + str(e)
         st = status.HTTP_404_NOT_FOUND
 
     return HttpResponse(response, status=st)

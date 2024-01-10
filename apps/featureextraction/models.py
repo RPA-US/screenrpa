@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
-from apps.analyzer.models import CaseStudy
 from django.urls import reverse
 
 def default_prefilters_conf():
@@ -50,7 +49,7 @@ class Prefilters(models.Model):
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
@@ -72,7 +71,7 @@ class UIElementsDetection(models.Model):
     decision_point_activity = models.CharField(max_length=255, blank=True)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     ui_elements_classification = models.ForeignKey('UIElementsClassification', on_delete=models.SET_NULL, null=True)
@@ -119,7 +118,7 @@ class UIElementsClassification(models.Model):
     model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def get_absolute_url(self):
@@ -135,7 +134,7 @@ class Postfilters(models.Model):
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
@@ -156,7 +155,7 @@ class FeatureExtractionTechnique(models.Model):
     consider_relevant_compos = models.BooleanField(default=False)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def clean(self):

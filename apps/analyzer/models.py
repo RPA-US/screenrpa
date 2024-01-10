@@ -11,12 +11,12 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from core.settings import PRIVATE_STORAGE_ROOT, sep
+from apps.processdiscovery.models import ProcessDiscovery
+from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
+from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
+from apps.behaviourmonitoring.models import Monitoring
+from apps.reporting.models import PDD
 from django.utils.translation import gettext_lazy as _
-# from apps.processdiscovery.models import ProcessDiscovery
-# from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
-# from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
-# from apps.behaviourmonitoring.models import Monitoring
-# from apps.reporting.models import PDD
 
 def unzip_file(zip_file_path, dest_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
@@ -122,17 +122,76 @@ class CaseStudy(models.Model):
         return self.title + ' - id:' + str(self.id)
 
 
+class Execution(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='executions')
+    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
+    executed = models.IntegerField(default=0, editable=True)
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
+    exp_folder_complete_path = models.CharField(max_length=255)
+    scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
 
-# TODO: Implement execution model
-# class Execution(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
-#     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='CaseStudy')
-#     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
-#     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
-#     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
-#     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
-#     postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
-#     feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
-#     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
-#     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
-#     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+    monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
+    prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
+    ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
+    ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
+    postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
+    feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+    process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
+    extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
+    decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+    
+    # Check phases dependencies and restrictions
+    # To execute feature extraction, UIElementsDetection and UIElementsClassification must be executed
+    # To execute decision tree training, Decision Tree training must be executed
+    def clean(self):
+        # Check if at least one phase is executed
+        if not (self.monitoring or self.prefilters or self.ui_elements_detection or self.ui_elements_classification or self.postfilters or self.feature_extraction_technique or self.process_discovery or self.extract_training_dataset or self.decision_tree_training):
+            raise ValidationError('At least one phase must be executed.')
+        
+        # Check phases dependencies and restrictions
+        if self.feature_extraction_technique and not (self.ui_elements_detection and self.ui_elements_classification):
+            raise ValidationError('UI Elements Detection  and Classification  must be executed before Feature Extraction.')
+        if self.decision_tree_training and not self.extract_training_dataset:
+            raise ValidationError('Extract Training Dataset must be executed before Decision Tree Training.')
+
+    def save(self, *args, **kwargs):
+        # Retrieve active configurations and set them to the execution
+        self.monitoring = Monitoring.objects.filter(case_study=self.case_study, active=True).first()
+        self.prefilters = Prefilters.objects.filter(case_study=self.case_study, active=True).first()
+        self.ui_elements_detection = UIElementsDetection.objects.filter(case_study=self.case_study, active=True).first()
+        self.ui_elements_classification = UIElementsClassification.objects.filter(case_study=self.case_study, active=True).first()
+        self.postfilters = Postfilters.objects.filter(case_study=self.case_study, active=True).first()
+        self.feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True).first()
+        self.process_discovery = ProcessDiscovery.objects.filter(case_study=self.case_study, active=True).first()
+        self.extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self.case_study, active=True).first()
+        self.decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self.case_study, active=True).first()
+
+        self.scenarios_to_study = self.case_study.scenarios_to_study
+
+        self.clean()
+
+        for stage in [self.monitoring, self.prefilters, self.ui_elements_detection,
+                      self.ui_elements_classification, self.postfilters, self.feature_extraction_technique, 
+                      self.process_discovery, self.extract_training_dataset, self.decision_tree_training]:
+            if stage:
+                stage.freeze = True
+                stage.save()
+
+        super().save(*args, **kwargs)
+
+        if not self.exp_folder_complete_path:
+            self.create_folder_structure()
+    
+    def create_folder_structure(self):
+        self.exp_foldername = f"exec_{self.id}"
+        self.exp_folder_complete_path = os.path.join(self.case_study.exp_folder_complete_path, 'executions', self.exp_foldername)
+
+        if not os.path.exists(self.exp_folder_complete_path):
+            os.makedirs(self.exp_folder_complete_path)
+
+        # Create a symbolic link to the case study scenarios to study inside the execution folder
+        for scenario in self.scenarios_to_study:
+            os.symlink(
+                os.path.join('../../', scenario),
+                os.path.join(self.exp_folder_complete_path, scenario)
+                )

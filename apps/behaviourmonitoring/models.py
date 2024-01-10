@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import JSONField
 from django.urls import reverse
-from apps.analyzer.models import CaseStudy
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -27,7 +26,7 @@ class Monitoring(models.Model):
     freeze = models.BooleanField(default=False, editable=True)
     ub_log_path = models.CharField(max_length=250, blank=True, null=True, default=None)
     configurations = JSONField(null=True, blank=True, default=default_monitoring_conf)
-    case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def clean(self):
