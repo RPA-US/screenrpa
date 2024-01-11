@@ -117,6 +117,20 @@ class CaseStudy(models.Model):
         if CaseStudy.objects.filter(term=title).exists():
             raise ValidationError(_('The title of the case study already exists'))
 
+    def any_active(self):
+        """Returns True if any of the phases is active"""
+        monitoring = Monitoring.objects.filter(case_study=self, active=True).first()
+        prefilters = Prefilters.objects.filter(case_study=self, active=True).first()
+        ui_elements_detection = UIElementsDetection.objects.filter(case_study=self, active=True).first()
+        ui_elements_classification = UIElementsClassification.objects.filter(case_study=self, active=True).first()
+        postfilters = Postfilters.objects.filter(case_study=self, active=True).first()
+        feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self, active=True).first()
+        process_discovery = ProcessDiscovery.objects.filter(case_study=self, active=True).first()
+        extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self, active=True).first()
+        decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self, active=True).first()
+
+        return any([monitoring, prefilters, ui_elements_detection, ui_elements_classification, postfilters,
+                    feature_extraction_technique, process_discovery, extract_training_dataset, decision_tree_training])
     
     def __str__(self):
         return self.title + ' - id:' + str(self.id)
@@ -179,8 +193,10 @@ class Execution(models.Model):
 
         super().save(*args, **kwargs)
 
-        if not self.exp_folder_complete_path:
+        if not self.exp_folder_complete_path or self.exp_folder_complete_path == '':
             self.create_folder_structure()
+        
+        super().save(*args, **kwargs)
     
     def create_folder_structure(self):
         self.exp_foldername = f"exec_{self.id}"
