@@ -238,9 +238,9 @@ def case_study_generator(data):
         execution.save()
 
         if ACTIVE_CELERY:
-            celery_task_process_case_study.delay(execution.id)
+            celery_task_process_case_study.delay(case_study.user.id, case_study.id)
         else:
-            case_study_generator_execution(execution.id)
+            case_study_generator_execution(case_study.user.id, case_study.id)
         
     return transaction_works, case_study
 
