@@ -415,7 +415,7 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
         monitoring_obj.save()
     elif monitoring_type == "webgazer":
       # TODO
-              # fixation.json to Dataframe checker
+        # fixation.json to Dataframe checker
         for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
           if special_colnames[col_name] not in ui_log.columns:
             logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
@@ -424,8 +424,10 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
         #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log) #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
         #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)#en el imotions
+        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)#en el imotions, para obtener el timezone formateado
         startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"], ui_log_format_pattern)#en steprecorder
+
+        #native_slide_events = "native_slideevents.csv"
 
         if os.path.exists(root_path + "fixation.json"):
           fixation_p = json.load(open(root_path + "fixation.json"))

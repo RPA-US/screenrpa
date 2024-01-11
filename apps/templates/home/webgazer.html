@@ -70,13 +70,28 @@
                 const formatoFechaLocal = new Intl.DateTimeFormat(undefined, opcionesLocal);
                 const infoZonaHorariaLocal = formatoFechaLocal.formatToParts();
                 const localTimeZoneIdentifier = infoZonaHorariaLocal.find(part => part.type === 'timeZoneName').value;
+
+                //Fecha completa actual
+                var fechaActual = new Date();
+
+                var dia = fechaActual.getDate();
+                var mes = fechaActual.getMonth() + 1; // Los meses comienzan desde 0
+                var año = fechaActual.getFullYear();
+                var hora = fechaActual.getHours();
+                var minuto = fechaActual.getMinutes();
+                var segundo = fechaActual.getSeconds();
+                var milisegundo = fechaActual.getMilliseconds();
+                var fechaUTC = fechaActual.toISOString();
+                // Formatear en una cadena
+                var LocalFullDate = dia + "/" + mes + "/" + año + " " + hora + ":" + minuto + ":" + segundo + "." + milisegundo;
+                var UTCFullDate = "UTC: " + fechaUTC
                 
                 var save_url = "http://127.0.0.1:8000/"+"?x="+coordX+";y="+coordY;
                 var temp_image = new Image();
 
                 temp_image.src= save_url;
-                gaze_points.push([coordX, coordY, timestamp, timezone, processedTimezoneOffset, localTimeZoneIdentifier ]);
-                console.log(coordX + "," + coordY, + ","+ timestamp+ ","+ timezone + ","+processedTimezoneOffset + ","+localTimeZoneIdentifier);
+                gaze_points.push([coordX, coordY, timestamp, LocalFullDate,UTCFullDate, timezone, processedTimezoneOffset, localTimeZoneIdentifier ]);
+                console.log(coordX + "," + coordY, + ","+ timestamp+ ","+LocalFullDate+ ","+UTCFullDate+ ","+ timezone + ","+processedTimezoneOffset + ","+localTimeZoneIdentifier);
             }).begin();
         }
 
@@ -87,7 +102,7 @@
             //Crear zip con .csv y .json
             const zip = new JSZip();
             //Crear csv
-            var csv = 'Gaze X,Gaze Y,Timestamp,timezoneUTC,timezoneOffset,localTimeZoneIdentifier\n';
+            var csv = 'Gaze X,Gaze Y,Timestamp,LocalFullDate,UTCFullDate,timezoneUTC,timezoneOffset,localTimeZoneIdentifier\n';
             gaze_points.forEach(function (row) {
                 csv += row.join(',');
                 csv += "\n";
