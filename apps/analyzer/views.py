@@ -4,7 +4,6 @@ import time
 import threading
 from tqdm import tqdm
 from art import tprint
-from asgiref.sync import async_to_sync, sync_to_async, sync_to_async
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User 
 from django.shortcuts import render, get_object_or_404
@@ -91,53 +90,58 @@ def generate_case_study(execution, path_scenario, times,):
 #============================================================================================================================
 #============================================================================================================================
 
-def case_study_generator_execution(execution: Execution):
+def case_study_generator_execution(user_id: int, case_study_id: int):
     """
-    This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
+    This function process input data and generates the execution for a case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
     Args:
-        execution (Execution): Execution object that contains the case study and active phases to be executed
+        user_id (int): The user id of the user that is executing the case study
+        case_study_id (int): The case study id of the case study to be executed
     """
-    times = {}
-
-    # year = datetime.now().date().strftime("%Y")
-    tprint("RPA-US     SCREEN RPA", "tarty1")
-    # tprint("Relevance Information Miner", "pepper")
-    if execution:
-        aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
-        if not os.path.exists(aux_path):
-            os.makedirs(aux_path)
-    else:
-        aux_path = execution.exp_folder_complete_path
-    
-    # For BPM LOG GENERATOR (old AGOSUIRPA) files
-    foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
-    
-    for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
-        # For BPM LOG GENERATOR (old AGOSUIRPA) files
-        if SCENARIO_NESTED_FOLDER:
-            path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
-            for n in foldername_logs_with_different_size_balance:
-                generate_case_study(execution, path_scenario, times)
-        else:
-            path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
-            generate_case_study(execution, path_scenario, times)
-        execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
+    with transaction.atomic():
+        execution = Execution(user=User.objects.get(id=user_id), case_study=CaseStudy.objects.get(id=case_study_id))
         execution.save()
 
-    # Serializing json
-    json_object = json.dumps(times, indent=4)
-    # Writing to .json
-    
-    metadata_final_path = os.path.join(
-        execution.exp_folder_complete_path,
-        f"times-cs_{execution.case_study.id}-exec_{execution.id}-metainfo.json"
-        )
+        times = {}
 
-    with open(metadata_final_path, "w") as outfile:
-        outfile.write(json_object)
+        # year = datetime.now().date().strftime("%Y")
+        tprint("RPA-US     SCREEN RPA", "tarty1")
+        # tprint("Relevance Information Miner", "pepper")
+        if execution:
+            aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
+            if not os.path.exists(aux_path):
+                os.makedirs(aux_path)
+        else:
+            aux_path = execution.exp_folder_complete_path
         
-    print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
+        # For BPM LOG GENERATOR (old AGOSUIRPA) files
+        foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
+        
+        for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
+            # For BPM LOG GENERATOR (old AGOSUIRPA) files
+            if SCENARIO_NESTED_FOLDER:
+                path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
+                for n in foldername_logs_with_different_size_balance:
+                    generate_case_study(execution, path_scenario, times)
+            else:
+                path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
+                generate_case_study(execution, path_scenario, times)
+            execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
+            execution.save()
+
+        # Serializing json
+        json_object = json.dumps(times, indent=4)
+        # Writing to .json
+        
+        metadata_final_path = os.path.join(
+            execution.exp_folder_complete_path,
+            f"times-cs_{execution.case_study.id}-exec_{execution.id}-metainfo.json"
+            )
+
+        with open(metadata_final_path, "w") as outfile:
+            outfile.write(json_object)
+            
+        print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
 
 #============================================================================================================================
 #============================================================================================================================
@@ -236,7 +240,7 @@ def case_study_generator(data):
         if ACTIVE_CELERY:
             celery_task_process_case_study.delay(execution.id)
         else:
-            case_study_generator_execution(execution)
+            case_study_generator_execution(execution.id)
         
     return transaction_works, case_study
 
@@ -275,14 +279,10 @@ def executeCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise Exception(_("This case study doesn't belong to the authenticated user"))
-    with transaction.atomic():
-        execution = Execution(user=request.user, case_study=CaseStudy.objects.get(id=case_study_id))
-        execution.save()
-
-        if ACTIVE_CELERY:
-            celery_task_process_case_study.delay(execution.id)
-        else:
-            threading.Thread(target=case_study_generator_execution, args=(execution,)).start()
+    elif ACTIVE_CELERY:
+        celery_task_process_case_study.delay(request.user.id, case_study_id)
+    else:
+        threading.Thread(target=case_study_generator_execution, args=(request.user.id, case_study_id,)).start()
 
     # Return a response immediately, without waiting for the execution to finish
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
