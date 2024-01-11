@@ -388,9 +388,11 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
             logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
             raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
+        #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
-        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"], ui_log_format_pattern)
+        #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
+        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)#en el imotions
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"], ui_log_format_pattern)#en steprecorder
 
         if os.path.exists(root_path + "fixation.json"):
           fixation_p = json.load(open(root_path + "fixation.json"))
@@ -411,7 +413,40 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
         monitoring_obj.ub_log_path = root_path + "fixation.json"
         # update monitoring_obj
         monitoring_obj.save()
+    elif monitoring_type == "webgazer":
+      # TODO
+              # fixation.json to Dataframe checker
+        for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
+          if special_colnames[col_name] not in ui_log.columns:
+            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
+        #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
+        gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log) #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
+        #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
+        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)#en el imotions
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"], ui_log_format_pattern)#en steprecorder
+
+        if os.path.exists(root_path + "fixation.json"):
+          fixation_p = json.load(open(root_path + "fixation.json"))
+          logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
+          print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
+        else:
+          fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, monitoring_configurations)
+        
+        # Serializing json
+        json_object = json.dumps(fixation_p, indent=4)
+        with open(root_path + "fixation.json", "w") as outfile:
+            outfile.write(json_object)
+        logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
+        
+        fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+        
+        monitoring_obj.executed = 100
+        monitoring_obj.ub_log_path = root_path + "fixation.json"
+        # update monitoring_obj
+        monitoring_obj.save()
+ 
     else:
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
         raise Exception("You select a gaze analysis that is not available in the system")
