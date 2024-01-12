@@ -60,7 +60,7 @@ class UIElementsDetectionForm(forms .ModelForm):
                 'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
             }),
             "ocr": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
+                attrs={"class": "primary-checkbox"}
             ),
         }
     
