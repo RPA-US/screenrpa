@@ -55,12 +55,6 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
     
     return res
 
-# def decode_webgazer_monitoring(gazeanalysis_log):
-    
-#     data_df = pd.read_csv(gazeanalysis_log)
-#     data_df
-    
-#     return data_df 
 
 #Tengo que convertir el formado del UTC del json que obtengo de de fixations_updated_centroids a un formato astimezone.
 def decode_webgazer_timezone(native_slideevents_path):

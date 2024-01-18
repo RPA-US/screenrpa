@@ -65,34 +65,6 @@
                 var coordX = parseFloat(data.x.toFixed(2));
                 var coordY = parseFloat(data.y.toFixed(2));
                 var timestamp = Date.now();
-                //TimeZoneOffset
-                // const timezoneOffset = new Date().getTimezoneOffset()
-                // const signoTimezoneOffset = timezoneOffset >= 0 ? '-' : '+';
-                // const processedTimezoneOffset =  `${signoTimezoneOffset}${Math.abs(timezoneOffset).toString().padStart(2, '0')}`;
-
-                //TimeZoneUTC
-                // const diferenciaUTC = new Date().getTimezoneOffset() / 60; // Obtener la diferencia en horas
-                // const signoDiferenciaUTC = diferenciaUTC >= 0 ? '-' : '+';
-                // const timezone = `UTC${signoDiferenciaUTC}${Math.abs(diferenciaUTC).toString().padStart(2, '0')}:00`
-
-                //Info Zona Horaria
-                // const opcionesLocal = { timeZoneName: 'long' };
-                // const formatoFechaLocal = new Intl.DateTimeFormat(undefined, opcionesLocal);
-                // const infoZonaHorariaLocal = formatoFechaLocal.formatToParts();
-                // const localTimeZoneIdentifier = infoZonaHorariaLocal.find(part => part.type === 'timeZoneName').value;
-
-                //Fecha completa actual
-                // var fechaActual = new Date();
-                // var dia = fechaActual.getDate();
-                // var mes = fechaActual.getMonth() + 1; // Los meses comienzan desde 0
-                // var año = fechaActual.getFullYear();
-                // var hora = fechaActual.getHours();
-                // var minuto = fechaActual.getMinutes();
-                // var segundo = fechaActual.getSeconds();
-                // var milisegundo = fechaActual.getMilliseconds();
-                // Formatear en una cadena
-                // var LocalFullDate = dia + "/" + mes + "/" + año + " " + hora + ":" + minuto + ":" + segundo + "." + milisegundo;
-                // var UTCFullDate = fechaUTC
                 
                 var fechaUTC = new Date().toISOString();
                 var timezoneISO = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -102,13 +74,24 @@
 
                 // temp_image.src= save_url;
                 gaze_points.push([coordX, coordY, timestamp ]);
-                // console.log(coordX + "," + coordY, + ","+ timestamp+ ","+LocalFullDate+ ","+fechaUTC+ ","+ timezone + ","+processedTimezoneOffset + ","+localTimeZoneIdentifier + ","+timezoneISO);
+
             }).begin();
         }
 
         // exporting data to .csv file
         function saveGaze() {
+            //Ajustar timestamps de cara a ScreenRPA
             console.log(gaze_points);
+            if (gaze_points.length > 0) {
+                // Tomar el primer timestamp como referencia
+                let x = gaze_points[0][2];
+                // Actualizar todos los timestamps en el array
+                for (let i = 0; i < gaze_points.length; i++) {
+                    gaze_points[i][2] = gaze_points[i][2] - x;
+                }
+                // Establecer el primer timestamp a 1
+                gaze_points[0][2] = 1;
+                }
 
             //Crear zip con .csv y .json
             const zip = new JSZip();
