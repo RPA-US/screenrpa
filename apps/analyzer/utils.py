@@ -228,7 +228,7 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
 ###########################################################################################################################
 ###########################################################################################################################
 
-def phases_to_execute_specs(execution, path_scenario):
+def phases_to_execute_specs(execution, path_scenario, path_results):
     to_exec_args = {}
     # We check this phase is present in execution.case_study to avoid exceptions
     if execution.monitoring:
@@ -258,8 +258,8 @@ def phases_to_execute_specs(execution, path_scenario):
                                         
     if execution.ui_elements_classification:
         to_exec_args['ui_elements_classification'] = (execution.ui_elements_classification.model.path, # specific extractors
-                                        path_scenario + 'components_npy' + sep,
-                                        path_scenario + 'components_json' + sep,
+                                        path_results + 'components_npy' + sep,
+                                        path_results + 'components_json' + sep,
                                         path_scenario + 'log.csv',
                                         execution.case_study.special_colnames["Screenshot"],
                                         execution.ui_elements_classification.model.text_classname,

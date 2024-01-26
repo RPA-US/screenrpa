@@ -52,7 +52,8 @@ from apps.featureextraction.utils import case_study_has_feature_extraction_techn
 
 def generate_case_study(execution, path_scenario, times,):
     
-    to_exec_args = phases_to_execute_specs(execution, path_scenario)
+    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    to_exec_args = phases_to_execute_specs(execution, path_scenario, path_results)
     
     n = 0
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
