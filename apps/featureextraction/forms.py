@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique
+from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique, CNNModels
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -144,24 +144,30 @@ class PostfiltersForm(forms .ModelForm):
         super(PostfiltersForm, self).__init__(*args, **kwargs)
 
 class UIElementsClassificationForm(forms .ModelForm):
+    model = forms.ModelChoiceField(
+        queryset=CNNModels.objects.all(),
+        to_field_name="name",
+        empty_label="---",
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
     class Meta:
         model = UIElementsClassification
         exclude = (
             "user",
             )
         fields = (
-            "model",
             "type",
         )
         labels = {
             "type": _("Type"),
             "skip": _("Skip"),
-            "model": _("Model"),
-            "model_properties": _("Model properties")
         }
 
         labels = {
-            "model": "Classification model *",
             "type": "Technique *",
         }
 
@@ -170,14 +176,6 @@ class UIElementsClassificationForm(forms .ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "uied"
-                    }
-            ),
-            "model": forms.Select(
-                # TODO: Use foreign key models
-                choices=[('IGNORE', '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/uied.h5', 'UIED')],
-                attrs={
-                    "class": "form-control",
-                    "required": "false"
                     }
             ),
         }

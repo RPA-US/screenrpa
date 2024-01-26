@@ -257,16 +257,15 @@ def phases_to_execute_specs(execution, path_scenario):
                                         execution.ui_elements_detection.ocr)
                                         
     if execution.ui_elements_classification:
-        to_exec_args['ui_elements_classification'] = (execution.case_study.ui_elements_classification.model, # specific extractors
-                                        execution.ui_elements_classification.model_properties,
+        to_exec_args['ui_elements_classification'] = (execution.ui_elements_classification.model.path, # specific extractors
                                         path_scenario + 'components_npy' + sep,
                                         path_scenario + 'components_json' + sep,
                                         path_scenario + 'log.csv',
                                         execution.case_study.special_colnames["Screenshot"],
-                                        execution.ui_elements_classification.text_classname,
+                                        execution.ui_elements_classification.model.text_classname,
                                         execution.ui_elements_classification.skip,
-                                        execution.ui_elements_classification.ui_elements_classification_classes,
-                                        execution.ui_elements_classification.ui_elements_classification_image_shape,
+                                        execution.ui_elements_classification.model.classes,
+                                        execution.ui_elements_classification.model.image_shape,
                                         execution.ui_elements_classification.type)
         
     if execution.postfilters:
@@ -278,7 +277,7 @@ def phases_to_execute_specs(execution, path_scenario):
                                         execution.postfilters.type)
         
     if execution.feature_extraction_technique:
-        to_exec_args['feature_extraction_technique'] = (execution.case_study.ui_elements_classification_classes,
+        to_exec_args['feature_extraction_technique'] = (execution.ui_elements_classification_classes,
                                         execution.case_study.decision_point_activity,
                                         execution.case_study.special_colnames["Case"],
                                         execution.case_study.special_colnames["Activity"],
@@ -312,7 +311,7 @@ def phases_to_execute_specs(execution, path_scenario):
                                         execution.extract_training_dataset.columns_to_drop_before_decision_point)
         
     if execution.feature_extraction_technique:
-        to_exec_args['aggregate_features_as_dataset_columns'] = (execution.case_study.ui_elements_classification_classes,
+        to_exec_args['aggregate_features_as_dataset_columns'] = (execution.ui_elements_classification_classes,
                                         execution.case_study.decision_point_activity,
                                         execution.case_study.special_colnames["Case"],
                                         execution.case_study.special_colnames["Activity"],

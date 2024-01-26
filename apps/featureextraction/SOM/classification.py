@@ -61,7 +61,7 @@ def check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_ro
 ###################################################################################################
 ###################################################################################################
 
-def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model_properties="resources/models/custom-v2-classes.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
+def uied_ui_elements_classification(model="resources/models/custom-v2.h5", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
                             metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="text",
                             skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes, ui_elements_classification_image_shape=default_ui_elements_classification_image_shape):
     """
@@ -96,16 +96,11 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 
     if missing_json_file or (not skip):
-        # Load the model properties from the json
-        f = json.load(open(model_properties,))
-        classes = ui_elements_classification_classes
-        shape = tuple([int(n) for n in ui_elements_classification_image_shape])
-
         # Load the ML classifier model for the crops
         # Default model is custom-v2, a model creating by using transfer learning from UIED's generalized model
         classifier = {}
         classifier['Elements'] = CompDetCNN(
-            model, classes, shape)
+            model, ui_elements_classification_classes, ui_elements_classification_image_shape)
         print("\n\nLoaded ML model from disk\n")
 
         for screenshot_filename in tqdm(screenshot_filenames, desc=f"Classifying images in {ui_elements_crops_npy_root}"):
@@ -122,7 +117,7 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", model
                 json.dump(data, jsonFile)
 
 
-def legacy_ui_elements_classification(model="resources/models/model.h5", model_properties="resources/models/model.json", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
+def legacy_ui_elements_classification(model, ui_elements_crops_npy_root="resources/screenshots/components_npy/",
                             metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="x0_TextView",
                             skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes, ui_elements_classification_image_shape=default_ui_elements_classification_image_shape):
     """
@@ -131,10 +126,8 @@ def legacy_ui_elements_classification(model="resources/models/model.h5", model_p
     The values indicated in these columns added indicate how many GUI components are present with regard to their class.
     Example. 2 button, 3 image_view, 1 text_view, etc.
 
-    :param_model: Weights of the edges of the classification neural network 
-    :type param_model: h5
-    :param model_properties:
-    :type model_properties: json file
+    :param model: Weights of the edges of the classification neural network 
+    :type model: str
     :param ui_elements_crops_npy_root: Path where the cropped images are stored
     :type ui_elements_crops_npy_root: str
     :param metadata_json_root: Path where the json will all the components is stored
@@ -155,16 +148,9 @@ def legacy_ui_elements_classification(model="resources/models/model.h5", model_p
 
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 
+    loaded_model = CompDetCNN(model, ui_elements_classification_classes, ui_elements_classification_image_shape)
+
     if missing_json_file or (not skip):
-        # load json and create model
-        json_file = open(model_properties, 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
-        loaded_model = model_from_json(loaded_model_json)
-
-        # load weights into new model
-        loaded_model.load_weights(model)
-
         crops_info = {}
         
         for img_filename in screenshot_filenames:
