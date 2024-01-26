@@ -177,7 +177,7 @@ def compos_update(compos, org_shape):
 # FILE
 # #######################
 
-def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_classname):
+def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_classname, applied_ocr):
     img_shape = compos[0].image_shape
     output = {'img_shape': img_shape, 'compos': []}
     f_out = open(file_path, 'w')
@@ -189,27 +189,28 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
     words = {}
     words[img_index] = {}
 
-    for j in range(0, len(texto_detectado_ocr[img_index])):
-        coordenada_y = []
-        coordenada_x = []
+    if applied_ocr:
+        for j in range(0, len(texto_detectado_ocr[img_index])):
+            coordenada_y = []
+            coordenada_x = []
 
-        for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
-            coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
-            coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
+            for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
+                coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
+                coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
 
-        word = texto_detectado_ocr[img_index][j][0]
-        centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
-        if word in words[img_index]:
-            words[img_index][word] += [centroid]
-        else:
-            words[img_index][word] = [centroid]
+            word = texto_detectado_ocr[img_index][j][0]
+            centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+            if word in words[img_index]:
+                words[img_index][word] += [centroid]
+            else:
+                words[img_index][word] = [centroid]
 
-        global_y.append(coordenada_y)
-        global_x.append(coordenada_x)
-        # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
-        # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+            global_y.append(coordenada_y)
+            global_x.append(coordenada_x)
+            # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+            # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
 
-    print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
+    print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index]) if applied_ocr else 0))
 
     # Interval calculation of the text boxes
     intervalo_y = []

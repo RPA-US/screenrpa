@@ -228,7 +228,7 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
 ###########################################################################################################################
 ###########################################################################################################################
 
-def phases_to_execute_specs(execution, path_scenario):
+def phases_to_execute_specs(execution, path_scenario, path_results):
     to_exec_args = {}
     # We check this phase is present in execution.case_study to avoid exceptions
     if execution.monitoring:
@@ -253,19 +253,19 @@ def phases_to_execute_specs(execution, path_scenario):
                                         execution.case_study.special_colnames,
                                         execution.ui_elements_detection.configurations,
                                         execution.ui_elements_detection.skip,
-                                        execution.ui_elements_detection.type)
+                                        execution.ui_elements_detection.type,
+                                        execution.ui_elements_detection.ocr)
                                         
     if execution.ui_elements_classification:
-        to_exec_args['ui_elements_classification'] = (execution.case_study.ui_elements_classification.model, # specific extractors
-                                        execution.ui_elements_classification.model_properties,
-                                        path_scenario + 'components_npy' + sep,
-                                        path_scenario + 'components_json' + sep,
+        to_exec_args['ui_elements_classification'] = (execution.ui_elements_classification.model.path, # specific extractors
+                                        path_results + 'components_npy' + sep,
+                                        path_results + 'components_json' + sep,
                                         path_scenario + 'log.csv',
                                         execution.case_study.special_colnames["Screenshot"],
-                                        execution.ui_elements_classification.text_classname,
+                                        execution.ui_elements_classification.model.text_classname,
                                         execution.ui_elements_classification.skip,
-                                        execution.ui_elements_classification.ui_elements_classification_classes,
-                                        execution.ui_elements_classification.ui_elements_classification_image_shape,
+                                        execution.ui_elements_classification.model.classes,
+                                        execution.ui_elements_classification.model.image_shape,
                                         execution.ui_elements_classification.type)
         
     if execution.postfilters:
@@ -277,7 +277,7 @@ def phases_to_execute_specs(execution, path_scenario):
                                         execution.postfilters.type)
         
     if execution.feature_extraction_technique:
-        to_exec_args['feature_extraction_technique'] = (execution.case_study.ui_elements_classification_classes,
+        to_exec_args['feature_extraction_technique'] = (execution.ui_elements_classification_classes,
                                         execution.case_study.decision_point_activity,
                                         execution.case_study.special_colnames["Case"],
                                         execution.case_study.special_colnames["Activity"],
@@ -311,7 +311,7 @@ def phases_to_execute_specs(execution, path_scenario):
                                         execution.extract_training_dataset.columns_to_drop_before_decision_point)
         
     if execution.feature_extraction_technique:
-        to_exec_args['aggregate_features_as_dataset_columns'] = (execution.case_study.ui_elements_classification_classes,
+        to_exec_args['aggregate_features_as_dataset_columns'] = (execution.ui_elements_classification_classes,
                                         execution.case_study.decision_point_activity,
                                         execution.case_study.special_colnames["Case"],
                                         execution.case_study.special_colnames["Activity"],
