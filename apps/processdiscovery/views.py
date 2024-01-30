@@ -15,7 +15,7 @@ import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy
-from core.utils import read_ui_log_as_dataframe, read_example_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
 from django.utils.translation import gettext_lazy as _
