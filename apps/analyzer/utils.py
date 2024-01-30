@@ -296,6 +296,7 @@ def phases_to_execute_specs(execution, path_scenario):
     if execution.process_discovery:
         to_exec_args['process_discovery'] = (path_scenario +'log.csv',
                                         path_scenario,
+                                        execution.exp_folder_complete_path,
                                         execution.case_study.special_colnames,
                                         execution.process_discovery.configurations,
                                         execution.process_discovery.skip,

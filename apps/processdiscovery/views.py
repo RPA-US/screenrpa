@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.applications import VGG16
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 # from sklearn.cluster import AgglomerativeClustering
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, CreateView, DetailView
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404
@@ -15,83 +15,110 @@ import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy
-from core.utils import read_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe, read_example_ui_log_as_dataframe
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
 from django.utils.translation import gettext_lazy as _
+#Testing dependencies
+from pm4py.visualization.petri_net import visualizer as pn_visualizer
+from pm4py.objects.bpmn.exporter import exporter as bpmn_exporter
 
-def scene_level(log_path, root_path, special_colnames, configurations, skip, type):
+def scene_level(log_path, scenario_path, root_path, special_colnames, configurations, skip, type):
     """
     Creates an identifier named "scene_id" through clustering screenshots and assinging them an identifier 
     """
-    if type == "screen-cluster":
-        # Cargar el UI log en un DataFrame de Pandas
-        ui_log = read_ui_log_as_dataframe(log_path)
 
+    ui_log = read_ui_log_as_dataframe(log_path)
 
-        # Cargar el modelo preentrenado de VGG16
+    def extract_features_from_images(df, root_path, image_col):
         vgg_model = VGG16(weights='imagenet', include_top=False)
-
-        # Función para extraer características de cada screenshot
+        img_path = os.path.join(root_path, 'Nano')
         def extract_features(img_path):
+            if not os.path.exists(img_path):
+                raise ValueError(f"La imagen no existe en {img_path}")
+
             img = cv2.imread(img_path)
+
+            if img is None:
+                raise ValueError(f"No se pudo leer la imagen: {img_path}")
+
             img = cv2.resize(img, (224, 224))
             img = np.expand_dims(img, axis=0)
-            img = vgg_model.predict(img)
-            return img.flatten()
-
-        # Extraer características de cada screenshot y guardarlas en un nuevo dataframe
-        features_df = pd.DataFrame()
-        for index, row in ui_log.iterrows():
-            img_path = root_path + row[special_colnames['Screenshot']]
-            features = extract_features(img_path)
-            features_df = features_df.append(pd.Series(features), ignore_index=True)
-
-        # Calcular la matriz de distancia entre las capturas
-        distance_matrix = linkage(features_df, method='ward')
-
-        # Dibujar el dendrograma para visualizar la jerarquía de clusters y guardarlo como una imagen
-        if ("draw_dendogram" in configurations) and (configurations["draw_dendogram"] == "True"):
-            plt.figure(figsize=(10, 5))
-            dendrogram(distance_matrix)
-            plt.title(_('Dendrogram'))
-            plt.xlabel(_('Screenshots'))
-            plt.ylabel(_('Distance'))
-            plt.savefig(os.path.join(root_path + 'ui_log_states_dendrogram.png'))
-
-        # Obtener los clusters utilizando un umbral de distancia
-        if "similarity_th" in configurations:
-            threshold = float(configurations["similarity_th"]) * np.max(distance_matrix[:, 2])
-        else:
-            threshold = 0.1 * np.max(distance_matrix[:, 2])
-            print(_("Threshold: ") + str(threshold))
-        cluster_labels = fcluster(distance_matrix, threshold, criterion='distance')
-
-        # Agregar los clusters al dataframe de UI log
-        ui_log[special_colnames['Activity']] = cluster_labels
-        # ui_log['trace_id'] = list(range(1, ui_log.shape[0]+1))
+            return vgg_model.predict(img).flatten()
         
-        # Guardar el resultado en un nuevo archivo CSV
-        ui_log.to_csv(root_path + 'ui_log_clustered.csv', index=False)
+        df['features'] = df[image_col].apply(lambda x: extract_features(os.path.join(img_path, x)))
+        return df
+    
+    def cluster_images(df):
+        n_clusters = 4
+        distance_matrix = linkage(df['features'].tolist(), method='ward')
+        # Usar el criterio 'maxclust' para especificar un número fijo de clusters
+        cluster_labels = fcluster(distance_matrix, n_clusters, criterion='maxclust')
+        df['activity_label'] = cluster_labels
+        df['activity_label'] = df['activity_label'].astype(str)
+        return df, distance_matrix
+    
+    
+    def auto_process_id_assignment(df):
+        cluster_inicial = df['activity_label'].iloc[0]
+        process_id = 1
+        process_ids = []
+        for index, row in df.iterrows():
+            if row['activity_label'] == cluster_inicial and index !=0:
+                process_id += 1
+            process_ids.append(process_id)
+        df['process_id'] = process_ids
+        return df
+    
+    ui_log = extract_features_from_images(ui_log, root_path, 'ocel:screenshot:name')
+    ui_log, distance_matrix = cluster_images(ui_log)
+    ui_log = auto_process_id_assignment(ui_log)
+    folder_path = os.path.join(root_path, 'results')
+    
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+        ui_log.to_csv(os.path.join(folder_path + 'ui_log_process_discovery.csv'), index=False)
     else:
         raise Exception(_("You selected a process discovery type that does not exist"))
+    print(folder_path)
+    return folder_path, ui_log
 
 
-def process_level(log_path, root_path, special_colnames, configurations, type):
-    dataframe = pm4py.format_dataframe(dataframe, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])
-    event_log = pm4py.convert_to_event_log(dataframe)
+def process_level(folder_path, df):
+    def petri_net_process(df):
+        formatted_df = pm4py.format_dataframe(df, case_id='process_id', activity_key='activity_label', timestamp_key='ocel:timestamp')
+        event_log = pm4py.convert_to_event_log(formatted_df)
+        process_tree = inductive_miner.apply(event_log)
+        net, initial_marking, final_marking = pm4py.convert_to_petri_net(process_tree)
+        dot = pn_visualizer.apply(net, initial_marking, final_marking)
+        dot_path = os.path.join(folder_path, 'pn.dot')
+        with open(dot_path, 'w') as f:
+            f.write(dot.source)
 
-    process_model = pm4py.discover_bpmn_inductive(event_log)
-    # pm4py.view_bpmn(process_model)
-    pm4py.save_vis_bpmn(process_model, "bpm.png", "white")
+    def bpmn_process(df):
+        formatted_df = pm4py.format_dataframe(df, case_id='process_id', activity_key='activity_label', timestamp_key='ocel:timestamp')
+        event_log = pm4py.convert_to_event_log(formatted_df)
+        bpmn_model = pm4py.discover_bpmn_inductive(event_log)
+        dot = bpmn_visualizer.apply(bpmn_model)
+        dot_path = os.path.join(folder_path, 'bpmn.dot')
+        with open(dot_path, 'w') as f:
+            f.write(dot.source)
+        bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
+
+    petri_net_process(df)
+    bpmn_process(df)
     
     
 
-def process_discovery(log_path, root_path, special_colnames, configurations, skip, type):
+def process_discovery(log_path, scenario_path, root_path, special_colnames, configurations, skip, type):
     if not skip:
-        scene_level(log_path, root_path, special_colnames, configurations, type)
-        process_level(log_path, root_path, special_colnames, configurations, type)
-        
+        # log_path -> media/unzipped/exec_1/Nano/log.csv
+        # scenario_path -> media/unzipped/exec_1/Nano/
+        # root_path -> media/unzipped/exec_1/
+
+        # root_path + "results/" + "ui_log_process_discovery.csv"
+        folder_path, ui_log = scene_level(log_path, scenario_path, root_path, special_colnames, configurations, skip,  type)
+        process_level(folder_path, ui_log)
         
     
 class ProcessDiscoveryCreateView(CreateView):
