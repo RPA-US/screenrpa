@@ -139,6 +139,7 @@ class CaseStudy(models.Model):
 class Execution(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='executions')
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
+    created_at = models.DateTimeField(auto_now_add=True)
     executed = models.IntegerField(default=0, editable=True)
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
