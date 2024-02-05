@@ -12,14 +12,14 @@
         <div class="row align-items-center py-4">
           <div class="col-12">
             <a href="/monitoring/list/{{ case_study_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>{% blocktranslate %}Go Back to Behaviour Monitoring Configurations{% endblocktranslate %}</a>
-            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}New Behaviour Monitoring Configuration{% endblocktranslate %}</h6>
+            </i>{% blocktranslate %}Go Back to Log Processing Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}New Log Processing Configuration{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="/monitoring/list/{{ case_study_id }}">{% blocktranslate %}Behaviour Monitoring Configs{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}New Behaviour Monitoring{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/monitoring/list/{{ case_study_id }}">{% blocktranslate %}Log Processing Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}New Log Processing{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
@@ -38,7 +38,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">{% blocktranslate %}Create a new Behaviour Monitoring Configuration{% endblocktranslate %}</h3>
+            <h3 class="mb-0">{% blocktranslate %}Create a new Log Processing Configuration{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}

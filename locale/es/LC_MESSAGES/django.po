@@ -228,7 +228,7 @@ msgstr "Fases de configuración"
 #: apps/templates/case_studies/detail.html:130
 #: apps/templates/monitoring/detail.html:21
 #: apps/templates/monitoring/list.html:20
-msgid "Behaviour Monitoring"
+msgid "Log Processing"
 msgstr "Monitoreo de comportamiento"
 
 #: apps/templates/case_studies/detail.html:137
@@ -740,29 +740,29 @@ msgstr ""
 
 #: apps/templates/monitoring/create.html:15
 #: apps/templates/monitoring/detail.html:15
-msgid "Go Back to Behaviour Monitoring Configurations"
+msgid "Go Back to Log Processing Configurations"
 msgstr "Volver a Configuración de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/create.html:16
 #: apps/templates/monitoring/list.html:26
-msgid "New Behaviour Monitoring Configuration"
+msgid "New Log Processing Configuration"
 msgstr "Nueva configuración de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/create.html:21
-msgid "Behaviour Monitoring Configs"
+msgid "Log Processing Configs"
 msgstr "Configuraciones de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/create.html:22
-msgid "New Behaviour Monitoring"
+msgid "New Log Processing"
 msgstr "Nuevo monitoreo de comportamiento"
 
 #: apps/templates/monitoring/create.html:41
-msgid "Create a new Behaviour Monitoring Configuration"
+msgid "Create a new Log Processing Configuration"
 msgstr "Crear una nueva configuración de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/detail.html:16
 #: apps/templates/monitoring/detail.html:41
-msgid "Behaviour Monitoring Configuration Details"
+msgid "Log Processing Configuration Details"
 msgstr "Detalles de la configuración de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/detail.html:20
@@ -805,7 +805,7 @@ msgstr "Configuraciones"
 
 #: apps/templates/monitoring/list.html:15
 #: apps/templates/monitoring/list.html:40
-msgid "Behaviour Monitoring Configurations"
+msgid "Log Processing Configurations"
 msgstr "Configuraciones de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/list.html:51
