@@ -88,6 +88,7 @@ def default_dd_configuration():
 #     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
 class ExtractTrainingDataset(models.Model):
+    target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)

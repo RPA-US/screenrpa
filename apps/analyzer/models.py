@@ -63,8 +63,6 @@ class CaseStudy(models.Model):
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
     phases_to_execute = JSONField(null=True, blank=True)
-    gui_class_success_regex = models.CharField(max_length=255, default=_("CheckBox_4_D or ImageView_4_D or TextView_4_D"))
-    target_label = models.CharField(max_length=50, default='Variant')
     # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     # ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)

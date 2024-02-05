@@ -16,14 +16,23 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             )
         fields = (
             "columns_to_drop",
-            "columns_to_drop_before_decision_point"
+            "columns_to_drop_before_decision_point",
+            "target_label",
+            
         )
         labels = {
             "columns_to_drop": _("Columns to drop"),
-            "columns_to_drop_before_decision_point": _("Columns to drop before decision point")
+            "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
+            "target_label": _("Target label")
         }
 
         widgets = {
+            "target_label": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Variant")
+                    }
+            ),
             "columns_to_drop": forms.TextInput(
                 attrs={
                     "class": "form-control",
