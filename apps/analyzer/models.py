@@ -208,7 +208,7 @@ class Execution(models.Model):
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
             # Os Simlink only works for files in windows
-            if sep == '\\':
+            if os.name == 'nt':
                 subprocess.call(['cmd', '/c', 'mklink', '/D', os.path.join(self.exp_folder_complete_path, scenario), os.path.join('..\\..\\', scenario)])
             else:
                 os.symlink(

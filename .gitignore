@@ -173,6 +173,8 @@ staticfiles/*
 !staticfiles/.gitkeep 
 .vscode/symbols.json
 
+YOLO_Datasets/
+
 apps/static/assets/node_modules
 apps/static/assets/yarn.lock
 apps/static/assets/.temp
