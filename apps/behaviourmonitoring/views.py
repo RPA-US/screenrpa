@@ -7,13 +7,15 @@ from .models import Monitoring
 from apps.analyzer.models import CaseStudy
 from .forms import MonitoringForm
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
     
-class MonitoringCreateView(CreateView):
+class MonitoringCreateView(CreateView, LoginRequiredMixin):
     model = Monitoring
     form_class = MonitoringForm
     template_name = "monitoring/create.html"
+    login_url = '/login/'
     
     def get_context_data(self, **kwargs):
         context = super(MonitoringCreateView, self).get_context_data(**kwargs)
@@ -29,7 +31,7 @@ class MonitoringCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class MonitoringListView(ListView):
+class MonitoringListView(ListView, LoginRequiredMixin):
     model = Monitoring
     template_name = "monitoring/list.html"
     paginate_by = 50

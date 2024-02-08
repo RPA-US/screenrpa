@@ -20,12 +20,20 @@ def default_monitoring_conf():
 # Create your models here.
 class Monitoring(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=100, default="New Monitoring")
     type = models.CharField(max_length=25, default='imotions')
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=False, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
     ub_log_path = models.CharField(max_length=250, blank=True, null=True, default=None)
-    configurations = JSONField(null=True, blank=True, default=default_monitoring_conf)
+    # TODO: What do we do with format
+    format = models.CharField(max_length=25, default='mht_csv')
+    ui_log_filename = models.CharField(max_length=100, default='Recording_20230424_1222.mht')
+    ui_log_separator = models.CharField(max_length=1, default=',')
+    gaze_log_filename = models.CharField(max_length=100, default='ET_RExtAPI-GazeAnalysis.csv')
+    gaze_log_adjustment = models.FloatField(default=0)
+    native_slide_events = models.CharField(max_length=100, default='Native_SlideEvents.csv')
+
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     

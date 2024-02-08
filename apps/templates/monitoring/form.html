@@ -1,0 +1,58 @@
+{% load i18n %}
+
+<form method="POST" enctype="multipart/form-data" >{% csrf_token %}
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
+    <div class="pl-lg-2">
+        <div class="col-12">
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+                {{ form.title }}
+                <div class="form-validation">{{ form.title.errors }}</div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}Type {% endblocktranslate %}<b class="text-red">*</b></label>
+                {{ form.type }}
+            <div class="form-validation">{{ form.type.errors }}</div>
+            </div>
+        </div>
+    </div>
+  <hr>
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
+    <div class="row pl-lg-4 pr-lg-2">
+        <div class="col-6">
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}UI Log Filename{% endblocktranslate %}<b class="text-red">*</b></label>
+                {{ form.ui_log_filename }}
+                <div class="form-validation">{{ form.ui_log_filename.errors }}</div>
+            </div>
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}UI Log Separator{% endblocktranslate %}</label>
+                {{ form.ui_log_separator }}
+                <div class="form-validation">{{ form.ui_log_separator.errors }}</div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}Gaze Log Filename{% endblocktranslate %}</label>
+                {{ form.gaze_log_filename }}
+                <div class="form-validation">{{ form.gaze_log_filename.errors }}</div>
+            </div>
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}Gaze Log Adjustment{% endblocktranslate %}</label>
+                {{ form.gaze_log_adjustment }}
+                <div class="form-validation">{{ form.gaze_log_adjustment.errors }}</div>
+            </div>
+            <div class="form-group">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}System Info. Log{% endblocktranslate %}</label>
+                {{ form.native_slide_events }}
+                <div class="form-validation">{{ form.native_slide_events.errors }}</div>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+    <i class="fas fa-save"></i> 
+    {% blocktranslate %}Save{% endblocktranslate %}
+    </button>
+</form>

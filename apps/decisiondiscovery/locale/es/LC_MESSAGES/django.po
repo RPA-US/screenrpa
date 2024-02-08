@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 09:01+0000\n"
+"POT-Creation-Date: 2024-02-08 10:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,7 +63,7 @@ msgstr "Configuración"
 msgid "One hot columns"
 msgstr "Columnas one hot"
 
-#: apps/decisiondiscovery/models.py:120
+#: apps/decisiondiscovery/models.py:119
 msgid ""
 "To be able to apply decision tree training, a extract training dataset has "
 "to exist"

@@ -59,7 +59,6 @@ class Prefilters(models.Model):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 class UIElementsDetection(models.Model):
-
     title = models.CharField(max_length=255)
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
