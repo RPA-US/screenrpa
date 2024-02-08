@@ -22,6 +22,9 @@ from django.utils.translation import gettext_lazy as _
 #Testing dependencies
 from pm4py.visualization.petri_net import visualizer as pn_visualizer
 from pm4py.objects.bpmn.exporter import exporter as bpmn_exporter
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics import silhouette_score
+
 
 def scene_level(log_path, scenario_path, root_path, special_colnames, configurations, skip, type):
     """
@@ -33,6 +36,7 @@ def scene_level(log_path, scenario_path, root_path, special_colnames, configurat
     def extract_features_from_images(df, root_path, image_col):
         vgg_model = VGG16(weights='imagenet', include_top=False)
         img_path = os.path.join(root_path, 'Nano')
+
         def extract_features(img_path):
             if not os.path.exists(img_path):
                 raise ValueError(f"La imagen no existe en {img_path}")
@@ -49,35 +53,50 @@ def scene_level(log_path, scenario_path, root_path, special_colnames, configurat
         df['features'] = df[image_col].apply(lambda x: extract_features(os.path.join(img_path, x)))
         return df
     
+
     def cluster_images(df):
-        n_clusters = 4
-        distance_matrix = linkage(df['features'].tolist(), method='ward')
-        # Usar el criterio 'maxclust' para especificar un número fijo de clusters
-        cluster_labels = fcluster(distance_matrix, n_clusters, criterion='maxclust')
-        df['activity_label'] = cluster_labels
+        features = np.array(df['features'].tolist())
+        silhouette_scores = []
+        
+        # Iterar sobre varios valores de n_clusters para encontrar el óptimo
+        for k in range(2, 11):
+            clustering = AgglomerativeClustering(n_clusters=k).fit(features)
+            labels = clustering.labels_
+            score = silhouette_score(features, labels)
+            silhouette_scores.append(score)
+        
+        # El número óptimo de clusters es el valor de k que maximiza el coeficiente de silueta
+        optimal_clusters = silhouette_scores.index(max(silhouette_scores)) + 2
+    
+        clustering = AgglomerativeClustering(n_clusters=optimal_clusters).fit(features)
+        df['activity_label'] = clustering.labels_
         df['activity_label'] = df['activity_label'].astype(str)
-        return df, distance_matrix
+        return df
     
     
     def auto_process_id_assignment(df):
-        cluster_inicial = df['activity_label'].iloc[0]
+        activity_inicial = df['activity_label'].iloc[0]
         process_id = 1
-        process_ids = []
+        process_ids = [process_id]  
         for index, row in df.iterrows():
-            if row['activity_label'] == cluster_inicial and index !=0:
-                process_id += 1
-            process_ids.append(process_id)
+            if index != 0:  
+                if row['activity_label'] == activity_inicial:
+                    process_id += 1
+                process_ids.append(process_id)
+            else:
+                continue
         df['process_id'] = process_ids
         return df
+
     
     ui_log = extract_features_from_images(ui_log, root_path, 'ocel:screenshot:name')
-    ui_log, distance_matrix = cluster_images(ui_log)
+    ui_log = cluster_images(ui_log)
     ui_log = auto_process_id_assignment(ui_log)
     folder_path = os.path.join(root_path, 'results')
     
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
-        ui_log.to_csv(os.path.join(folder_path + 'ui_log_process_discovery.csv'), index=False)
+        ui_log.to_csv(os.path.join(folder_path, 'ui_log_process_discovery.csv'), index=False)
     else:
         raise Exception(_("You selected a process discovery type that does not exist"))
     print(folder_path)
