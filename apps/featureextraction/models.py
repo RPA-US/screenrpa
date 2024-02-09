@@ -66,7 +66,6 @@ class UIElementsDetection(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
-    decision_point_activity = models.CharField(max_length=255, blank=True)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 

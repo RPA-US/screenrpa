@@ -278,7 +278,7 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
         
     if execution.feature_extraction_technique:
         to_exec_args['feature_extraction_technique'] = (execution.ui_elements_classification_classes,
-                                        execution.case_study.decision_point_activity,
+                                        execution.feature_extraction_technique.decision_point_activity,
                                         execution.case_study.special_colnames["Case"],
                                         execution.case_study.special_colnames["Activity"],
                                         execution.case_study.special_colnames["Screenshot"],
@@ -302,7 +302,7 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
                                         execution.process_discovery.type)
         
     if execution.extract_training_dataset:
-        to_exec_args['extract_training_dataset'] = (execution.case_study.decision_point_activity, 
+        to_exec_args['extract_training_dataset'] = (execution.feature_extraction_technique.decision_point_activity, 
                                         execution.case_study.target_label,
                                         execution.case_study.special_colnames,
                                         execution.extract_training_dataset.columns_to_drop,
@@ -312,7 +312,7 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
         
     if execution.feature_extraction_technique:
         to_exec_args['aggregate_features_as_dataset_columns'] = (execution.ui_elements_classification_classes,
-                                        execution.case_study.decision_point_activity,
+                                        execution.feature_extraction_technique.decision_point_activity,
                                         execution.case_study.special_colnames["Case"],
                                         execution.case_study.special_colnames["Activity"],
                                         execution.case_study.special_colnames["Screenshot"],
