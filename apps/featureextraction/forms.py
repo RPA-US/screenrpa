@@ -224,7 +224,8 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "relevant_compos_predicate": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": 'compo["relevant"]=="True" or compo["relevant"] == "Nested"'
+                    "placeholder": 'compo["relevant"]=="True" or compo["relevant"] == "Nested"',
+                    "required": "false"
                     }
             ),
         }

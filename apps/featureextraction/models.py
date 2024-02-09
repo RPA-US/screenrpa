@@ -148,7 +148,7 @@ class FeatureExtractionTechnique(models.Model):
     identifier = models.CharField(max_length=25)
     type = models.CharField(max_length=255, default='SINGLE')
     technique_name = models.CharField(max_length=255, default='count')
-    relevant_compos_predicate = models.CharField(max_length=255)
+    relevant_compos_predicate = models.CharField(max_length=255, null=True, blank=True)
     consider_relevant_compos = models.BooleanField(default=False)
 
     configurations = JSONField(null=True, blank=True)
@@ -158,10 +158,6 @@ class FeatureExtractionTechnique(models.Model):
     
     def clean(self):
         cleaned_data = super().clean()
-        if not UIElementsDetection.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError("To be able to apply a feature extraction technique, UI Element Detection has to be done")
-        if not UIElementsClassification.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError("To be able to apply a feature extraction technique, UI Element Classification has to be done")
         return cleaned_data
     
     def get_absolute_url(self):
