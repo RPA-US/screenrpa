@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-08 10:43+0000\n"
+"POT-Creation-Date: 2024-02-09 10:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,15 +101,21 @@ msgstr "Saltar"
 msgid "Configurations"
 msgstr "Configuraciones"
 
-#: apps/featureextraction/forms.py:198
+#: apps/featureextraction/forms.py:200
 msgid "Identifier"
-msgstr "Identificador"
+msgstr "Identificador "
 
-#: apps/featureextraction/forms.py:199
-#, fuzzy
-#| msgid "Technique name"
+#: apps/featureextraction/forms.py:201
 msgid "Technique"
 msgstr "Nombre de la técnica"
+
+#: apps/featureextraction/forms.py:202
+msgid "Apply filtering (Relevant Component Selection)"
+msgstr "Aplicar filtrado (Selección de components relevantes)"
+
+#: apps/featureextraction/forms.py:203
+msgid "Condition for a UI component to be relevant"
+msgstr "Condición para que un componente UI sea relevante"
 
 #: apps/featureextraction/relevantinfoselection/postfilters.py:285
 msgid "You select a type of filter that doesnt exists"

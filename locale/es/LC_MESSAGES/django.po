@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-08 10:42+0000\n"
+"POT-Creation-Date: 2024-02-09 10:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,7 +129,7 @@ msgstr "Crear un nuevo caso de estudio"
 #: apps/templates/case_studies/create.html:44
 #: apps/templates/case_studies/detail.html:41
 #: apps/templates/executions/detail.html:41
-#: apps/templates/monitoring/detail.html:46
+#: apps/templates/feature_extraction_technique/form.html:4
 #: apps/templates/monitoring/form.html:4
 #: apps/templates/postfiltering/detail.html:46
 #: apps/templates/prefiltering/detail.html:46
@@ -148,7 +148,7 @@ msgstr "Configuración"
 #: apps/templates/case_studies/create.html:165
 #: apps/templates/decision_tree_training/create.html:83
 #: apps/templates/extract_training_dataset/create.html:67
-#: apps/templates/feature_extraction_technique/create.html:63
+#: apps/templates/feature_extraction_technique/form.html:39
 #: apps/templates/monitoring/form.html:56
 #: apps/templates/postfiltering/create.html:76
 #: apps/templates/prefiltering/create.html:74
@@ -314,7 +314,7 @@ msgstr "Exportar datos del experimento"
 #: apps/templates/decision_tree_training/list.html:141
 #: apps/templates/executions/list.html:137
 #: apps/templates/extract_training_dataset/list.html:133
-#: apps/templates/feature_extraction_technique/list.html:137
+#: apps/templates/feature_extraction_technique/list.html:125
 #: apps/templates/monitoring/list.html:149
 #: apps/templates/postfiltering/list.html:133
 #: apps/templates/prefiltering/list.html:133
@@ -327,7 +327,7 @@ msgstr "Anterior"
 #: apps/templates/case_studies/exp_files.html:95
 #: apps/templates/decision_tree_training/list.html:148
 #: apps/templates/extract_training_dataset/list.html:140
-#: apps/templates/feature_extraction_technique/list.html:144
+#: apps/templates/feature_extraction_technique/list.html:132
 #: apps/templates/monitoring/list.html:156
 #: apps/templates/postfiltering/list.html:140
 #: apps/templates/prefiltering/list.html:140
@@ -342,7 +342,7 @@ msgstr "(actual)"
 #: apps/templates/decision_tree_training/list.html:154
 #: apps/templates/executions/list.html:150
 #: apps/templates/extract_training_dataset/list.html:146
-#: apps/templates/feature_extraction_technique/list.html:150
+#: apps/templates/feature_extraction_technique/list.html:138
 #: apps/templates/monitoring/list.html:162
 #: apps/templates/postfiltering/list.html:146
 #: apps/templates/prefiltering/list.html:146
@@ -361,7 +361,6 @@ msgstr "Tus casos de estudio"
 #: apps/templates/executions/list.html:44
 #: apps/templates/extract_training_dataset/list.html:47
 #: apps/templates/feature_extraction_technique/list.html:47
-#: apps/templates/monitoring/detail.html:51
 #: apps/templates/monitoring/list.html:47
 #: apps/templates/postfiltering/detail.html:51
 #: apps/templates/postfiltering/list.html:47
@@ -394,6 +393,7 @@ msgstr "Nombre de carpeta"
 
 #: apps/templates/case_studies/list.html:48
 #: apps/templates/executions/list.html:48
+#: apps/templates/feature_extraction_technique/list.html:52
 #: apps/templates/monitoring/list.html:52
 #: apps/templates/ui_elements_detection/list.html:53
 msgid "Status"
@@ -425,8 +425,8 @@ msgstr "pendiente"
 #: apps/templates/executions/list.html:118
 #: apps/templates/extract_training_dataset/list.html:112
 #: apps/templates/extract_training_dataset/list.html:114
-#: apps/templates/feature_extraction_technique/list.html:116
-#: apps/templates/feature_extraction_technique/list.html:118
+#: apps/templates/feature_extraction_technique/list.html:104
+#: apps/templates/feature_extraction_technique/list.html:106
 #: apps/templates/monitoring/list.html:107
 #: apps/templates/monitoring/list.html:114
 #: apps/templates/postfiltering/list.html:112
@@ -571,7 +571,7 @@ msgstr "Columnas a eliminar antes del punto de decisión"
 
 #: apps/templates/decision_tree_training/list.html:86
 #: apps/templates/extract_training_dataset/list.html:78
-#: apps/templates/feature_extraction_technique/list.html:82
+#: apps/templates/feature_extraction_technique/list.html:90
 #: apps/templates/postfiltering/list.html:78
 #: apps/templates/prefiltering/list.html:78
 #: apps/templates/processdiscovery/list.html:78
@@ -581,7 +581,7 @@ msgstr "activo"
 
 #: apps/templates/decision_tree_training/list.html:89
 #: apps/templates/extract_training_dataset/list.html:81
-#: apps/templates/feature_extraction_technique/list.html:85
+#: apps/templates/feature_extraction_technique/list.html:93
 #: apps/templates/postfiltering/list.html:81
 #: apps/templates/prefiltering/list.html:81
 #: apps/templates/processdiscovery/list.html:81
@@ -595,7 +595,7 @@ msgstr "¿Estás seguro de que quieres eliminar este árbol de decisiones?"
 
 #: apps/templates/decision_tree_training/list.html:124
 #: apps/templates/extract_training_dataset/list.html:116
-#: apps/templates/feature_extraction_technique/list.html:120
+#: apps/templates/feature_extraction_technique/list.html:108
 #: apps/templates/postfiltering/list.html:116
 #: apps/templates/prefiltering/list.html:116
 #: apps/templates/processdiscovery/list.html:116
@@ -703,16 +703,39 @@ msgid "Create a new Feature Extraction Technique Configuration"
 msgstr ""
 "Crear una nueva configuración de técnicas de extracción de características"
 
-#: apps/templates/feature_extraction_technique/create.html:48
+#: apps/templates/feature_extraction_technique/form.html:8
 #, fuzzy
 #| msgid "Identifier"
 msgid "Identifier "
 msgstr "Identificador"
 
-#: apps/templates/feature_extraction_technique/create.html:55
+#: apps/templates/feature_extraction_technique/form.html:15
 #: apps/templates/ui_elements_detection/form.html:15
 msgid "Technique "
 msgstr "Nombre de la técnica"
+
+#: apps/templates/feature_extraction_technique/form.html:22
+#: apps/templates/monitoring/list.html:50
+#: apps/templates/postfiltering/detail.html:65
+#: apps/templates/postfiltering/list.html:50
+#: apps/templates/prefiltering/detail.html:65
+#: apps/templates/prefiltering/list.html:50
+#: apps/templates/processdiscovery/list.html:50
+#: apps/templates/reporting/list.html:50
+msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/templates/feature_extraction_technique/form.html:27
+#, fuzzy
+#| msgid "Apply Filtering (Relevant Component Selection)"
+msgid "Apply filtering (Relevant Component Selection)"
+msgstr "Aplicar Filtrado (Selección de components relevantes)"
+
+#: apps/templates/feature_extraction_technique/form.html:31
+#, fuzzy
+#| msgid "Condition for a UI Component to be relevant"
+msgid "Condition for a UI component to be relevant"
+msgstr "Condición para que un Componente UI sea relevante"
 
 #: apps/templates/feature_extraction_technique/list.html:15
 #: apps/templates/feature_extraction_technique/list.html:20
@@ -729,10 +752,17 @@ msgid "Identifier"
 msgstr "Identificador"
 
 #: apps/templates/feature_extraction_technique/list.html:51
-msgid "Skip"
-msgstr "Saltar"
+#: apps/templates/monitoring/list.html:51
+#: apps/templates/ui_elements_detection/list.html:52
+msgid "Executed"
+msgstr "Ejecutado"
 
-#: apps/templates/feature_extraction_technique/list.html:119
+#: apps/templates/feature_extraction_technique/list.html:80
+#: apps/templates/feature_extraction_technique/list.html:82
+msgid "Not executed"
+msgstr "No ejecutado"
+
+#: apps/templates/feature_extraction_technique/list.html:107
 msgid "Are you sure you want to delete this feature extraction technique?"
 msgstr ""
 "¿Estás seguro de que quieres eliminar esta técnica de extracción de "
@@ -863,28 +893,6 @@ msgstr "Monitoreo %(monitoring.id)s"
 msgid "Edit fields"
 msgstr "Editar campos"
 
-#: apps/templates/monitoring/detail.html:57
-#: apps/templates/monitoring/list.html:49
-#: apps/templates/postfiltering/detail.html:57
-#: apps/templates/postfiltering/list.html:49
-#: apps/templates/prefiltering/detail.html:57
-#: apps/templates/prefiltering/list.html:49
-#: apps/templates/processdiscovery/list.html:49
-#: apps/templates/reporting/list.html:49
-msgid "Type"
-msgstr "Tipo"
-
-#: apps/templates/monitoring/detail.html:65
-#: apps/templates/monitoring/list.html:50
-#: apps/templates/postfiltering/detail.html:65
-#: apps/templates/postfiltering/list.html:50
-#: apps/templates/prefiltering/detail.html:65
-#: apps/templates/prefiltering/list.html:50
-#: apps/templates/processdiscovery/list.html:50
-#: apps/templates/reporting/list.html:50
-msgid "Configurations"
-msgstr "Configuraciones"
-
 #: apps/templates/monitoring/form.html:8
 #: apps/templates/ui_elements_detection/form.html:8
 msgid "Title "
@@ -919,10 +927,15 @@ msgstr "Log de Info. del Sistema"
 msgid "Behaviour Monitoring Configurations"
 msgstr "Configuraciones de monitoreo de comportamiento"
 
-#: apps/templates/monitoring/list.html:51
-#: apps/templates/ui_elements_detection/list.html:52
-msgid "Executed"
-msgstr "Ejecutado"
+#: apps/templates/monitoring/list.html:49
+#: apps/templates/postfiltering/detail.html:57
+#: apps/templates/postfiltering/list.html:49
+#: apps/templates/prefiltering/detail.html:57
+#: apps/templates/prefiltering/list.html:49
+#: apps/templates/processdiscovery/list.html:49
+#: apps/templates/reporting/list.html:49
+msgid "Type"
+msgstr "Tipo"
 
 #: apps/templates/monitoring/list.html:81
 msgid "Already Executed"
@@ -2971,6 +2984,9 @@ msgstr ""
 msgctxt "stick"
 msgid "club"
 msgstr ""
+
+#~ msgid "Skip"
+#~ msgstr "Saltar"
 
 #~ msgid "Decision-point to study"
 #~ msgstr "Punto de decisión a estudiar"
