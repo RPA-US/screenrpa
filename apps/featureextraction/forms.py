@@ -191,32 +191,42 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "user",
             )
         fields = (
+            "identifier",
             "technique_name",
-            "skip",
-            "identifier"
+            "consider_relevant_compos",
+            "relevant_compos_predicate"
         )
         labels = {
-            "technique_name": _("Technique name"),
-            "skip": _("Skip"),
-            "identifier": _("Identifier")
+            "identifier": _("Identifier"),
+            "technique_name": _("Technique"),
+            "consider_relevant_compos": _("Apply Filtering (Relevant Component Selection)"),
+            "relevant_compos_predicate": _("Condition for a UI Component to be relevant")
         }
 
         widgets = {
-            "technique_name": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "status"
-                    }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
-            ),
             "identifier": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "sta_s"
                     }
-            )
+            ),
+            "technique_name": forms.Select(
+                # TODO add all supported techniques
+                choices=[('count', 'Count')],
+                attrs={
+                    "class": "form-control",
+                    "required": "false"
+                    }
+            ),
+            "consider_relevant_compos": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "relevant_compos_predicate": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": 'compo["relevant"]=="True" or compo["relevant"] == "Nested"'
+                    }
+            ),
         }
 
     def __init__(self, *args, **kwargs):

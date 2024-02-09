@@ -144,11 +144,13 @@ class FeatureExtractionTechnique(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+
     identifier = models.CharField(max_length=25)
     type = models.CharField(max_length=255, default='SINGLE')
     technique_name = models.CharField(max_length=255, default='count')
-    relevant_compos_predicate = models.CharField(max_length=255, default="compo['relevant'] == 'True'")
+    relevant_compos_predicate = models.CharField(max_length=255)
     consider_relevant_compos = models.BooleanField(default=False)
+
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
