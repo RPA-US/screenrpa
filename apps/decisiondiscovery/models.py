@@ -96,6 +96,7 @@ class ExtractTrainingDataset(models.Model):
     columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     decision_point_activity = models.CharField(max_length=255)
+    configurations = models.JSONField(default=dict, blank=True, null=True)
 
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
