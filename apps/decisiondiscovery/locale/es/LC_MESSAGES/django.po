@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-08 10:43+0000\n"
+"POT-Creation-Date: 2024-02-12 10:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,27 +43,35 @@ msgstr "Opción de modelo de decisión no válida"
 msgid "  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) "
 msgstr "  K-Fold Estratificado:  precisión=%(acc) puntaje_f1=%(f1) "
 
-#: apps/decisiondiscovery/forms.py:22
-msgid "Columns to drop"
-msgstr "Columnas a eliminar"
+#: apps/decisiondiscovery/forms.py:24
+msgid "Title "
+msgstr "Título "
 
-#: apps/decisiondiscovery/forms.py:23 apps/decisiondiscovery/forms.py:61
-msgid "Columns to drop before decision point"
-msgstr "Columnas a eliminar antes del punto de decisión"
+#: apps/decisiondiscovery/forms.py:25
+msgid "Decision Point To Study "
+msgstr "Punto de Decisión a Estudiar "
 
-#: apps/decisiondiscovery/forms.py:58
+#: apps/decisiondiscovery/forms.py:26 apps/decisiondiscovery/forms.py:76
+msgid "Columns to drop before decision point "
+msgstr "Columnas a eliminar antes del punto de decisión "
+
+#: apps/decisiondiscovery/forms.py:27
+msgid "Additional Configurations (JSON)"
+msgstr "Configuración adiccional (JSON)"
+
+#: apps/decisiondiscovery/forms.py:73
 msgid "Library"
 msgstr "Librería"
 
-#: apps/decisiondiscovery/forms.py:59
+#: apps/decisiondiscovery/forms.py:74
 msgid "Configuration"
 msgstr "Configuración"
 
-#: apps/decisiondiscovery/forms.py:60
+#: apps/decisiondiscovery/forms.py:75
 msgid "One hot columns"
 msgstr "Columnas one hot"
 
-#: apps/decisiondiscovery/models.py:119
+#: apps/decisiondiscovery/models.py:124
 msgid ""
 "To be able to apply decision tree training, a extract training dataset has "
 "to exist"
@@ -75,14 +83,17 @@ msgstr ""
 msgid "The identifier does not follow the pattern"
 msgstr "El identificador no sigue el patrón"
 
-#: apps/decisiondiscovery/views.py:138
+#: apps/decisiondiscovery/views.py:140
 msgid "Decision model chosen is not an option"
 msgstr "El modelo de decisión elegido no es una opción"
 
-#: apps/decisiondiscovery/views.py:167 apps/decisiondiscovery/views.py:233
+#: apps/decisiondiscovery/views.py:169 apps/decisiondiscovery/views.py:257
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
 
-#: apps/decisiondiscovery/views.py:282
+#: apps/decisiondiscovery/views.py:306
 msgid "This object doesn't belong to the authenticated user"
 msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Columns to drop"
+#~ msgstr "Columnas a eliminar"
