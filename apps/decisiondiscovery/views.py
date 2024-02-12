@@ -207,6 +207,15 @@ def set_as_extracting_training_dataset_active(request):
     extracting_training_dataset.active = True
     extracting_training_dataset.save()
     return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
+
+def set_as_extracting_training_dataset_inactive(request):
+    extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
+    case_study_id = request.GET.get("case_study_id")
+
+    extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
+    extracting_training_dataset.active = False
+    extracting_training_dataset.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
     
 def delete_extracting_training_dataset(request):
     extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")

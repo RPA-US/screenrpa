@@ -9,6 +9,7 @@ urlpatterns = [
     path('extract-training-dataset/new/<int:case_study_id>/', views.ExtractTrainingDatasetCreateView.as_view(), name='extract_training_dataset_create'),
     path('extract-training-dataset/detail/<int:case_study_id>/<int:ui_element_detection_id>/', views.DecisionTreeTrainingDetailView.as_view(), name='extract_training_dataset_detail'),
     path('extract-training-dataset/active/', views.set_as_extracting_training_dataset_active, name='extract_training_dataset_set_as_active'),
+    path('extract-training-dataset/inactive/', views.set_as_extracting_training_dataset_inactive, name='extract_training_dataset_set_as_inactive'),
     path('extract-training-dataset/delete/', views.delete_extracting_training_dataset, name='extract_training_dataset_delete'),
     ##
     # Decision Tree Training
