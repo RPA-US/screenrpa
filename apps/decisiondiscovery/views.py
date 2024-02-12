@@ -1,6 +1,8 @@
 import os
+from django.forms.models import model_to_dict
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.core.exceptions import ValidationError
@@ -191,10 +193,23 @@ class ExtractTrainingDatasetListView(ListView):
         return queryset
     
 
-class ExtractTrainingDatasetDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        extracting_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
-        return render(request, "extracting_training_dataset/detail.html", {"extracting_training_dataset": extracting_training_dataset, "case_study_id": kwargs["case_study_id"]})
+class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
+    model = ExtractTrainingDataset
+    form_class = ExtractTrainingDatasetForm
+    template_name = "extract_training_dataset/details.html"
+
+    pk_url_kwarg = "extract_training_dataset_id"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ExtractTrainingDatasetDetailView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        context['form'] = ExtractTrainingDatasetForm(initial=model_to_dict(self.object))
+        return context
+
+    # def get_object(self, *args, **kwargs):
+    #     extract_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
+    #     return extract_training_dataset
+        # return render(request, "extract_training_dataset/details.html", {"extract_training_dataset": extract_training_dataset, "case_study_id": kwargs["case_study_id"]})
 
 def set_as_extracting_training_dataset_active(request):
     extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
