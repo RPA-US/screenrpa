@@ -48,6 +48,9 @@
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -109,11 +112,17 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         {% if extract_training_dataset.executed > 0 %}
-                        <a class="dropdown-item" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         {% elif extract_training_dataset.executed == 0 %}
-                        <a class="dropdown-item" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this extract training dataset?{% endblocktranslate %}')" href="/dd/extract-training-dataset/delete/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">{% blocktranslate %}Delete{% endblocktranslate %}</a>
-                        <a class="dropdown-item" href="/dd/extract-training-dataset/active/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">{% blocktranslate %}Set as active{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this extract training dataset?{% endblocktranslate %}')" href="/dd/extract-training-dataset/delete/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
+                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/active/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% endif %}
                       </div>
                     </div>
