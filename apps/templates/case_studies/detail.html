@@ -65,16 +65,8 @@
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-exp_folder_complete_path">{% blocktranslate %}Folder path{% endblocktranslate %}</label>
+                      <label class="form-control-label" for="input-exp_folder_complete_path">{% blocktranslate %}Case Study Folder Path{% endblocktranslate %}</label>
                       <input type="text" id="input-exp_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ case_study.exp_folder_complete_path }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-gui_class_success_regex">{% blocktranslate %}Decision Oracle{% endblocktranslate %}</label> <!-- Regular expression to evaluate decision discovered -->
-                      <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="{% blocktranslate %}CheckBox_4_D and ImageView_2_B{% endblocktranslate %}" value="{{ case_study.gui_class_success_regex }}">
                     </div>
                   </div>
                 </div>
@@ -84,7 +76,7 @@
               <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
               <div class="pl-lg-4">
                 <div class="form-group">
-                  <label class="form-control-label">{% blocktranslate %}Special columns names{% endblocktranslate %}</label>
+                  <label class="form-control-label">{% blocktranslate %}Special UI log columns names{% endblocktranslate %}</label>
                   <textarea rows="4" class="form-control" 
                   placeholder="{
                     'Case': 'Case',
@@ -104,14 +96,6 @@
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-target_label">{% blocktranslate %}Target label column name{% endblocktranslate %}</label>
-                      <input type="text" id="input-target_label" class="form-control" placeholder="{% blocktranslate %}Variant{% endblocktranslate %}" value="{{ case_study.target_label }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
                       <label class="form-control-label" for="input-scenarios_to_study">{% blocktranslate %}Scenarios to study{% endblocktranslate %}</label>
                       <input type="text" id="input-scenarios_to_study" class="form-control" placeholder="{% blocktranslate %}['scenario1', 'scenario2']{% endblocktranslate %}" value="{{ case_study.scenarios_to_study }}">
                     </div>
@@ -127,7 +111,7 @@
                     <div class="col-lg-3 col-md-6">
                       <a href="/monitoring/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
                         <div>
-                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Behaviour Monitoring{% endblocktranslate %}</span>
+                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
@@ -189,42 +173,6 @@
                     </div>
                   </div>
                 </div>
-                
-                {% comment %} {% for s_fe in single_fe %}
-                <div class="form-group">
-                    <label class="form-control-label">Single Feature extraction technique</label>
-                    <textarea rows="4" class="form-control" 
-                    placeholder="{
-                      'technique_name': 'status',
-                      'GUI_QUANTITY_DIFFERENCE': 1,
-                      'identifier': 'sta_'
-                    }">
-                    {{ s_fe | pretty_json  }}</textarea>
-                  </div>
-                  {% endfor %}
-                
-                {% for agg_fe in aggregate_fe %}
-                  <div class="form-group">
-                    <label class="form-control-label">Aggregate Feature extraction technique</label>
-                    <textarea rows="4" class="form-control" 
-                      placeholder="{
-                        'technique_name': 'status',
-                        'GUI_QUANTITY_DIFFERENCE': 1,
-                        'identifier': 'sta_'
-                      }">
-                      {{ agg_fe | pretty_json  }}</textarea>
-                  </div>
-                {% endfor %} {% endcomment %}
-                
-                {% comment %} <div class="form-group">
-                  <label class="form-control-label">Extract training dataset</label>
-                  <textarea rows="4" class="form-control" 
-                    placeholder="{
-                    'columns_to_drop': ['Case','Activity','Timestamp','Screenshot','Variant'],
-                    'columns_to_drop_before_decision_point': ['Coor_X', 'Coor_Y', 'MorKeyb', 'TextInput', 'Click']
-                    }">
-                    {{ case_study.extract_training_dataset | pretty_json  }}</textarea>
-                </div> {% endcomment %}
               </div>
             </form>
           </div>
