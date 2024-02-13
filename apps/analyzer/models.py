@@ -1,4 +1,5 @@
 import os
+import subprocess
 import zipfile
 import time
 from email.policy import default
@@ -139,6 +140,7 @@ class CaseStudy(models.Model):
 class Execution(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='executions')
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
+    created_at = models.DateTimeField(auto_now_add=True)
     executed = models.IntegerField(default=0, editable=True)
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
@@ -207,7 +209,11 @@ class Execution(models.Model):
 
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
-            os.symlink(
-                os.path.join('../../', scenario),
-                os.path.join(self.exp_folder_complete_path, scenario)
-                )
+            # Os Simlink only works for files in windows
+            if sep == '\\':
+                subprocess.call(['cmd', '/c', 'mklink', '/D', os.path.join(self.exp_folder_complete_path, scenario), os.path.join('..\\..\\', scenario)])
+            else:
+                os.symlink(
+                    os.path.join('../../', scenario),
+                    os.path.join(self.exp_folder_complete_path, scenario)
+                    )

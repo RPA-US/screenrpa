@@ -61,7 +61,6 @@ class Prefilters(models.Model):
 class UIElementsDetection(models.Model):
 
     title = models.CharField(max_length=255)
-    # TODO: Add optional OCR
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
@@ -101,8 +100,8 @@ def get_ui_elements_classification_classes():
 class CNNModels(models.Model):
     name = models.CharField(max_length=25, unique=True)
     path = models.CharField(max_length=255, unique=True)
-    ui_elements_classification_image_shape = ArrayField(models.IntegerField(null=True, blank=True), default=get_ui_elements_classification_image_shape)
-    ui_elements_classification_classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_classes)
+    image_shape = ArrayField(models.IntegerField(blank=True), default=get_ui_elements_classification_image_shape)
+    classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_image_shape)
     text_classname = models.CharField(max_length=50, default="TextView")
    
     def clean(self):
@@ -113,9 +112,7 @@ class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    # TODO: Change this to a foreign key
-    model = models.CharField(max_length=255)
-    model_properties = models.CharField(max_length=255, default="resources/models/custom-v2-classes.json")
+    model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 

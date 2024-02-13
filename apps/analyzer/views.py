@@ -52,7 +52,8 @@ from apps.featureextraction.utils import case_study_has_feature_extraction_techn
 
 def generate_case_study(execution, path_scenario, times,):
     
-    to_exec_args = phases_to_execute_specs(execution, path_scenario)
+    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    to_exec_args = phases_to_execute_specs(execution, path_scenario, path_results)
     
     n = 0
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
@@ -108,7 +109,10 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         tprint("RPA-US     SCREEN RPA", "tarty1")
         # tprint("Relevance Information Miner", "pepper")
         if execution:
-            aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
+            if len(execution.scenarios_to_study) > 0:
+                aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
+            else:
+                aux_path = execution.exp_folder_complete_path
             if not os.path.exists(aux_path):
                 os.makedirs(aux_path)
         else:
@@ -490,3 +494,37 @@ def exp_file_download(request, case_study_id):
     response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     
     return response
+
+
+
+# ============================================================================================================================
+# Executions
+# ============================================================================================================================
+class ExecutionListView(ListView, LoginRequiredMixin):
+    model = Execution
+    template_name = "executions/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Execution.objects.filter(user=self.request.user).order_by("-created_at")
+
+  
+def deleteExecution(request):
+    execution_id = request.GET.get("id")
+    cs = Execution.objects.get(id=execution_id)
+    if request.user.id != cs.user.id:
+        raise Exception(_("This case study doesn't belong to the authenticated user"))
+    if cs.executed != 0:
+        raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
+    cs.delete()
+    return HttpResponseRedirect(reverse("analyzer:execution_list"))
+    
+class ExecutionDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+        context = {
+            "execution": execution, 
+            "single_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="SINGLE"), 
+            "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
+            }
+        return render(request, "executions/detail.html", context)

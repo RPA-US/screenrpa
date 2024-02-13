@@ -169,10 +169,11 @@ class UIElementsDetectionCreateView(MultiFormsView):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
-        if self.object.model == 'IGNORE':
-            return
-        else:
+        if form.cleaned_data['model']:
             self.object.type = ui_elem_det_obj.type
+            self.object.model = form.cleaned_data['model']
+        else:
+            return
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         self.object.save()
