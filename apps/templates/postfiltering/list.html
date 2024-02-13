@@ -47,7 +47,10 @@
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Type{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -69,7 +72,7 @@
                     {{ postfilter.type }}
                   </td>
                   <td>
-                    {{ postfilter.configurations|truncatechars:100 }}
+                    {{ postfilter.configurations|truncatechars:50 }}
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
@@ -109,11 +112,17 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         {% if postfilter.executed > 0 %}
-                        <a class="dropdown-item" href="/fe/postfiltering/detail/{{ case_study_id }}/{{ postfilter.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/postfiltering/detail/{{ case_study_id }}/{{ postfilter.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         {% elif postfilter.executed == 0 %}
-                        <a class="dropdown-item" href="/fe/postfiltering/detail/{{ case_study_id }}/{{ postfilter.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this postfiltering?{% endblocktranslate %}')" href="/fe/postfiltering/delete/?case_study_id={{ case_study_id }}&postfilter_id={{ postfilter.pk }}">{% blocktranslate %}Delete{% endblocktranslate %}</a>
-                        <a class="dropdown-item" href="/fe/postfiltering/active/?case_study_id={{ case_study_id }}&postfilter_id={{ postfilter.pk }}">{% blocktranslate %}Set as active{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/postfiltering/detail/{{ case_study_id }}/{{ postfilter.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this postfiltering?{% endblocktranslate %}')" href="/fe/postfiltering/delete/?case_study_id={{ case_study_id }}&postfilter_id={{ postfilter.pk }}">
+                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/postfiltering/active/?case_study_id={{ case_study_id }}&postfilter_id={{ postfilter.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% endif %}
                       </div>
                     </div>

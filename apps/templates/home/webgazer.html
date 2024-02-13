@@ -66,14 +66,14 @@
                 var coordY = parseFloat(data.y.toFixed(2));
                 var timestamp = Date.now();
                 
-                var fechaUTC = new Date().toISOString();
+                var UTCdate = new Date().toISOString().slice(0, -1);;
                 var timezoneISO = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
                 var save_url = "http://127.0.0.1:8000/"+"?x="+coordX+";y="+coordY;
                 // var temp_image = new Image();
 
                 // temp_image.src= save_url;
-                gaze_points.push([coordX, coordY, timestamp ]);
+                gaze_points.push([coordX, coordY, timestamp,UTCdate]);
 
             }).begin();
         }
@@ -96,7 +96,7 @@
             //Crear zip con .csv y .json
             const zip = new JSZip();
             //Crear csv
-            var csv = 'Gaze X,Gaze Y,Timestamp\n';
+            var csv = 'Gaze X,Gaze Y,Timestamp,UTCdate\n';
             gaze_points.forEach(function (row) {
                 csv += row.join(',');
                 csv += "\n";
