@@ -7,6 +7,7 @@ from xmlrpc.client import Boolean
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from private_storage.fields import PrivateFileField
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.urls import reverse
@@ -43,6 +44,8 @@ UI_ELM_DET_TYPES = (
 )
 
 class Prefilters(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -59,6 +62,8 @@ class Prefilters(models.Model):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 class UIElementsDetection(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     title = models.CharField(max_length=255)
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -107,6 +112,8 @@ class CNNModels(models.Model):
             raise ValidationError("text_classname must be one of the ui_elements_classification_classes")
 
 class UIElementsClassification(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -123,6 +130,8 @@ class UIElementsClassification(models.Model):
         return 'type: ' + self.type + ' - model: ' + self.model
 
 class Postfilters(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -140,6 +149,8 @@ class Postfilters(models.Model):
     
 
 class FeatureExtractionTechnique(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)

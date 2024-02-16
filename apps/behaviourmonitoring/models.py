@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import JSONField
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from private_storage.fields import PrivateFileField
 from django.utils.translation import gettext_lazy as _
 
 def default_monitoring_conf():
@@ -19,6 +20,8 @@ def default_monitoring_conf():
 
 # Create your models here.
 class Monitoring(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100, default="New Monitoring")
     type = models.CharField(max_length=25, default='imotions')

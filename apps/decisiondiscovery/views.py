@@ -32,7 +32,8 @@ def extract_training_dataset(decision_point_activity,
         columns_to_drop,
         log_path="media/enriched_log_feature_extracted.csv", 
         path_dataset_saved="media", 
-        actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"]):
+        actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"],
+        skip=False):
     """
     Iterate for every UI log row:
         For each case:

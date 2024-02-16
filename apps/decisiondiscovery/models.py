@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
+from private_storage.fields import PrivateFileField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -88,6 +89,8 @@ def default_dd_configuration():
 #     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
 class ExtractTrainingDataset(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
@@ -109,6 +112,8 @@ class ExtractTrainingDataset(models.Model):
         return 'col to drop: ' + str(self.columns_to_drop)
     
 class DecisionTreeTraining(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
