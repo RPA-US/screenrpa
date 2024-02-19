@@ -101,11 +101,17 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         {% if fe_technique.executed > 0 %}
-                        <a class="dropdown-item" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         {% elif fe_technique.executed == 0 %}
-                        <a class="dropdown-item" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this feature extraction technique?{% endblocktranslate %}')" href="/fe/feature-extraction-technique/delete/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">Delete</a>
-                        <a class="dropdown-item" href="/fe/feature-extraction-technique/active/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">{% blocktranslate %}Set as active{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this feature extraction technique?{% endblocktranslate %}')" href="/fe/feature-extraction-technique/delete/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
+                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/active/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% endif %}
                       </div>
                     </div>
