@@ -91,6 +91,7 @@ class ExtractTrainingDataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
@@ -106,6 +107,7 @@ class DecisionTreeTraining(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     configuration = models.JSONField(default=default_dd_configuration)
     library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
     one_hot_columns = ArrayField(models.CharField(max_length=25))
