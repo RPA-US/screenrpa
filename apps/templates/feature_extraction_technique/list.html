@@ -49,6 +49,9 @@
                   <th scope="col">{% blocktranslate %}Technique name{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Identifier{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Skip{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -75,6 +78,17 @@
                   <td>
                     {{ fe_technique.skip }}
                   </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if fe_technique.freeze %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}Already Executed{% endblocktranslate %}</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}Not Executed{% endblocktranslate %}</span>
+                      {% endif %}
+                    </span>
+                  </td>
                    <td>
                     <span class="badge badge-dot mr-4">
                       {% if fe_technique.active %}
@@ -86,7 +100,7 @@
                       {% endif %}
                     </span>
                   </td>
-                  <td>
+                  <!-- <td>
                     <div class="d-flex align-items-center">
                       <span class="completion mr-2">{{ fe_technique.executed }}</span>
                       <div>
@@ -105,22 +119,36 @@
                         {% endif %}
                       </div>
                     </div>
-                  </td>
+                  </td> -->
                   <td class="text-right">
                     <div class="dropdown">
                       <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-ellipsis-v"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                        {% if fe_technique.executed > 0 %}
+                        {% if fe_technique.active == True and fe_technique.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="#">
                           <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
-                        {% elif fe_technique.executed == 0 %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/inactive/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif fe_technique.active == False and fe_technique.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this feature extraction technique?{% endblocktranslate %}')" href="/fe/feature-extraction-technique/delete/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/active/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
+                        {% elif fe_technique.active == True and fe_technique.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/inactive/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif fe_technique.active == False and fe_technique.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this decision tree training?{% endblocktranslate %}')" href="/fe/feature-extraction-technique/delete/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
                           <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/active/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>

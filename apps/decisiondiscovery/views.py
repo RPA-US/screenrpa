@@ -207,6 +207,23 @@ def set_as_extracting_training_dataset_active(request):
     extracting_training_dataset.active = True
     extracting_training_dataset.save()
     return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
+
+def set_as_extracting_training_dataset_inactive(request):
+    extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if ExtractTrainingDataset.objects.get(pk=extracting_training_dataset_id).user != request.user:  
+        raise ValidationError(_("Extracting_training_dataset doesn't belong to the authenticated user."))
+    if ExtractTrainingDataset.objects.get(pk=extracting_training_dataset_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Extracting_training_dataset doesn't belong to the Case Study."))
+    extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
+    extracting_training_dataset.active = False
+    extracting_training_dataset.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
     
 def delete_extracting_training_dataset(request):
     extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
@@ -271,6 +288,23 @@ def set_as_decision_tree_training_active(request):
         m.save()
     decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
     decision_tree_training.active = True
+    decision_tree_training.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
+
+def set_as_decision_tree_training_inactive(request):
+    decision_tree_training_id = request.GET.get("decision_tree_training_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if DecisionTreeTraining.objects.get(pk=decision_tree_training_id).user != request.user:  
+        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+    if DecisionTreeTraining.objects.get(pk=decision_tree_training_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))
+    decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
+    decision_tree_training.active = False
     decision_tree_training.save()
     return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
     

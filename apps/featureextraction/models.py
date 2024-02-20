@@ -46,6 +46,7 @@ class Prefilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
@@ -65,6 +66,7 @@ class UIElementsDetection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us')
     input_filename = models.CharField(max_length=50, default='log.csv')
     decision_point_activity = models.CharField(max_length=255, blank=True)
@@ -76,7 +78,7 @@ class UIElementsDetection(models.Model):
     ui_elements_classification = models.ForeignKey('UIElementsClassification', on_delete=models.SET_NULL, null=True)
 
     # Delete ui_elements_classification when deleting UIElementsDetection
-    def delete(self, *args, **kwargs):
+    def delete_ui_elements_classification(self, *args, **kwargs):
         self.ui_elements_classification.delete()
         super().delete(*args, **kwargs)
 
@@ -112,6 +114,7 @@ class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
@@ -128,6 +131,7 @@ class Postfilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
@@ -145,6 +149,7 @@ class FeatureExtractionTechnique(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     identifier = models.CharField(max_length=25)
     type = models.CharField(max_length=255, default='SINGLE')
     technique_name = models.CharField(max_length=255, default='count')
@@ -157,10 +162,10 @@ class FeatureExtractionTechnique(models.Model):
     
     def clean(self):
         cleaned_data = super().clean()
-        if not UIElementsDetection.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError("To be able to apply a feature extraction technique, UI Element Detection has to be done")
-        if not UIElementsClassification.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError("To be able to apply a feature extraction technique, UI Element Classification has to be done")
+        # if not UIElementsDetection.objects.exists(case_study__id=self.case_study.id):
+        #     raise ValidationError("To be able to apply a feature extraction technique, UI Element Detection has to be done")
+        # if not UIElementsClassification.objects.exists(case_study__id=self.case_study.id):
+        #     raise ValidationError("To be able to apply a feature extraction technique, UI Element Classification has to be done")
         return cleaned_data
     
     def get_absolute_url(self):

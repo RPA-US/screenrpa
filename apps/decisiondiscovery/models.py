@@ -91,6 +91,7 @@ class ExtractTrainingDataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
@@ -106,6 +107,7 @@ class DecisionTreeTraining(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    freeze = models.BooleanField(default=False, editable=True)
     configuration = models.JSONField(default=default_dd_configuration)
     library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
     one_hot_columns = ArrayField(models.CharField(max_length=25))
@@ -115,8 +117,9 @@ class DecisionTreeTraining(models.Model):
     
     def clean(self):
         cleaned_data = super().clean()
-        if not ExtractTrainingDataset.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
+
+        # if not ExtractTrainingDataset.objects.exists(case_study_id=self.case_study.id):
+        #     raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
         return cleaned_data
     
     def get_absolute_url(self):
