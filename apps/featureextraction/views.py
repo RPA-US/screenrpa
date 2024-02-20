@@ -15,6 +15,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from rest_framework import status
 from apps.analyzer.models import CaseStudy, Execution
+from django.utils.translation import gettext_lazy as _
 
 def ui_elements_classification(*data):
     # Classification can be done with different algorithms
@@ -124,6 +125,23 @@ def set_as_feature_extraction_technique_active(request):
     feature_extraction_technique.active = True
     feature_extraction_technique.save()
     return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
+
+def set_as_feature_extraction_technique_inactive(request):
+    feature_extraction_technique_id = request.GET.get("decision_tree_training_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if FeatureExtractionTechnique.objects.get(pk=feature_extraction_technique_id).user != request.user:  
+        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+    if FeatureExtractionTechnique.objects.get(pk=feature_extraction_technique_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))
+    feature_extraction_technique = FeatureExtractionTechnique.objects.get(id=feature_extraction_technique_id)
+    feature_extraction_technique.active = False
+    feature_extraction_technique.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
     
 def delete_feature_extraction_technique(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
@@ -299,6 +317,21 @@ def set_as_ui_elements_detection_active(request):
         ui_elements_classification.save()
 
     return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
+
+def set_as_ui_elements_detection_inactive(request):
+    ui_elements_detection_id = request.GET.get("ui_elem_detection_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if request.user.id != ui_elements_detection.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    if UIElementsDetection.objects.get(pk=ui_elements_detection_id).user != request.user:  
+        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+    if UIElementsDetection.objects.get(pk=ui_elements_detection_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))
+    ui_elements_detection = UIElementsDetection.objects.get(id=ui_elements_detection_id)
+    ui_elements_detection.active = False
+    ui_elements_detection.save()
+    return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
     
 def delete_ui_elements_detection(request):
     ui_element_detection_id = request.GET.get("ui_elem_detection_id")
@@ -365,6 +398,23 @@ def set_as_prefilters_active(request):
     prefilter.active = True
     prefilter.save()
     return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
+
+def set_as_prefilters_inactive(request):
+    prefilter_id = request.GET.get("prefilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if Prefilters.objects.get(pk=prefilter_id).user != request.user:  
+        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+    if Prefilters.objects.get(pk=prefilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))   
+    prefilter = Prefilters.objects.get(id=prefilter_id)
+    prefilter.active = False
+    prefilter.save()
+    return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
     
 def delete_prefilter(request):
     prefilter_id = request.GET.get("prefilter_id")
@@ -429,6 +479,21 @@ def set_as_postfilters_active(request):
         m.save()
     postfilter = Postfilters.objects.get(id=postfilter_id)
     postfilter.active = True
+    postfilter.save()
+    return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
+
+def set_as_postfilters_inactive(request):
+    postfilter_id = request.GET.get("postfilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if request.user.id != postfilter.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    if Postfilters.objects.get(pk=postfilter_id).user != request.user:  
+        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+    if Postfilters.objects.get(pk=postfilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))   
+    postfilter = Postfilters.objects.get(id=postfilter_id)
+    postfilter.active = False
     postfilter.save()
     return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
     
