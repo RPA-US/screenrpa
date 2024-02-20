@@ -35,7 +35,7 @@ urlpatterns = [
     # Feature Extraction Technique
     path('feature-extraction-technique/list/<int:case_study_id>/', views.FeatureExtractionTechniqueListView.as_view(), name='fe_technique_list'),
     path('feature-extraction-technique/new/<int:case_study_id>/', views.FeatureExtractionTechniqueCreateView.as_view(), name='fe_technique_create'),
-    path('feature-extraction-technique/detail/<int:case_study_id>/<int:ui_element_detection_id>/', views.FeatureExtractionTechniqueDetailView.as_view(), name='fe_technique_detail'),
+    path('feature-extraction-technique/detail/<int:case_study_id>/<int:feature_extraction_technique_id>/', views.FeatureExtractionTechniqueDetailView.as_view(), name='fe_technique_detail'),
     path('feature-extraction-technique/active/', views.set_as_feature_extraction_technique_active, name='fe_technique_set_as_active'),
     path('feature-extraction-technique/inactive/', views.set_as_feature_extraction_technique_inactive, name='fe_technique_set_as_inactive'),
     path('feature-extraction-technique/delete/', views.delete_feature_extraction_technique, name='fe_technique_delete'),
