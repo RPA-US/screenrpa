@@ -486,8 +486,10 @@ def set_as_postfilters_inactive(request):
     postfilter_id = request.GET.get("postfilter_id")
     case_study_id = request.GET.get("case_study_id")
     # Validations
-    if request.user.id != postfilter.user.id:
-        raise Exception("This object doesn't belong to the authenticated user")
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
     if Postfilters.objects.get(pk=postfilter_id).user != request.user:  
         raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
     if Postfilters.objects.get(pk=postfilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
