@@ -139,8 +139,6 @@
                         {% elif extract_training_dataset.active == True and extract_training_dataset.freeze == False %}
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">                        
                           <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this extract training dataset?{% endblocktranslate %}')" href="/dd/extract-training-dataset/delete/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
-                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/inactive/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
                           <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
                         {% elif extract_training_dataset.active == False and extract_training_dataset.freeze == False %}
@@ -148,6 +146,8 @@
                           <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/active/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this extract training dataset?{% endblocktranslate %}')" href="/dd/extract-training-dataset/delete/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
+                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>  
                         {% endif %}
                       </div>
                     </div>
