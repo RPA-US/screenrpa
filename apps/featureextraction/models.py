@@ -78,7 +78,7 @@ class UIElementsDetection(models.Model):
     ui_elements_classification = models.ForeignKey('UIElementsClassification', on_delete=models.SET_NULL, null=True)
 
     # Delete ui_elements_classification when deleting UIElementsDetection
-    def delete(self, *args, **kwargs):
+    def delete_ui_elements_classification(self, *args, **kwargs):
         self.ui_elements_classification.delete()
         super().delete(*args, **kwargs)
 
