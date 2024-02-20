@@ -59,6 +59,8 @@ def generate_case_study(execution, path_scenario, times,):
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
         times[n] = {}
+         # if function_to_exec ?¿ tiene preloaded
+        # si tiene preloaded, voy a cargar el preloaded_file en la carpeta de la execution y voy a saltarme la ejecucion de esta fase
         if function_to_exec == "decision_tree_training":
             res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = tree_times

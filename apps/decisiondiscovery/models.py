@@ -117,8 +117,9 @@ class DecisionTreeTraining(models.Model):
     
     def clean(self):
         cleaned_data = super().clean()
-        if not ExtractTrainingDataset.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
+
+        # if not ExtractTrainingDataset.objects.exists(case_study_id=self.case_study.id):
+        #     raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
         return cleaned_data
     
     def get_absolute_url(self):
