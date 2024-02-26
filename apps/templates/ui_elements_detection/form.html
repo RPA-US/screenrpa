@@ -1,25 +1,25 @@
 {% load i18n %}
-
-<form id="form" method="POST" enctype="multipart/form-data">{% csrf_token %}
+<form id="form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
   <div class="pl-lg-2">
     <div class="col-12">
       <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+        <label class="form-control-label" for="title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
         {{ forms.ui_elements_detection.title }}
         <div class="form-validation">{{ forms.ui_elements_detection.title.errors }}</div>
       </div>
     </div>
     <div class="col-12">
       <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Technique {% endblocktranslate %}<b class="text-red">*</b></label>
+        <label class="form-control-label" for="type">{% blocktranslate %}Detection Technique {% endblocktranslate %}<b class="text-red">*</b></label>
         {{ forms.ui_elements_detection.type }}
         <div class="form-validation">{{ forms.ui_elements_detection.type.errors }}</div>
       </div>
     </div>
     <div class="col-12">
       <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Classification Model{% endblocktranslate %}</label>
+        <label class="form-control-label" for="model">{% blocktranslate %}Classification Model{% endblocktranslate %}</label>
         {{ forms.ui_elements_classification.model }}
         <div class="form-validation">{{ forms.ui_elements_classification.model.errors }}</div>
       </div>
@@ -29,13 +29,13 @@
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
   <div class="col-12">
     <div class="form-group">
-      <input type="checkbox" id="preloaded" name="preloaded">
+      {{forms.ui_elements_detection.preloaded}}
       <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
     </div>
     <div class="form-group">
-      <input type="file" id="uploaded_execution" name="uploaded_execution" accept=".zip" disabled>
-      <label class="form-control-label" for="uploaded_execution">{% blocktranslate %}.zip structure ->{% endblocktranslate %}</label>
-      <button onclick="alert('instrucciones de la estructura del archivo')">?</button>
+      {{forms.ui_elements_detection.preloaded_file}}
+      <label class="form-control-label" for="preloaded_file">{% blocktranslate %}.zip structure ->{% endblocktranslate %}</label>
+      <button onclick="alert('Estructura del archivo:\n\n|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
     </div>
   </div>
   <hr>
@@ -44,13 +44,13 @@
     <div class="col-12">
       <div class="form-group">
         {{ forms.ui_elements_detection.ocr }}
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Apply OCR{% endblocktranslate %}</label>
+        <label class="form-control-label" for="ocr">{% blocktranslate %}Apply OCR{% endblocktranslate %}</label>
         <div class="form-validation">{{ forms.ui_elements_detection.ocr.errors }}</div>
       </div>
     </div>
     <div class="col-12">
       <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Additional Configurations{% endblocktranslate %}</label>
+        <label class="form-control-label" for="configurations">{% blocktranslate %}Additional Configurations{% endblocktranslate %}</label>
         {{ forms.ui_elements_detection.configurations }}
         <div class="form-validation">{{ forms.ui_elements_detection.configurations.errors }}</div>
       </div>
@@ -63,30 +63,31 @@
 </form>
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const technique = document.getElementById('id_type')
-      const preloaded = document.getElementById('preloaded')
-      const uploaded_execution = document.getElementById('uploaded_execution')
-      const titleInput = document.querySelector('#input-title');
-      const formInputs = document.querySelectorAll('#form input, #form select');
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const technique = document.getElementById('id_type')
+    const preloaded = document.getElementById('id_preloaded')
+    const preloaded_file = document.getElementById('id_preloaded_file')
+    const titleInput = document.getElementById('id_title');
+    const formInputs = document.querySelectorAll('#form input, #form select');
 
-      if (technique.value == 'screen2som') {
-        document.getElementById('id_model').disabled = true;
-      }
+    if (technique.value == 'screen2som') {
+      document.getElementById('id_model').disabled = true;
+    }
 
-      preloaded.addEventListener('change', () => {
-        uploaded_execution.disabled = !preloaded.checked
-        formInputs.forEach(input => {
-          if (input !== preloaded && input !== uploaded_execution && input !== titleInput) {
-            input.disabled = preloaded.checked;
-          }
-        });
-      })
-
-      document.getElementById('form').onsubmit = function() {
-        document.getElementById('id_model').disabled = false;
-      }
+    preloaded.addEventListener('change', () => {
+      preloaded_file.disabled = !preloaded.checked
+      formInputs.forEach(input => {
+        if (input !== preloaded && input !== preloaded_file && input !== titleInput) {
+          input.disabled = preloaded.checked;
+        }
+      });
     })
-  </script>
+
+    document.getElementById('form').onsubmit = function() {
+      document.getElementById('id_model').disabled = false;
+      document.getElementById('preloaded').disabled = false;
+    }
+  })
+</script>
 {% endblock javascripts %}

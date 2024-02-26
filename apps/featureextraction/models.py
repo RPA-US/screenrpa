@@ -87,8 +87,8 @@ class Prefilters(models.Model):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 class UIElementsDetection(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
     title = models.CharField(max_length=255)
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -122,7 +122,7 @@ class UIElementsDetection(models.Model):
             # Generate unique folder name based on the uploaded file's name and current time
             folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
             # folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
-            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + 'UIElemDetection_results' + folder_name
+            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep +folder_name
             # Create the unzipped folder
             os.makedirs(folder_path)
             # Unzip the uploaded file to the unzipped folder
