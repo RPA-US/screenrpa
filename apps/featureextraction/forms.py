@@ -18,7 +18,9 @@ class UIElementsDetectionForm(forms .ModelForm):
             "title",
             "type",
             "configurations",
-            "ocr"
+            "ocr",
+            "preloaded_file",
+            "preloaded"
         )
         labels = {
             "type": _("Type"),
@@ -30,6 +32,7 @@ class UIElementsDetectionForm(forms .ModelForm):
             "type": "Technique *",
             "configurations": "Additional Configurations",
             "ocr": "Apply OCR *",
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
@@ -61,6 +64,14 @@ class UIElementsDetectionForm(forms .ModelForm):
             }),
             "ocr": forms.CheckboxInput(
                 attrs={"class": "primary-checkbox"}
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
             ),
         }
     
