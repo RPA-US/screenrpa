@@ -26,6 +26,19 @@
     </div>
   </div>
   <hr>
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+  <div class="col-12">
+    <div class="form-group">
+      <input type="checkbox" id="preloaded" name="preloaded">
+      <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+    </div>
+    <div class="form-group">
+      <input type="file" id="uploaded_execution" name="uploaded_execution" accept=".zip" disabled>
+      <label class="form-control-label" for="uploaded_execution">{% blocktranslate %}.zip structure ->{% endblocktranslate %}</label>
+      <button onclick="alert('instrucciones de la estructura del archivo')">?</button>
+    </div>
+  </div>
+  <hr>
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
   <div class="pl-lg-2">
     <div class="col-12">
@@ -53,9 +66,23 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const technique = document.getElementById('id_type')
+      const preloaded = document.getElementById('preloaded')
+      const uploaded_execution = document.getElementById('uploaded_execution')
+      const titleInput = document.querySelector('#input-title');
+      const formInputs = document.querySelectorAll('#form input, #form select');
+
       if (technique.value == 'screen2som') {
         document.getElementById('id_model').disabled = true;
       }
+
+      preloaded.addEventListener('change', () => {
+        uploaded_execution.disabled = !preloaded.checked
+        formInputs.forEach(input => {
+          if (input !== preloaded && input !== uploaded_execution && input !== titleInput) {
+            input.disabled = preloaded.checked;
+          }
+        });
+      })
 
       document.getElementById('form').onsubmit = function() {
         document.getElementById('id_model').disabled = false;
