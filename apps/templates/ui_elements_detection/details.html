@@ -1,7 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -35,6 +36,17 @@
           <!-- Card header -->
           <div class="card-header border-0">
             <h3 class="mb-0">{{ forms.ui_elements_detection.title.value }} Details</h3>
+            {% if forms.ui_elements_detection.preloaded %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="form-group">
+                  <label class="form-control-label" for="input-exec_results_folder_complete_path">{% blocktranslate %}Preload Executions Results Folder Path{% endblocktranslate %}</label>
+                  <input type="text" id="input-exec_results_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ forms.ui_elements_detection.exec_results_folder_complete_path }}">
+                  {{forms.ui_elements_detection.exec_results_folder_complete_path}}
+                </div>
+              </div>
+            </div>
+            {% endif %}
           </div>
           <div class="card-body">
             {% include "ui_elements_detection/form.html" %}

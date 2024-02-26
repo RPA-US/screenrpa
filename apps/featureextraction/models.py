@@ -94,12 +94,11 @@ class UIElementsDetection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us')
+    type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us', blank=True, null=True)
     input_filename = models.CharField(max_length=50, default='log.csv')
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    exec_results_foldername = models.CharField(max_length=255, null=True, blank=True)
-    exec_results_folder_complete_path = models.CharField(max_length=255)
+    exec_results_folder_complete_path = models.CharField(max_length=655)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -122,14 +121,14 @@ class UIElementsDetection(models.Model):
             # Generate unique folder name based on the uploaded file's name and current time
             folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
             # folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
-            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep +folder_name
+            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep + str(self.id) + sep + folder_name
             # Create the unzipped folder
             os.makedirs(folder_path)
             # Unzip the uploaded file to the unzipped folder
             unzip_file(self.preloaded_file.path, folder_path)
             # Save the unzipped folder path to the model instance
             self.exec_results_folder_complete_path = folder_path
-            self.exec_results_foldername = get_exp_foldername(folder_path)
+
             super().save(*args, **kwargs)
 
 def get_ui_elements_classification_image_shape():
@@ -160,8 +159,8 @@ class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True)
-    type = models.CharField(max_length=25, default='rpa-us')
+    model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True, blank=True)
+    type = models.CharField(max_length=25, default='rpa-us', blank=True, null=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
