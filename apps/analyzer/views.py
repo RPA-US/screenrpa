@@ -76,6 +76,7 @@ def generate_case_study(execution, path_scenario, times,):
             times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
             times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
         elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or function_to_exec == "ui_elements_detection":
+        # elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
             filtering_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
             times[n][function_to_exec] = filtering_times
         else:

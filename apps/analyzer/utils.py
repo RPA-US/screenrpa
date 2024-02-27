@@ -243,8 +243,8 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
                                         path_scenario,
                                         execution.case_study.special_colnames,
                                         execution.prefilters.configurations,
-                                        execution.prefilters.preloaded,
-                                        execution.prefilters.type)
+                                        execution.prefilters.type,
+                                        execution.prefilters.preloaded)
         
     if execution.ui_elements_detection:
 
@@ -253,9 +253,9 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
                                         execution.ui_elements_detection.input_filename,
                                         execution.case_study.special_colnames,
                                         execution.ui_elements_detection.configurations,
-                                        execution.ui_elements_detection.preloaded,
                                         execution.ui_elements_detection.type,
-                                        execution.ui_elements_detection.ocr)
+                                        execution.ui_elements_detection.ocr,
+                                        execution.ui_elements_detection.preloaded)
                                         
     if execution.ui_elements_classification:
         to_exec_args['ui_elements_classification'] = (execution.ui_elements_classification.model.path, # specific extractors
@@ -264,18 +264,18 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
                                         path_scenario + 'log.csv',
                                         execution.case_study.special_colnames["Screenshot"],
                                         execution.ui_elements_classification.model.text_classname,
-                                        execution.ui_elements_classification.preloaded,
                                         execution.ui_elements_classification.model.classes,
                                         execution.ui_elements_classification.model.image_shape,
-                                        execution.ui_elements_classification.type)
+                                        execution.ui_elements_classification.type,
+                                        execution.ui_elements_classification.preloaded)
         
     if execution.postfilters:
         to_exec_args['info_postfiltering'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         execution.case_study.special_colnames,
                                         execution.postfilters.configurations,
-                                        execution.postfilters.preloaded,
-                                        execution.postfilters.type)
+                                        execution.postfilters.type,
+                                        execution.postfilters.preloaded)
         
     if execution.feature_extraction_technique:
         to_exec_args['feature_extraction_technique'] = (execution.ui_elements_classification_classes,
@@ -291,16 +291,16 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
                                         execution.feature_extraction_technique.consider_relevant_compos,
                                         execution.feature_extraction_technique.relevant_compos_predicate,
                                         execution.feature_extraction_technique.identifier,
-                                        execution.feature_extraction_technique.preloaded,
-                                        execution.feature_extraction_technique.technique_name)
+                                        execution.feature_extraction_technique.technique_name,
+                                        execution.feature_extraction_technique.preloaded)
         
     if execution.process_discovery:
         to_exec_args['process_discovery'] = (path_scenario +'log.csv',
                                         path_scenario,
                                         execution.case_study.special_colnames,
                                         execution.process_discovery.configurations,
-                                        execution.process_discovery.preloaded,
-                                        execution.process_discovery.type)
+                                        execution.process_discovery.type,
+                                        execution.process_discovery.preloaded)
         
     if execution.extract_training_dataset:
         to_exec_args['extract_training_dataset'] = (execution.feature_extraction_technique.decision_point_activity, 
@@ -326,8 +326,8 @@ def phases_to_execute_specs(execution, path_scenario, path_results):
                                         execution.feature_extraction_technique.consider_relevant_compos,
                                         execution.feature_extraction_technique.relevant_compos_predicate,
                                         execution.feature_extraction_technique.identifier,
-                                        execution.feature_extraction_technique.preloaded,
-                                        execution.feature_extraction_technique.technique_name)
+                                        execution.feature_extraction_technique.technique_name,
+                                        execution.feature_extraction_technique.preloaded)
         
     if execution.decision_tree_training:
       to_exec_args['decision_tree_training'] = (execution.case_study, path_scenario)
