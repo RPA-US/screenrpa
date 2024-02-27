@@ -98,7 +98,7 @@ class UIElementsDetection(models.Model):
     input_filename = models.CharField(max_length=50, default='log.csv')
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    exec_results_folder_complete_path = models.CharField(max_length=655)
+    exec_results_folder_complete_path = models.CharField(max_length=655, null=True, blank=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
