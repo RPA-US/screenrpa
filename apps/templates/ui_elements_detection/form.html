@@ -34,7 +34,11 @@
     </div>
     <div class="form-group" id="preloaded_file">
       {{forms.ui_elements_detection.preloaded_file}}
-      <label class="form-control-label" for="preloaded_file"></label>
+      <label class="form-control-label" for="preloaded_file">
+        {% if forms.ui_elements_detection.exec_results_folder_complete_path %}
+          {% blocktranslate %}Preloaded File in{% endblocktranslate %} {{ forms.ui_elements_detection.exec_results_folder_complete_path.value }}
+        {% endif %}
+      </label>
       <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
     </div>
   </div>

@@ -20,7 +20,8 @@ class UIElementsDetectionForm(forms .ModelForm):
             "configurations",
             "ocr",
             "preloaded_file",
-            "preloaded"
+            "preloaded",
+            "exec_results_folder_complete_path"
         )
         labels = {
             "type": _("Type"),
@@ -73,6 +74,12 @@ class UIElementsDetectionForm(forms .ModelForm):
                     'accept': '.zip'
                     }   
             ),
+            "exec_results_folder_complete_path": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "/path/to/execution/results"
+                    }
+            )
         }
     
     def __init__(self, *args, **kwargs):
