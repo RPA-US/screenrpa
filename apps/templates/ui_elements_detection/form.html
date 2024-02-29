@@ -35,8 +35,8 @@
     <div class="form-group" id="preloaded_file">
       {{forms.ui_elements_detection.preloaded_file}}
       <label class="form-control-label" for="preloaded_file">
-        {% if forms.ui_elements_detection.exec_results_folder_complete_path %}
-          {% blocktranslate %}Preloaded File in{% endblocktranslate %} {{ forms.ui_elements_detection.exec_results_folder_complete_path.value }}
+        {% if forms.ui_elements_detection.preloaded %}
+          {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %} 
         {% endif %}
       </label>
       <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
@@ -67,33 +67,6 @@
 </form>
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
-<!-- <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const technique = document.getElementById('id_type')
-    const preloaded = document.getElementById('id_preloaded')
-    const preloaded_file = document.getElementById('id_preloaded_file')
-    const titleInput = document.getElementById('id_title');
-    const formInputs = document.querySelectorAll('#form input, #form select');
-
-    if (technique.value == 'screen2som') {
-      document.getElementById('id_model').disabled = true;
-    }
-
-    preloaded.addEventListener('change', () => {
-      preloaded_file.disabled = !preloaded.checked
-      formInputs.forEach(input => {
-        if (input !== preloaded && input !== preloaded_file && input !== titleInput) {
-          input.disabled = preloaded.checked;
-        }
-      });
-    })
-
-    document.getElementById('form').onsubmit = function() {
-      document.getElementById('id_model').disabled = false;
-      document.getElementById('preloaded').disabled = false;
-    }
-  })
-</script> -->
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {

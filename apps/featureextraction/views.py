@@ -223,7 +223,7 @@ class UIElementsDetectionDetailView(MultiFormsView):
                 "ocr": ui_elements_detection.ocr,
                 "preloaded": ui_elements_detection.preloaded,
                 "preloaded_file": ui_elements_detection.preloaded_file,
-                "exec_results_folder_complete_path": ui_elements_detection.exec_results_folder_complete_path,
+
             },
             "instance": ui_elements_detection,
         }

@@ -19,6 +19,23 @@
         </div>
     </div>
   <hr>
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+  <div class="col-12">
+    <div class="form-group" id="preloaded">
+      {{form.preloaded}}
+      <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+    </div>
+    <div class="form-group" id="preloaded_file">
+      {{form.preloaded_file}}
+      <label class="form-control-label" for="preloaded_file">
+        {% if form.preloaded == True %}
+          {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
+        {% endif %}
+      </label>
+      <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
+    </div>
+  </div>
+  <hr>
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
     <div class="row pl-lg-4 pr-lg-2">
         <div class="col-6">
@@ -56,3 +73,45 @@
     {% blocktranslate %}Save{% endblocktranslate %}
     </button>
 </form>
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const title = document.getElementById('id_title');
+      const type = document.getElementById('id_type');
+      const preloaded = document.getElementById('id_preloaded');  
+      const preloaded_file = document.getElementById('id_preloaded_file');  
+      const ui_log_filename = document.getElementById('id_ui_log_filename');
+      const ui_log_separator = document.getElementById('id_ui_log_separator');
+      const gaze_log_filename = document.getElementById('id_gaze_log_filename');
+      const gaze_log_adjustment = document.getElementById('id_gaze_log_adjustment');
+      const native_slide_events = document.getElementById('id_native_slide_events');
+      
+      
+      // Función para habilitar/deshabilitar campos
+      function toggleFields(isPreloadedChecked) {
+        type.disabled = isPreloadedChecked;
+        ui_log_filename.readOnly = isPreloadedChecked;
+        ui_log_separator.readOnly = isPreloadedChecked;
+        gaze_log_filename.readOnly = isPreloadedChecked;
+        gaze_log_adjustment.readOnly = isPreloadedChecked;
+        native_slide_events.readOnly = isPreloadedChecked;
+
+        preloaded_file.disabled = !isPreloadedChecked;
+      }
+  
+      // Controlador de eventos para el checkbox 'preloaded'
+      preloaded.addEventListener('change', () => {
+        toggleFields(preloaded.checked);
+      });
+  
+      // Inicializar los campos al cargar la página
+      toggleFields(preloaded.checked);
+  
+      document.getElementById('form').onsubmit = function() {
+        // document.getElementById('id_model').readOnly = false;
+        document.getElementById('id_preloaded').readOnly = false;
+      }
+    })  
+  </script>
+  {% endblock javascripts %}

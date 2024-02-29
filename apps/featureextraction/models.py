@@ -70,7 +70,7 @@ UI_ELM_DET_TYPES = (
 
 class Prefilters(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded_file = PrivateFileField("File", null=True, upload_to='UIElemDetection_results/executions/')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -86,6 +86,7 @@ class Prefilters(models.Model):
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
+
 class UIElementsDetection(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     preloaded_file = PrivateFileField("File", null=True, blank=True)
@@ -98,7 +99,6 @@ class UIElementsDetection(models.Model):
     input_filename = models.CharField(max_length=50, default='log.csv')
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
-    exec_results_folder_complete_path = models.CharField(max_length=655, null=True, blank=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -115,21 +115,19 @@ class UIElementsDetection(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
     
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if self.preloaded_file:
-            # Generate unique folder name based on the uploaded file's name and current time
-            folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
-            # folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
-            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep + str(self.id) + sep + folder_name
-            # Create the unzipped folder
-            os.makedirs(folder_path)
-            # Unzip the uploaded file to the unzipped folder
-            unzip_file(self.preloaded_file.path, folder_path)
-            # Save the unzipped folder path to the model instance
-            self.exec_results_folder_complete_path = folder_path
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     if self.preloaded_file :
+    #         # Generate unique folder name based on the uploaded file's name and current time
+    #         folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
 
-            super().save(*args, **kwargs)
+    #         #CAMBIAR LOGICA DE GUARDADO DE CARPETA DE RESULTADOS
+    #         folder_path = PRIVATE_STORAGE_ROOT + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep + str(self.id) + sep + folder_name
+    #         os.makedirs(folder_path)
+    #         #Ruta de la carpeta creada: media/UIElemDetection_results/executions/1/preloadedFile_162512
+    #         self.exec_results_folder_complete_path = folder_path
+
+    #         super().save(*args, **kwargs)  
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]

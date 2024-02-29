@@ -22,6 +22,8 @@ class MonitoringForm(forms .ModelForm):
             "gaze_log_filename",
             "gaze_log_adjustment",
             "native_slide_events",
+            "preloaded_file",
+            "preloaded",
         )
         labels = {
             "type": _("Type"),
@@ -30,6 +32,7 @@ class MonitoringForm(forms .ModelForm):
             "gaze_log_filename": _("Gaze Log Filename"),
             "gaze_log_adjustment": _("Gaze Log Adjustment"),
             "native_slide_events": _("System Info. Log"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
@@ -48,6 +51,14 @@ class MonitoringForm(forms .ModelForm):
             # Gaze log adj. is a float number
             "gaze_log_adjustment": forms.NumberInput(attrs={"class": "form-control"}),
             "native_slide_events": forms.TextInput(attrs={"class": "form-control"}),
+                        "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            )
         }
 
     def __init__(self, *args, **kwargs):

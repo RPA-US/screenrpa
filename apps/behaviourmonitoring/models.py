@@ -20,11 +20,11 @@ def default_monitoring_conf():
 
 # Create your models here.
 class Monitoring(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100, default="New Monitoring")
-    type = models.CharField(max_length=25, default='imotions')
+    type = models.CharField(max_length=25, default='imotions',blank=True, null=True)
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=False, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
@@ -36,6 +36,7 @@ class Monitoring(models.Model):
     gaze_log_filename = models.CharField(max_length=100, default='ET_RExtAPI-GazeAnalysis.csv')
     gaze_log_adjustment = models.FloatField(default=0)
     native_slide_events = models.CharField(max_length=100, default='Native_SlideEvents.csv')
+
 
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

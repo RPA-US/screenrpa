@@ -21,7 +21,6 @@ class UIElementsDetectionForm(forms .ModelForm):
             "ocr",
             "preloaded_file",
             "preloaded",
-            "exec_results_folder_complete_path"
         )
         labels = {
             "type": _("Type"),
@@ -74,12 +73,7 @@ class UIElementsDetectionForm(forms .ModelForm):
                     'accept': '.zip'
                     }   
             ),
-            "exec_results_folder_complete_path": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "/path/to/execution/results"
-                    }
-            )
+
         }
     
     def __init__(self, *args, **kwargs):
@@ -177,6 +171,8 @@ class UIElementsClassificationForm(forms .ModelForm):
         model = UIElementsClassification
         exclude = (
             "user",
+            "preloaded",
+            "preloaded_file",
             )
         fields = (
             "type",

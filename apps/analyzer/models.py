@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
-from core.settings import PRIVATE_STORAGE_ROOT, sep
+from core.settings import PRIVATE_STORAGE_ROOT, sep, DEFAULT_PHASES
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
@@ -143,7 +143,6 @@ class Execution(models.Model):
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
-
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
@@ -197,16 +196,31 @@ class Execution(models.Model):
             self.create_folder_structure()
         
         super().save(*args, **kwargs)
+
+    def check_preloaded_file(self):            
+        for ph in DEFAULT_PHASES:
+            if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
+                preloaded_file_path = f"{PRIVATE_STORAGE_ROOT}{sep}{getattr(self, ph).preloaded_file.name}"
+                unzip_file(preloaded_file_path, self.exp_folder_complete_path)
+                print("Preloaded file unzipped!:", self.exp_folder_complete_path)
+
     
     def create_folder_structure(self):
-        self.exp_foldername = f"exec_{self.id}"
+        self.exp_foldername = f"exec_{self.id}" #exec_1
         self.exp_folder_complete_path = os.path.join(self.case_study.exp_folder_complete_path, 'executions', self.exp_foldername)
+        #output: media/unzipped/zip_1321321/executions/exec_1
+        
+        #FOR ONLY ONE SCENARIO IN YOUR CASE STUDY
+        #If the phases own the preloaded_file, the preloaded_file wil be unzipped from media/ and it will be stored
+        #in the corresponding execution_id folder 
+    
 
         if not os.path.exists(self.exp_folder_complete_path):
             os.makedirs(self.exp_folder_complete_path)
 
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
+
             # Os Simlink only works for files in windows
             if os.name == 'nt':
                 subprocess.call(['cmd', '/c', 'mklink', '/D', os.path.join(self.exp_folder_complete_path, scenario), os.path.join('..\\..\\', scenario)])
