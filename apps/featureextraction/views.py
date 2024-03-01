@@ -323,6 +323,7 @@ class PrefiltersCreateView(CreateView):
         context['case_study_id'] = self.kwargs.get('case_study_id')
         return context    
 
+
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")

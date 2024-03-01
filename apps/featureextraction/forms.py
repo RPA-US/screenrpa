@@ -91,18 +91,23 @@ class PrefiltersForm(forms .ModelForm):
             "type",
             "skip",
             "configurations",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "type": _("Type"),
             "skip": _("Skip"),
-            "configurations": _("Configurations")
+            "configurations": _("Configurations"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
             "type": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "uied"
+                    "placeholder": "New prefiltering"
                     }
             ),
             "skip": forms.CheckboxInput(
@@ -111,7 +116,15 @@ class PrefiltersForm(forms .ModelForm):
             "configurations": forms.Textarea(attrs={
                 'class': 'form-control',
                 'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
-            })
+            }),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            )
         }
 
     def __init__(self, *args, **kwargs):
