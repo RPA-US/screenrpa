@@ -87,7 +87,11 @@ def process_level(log_path, root_path, special_colnames, configurations, type):
     
     
 
-def process_discovery(log_path, root_path, special_colnames, configurations, skip, type):
+def process_discovery(log_path, root_path, execution):
+    special_colnames = execution.case_study.special_colnames,
+    configurations = execution.process_discovery.configurations,
+    type = execution.process_discovery.type,
+    skip = execution.process_discovery.preloaded
     if not skip:
         scene_level(log_path, root_path, special_colnames, configurations, type)
         process_level(log_path, root_path, special_colnames, configurations, type)

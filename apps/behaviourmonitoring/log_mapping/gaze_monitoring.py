@@ -376,7 +376,10 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
 
   ub_log.to_csv(root_path + "ub_log_fixation.csv")
 
-def monitoring(log_path, root_path, special_colnames, monitoring_obj, skip):
+def monitoring(log_path, root_path, special_colnames, execution):
+  
+    special_colnames = execution.case_study.special_colnames,
+    monitoring_obj = execution.monitoring,
     monitoring_type = monitoring_obj.type
     
     if os.path.exists(log_path):

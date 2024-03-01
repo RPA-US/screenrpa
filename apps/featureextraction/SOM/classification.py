@@ -61,9 +61,7 @@ def check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_ro
 ###################################################################################################
 ###################################################################################################
 
-def uied_ui_elements_classification(model="resources/models/custom-v2.h5", ui_elements_crops_npy_root="resources/screenshots/components_npy/",
-                            metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="text",
-                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes, ui_elements_classification_image_shape=default_ui_elements_classification_image_shape):
+def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
@@ -92,7 +90,16 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", ui_el
     :type ui_elements_classification_classes: list
     
     """
-
+    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    ui_elements_crops_npy_root = path_results + 'components_npy' + sep
+    metadata_json_root = path_results + 'components_json' + sep
+    model = execution.ui_elements_classification.model.path, # specific extractors
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"],
+    text_classname = execution.ui_elements_classification.model.text_classname,
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes,
+    ui_elements_classification_image_shape = execution.ui_elements_classification.model.image_shape,
+    skip = execution.ui_elements_classification.preloaded
+    
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 
     if missing_json_file or (not skip):
@@ -117,9 +124,7 @@ def uied_ui_elements_classification(model="resources/models/custom-v2.h5", ui_el
                 json.dump(data, jsonFile)
 
 
-def legacy_ui_elements_classification(model, ui_elements_crops_npy_root="resources/screenshots/components_npy/",
-                            metadata_json_root="resources/screenshots/components_json/", ui_log_path="resources/log.csv", screenshot_colname="Screenshot", text_classname="x0_TextView",
-                            skip=False, ui_elements_classification_classes=default_ui_elements_classification_classes, ui_elements_classification_image_shape=default_ui_elements_classification_image_shape):
+def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
     """
     With this function we classify the copped component from each of the sreenshots to later add to the log the number of
     columns corresponding to the ammount to classes in the given model. These are the classes that a GUI component can fall into.
@@ -145,6 +150,16 @@ def legacy_ui_elements_classification(model, ui_elements_crops_npy_root="resourc
     :returns: Enriched log
     :rtype: DataFrame
     """
+    
+    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    ui_elements_crops_npy_root = path_results + 'components_npy' + sep
+    metadata_json_root = path_results + 'components_json' + sep
+    model = execution.ui_elements_classification.model.path, # specific extractors
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"],
+    text_classname = execution.ui_elements_classification.model.text_classname,
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes,
+    ui_elements_classification_image_shape = execution.ui_elements_classification.model.image_shape,
+    skip = execution.ui_elements_classification.preloaded
 
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 

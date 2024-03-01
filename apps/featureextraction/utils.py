@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 # case study get phases data  ###########################################################################################
 ###########################################################################################################################
 
-def get_info_prefiltering(case_study):
+def get_prefilters(case_study):
   return get_object_or_404(Prefilters, case_study=case_study, active=True)
 
 def get_ui_elements_detection(case_study):
@@ -23,7 +23,7 @@ def get_ui_elements_detection(case_study):
 def get_ui_elements_classification(case_study):
   return get_object_or_404(UIElementsClassification, case_study=case_study, active=True)
 
-def get_info_postfiltering(case_study):
+def get_postfilters(case_study):
   return get_object_or_404(Postfilters, case_study=case_study, active=True)
 
 def get_feature_extraction_technique(case_study):
@@ -33,20 +33,20 @@ def get_feature_extraction_technique(case_study):
 # case study has phases data  ###########################################################################################
 ###########################################################################################################################
 
-def case_study_has_info_prefiltering(case_study):
-  return Prefilters.objects.filter(case_study=case_study, active=True).exists()
+# def case_study_has_prefilters(case_study):
+#   return Prefilters.objects.filter(case_study=case_study, active=True).exists()
 
-def case_study_has_ui_elements_detection(case_study):
-  return UIElementsDetection.objects.filter(case_study=case_study, active=True).exists()
+# def case_study_has_ui_elements_detection(case_study):
+#   return UIElementsDetection.objects.filter(case_study=case_study, active=True).exists()
 
-def case_study_has_ui_elements_classification(case_study):
-  return UIElementsClassification.objects.filter(case_study=case_study, active=True).exists()
+# def case_study_has_ui_elements_classification(case_study):
+#   return UIElementsClassification.objects.filter(case_study=case_study, active=True).exists()
 
-def case_study_has_info_postfiltering(case_study):
-  return Postfilters.objects.filter(case_study=case_study, active=True).exists()
+# def case_study_has_postfilters(case_study):
+#   return Postfilters.objects.filter(case_study=case_study, active=True).exists()
 
-def case_study_has_feature_extraction_technique(case_study):
-  return FeatureExtractionTechnique.objects.filter(case_study=case_study, active=True).exists()
+# def case_study_has_feature_extraction_technique(case_study):
+#   return FeatureExtractionTechnique.objects.filter(case_study=case_study, active=True).exists()
 
 
 ###########################################################################################################################

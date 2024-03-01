@@ -565,7 +565,15 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", apply_ocr=False, preloaded=False, text_classname="text"):
+def ui_elements_detection(param_log_path, param_img_root, execution):
+    log_input_filaname = execution.ui_elements_detection.input_filename,
+    special_colnames = execution.case_study.special_colnames,
+    configurations = execution.ui_elements_detection.configurations,
+    algorithm = execution.ui_elements_detection.type,
+    apply_ocr = execution.ui_elements_detection.ocr,
+    skip = execution.ui_elements_detection.preloaded
+    text_classname = "text"
+    
     
     tprint(PLATFORM_NAME + " - " + DETECTION_PHASE_NAME, "fancy60")
     print(param_img_root+"\n")

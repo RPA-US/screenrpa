@@ -9,10 +9,10 @@ import base64
 import lxml.etree as ET
 from lxml import html
 from core.settings import sep
-from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique, case_study_has_ui_elements_detection, get_ui_elements_detection, case_study_has_ui_elements_classification, get_ui_elements_classification, case_study_has_info_postfiltering, get_info_postfiltering, case_study_has_info_prefiltering, get_info_prefiltering
-from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
-from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery
-from apps.decisiondiscovery.utils import get_extract_training_dataset, case_study_has_extract_training_dataset, get_decision_tree_training, case_study_has_decision_tree_training
+# from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique, case_study_has_ui_elements_detection, get_ui_elements_detection, case_study_has_ui_elements_classification, get_ui_elements_classification, case_study_has_postfilters, get_postfilters, case_study_has_prefilters, get_prefilters
+# from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
+# from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery
+# from apps.decisiondiscovery.utils import get_extract_training_dataset, case_study_has_extract_training_dataset, get_decision_tree_training, case_study_has_decision_tree_training
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 from django.utils.translation import gettext_lazy as _
@@ -227,109 +227,3 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
 ###########################################################################################################################
 ###########################################################################################################################
 ###########################################################################################################################
-
-def phases_to_execute_specs(execution, path_scenario, path_results):
-    to_exec_args = {}
-    # We check this phase is present in execution.case_study to avoid exceptions
-    if execution.monitoring:
-        to_exec_args['monitoring'] = (path_scenario +'log.csv',
-                                        path_scenario,
-                                        execution.case_study.special_colnames,
-                                        execution.monitoring,
-                                        execution.monitoring.preloaded)
-        
-    if execution.prefilters:
-        to_exec_args['info_prefiltering'] =  (path_scenario +'log.csv',
-                                        path_scenario,
-                                        execution.case_study.special_colnames,
-                                        execution.prefilters.configurations,
-                                        execution.prefilters.type,
-                                        execution.prefilters.preloaded)
-        
-    if execution.ui_elements_detection:
-
-        to_exec_args['ui_elements_detection'] = (path_scenario +'log.csv',
-                                        path_scenario,
-                                        execution.ui_elements_detection.input_filename,
-                                        execution.case_study.special_colnames,
-                                        execution.ui_elements_detection.configurations,
-                                        execution.ui_elements_detection.type,
-                                        execution.ui_elements_detection.ocr,
-                                        execution.ui_elements_detection.preloaded)
-                                        
-    if execution.ui_elements_classification:
-        to_exec_args['ui_elements_classification'] = (execution.ui_elements_classification.model.path, # specific extractors
-                                        path_results + 'components_npy' + sep,
-                                        path_results + 'components_json' + sep,
-                                        path_scenario + 'log.csv',
-                                        execution.case_study.special_colnames["Screenshot"],
-                                        execution.ui_elements_classification.model.text_classname,
-                                        execution.ui_elements_classification.model.classes,
-                                        execution.ui_elements_classification.model.image_shape,
-                                        execution.ui_elements_classification.type,
-                                        execution.ui_elements_classification.preloaded)
-        
-    if execution.postfilters:
-        to_exec_args['info_postfiltering'] = (path_scenario +'log.csv',
-                                        path_scenario,
-                                        execution.case_study.special_colnames,
-                                        execution.postfilters.configurations,
-                                        execution.postfilters.type,
-                                        execution.postfilters.preloaded)
-        
-    if execution.feature_extraction_technique:
-        to_exec_args['feature_extraction_technique'] = (execution.ui_elements_classification_classes,
-                                        execution.feature_extraction_technique.decision_point_activity,
-                                        execution.case_study.special_colnames["Case"],
-                                        execution.case_study.special_colnames["Activity"],
-                                        execution.case_study.special_colnames["Screenshot"],
-                                        path_scenario + 'components_json' + sep,
-                                        path_scenario + 'flattened_dataset.json',
-                                        path_scenario + 'log.csv',
-                                        path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-                                        execution.case_study.text_classname,
-                                        execution.feature_extraction_technique.consider_relevant_compos,
-                                        execution.feature_extraction_technique.relevant_compos_predicate,
-                                        execution.feature_extraction_technique.identifier,
-                                        execution.feature_extraction_technique.technique_name,
-                                        execution.feature_extraction_technique.preloaded)
-        
-    if execution.process_discovery:
-        to_exec_args['process_discovery'] = (path_scenario +'log.csv',
-                                        path_scenario,
-                                        execution.case_study.special_colnames,
-                                        execution.process_discovery.configurations,
-                                        execution.process_discovery.type,
-                                        execution.process_discovery.preloaded)
-        
-    if execution.extract_training_dataset:
-        to_exec_args['extract_training_dataset'] = (execution.feature_extraction_technique.decision_point_activity, 
-                                        execution.case_study.target_label,
-                                        execution.case_study.special_colnames,
-                                        execution.extract_training_dataset.columns_to_drop,
-                                        path_scenario + 'log.csv',
-                                        path_scenario, 
-                                        execution.extract_training_dataset.columns_to_drop_before_decision_point,
-                                        execution.preloaded)
-        
-    if execution.feature_extraction_technique:
-        to_exec_args['aggregate_features_as_dataset_columns'] = (execution.ui_elements_classification_classes,
-                                        execution.feature_extraction_technique.decision_point_activity,
-                                        execution.case_study.special_colnames["Case"],
-                                        execution.case_study.special_colnames["Activity"],
-                                        execution.case_study.special_colnames["Screenshot"],
-                                        path_scenario,
-                                        path_scenario + 'flattened_dataset.json',
-                                        path_scenario + 'log.csv',
-                                        path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-                                        execution.case_study.text_classname,
-                                        execution.feature_extraction_technique.consider_relevant_compos,
-                                        execution.feature_extraction_technique.relevant_compos_predicate,
-                                        execution.feature_extraction_technique.identifier,
-                                        execution.feature_extraction_technique.technique_name,
-                                        execution.feature_extraction_technique.preloaded)
-        
-    if execution.decision_tree_training:
-      to_exec_args['decision_tree_training'] = (execution.case_study, path_scenario)
-        
-    return to_exec_args

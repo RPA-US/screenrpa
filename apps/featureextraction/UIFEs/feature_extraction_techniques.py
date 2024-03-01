@@ -1,7 +1,7 @@
 from core.utils import read_ui_log_as_dataframe
 import pandas as pd
 import json
-from core.settings import STATUS_VALUES_ID
+from core.settings import STATUS_VALUES_ID, sep
 
 # def find_st_id(st_value):
 #     res = None
@@ -375,18 +375,41 @@ from core.settings import STATUS_VALUES_ID
 #     # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
 #     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
-def caption_ui_element(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id):
+def caption_ui_element(ui_log_path, path_scenario, execution):
+    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    decision_point = execution.feature_extraction_technique.decision_point_activity
+    case_colname = execution.case_study.special_colnames["Case"]
+    activity_colname = execution.case_study.special_colnames["Activity"]
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    metadata_json_root = path_scenario + 'components_json' + sep
+    flattened_log = path_scenario + 'flattened_dataset.json',
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    text_classname = execution.case_study.text_classname,
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    id = execution.feature_extraction_technique.identifier
+    
     print("Not implemented yet :)")
     return None
 
 
 
-def number_ui_element(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
+def number_ui_element(ui_log_path, path_scenario, execution):
     """
     Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
     """
+    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    decision_point = execution.feature_extraction_technique.decision_point_activity
+    case_colname = execution.case_study.special_colnames["Case"]
+    activity_colname = execution.case_study.special_colnames["Activity"]
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    metadata_json_root = path_scenario + 'components_json' + sep
+    flattened_log = path_scenario + 'flattened_dataset.json',
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    text_classname = execution.case_study.text_classname,
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    id = execution.feature_extraction_technique.identifier
     
     log = read_ui_log_as_dataframe(ui_log_path)
 

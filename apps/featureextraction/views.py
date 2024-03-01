@@ -17,58 +17,42 @@ from rest_framework import status
 from apps.analyzer.models import CaseStudy, Execution
 from django.utils.translation import gettext_lazy as _
 
-def ui_elements_classification(*data):
+def ui_elements_classification(log_path, path_scenario, execution):
     # Classification can be done with different algorithms
-    data_list = list(data)
-    classifier_type = data_list.pop()
-    data = tuple(data_list)
-
     tprint(PLATFORM_NAME + " - " + CLASSIFICATION_PHASE_NAME, "fancy60")
-    print(data_list[4]+"\n")
+    print(path_scenario+"\n")
     
-    match classifier_type:
+    match execution.ui_elements_classification.model.type:
         case "rpa-us":
-            output = legacy_ui_elements_classification(*data)
+            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "uied":
-            output = uied_ui_elements_classification(*data)
+            output = uied_ui_elements_classification(log_path, path_scenario, execution)
         case "sam":
-            output = legacy_ui_elements_classification(*data)
+            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "fast-sam":
-            output = legacy_ui_elements_classification(*data)
+            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "screen2som":
             output = None
         case _:
             raise Exception("You select a type of UI element classification that doesnt exists")
     return output
 
-def feature_extraction_technique(*data):
-    tprint(PLATFORM_NAME + " - " + FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+def feature_extraction_technique(log_path, path_scenario, execution):
 
-    data_list = list(data)
-    feature_extraction_technique_name = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
+    fe_type = execution.feature_extraction_technique.type
+    feature_extraction_technique_name = execution.feature_extraction_technique.technique_name
+    skip = execution.feature_extraction_technique.preloaded
     output = None
-
-    print("Feature extraction selected: " + feature_extraction_technique_name+"\n")
     
     if not skip:
-        output = detect_fe_function(feature_extraction_technique_name)(*data)
-    return output
-
-def aggregate_features_as_dataset_columns(*data):
-    tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
-
-    data_list = list(data)
-    agg_feature_extraction_technique_name = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
-    output = None
-
-    print("Aggregate feature extraction selected: " + agg_feature_extraction_technique_name+"\n")
-    
-    if not skip:
-        output = detect_agg_fe_function(agg_feature_extraction_technique_name)(*data)
+        if fe_type == "SINGLE":
+            tprint(PLATFORM_NAME + " - " + FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+            print("Feature extraction selected: " + feature_extraction_technique_name+"\n")
+            output = detect_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
+        else:
+            tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+            print("Aggregate feature extraction selected: " + feature_extraction_technique_name+"\n")
+            output = detect_agg_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
     return output
 
 class FeatureExtractionTechniqueCreateView(CreateView):

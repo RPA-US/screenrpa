@@ -24,10 +24,10 @@ from django.template import loader
 from core.settings import PRIVATE_STORAGE_ROOT, METADATA_LOCATION, sep, DEFAULT_PHASES, PHASES_OBJECTS, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, aggregate_features_as_dataset_columns
+from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
 from apps.featureextraction.SOM.detection import ui_elements_detection
-from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
-from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
+from apps.featureextraction.relevantinfoselection.prefilters import prefilters
+from apps.featureextraction.relevantinfoselection.postfilters import postfilters
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy, Execution   
@@ -42,53 +42,50 @@ from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
 from apps.analyzer.tasks import celery_task_process_case_study
-from apps.analyzer.utils import get_foldernames_as_list, phases_to_execute_specs
+from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
-from apps.featureextraction.utils import case_study_has_feature_extraction_technique
 
 #============================================================================================================================
 #============================================================================================================================
 #============================================================================================================================
 
-def generate_case_study(execution, path_scenario, times,):
-    
-    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
-    to_exec_args = phases_to_execute_specs(execution, path_scenario, path_results)
-    
+def generate_case_study(execution, path_scenario, times):
+    log_filename = 'log.csv'
     n = 0
-    # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
-    for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
-        phase_has_preloaded = getattr(execution, function_to_exec).preloaded
-        if phase_has_preloaded:
-            times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
-        else:
-            times[n] = {}
-            if function_to_exec == "decision_tree_training":
-                res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
-                times[n][function_to_exec] = tree_times
-                times[n][function_to_exec]["columns_len"] = columns_len
-                # times[n][function_to_exec]["tree_levels"] = tree_levels
-                times[n][function_to_exec]["accuracy"] = res
-                times[n][function_to_exec]["feature_checker"] = fe_checker
-            elif function_to_exec == "feature_extraction_technique" or function_to_exec == "aggregate_features_as_dataset_columns":
-                start_t = time.time()
-                num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
-                times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-                # Additional feature extraction metrics
-                times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-                times[n][function_to_exec]["num_screenshots"] = num_screenshots
-                times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-                times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
-            elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or function_to_exec == "ui_elements_detection":
-            # elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
-                filtering_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
-                times[n][function_to_exec] = filtering_times
+    for i, function_to_exec in enumerate(DEFAULT_PHASES):
+        if getattr(execution, function_to_exec) is not None:
+            phase_has_preloaded = getattr(execution, function_to_exec).preloaded
+            if phase_has_preloaded:
+                times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
             else:
-                start_t = time.time()
-                output = eval(function_to_exec)(*to_exec_args[function_to_exec])
-                times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                times[n] = {}
+                if function_to_exec == "decision_tree_training":
+                    res, fe_checker, tree_times, columns_len = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                    times[n][function_to_exec] = tree_times
+                    times[n][function_to_exec]["columns_len"] = columns_len
+                    # times[n][function_to_exec]["tree_levels"] = tree_levels
+                    times[n][function_to_exec]["accuracy"] = res
+                    times[n][function_to_exec]["feature_checker"] = fe_checker
+                elif function_to_exec == "feature_extraction_technique":
+                    if (getattr(execution, function_to_exec).type == "SINGLE" and i == 6) or (getattr(execution, function_to_exec).type == "AGGREGATE" and i == 9):
+                        start_t = time.time()
+                        num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                        # Additional feature extraction metrics
+                        times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                        times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                        times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                        times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
+                # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
+                    filtering_times = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                    times[n][function_to_exec] = filtering_times
+                else:
+                    start_t = time.time()
+                    output = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                    times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
 
-        n += 1
+            n += 1
         
     return times
 
@@ -119,8 +116,8 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
                 aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
             else:
                 aux_path = execution.exp_folder_complete_path
-            if not os.path.exists(aux_path):
-                os.makedirs(aux_path)
+            # if not os.path.exists(aux_path):
+            #     os.makedirs(aux_path)
         else:
             aux_path = execution.exp_folder_complete_path
         
@@ -181,7 +178,7 @@ def case_study_generator(data):
                     serializer.validated_data['case_study'] = case_study
                     serializer.validated_data['user'] = case_study.user
                     serializer.save()
-                case "info_prefiltering":
+                case "prefilters":
                     serializer = PrefiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     serializer.validated_data['case_study'] = case_study
@@ -199,7 +196,7 @@ def case_study_generator(data):
                     serializer.validated_data['case_study'] = case_study
                     serializer.validated_data['user'] = case_study.user
                     serializer.save()
-                case "info_postfiltering":
+                case "postfilters":
                     serializer = PostfiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     serializer.validated_data['case_study'] = case_study

@@ -26,14 +26,7 @@ from django.utils.translation import gettext_lazy as _
 #     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
 #     return df[indices_to_keep].astype(np.float64)
 
-def extract_training_dataset(decision_point_activity,
-        target_label,
-        special_colnames,
-        columns_to_drop,
-        log_path="media/enriched_log_feature_extracted.csv", 
-        path_dataset_saved="media", 
-        actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"],
-        skip=False):
+def extract_training_dataset(log_path, root_path, execution):
     """
     Iterate for every UI log row:
         For each case:
@@ -70,6 +63,14 @@ def extract_training_dataset(decision_point_activity,
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
+    decision_point_activity = execution.feature_extraction_technique.decision_point_activity, 
+    target_label = execution.case_study.target_label,
+    special_colnames = execution.case_study.special_colnames,
+    columns_to_drop = execution.extract_training_dataset.columns_to_drop,
+    path_dataset_saved = root_path
+    actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point,
+    
+    
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
     print(log_path+"\n")
 
@@ -86,22 +87,21 @@ def extract_training_dataset(decision_point_activity,
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      
-def decision_tree_training(case_study, path_scenario):
-    "media/flattened_dataset.json",
-    "media", 
-    "sklearn",
-    ['ID3', 'CART', 'CHAID', 'C4.5'],
-    ["Timestamp_start", "Timestamp_end"],
-    'Variant',
-    ['NameApp']
+def decision_tree_training(log_path, path, execution):
+    # "media/flattened_dataset.json",
+    # "media", 
+    # "sklearn",
+    # ['ID3', 'CART', 'CHAID', 'C4.5'],
+    # ["Timestamp_start", "Timestamp_end"],
+    # 'Variant',
+    # ['NameApp']
                            
-    flattened_json_log_path = path_scenario + 'flattened_dataset.json'
-    path = path_scenario
-    implementation = case_study.decision_tree_training.library
-    configuration = case_study.decision_tree_training.configuration
-    columns_to_ignore = case_study.decision_tree_training.columns_to_drop_before_decision_point
-    target_label = case_study.target_label
-    one_hot_columns = case_study.decision_tree_training.one_hot_columns
+    flattened_json_log_path = path + 'flattened_dataset.json'
+    implementation = execution.decision_tree_training.library
+    configuration = execution.decision_tree_training.configuration
+    columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
+    target_label = execution.target_label
+    one_hot_columns = execution.decision_tree_training.one_hot_columns
     k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
     algorithms = configuration["algorithms"] if "algorithms" in configuration else None
     centroid_threshold = int(configuration["centroid_threshold"]) if "centroid_threshold" in configuration else None

@@ -1,6 +1,6 @@
 from core.utils import read_ui_log_as_dataframe
 import json
-from core.settings import STATUS_VALUES_ID
+from core.settings import STATUS_VALUES_ID, sep
 
 def find_st_id(st_value):
     res = None
@@ -12,8 +12,7 @@ def find_st_id(st_value):
             break
     return res
 
-def occurrence_ui_element_class(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="qua"):
+def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -30,6 +29,19 @@ def occurrence_ui_element_class(ui_elements_classification_classes, decision_poi
     :type skip: bool
 
     """
+    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    decision_point = execution.feature_extraction_technique.decision_point_activity
+    case_colname = execution.case_study.special_colnames["Case"]
+    activity_colname = execution.case_study.special_colnames["Activity"]
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    metadata_json_root = path_scenario + 'components_json' + sep
+    flattened_log = path_scenario + 'flattened_dataset.json',
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    text_classname = execution.case_study.text_classname,
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    id = execution.feature_extraction_technique.identifier
+    
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
     
@@ -109,12 +121,23 @@ def occurrence_ui_element_class(ui_elements_classification_classes, decision_poi
 
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
-def centroid_ui_element_class(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
+def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     """
     Column name: compoclass+int
     Column value: centroid 
     """
+    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    decision_point = execution.feature_extraction_technique.decision_point_activity
+    case_colname = execution.case_study.special_colnames["Case"]
+    activity_colname = execution.case_study.special_colnames["Activity"]
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    metadata_json_root = path_scenario + 'components_json' + sep
+    flattened_log = path_scenario + 'flattened_dataset.json',
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    text_classname = execution.case_study.text_classname,
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    id = execution.feature_extraction_technique.identifier
     
     log = read_ui_log_as_dataframe(ui_log_path)
 
@@ -181,12 +204,24 @@ def centroid_ui_element_class(ui_elements_classification_classes, decision_point
     
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
-def centroid_ui_element_class_or_plaintext(ui_elements_classification_classes, decision_point, 
-    case_colname, activity_colname, screenshot_colname, metadata_json_root, flattened_log, ui_log_path, enriched_log_output_path, text_classname, consider_relevant_compos, relevant_compos_predicate, id="loc"):
+def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution):
     """
     Column name: compoclass+int or (if it is text) plaintext+int
     Column value: centroid 
     """
+    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    decision_point = execution.feature_extraction_technique.decision_point_activity
+    case_colname = execution.case_study.special_colnames["Case"]
+    activity_colname = execution.case_study.special_colnames["Activity"]
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    metadata_json_root = path_scenario + 'components_json' + sep
+    flattened_log = path_scenario + 'flattened_dataset.json',
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    text_classname = execution.case_study.text_classname,
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    id = execution.feature_extraction_technique.identifier
+    
     log = read_ui_log_as_dataframe(ui_log_path)
 
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
@@ -252,8 +287,7 @@ def centroid_ui_element_class_or_plaintext(ui_elements_classification_classes, d
 
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
-def state_ui_element_centroid(ui_elements_classification_classes, decision_point, case_colname, activity_colname, screenshot_colname,
-                                      metadata_json_root, flattened_log, ui_log_path, enriched_log_output, text_classname, consider_relevant_compos, relevant_compos_predicate, id="sta"):
+def state_ui_element_centroid(ui_log_path, path_scenario, execution):
     """
     
     Column name: "sta_"+ substate + centroid_x + centroid_y + activity. Example: sta_enabled_229.5-1145.0_1_A
@@ -290,6 +324,18 @@ def state_ui_element_centroid(ui_elements_classification_classes, decision_point
     Components such as (1) sheets, (2) app bars, or (3) dialogs cannot inherit a pressed state
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
+    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    decision_point = execution.feature_extraction_technique.decision_point_activity
+    case_colname = execution.case_study.special_colnames["Case"]
+    activity_colname = execution.case_study.special_colnames["Activity"]
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    metadata_json_root = path_scenario + 'components_json' + sep
+    flattened_log = path_scenario + 'flattened_dataset.json',
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    text_classname = execution.case_study.text_classname,
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    id = execution.feature_extraction_technique.identifier
     
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)

@@ -166,6 +166,9 @@ class Execution(models.Model):
             raise ValidationError('UI Elements Detection  and Classification  must be executed before Feature Extraction.')
         if self.decision_tree_training and not self.extract_training_dataset:
             raise ValidationError('Extract Training Dataset must be executed before Decision Tree Training.')
+        
+        if self.scenarios_to_study is None or len(self.scenarios_to_study) == 0:
+            raise ValidationError('At least one scenario must be indicated.')
 
     def save(self, *args, **kwargs):
         # Retrieve active configurations and set them to the execution
@@ -223,9 +226,13 @@ class Execution(models.Model):
 
             # Os Simlink only works for files in windows
             if os.name == 'nt':
-                subprocess.call(['cmd', '/c', 'mklink', '/D', os.path.join(self.exp_folder_complete_path, scenario), os.path.join('..\\..\\', scenario)])
+                source = os.path.join('..\\..\\', scenario)
+                destination = os.path.join(self.exp_folder_complete_path, scenario)
+                command = f'cmd /c mklink /D {destination} {source}'
+                subprocess.run(command, shell=True)
             else:
                 os.symlink(
                     os.path.join('../../', scenario),
                     os.path.join(self.exp_folder_complete_path, scenario)
                     )
+       
