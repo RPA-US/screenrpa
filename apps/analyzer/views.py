@@ -509,6 +509,7 @@ class ExecutionListView(ListView, LoginRequiredMixin):
 
     def get_queryset(self):
         return Execution.objects.filter(user=self.request.user).order_by("-created_at")
+        
 
   
 def deleteExecution(request):
