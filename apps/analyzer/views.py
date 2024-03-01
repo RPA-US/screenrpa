@@ -67,7 +67,7 @@ def generate_case_study(execution, path_scenario, times):
                     times[n][function_to_exec]["accuracy"] = res
                     times[n][function_to_exec]["feature_checker"] = fe_checker
                 elif function_to_exec == "feature_extraction_technique":
-                    if (getattr(execution, function_to_exec).type == "SINGLE" and i == 6) or (getattr(execution, function_to_exec).type == "AGGREGATE" and i == 9):
+                    if (getattr(execution, function_to_exec).type == "SINGLE" and i == 5) or (getattr(execution, function_to_exec).type == "AGGREGATE" and i == 8):
                         start_t = time.time()
                         num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
                         times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}

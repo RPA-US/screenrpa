@@ -162,8 +162,8 @@ class Execution(models.Model):
             raise ValidationError('At least one phase must be executed.')
         
         # Check phases dependencies and restrictions
-        if self.feature_extraction_technique and not (self.ui_elements_detection and self.ui_elements_classification):
-            raise ValidationError('UI Elements Detection  and Classification  must be executed before Feature Extraction.')
+        if self.feature_extraction_technique and not (self.ui_elements_detection):
+            raise ValidationError('UI Elements Detection must be executed before Feature Extraction.')
         if self.decision_tree_training and not self.extract_training_dataset:
             raise ValidationError('Extract Training Dataset must be executed before Decision Tree Training.')
         
