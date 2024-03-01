@@ -91,6 +91,7 @@ def default_dd_configuration():
 class ExtractTrainingDataset(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
     preloaded_file = PrivateFileField("File", null=True)
+    freeze = models.BooleanField(default=False, editable=True)
     target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
@@ -113,10 +114,10 @@ class ExtractTrainingDataset(models.Model):
 class DecisionTreeTraining(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
     preloaded_file = PrivateFileField("File", null=True)
+    freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    freeze = models.BooleanField(default=False, editable=True)
     configuration = models.JSONField(default=default_dd_configuration)
     library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
     one_hot_columns = ArrayField(models.CharField(max_length=25))

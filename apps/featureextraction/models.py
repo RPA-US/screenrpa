@@ -92,6 +92,7 @@ class Prefilters(models.Model):
 class UIElementsDetection(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     preloaded_file = PrivateFileField("File", null=True, blank=True)
+    freeze = models.BooleanField(default=False, editable=True)
     title = models.CharField(max_length=255)
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -156,6 +157,7 @@ class CNNModels(models.Model):
 class UIElementsClassification(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
     preloaded_file = PrivateFileField("File", null=True)
+    freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -174,10 +176,10 @@ class UIElementsClassification(models.Model):
 class Postfilters(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
     preloaded_file = PrivateFileField("File", null=True)
+    freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    freeze = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
     type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
@@ -194,10 +196,10 @@ class Postfilters(models.Model):
 class FeatureExtractionTechnique(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
     preloaded_file = PrivateFileField("File", null=True)
+    freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    freeze = models.BooleanField(default=False, editable=True)
     identifier = models.CharField(max_length=25)
     type = models.CharField(max_length=255, default='SINGLE')
     technique_name = models.CharField(max_length=255, default='count')
