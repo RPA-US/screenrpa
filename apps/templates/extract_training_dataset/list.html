@@ -45,6 +45,7 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="title">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
@@ -66,32 +67,29 @@
                     </div>
                   </th>
                   <td>
+                    {{ extract_training_dataset.title }}
+                  </td>
+                  <td>
                     {{ extract_training_dataset.created_at }}
                   </td>
                   <td>
-                    {{ extract_training_dataset.columns_to_drop }}
+                    <span class="badge badge-dot mr-4">
+                      {% if extract_training_dataset.active %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}Active{% endblocktranslate %}</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}Not active{% endblocktranslate %}</span>
+                      {% endif %}
+                    </span>
                   </td>
                   <td>
-                    {{ extract_training_dataset.columns_to_drop_before_decision_point }}
-                  </td>
-                  <!-- <td>
-                    <div class="d-flex align-items-center">
-                      <span class="completion mr-2">{{ extract_training_dataset.executed }}</span>
-                      <div>
-                        {% if extract_training_dataset.executed == 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ extract_training_dataset.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
-                        </div>
-                        {% elif extract_training_dataset.executed == 100 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ extract_training_dataset.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                        </div>
-                        {% elif extract_training_dataset.executed > 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ extract_training_dataset.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                        </div>
-                        {% endif %}
-                      </div>
+                    <div>
+                      {% if extract_training_dataset.executed == 0 %}
+                        {% blocktranslate %}Not executed{% endblocktranslate %}
+                      {% else %}
+                        {% blocktranslate %}Already executed{% endblocktranslate %}
+                      {% endif %}
                     </div>
                   </td> -->
                   <td>
@@ -151,6 +149,7 @@
                         {% endif %}
                       </div>
                     </div>
+
                   </td>
                 </tr>
                 {% endfor %}

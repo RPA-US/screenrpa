@@ -47,6 +47,7 @@
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Technique{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Classification{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
@@ -71,6 +72,14 @@
                   </td>
                   <td>
                     {{ ui_elem_detec.created_at }}
+                  </td>
+                  <td>
+                    {% if ui_elem_detec.preloaded %}
+                      {% blocktranslate %}Yes{% endblocktranslate %} |
+                      {{ ui_elem_detec.preloaded_file }}
+                    {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                    {% endif %}
                   </td>
                   <td>
                     {{ ui_elem_detec.type }}

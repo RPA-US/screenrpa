@@ -239,6 +239,9 @@ class UIElementsDetectionDetailView(MultiFormsView):
                 "type": ui_elements_detection.type,
                 "configurations": ui_elements_detection.configurations,
                 "ocr": ui_elements_detection.ocr,
+                "preloaded": ui_elements_detection.preloaded,
+                "preloaded_file": ui_elements_detection.preloaded_file,
+
             },
             "instance": ui_elements_detection,
         }
@@ -354,6 +357,7 @@ class PrefiltersCreateView(CreateView):
         context = super(PrefiltersCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
         return context    
+
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:

@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import JSONField
 from django.contrib.auth.models import User
+from private_storage.fields import PrivateFileField
 from django.urls import reverse
 
 def default_process_discovery():
@@ -9,6 +10,8 @@ def default_process_discovery():
 
 # Create your models here.
 class ProcessDiscovery(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)

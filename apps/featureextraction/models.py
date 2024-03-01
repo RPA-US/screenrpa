@@ -1,5 +1,8 @@
 from typing import Any
 from django.db import models
+import zipfile
+import os
+import time
 
 # Create your models here.
 from email.policy import default
@@ -7,9 +10,32 @@ from xmlrpc.client import Boolean
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from private_storage.fields import PrivateFileField
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.urls import reverse
+from core.settings import PRIVATE_STORAGE_ROOT, sep
+from django.utils.translation import gettext_lazy as _
+
+def unzip_file(zip_file_path, dest_folder_path):
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(dest_folder_path)
+
+def get_exp_foldername(exp_folder_complete_path):
+    count = 0
+    if "/" in exp_folder_complete_path:
+        count+=1
+        aux = "/"
+    if "\\\\" in exp_folder_complete_path:
+        count+=1
+        aux = "\\\\"
+    elif "\\" in exp_folder_complete_path:
+        count+=1
+        aux = "\\"
+    if count>1:
+         raise ValidationError(_("exp_folder_complete_path separators not coherent"))
+    splitted_s = exp_folder_complete_path.split(aux)
+    return splitted_s[len(splitted_s) - 1]
 
 def default_prefilters_conf():
     return dict({
@@ -43,12 +69,15 @@ UI_ELM_DET_TYPES = (
 )
 
 class Prefilters(models.Model):
+    preloaded = models.BooleanField(default=False, editable=True)
+    title = models.CharField(max_length=255)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
-    type = models.CharField(max_length=25, default='rpa-us')
+    type = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -59,17 +88,17 @@ class Prefilters(models.Model):
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
-class UIElementsDetection(models.Model):
 
+class UIElementsDetection(models.Model):
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
     title = models.CharField(max_length=255)
     ocr = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    freeze = models.BooleanField(default=False, editable=True)
-    type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us')
+    type = models.CharField(max_length=25, choices=UI_ELM_DET_TYPES, default='rpa-us', blank=True, null=True)
     input_filename = models.CharField(max_length=50, default='log.csv')
-    decision_point_activity = models.CharField(max_length=255, blank=True)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
@@ -87,6 +116,20 @@ class UIElementsDetection(models.Model):
     
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
+    
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #     if self.preloaded_file :
+    #         # Generate unique folder name based on the uploaded file's name and current time
+    #         folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
+
+    #         #CAMBIAR LOGICA DE GUARDADO DE CARPETA DE RESULTADOS
+    #         folder_path = PRIVATE_STORAGE_ROOT + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep + str(self.id) + sep + folder_name
+    #         os.makedirs(folder_path)
+    #         #Ruta de la carpeta creada: media/UIElemDetection_results/executions/1/preloadedFile_162512
+    #         self.exec_results_folder_complete_path = folder_path
+
+    #         super().save(*args, **kwargs)  
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
@@ -111,12 +154,13 @@ class CNNModels(models.Model):
             raise ValidationError("text_classname must be one of the ui_elements_classification_classes")
 
 class UIElementsClassification(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    freeze = models.BooleanField(default=False, editable=True)
-    model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True)
-    type = models.CharField(max_length=25, default='rpa-us')
+    model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True, blank=True)
+    type = models.CharField(max_length=25, default='rpa-us', blank=True, null=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -128,6 +172,8 @@ class UIElementsClassification(models.Model):
         return 'type: ' + self.type + ' - model: ' + self.model
 
 class Postfilters(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -146,6 +192,8 @@ class Postfilters(models.Model):
     
 
 class FeatureExtractionTechnique(models.Model):
+    preloaded = models.BooleanField(default=False, editable=False)
+    preloaded_file = PrivateFileField("File", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
@@ -153,7 +201,7 @@ class FeatureExtractionTechnique(models.Model):
     identifier = models.CharField(max_length=25)
     type = models.CharField(max_length=255, default='SINGLE')
     technique_name = models.CharField(max_length=255, default='count')
-    relevant_compos_predicate = models.CharField(max_length=255, default="compo['relevant'] == 'True'")
+    relevant_compos_predicate = models.CharField(max_length=255, null=True, blank=True)
     consider_relevant_compos = models.BooleanField(default=False)
     configurations = JSONField(null=True, blank=True)
     skip = models.BooleanField(default=False)
@@ -162,10 +210,6 @@ class FeatureExtractionTechnique(models.Model):
     
     def clean(self):
         cleaned_data = super().clean()
-        # if not UIElementsDetection.objects.exists(case_study__id=self.case_study.id):
-        #     raise ValidationError("To be able to apply a feature extraction technique, UI Element Detection has to be done")
-        # if not UIElementsClassification.objects.exists(case_study__id=self.case_study.id):
-        #     raise ValidationError("To be able to apply a feature extraction technique, UI Element Classification has to be done")
         return cleaned_data
     
     def get_absolute_url(self):

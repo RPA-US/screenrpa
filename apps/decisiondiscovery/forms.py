@@ -15,19 +15,43 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             "user",
             )
         fields = (
-            "columns_to_drop",
-            "columns_to_drop_before_decision_point"
+            "title",
+            "decision_point_activity",
+            "columns_to_drop_before_decision_point",
+            "configurations"
         )
         labels = {
+            "title": _("Title"),
+            "decision_point_activity": _("Decision Point To Study"),
+            "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
+            "configurations": _("Additional Configurations (JSON)"),
             "columns_to_drop": _("Columns to drop"),
-            "columns_to_drop_before_decision_point": _("Columns to drop before decision point")
+            "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
+            "target_label": _("Target label")
         }
 
         widgets = {
+            "title": forms.TextInput(attrs={
+                    "class": "form-control",
+                    "placeholder": _("Title")
+                    }
+            ),
+            "target_label": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Variant")
+                    }
+            ),
             "columns_to_drop": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "['Case','Activity','Timestamp','Screenshot','Variant']"
+                    "placeholder": "My Dataset Extraction Technique"
+                    }
+            ),
+            "decision_point_activity": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "C"
                     }
             ),
             "columns_to_drop_before_decision_point": forms.TextInput(
@@ -35,7 +59,12 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": "['Coor_X', 'Coor_Y', 'MorKeyb', 'TextInput', 'Click']"
                     }
-            )
+            ),
+            "configurations": forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': "{}",
+                'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
+            })
         }
 
     def __init__(self, *args, **kwargs):

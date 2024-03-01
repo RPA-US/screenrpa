@@ -5,6 +5,7 @@ import time
 import keras_ocr
 import numpy as np
 import cv2
+import zipfile
 import matplotlib.pyplot as plt
 from . import ip_draw as draw
 import cv2
@@ -12,6 +13,7 @@ from art import tprint
 import logging
 import pickle
 from tqdm import tqdm
+from core.settings import PRIVATE_STORAGE_ROOT, sep
 from core.settings import CROPPING_THRESHOLD, PLATFORM_NAME, DETECTION_PHASE_NAME
 from apps.analyzer.utils import format_mht_file, read_ui_log_as_dataframe
 import apps.featureextraction.utils as utils
@@ -29,6 +31,9 @@ Text boxes detection: KERAS_OCR
 In order to detect the text boxes inside the screenshots, we define the get_keras_ocr_image.
 This function has a list of images as input, and a list of lists with the coordinates of text boxes coordinates
 """
+def unzip_file(zip_file_path, dest_folder_path):
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(dest_folder_path)
 
 def get_ocr_image(pipeline, param_img_root, images_input):
     """
@@ -560,10 +565,11 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", apply_ocr=False, text_classname="text"):
+def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", apply_ocr=False, preloaded=False, text_classname="text"):
+    
     tprint(PLATFORM_NAME + " - " + DETECTION_PHASE_NAME, "fancy60")
     print(param_img_root+"\n")
-    
+
     if os.path.exists(param_log_path):
         logging.info(_("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor"))
         print(_("Log already exists, it's not needed to execute format conversor"))
@@ -574,7 +580,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         else:
             log_filename = "log"
         param_log_path = format_mht_file(param_img_root + log_input_filaname, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
-    
+
     # Log read
     log = read_ui_log_as_dataframe(param_log_path)
     # Extract the names of the screenshots associated to each of the rows in the log
@@ -583,7 +589,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
     file_exists = os.path.exists(param_img_root + "images_ocr_info.txt")
 
     metadata = { 'screenshots': {} } 
-    
+
     if file_exists:
         print(_("\n\nReading images OCR info from file..."))
         with open(param_img_root + "images_ocr_info.txt", "rb") as fp:   # Unpickling

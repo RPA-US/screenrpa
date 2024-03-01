@@ -58,32 +58,35 @@ def generate_case_study(execution, path_scenario, times,):
     n = 0
     # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
     for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
-        times[n] = {}
-         # if function_to_exec ?¿ tiene preloaded
-        # si tiene preloaded, voy a cargar el preloaded_file en la carpeta de la execution y voy a saltarme la ejecucion de esta fase
-        if function_to_exec == "decision_tree_training":
-            res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = tree_times
-            times[n][function_to_exec]["columns_len"] = columns_len
-            # times[n][function_to_exec]["tree_levels"] = tree_levels
-            times[n][function_to_exec]["accuracy"] = res
-            times[n][function_to_exec]["feature_checker"] = fe_checker
-        elif function_to_exec == "feature_extraction_technique" or function_to_exec == "aggregate_features_as_dataset_columns":
-            start_t = time.time()
-            num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-            # Additional feature extraction metrics
-            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-            times[n][function_to_exec]["num_screenshots"] = num_screenshots
-            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
-        elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or function_to_exec == "ui_elements_detection":
-            filtering_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = filtering_times
+        phase_has_preloaded = getattr(execution, function_to_exec).preloaded
+        if phase_has_preloaded:
+            times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
         else:
-            start_t = time.time()
-            output = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+            times[n] = {}
+            if function_to_exec == "decision_tree_training":
+                res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
+                times[n][function_to_exec] = tree_times
+                times[n][function_to_exec]["columns_len"] = columns_len
+                # times[n][function_to_exec]["tree_levels"] = tree_levels
+                times[n][function_to_exec]["accuracy"] = res
+                times[n][function_to_exec]["feature_checker"] = fe_checker
+            elif function_to_exec == "feature_extraction_technique" or function_to_exec == "aggregate_features_as_dataset_columns":
+                start_t = time.time()
+                num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
+                times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                # Additional feature extraction metrics
+                times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+            elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or function_to_exec == "ui_elements_detection":
+            # elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
+                filtering_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
+                times[n][function_to_exec] = filtering_times
+            else:
+                start_t = time.time()
+                output = eval(function_to_exec)(*to_exec_args[function_to_exec])
+                times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
 
         n += 1
         
@@ -104,6 +107,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
     with transaction.atomic():
         execution = Execution(user=User.objects.get(id=user_id), case_study=CaseStudy.objects.get(id=case_study_id))
         execution.save()
+        execution.check_preloaded_file()
 
         times = {}
 

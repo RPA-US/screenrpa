@@ -48,10 +48,9 @@
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Technique name{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Identifier{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Skip{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type"></th>
+                  <th scope="col">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -76,7 +75,13 @@
                     {{ fe_technique.identifier }}
                   </td>
                   <td>
-                    {{ fe_technique.skip }}
+                    <div>
+                      {% if fe_technique.executed == 0 %}
+                        {% blocktranslate %}Not executed{% endblocktranslate %}
+                      {% else %}
+                        {% blocktranslate %}Not executed{% endblocktranslate %}
+                      {% endif %}
+                    </div>
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
@@ -100,26 +105,6 @@
                       {% endif %}
                     </span>
                   </td>
-                  <!-- <td>
-                    <div class="d-flex align-items-center">
-                      <span class="completion mr-2">{{ fe_technique.executed }}</span>
-                      <div>
-                        {% if fe_technique.executed == 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ fe_technique.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
-                        </div>
-                        {% elif fe_technique.executed == 100 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ fe_technique.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                        </div>
-                        {% elif fe_technique.executed > 0 %}
-                        <div class="progress">
-                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ fe_technique.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                        </div>
-                        {% endif %}
-                      </div>
-                    </div>
-                  </td> -->
                   <td class="text-right">
                     <div class="dropdown">
                       <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

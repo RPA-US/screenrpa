@@ -27,17 +27,13 @@ class CaseStudyForm(forms.ModelForm):
             "exp_file",
             "scenarios_to_study",
             "special_colnames",
-            "gui_class_success_regex",
-            "target_label"
         )
         labels = {
             "title": _("Title"),
             "description": _("Description"),
-            "exp_file": _("Experiment file"),
-            "scenarios_to_study": _("Scenarios to study"),
-            "special_colnames": _("Special colnames"),
-            "gui_class_success_regex": _("GUI class success regex"),
-            "target_label": _("Target label")
+            "exp_file": _("Log file (zip)"),
+            "scenarios_to_study": _("Do you want to study some scenarios? If so, indicate their folder names. If not, leave it empty."),
+            "special_colnames": _("Indicate the special column names (e.g. case_id, activity, timestamp, etc.) of your logs."),
         }
 
         widgets = {
@@ -65,18 +61,6 @@ class CaseStudyForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "special_colnames"
-                    }
-            ),
-            "gui_class_success_regex": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "gui_class_success_regex"
-                    }
-            ),
-            "target_label": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": _("Variant")
                     }
             ),
             "model": forms.Select(
