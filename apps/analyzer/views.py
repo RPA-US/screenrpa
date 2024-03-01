@@ -507,8 +507,11 @@ class ExecutionListView(ListView, LoginRequiredMixin):
     template_name = "executions/list.html"
     paginate_by = 50
 
+    #le paso al listado de executions su caso de estudio
+
     def get_queryset(self):
         return Execution.objects.filter(user=self.request.user).order_by("-created_at")
+        
 
   
 def deleteExecution(request):

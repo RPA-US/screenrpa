@@ -117,8 +117,10 @@
                           <a class="dropdown-item" href="/case-study/execution/detail/{{ execution.pk }}/">
                             <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
                           <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this case study?{% endblocktranslate %}')" href="/case-study/execution/delete/?id={{ execution.pk }}">
-                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
-                        </div>
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>                          
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to generate the report?{% endblocktranslate %}')" href="{% url 'reporting:report_generate' case_study_id=execution.case_study.id %}">
+                            <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
+                          </div>
                       </div>
                     </div>
                   </td>
