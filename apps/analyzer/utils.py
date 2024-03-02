@@ -8,7 +8,6 @@ import email
 import base64
 import lxml.etree as ET
 from lxml import html
-from core.settings import sep
 # from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique, case_study_has_ui_elements_detection, get_ui_elements_detection, case_study_has_ui_elements_classification, get_ui_elements_classification, case_study_has_postfilters, get_postfilters, case_study_has_prefilters, get_prefilters
 # from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
 # from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery

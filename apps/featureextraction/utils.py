@@ -6,6 +6,8 @@ from core.settings import sep
 from PIL import Image, ImageDraw
 from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
+from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
+from apps.featureextraction.UIFEs.feature_extraction_techniques import *
 from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
 from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification
 from django.shortcuts import get_object_or_404
@@ -83,6 +85,7 @@ def detect_agg_fe_function(text):
     f = open(AGGREGATE_FE_EXTRACTORS_FILEPATH)
     json_func = json.load(f)
     return eval(json_func[text])
+
 
 ###########################################################################################################################
 # UIED CONFIG            ##################################################################################################

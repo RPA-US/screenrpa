@@ -1,0 +1,63 @@
+{
+    "rpa-us": {
+        "classes": [
+            "Button",
+            "Checkbox",
+            "CheckedTextView",
+            "EditText",
+            "ImageButton",
+            "ImageView",
+            "NumberPicker",
+            "RadioButton",
+            "RatingBar",
+            "SeekBar",
+            "Spinner",
+            "Switch",
+            "TextView",
+            "ToggleButton"],
+        "text_classname": "TextView"
+    },
+    "uied": {
+        "classes": [],
+        "text_classname": "text"},
+    "sam": {
+        "classes": [],
+        "text_classname": "text"},
+    "fast-sam": {
+        "classes": [],
+        "text_classname": "text"
+    },
+    "screen2som": { 
+        "classes": [
+            "Application",
+            "Dock",
+            "Taskbar",
+            "Header",
+            "Scrollbar",
+            "Toolbar",
+            "BrowserToolbar",
+            "TabActive",
+            "TabInactive",
+            "Sidebar",
+            "Navbar",
+            "Container",
+            "Image",
+            "BrowserURLInput",
+            "WebIcon",
+            "Icon",
+            "Switch",
+            "BtnSq",
+            "BtnPill",
+            "BtnCirc",
+            "CheckboxChecked",
+            "CheckboxUnchecked",
+            "RadiobtnSelected",
+            "RadiobtnUnselected",
+            "TextInput",
+            "Dropdown",
+            "Link",
+            "Text"
+        ],
+        "text_classname": "Text"
+    }
+}

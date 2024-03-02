@@ -317,7 +317,8 @@ else:
 #===================================================================================================
 
 # Configuration JSON files Paths
-FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
+FE_EXTRACTORS_FILEPATH =            CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
 AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "aggreate_feature_extractors.json"
-STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
-CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
+MODELS_CLASSES_FILEPATH =           CORE_DIR + sep + "configuration" + sep + "models_classes.json"
+STATUS_VALUES_ID =                  CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
+CDLR =                              CORE_DIR + sep + "configuration" + sep + "cdlr.json"

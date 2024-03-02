@@ -15,6 +15,7 @@ import pickle
 from tqdm import tqdm
 from core.settings import PRIVATE_STORAGE_ROOT, sep
 from core.settings import CROPPING_THRESHOLD, PLATFORM_NAME, DETECTION_PHASE_NAME
+from core.utils import get_execution_path
 from apps.analyzer.utils import format_mht_file, read_ui_log_as_dataframe
 import apps.featureextraction.utils as utils
 from apps.featureextraction.SOM.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
@@ -401,8 +402,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
     :type path_to_save_bordered_images: str
     """
     # Since the path ends with a /, the last element of the split will be an empty string
-    execution_root = param_img_root[:-1]
-    execution_root = execution_root + '_results/'
+    execution_root = get_execution_path(param_img_root)
 
     path_to_save_gui_components_npy = execution_root+"components_npy/"
     path_to_save_components_json = execution_root+"components_json/"
@@ -616,8 +616,7 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
 
     # print(len(text_corners))
 
-    execution_root = param_img_root[:-1]
-    execution_root = execution_root + '_results/'
+    execution_root = get_execution_path(param_img_root)
 
     bordered = execution_root + "borders/"
     components_npy = execution_root + "components_npy/"

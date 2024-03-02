@@ -64,16 +64,6 @@ class CaseStudy(models.Model):
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
     special_colnames = JSONField(default=default_special_colnames)
     phases_to_execute = JSONField(null=True, blank=True)
-    # monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
-    # prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
-    # ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
-    # ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
-    # postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
-    # feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
-    # process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
-    # extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
-    # decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
-    # report = models.ForeignKey(PDD, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
     class Meta:

@@ -219,12 +219,14 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             )
         fields = (
             "identifier",
+            "type",
             "technique_name",
             "consider_relevant_compos",
             "relevant_compos_predicate"
         )
         labels = {
             "identifier": _("Identifier"),
+            "type": _("Feature extraction type"),
             "technique_name": _("Technique"),
             "consider_relevant_compos": _("Apply Filtering (Relevant Component Selection)"),
             "relevant_compos_predicate": _("Condition for a UI Component to be relevant")
@@ -237,9 +239,22 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
                     "placeholder": "sta_s"
                     }
             ),
+            "type": forms.Select(
+                choices=[
+                    ('SINGLE', 'Single: Feature extraction just after UI Elem. Detection'), 
+                    ('AGGREGATE', 'Aggregate: Feature extraction after flattening UI log into dataset'), 
+                ],
+                attrs={
+                    "class": "form-control",
+                    "required": "false"
+                }),
             "technique_name": forms.Select(
-                # TODO add all supported techniques
-                choices=[('count', 'Count')],
+                # choices=[('quantity', 'Quantity of UI Elem. per class'), 
+                #          ('location', 'Location (UI Elem. Centroid)'), 
+                #          ('plaintext', 'Location (UI Elem. Centroid) + Plain Text'), 
+                #          ('status', 'UI Elem. Status'), 
+                #          ('number_ui_element', 'Number of UI Elem.'),
+                #          ('caption_ui_element', 'Caption of UI Elem.')],
                 attrs={
                     "class": "form-control",
                     "required": "false"

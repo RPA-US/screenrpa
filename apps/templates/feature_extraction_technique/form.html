@@ -12,6 +12,13 @@
     </div>
     <div class="col-lg-12">
         <div class="form-group">
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Type {% endblocktranslate %}<b class="text-red">*</b></label>
+        {{ form.type }}
+        <div class="form-validation">{{ form.type.errors }}</div>
+        </div>
+    </div>
+    <div class="col-lg-12">
+        <div class="form-group">
         <label class="form-control-label" for="input-title">{% blocktranslate %}Technique {% endblocktranslate %}<b class="text-red">*</b></label>
         {{ form.technique_name }}
         <div class="form-validation">{{ form.technique_name.errors }}</div>
@@ -42,12 +49,14 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => { 
       const rel_comp_pred = document.getElementById('id_consider_relevant_compos')
+      const fe_type = document.getElementById('id_type')
+
       if (rel_comp_pred.checked) {
-          document.getElementById('id_relevant_compos_predicate').disabled = false;
+        document.getElementById('id_relevant_compos_predicate').disabled = false;
       } else {
-          document.getElementById('id_relevant_compos_predicate').disabled = true;
+        document.getElementById('id_relevant_compos_predicate').disabled = true;
       }
       rel_comp_pred.onchange = () => {
         if (rel_comp_pred.checked) {
@@ -56,6 +65,69 @@
           document.getElementById('id_relevant_compos_predicate').disabled = true;
         }
       }
+      var select = document.getElementById('id_technique_name');
+      var type = fe_type.value;
+
+      // Limpiar las opciones existentes
+      select.innerHTML = '';
+
+      // Verificar si se ha seleccionado un tipo
+      if (type === '') {
+          // Si no se ha seleccionado un tipo, deshabilitar el campo technique name
+          select.disabled = true;
+      } else {
+          // Si se ha seleccionado un tipo, habilitar el campo technique name
+          select.disabled = false;
+
+          // Definir las opciones basadas en el tipo seleccionado
+          var options;
+          if (type === 'SINGLE') {
+            options = ['number_ui_element', 'caption_ui_element'];
+          } else if (type === 'AGGREGATE') {
+            options = ['status', 'plaintext', 'location', 'quantity'];
+          }
+
+          // Añadir las nuevas opciones al select
+          for (var i = 0; i < options.length; i++) {
+              var option = document.createElement('option');
+              option.text = options[i];
+              option.value = options[i];
+              select.add(option);
+          }
+      }
     })
+
+    document.getElementById('id_type').addEventListener('change', function() {
+      var select = document.getElementById('id_technique_name');
+      var type = this.value;
+
+      // Limpiar las opciones existentes
+      select.innerHTML = '';
+
+      // Verificar si se ha seleccionado un tipo
+      if (type === '') {
+          // Si no se ha seleccionado un tipo, deshabilitar el campo technique name
+          select.disabled = true;
+      } else {
+          // Si se ha seleccionado un tipo, habilitar el campo technique name
+          select.disabled = false;
+
+          // Definir las opciones basadas en el tipo seleccionado
+          var options;
+          if (type === 'SINGLE') {
+            options = ['number_ui_element', 'caption_ui_element'];
+          } else if (type === 'AGGREGATE') {
+            options = ['status', 'plaintext', 'location', 'quantity'];
+          }
+
+          // Añadir las nuevas opciones al select
+          for (var i = 0; i < options.length; i++) {
+              var option = document.createElement('option');
+              option.text = options[i];
+              option.value = options[i];
+              select.add(option);
+          }
+      }
+  });
   </script>
 {% endblock javascripts %}

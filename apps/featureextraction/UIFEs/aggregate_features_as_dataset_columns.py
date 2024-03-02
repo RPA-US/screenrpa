@@ -1,6 +1,7 @@
-from core.utils import read_ui_log_as_dataframe
 import json
+import os
 from core.settings import STATUS_VALUES_ID, sep
+from core.utils import read_ui_log_as_dataframe, get_model_classes, get_execution_path
 
 def find_st_id(st_value):
     res = None
@@ -126,18 +127,19 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     Column name: compoclass+int
     Column value: centroid 
     """
-    ui_elements_classification_classes = execution.ui_elements_classification_classes
-    decision_point = execution.feature_extraction_technique.decision_point_activity
+    execution_root = get_execution_path(path_scenario)
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = path_scenario + 'components_json' + sep
-    flattened_log = path_scenario + 'flattened_dataset.json',
-    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-    text_classname = execution.case_study.text_classname,
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    metadata_json_root = execution_root + 'components_json' + sep
+    flattened_log = execution_root + 'flattened_dataset.json'
+    enriched_log_output = execution_root + execution.feature_extraction_technique.technique_name+'_enriched_log.csv'
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
+    #decision_point = execution.feature_extraction_technique.decision_point_activity
+    ui_elements_classification_classes = get_model_classes(execution)["classes"]
+    text_classname = get_model_classes(execution)["text_classname"]
     
     log = read_ui_log_as_dataframe(ui_log_path)
 
@@ -155,6 +157,7 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     min_num_UI_elements = 99999999999999999
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
+        screenshot_filename = os.path.basename(screenshot_filename)
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
         with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
             data = json.load(f)
