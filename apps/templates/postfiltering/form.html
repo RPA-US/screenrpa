@@ -1,0 +1,100 @@
+{% load i18n %}
+
+<form method="POST" enctype="multipart/form-data" >{% csrf_token %}
+    <div class="pl-lg-4">
+      <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
+          <div class="pl-lg-2">
+              <div class="col-12">
+                  <div class="form-group">
+                      <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+                      {{ form.title }}
+                      <div class="form-validation">{{ form.title.errors }}</div>
+                  </div>
+              </div>
+              <div class="col-12">
+                  <div class="form-group">
+                      <label class="form-control-label" for="input-title">{% blocktranslate %}Type {% endblocktranslate %}<b class="text-red">*</b></label>
+                      {{ form.type }}
+                  <div class="form-validation">{{ form.type.errors }}</div>
+                  </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="form-group">
+                  {{ form.skip.label_tag }}
+                  {{ form.skip }}
+                  <div class="form-validation">{{ form.skip.errors }}</div>
+                </div>
+              </div>
+          </div>
+      <hr>
+        <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+        <div class="col-12">
+          <div class="form-group" id="preloaded">
+            {{form.preloaded}}
+            <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+          </div>
+          <div class="form-group" id="preloaded_file">
+            {{form.preloaded_file}}
+            <label class="form-control-label" for="preloaded_file">
+              {% if form.preloaded == True %}
+                {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
+              {% endif %}
+            </label>
+            <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
+          </div>
+        </div>
+        <hr>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="form-group">
+            {{ form.configurations.label_tag }}
+            {{ form.configurations }}
+            <div class="form-validation">{{ form.configurations.errors }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+      <i class="fas fa-save"></i> 
+      {% blocktranslate %}Save{% endblocktranslate %}
+    </button>
+  </form>
+
+  <!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const title = document.getElementById('id_title');
+    const type = document.getElementById('id_type');
+    const skip = document.getElementById('id_skip');
+    const preloaded = document.getElementById('id_preloaded');  
+    const preloaded_file = document.getElementById('id_preloaded_file');  
+    const configurations = document.getElementById('id_configurations');
+
+    // Función para habilitar/deshabilitar campos
+    function toggleFields(isPreloadedChecked) {
+      type.disabled = isPreloadedChecked;
+      skip.disabled = isPreloadedChecked;
+      configurations.disabled = isPreloadedChecked;
+
+      preloaded_file.disabled = !isPreloadedChecked;
+    }
+
+    // Controlador de eventos para el checkbox 'preloaded'
+    preloaded.addEventListener('change', () => {
+      toggleFields(preloaded.checked);
+    });
+
+    // Inicializar los campos al cargar la página
+    toggleFields(preloaded.checked);
+
+    document.getElementById('form').onsubmit = function() {
+      document.getElementById('id_preloaded').readOnly = false;
+    }
+  })  
+</script>
+
+
+
+{% endblock javascripts %}

@@ -141,22 +141,35 @@ class PostfiltersForm(forms .ModelForm):
             "type",
             "skip",
             "configurations",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "type": _("Type"),
             "skip": _("Skip"),
-            "configurations": _("Configurations")
+            "configurations": _("Configurations"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
             "type": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "rpa-us"
+                    "placeholder": "New-postfiltering"
                     }
             ),
             "skip": forms.CheckboxInput(
                 attrs={"class": "primary-checkbox", "checked": "checked"}
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
             ),
             "configurations": forms.Textarea(attrs={
                 'class': 'form-control',

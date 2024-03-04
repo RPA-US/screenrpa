@@ -174,16 +174,17 @@ class UIElementsClassification(models.Model):
         return 'type: ' + self.type + ' - model: ' + self.model
 
 class Postfilters(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True,blank=True)
+    title = models.CharField(max_length=255)
     freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
-    type = models.CharField(max_length=25, default='rpa-us')
+    type = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
