@@ -69,8 +69,8 @@ UI_ELM_DET_TYPES = (
 )
 
 class Prefilters(models.Model):
-    preloaded = models.BooleanField(default=False, editable=True)
     title = models.CharField(max_length=255)
+    preloaded = models.BooleanField(default=False, editable=True)
     preloaded_file = PrivateFileField("File", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)

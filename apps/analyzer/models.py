@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
-from core.settings import PRIVATE_STORAGE_ROOT, sep, DEFAULT_PHASES
+from core.settings import PRIVATE_STORAGE_ROOT, sep, DEFAULT_EXECUTION_ATTRIBUTES_PHASES
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
@@ -191,7 +191,7 @@ class Execution(models.Model):
         super().save(*args, **kwargs)
 
     def check_preloaded_file(self):            
-        for ph in DEFAULT_PHASES:
+        for ph in DEFAULT_EXECUTION_ATTRIBUTES_PHASES:
             if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
                 preloaded_file_path = f"{PRIVATE_STORAGE_ROOT}{sep}{getattr(self, ph).preloaded_file.name}"
                 unzip_file(preloaded_file_path, self.exp_folder_complete_path)
