@@ -81,7 +81,7 @@
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
       detection_technique.disabled = isPreloadedChecked;
-      model.disabled = isPreloadedChecked;
+      // model.disabled = isPreloadedChecked;
       ocr.disabled = isPreloadedChecked;
       configurations.readOnly = isPreloadedChecked;
       preloaded_file.disabled = !isPreloadedChecked;
@@ -96,7 +96,7 @@
     toggleFields(preloaded.checked);
 
     document.getElementById('form').onsubmit = function() {
-      document.getElementById('id_model').readOnly = false;
+      // document.getElementById('id_model').readOnly = false;
       document.getElementById('id_preloaded').readOnly = false;
     }
   })  
