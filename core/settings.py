@@ -57,9 +57,6 @@ DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_eleme
 PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique','ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
 MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
-#These are the Execution Entity Attributes (analyzer/models.py -> class Execution (models.Model))
-#created for check preloaded files.
-DEFAULT_EXECUTION_ATTRIBUTES_PHASES = ['monitoring','prefilters','ui_elements_detection','ui_elements_classification','postfilters','feature_extraction_technique','process_discovery','extract_training_dataset','decision_tree_training']
 #===================================================================================================
 #===================================================================================================
 
