@@ -1,6 +1,26 @@
 {
     "rpa-us": {
         "classes": [
+            "x0_Button",
+            "x0_CheckBox",
+            "x0_CheckedTextView",
+            "x0_EditText",
+            "x0_ImageButton",
+            "x0_ImageView",
+            "x0_NumberPicker",
+            "x0_RadioButton",
+            "x0_RatingBar",
+            "x0_SeekBar",
+            "x0_Spinner",
+            "x0_Switch",
+            "x0_TextView",
+            "x0_ToggleButton"
+        ],
+        "output_format": "legacy",
+        "text_classname": "TextView"
+    },
+    "uied": {
+        "classes": [
             "Button",
             "Checkbox",
             "CheckedTextView",
@@ -14,17 +34,17 @@
             "Spinner",
             "Switch",
             "TextView",
-            "ToggleButton"],
-        "text_classname": "TextView"
-    },
-    "uied": {
-        "classes": [],
+            "ToggleButton"
+        ],
+        "output_format": "legacy",
         "text_classname": "text"},
     "sam": {
         "classes": [],
+        "output_format": "som",
         "text_classname": "text"},
     "fast-sam": {
         "classes": [],
+        "output_format": "som",
         "text_classname": "text"
     },
     "screen2som": { 
@@ -58,6 +78,7 @@
             "Link",
             "Text"
         ],
+        "output_format": "som",
         "text_classname": "Text"
     }
 }

@@ -70,7 +70,7 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
         
         if before_DP:
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
                 data = json.load(f)
                 
             if consider_relevant_compos:
@@ -110,7 +110,7 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
             # df.loc[i] = quantity_ui_elements.values()
     
                 
-            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
                 
             if activity == decision_point:
@@ -131,9 +131,9 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = execution_root + 'components_json' + sep
-    flattened_log = execution_root + 'flattened_dataset.json'
-    enriched_log_output = execution_root + execution.feature_extraction_technique.technique_name+'_enriched_log.csv'
+    metadata_json_root = os.path.join(execution_root, 'components_json')
+    flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
+    enriched_log_output = os.path.join(execution_root, execution.feature_extraction_technique.technique_name + '_enriched_log.csv')
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
     relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
@@ -159,10 +159,13 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     for i, screenshot_filename in enumerate(screenshot_filenames):
         screenshot_filename = os.path.basename(screenshot_filename)
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
             data = json.load(f)
 
         screenshot_compos_frec = headers.copy()
+        
+        # TODO: retrieve the information of the file depending on the output_format of the model, what is the format of components_json files
+        output_format = get_model_classes(execution)["output_format"]
         
         if consider_relevant_compos:
             compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
@@ -200,7 +203,7 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
         else:
             data["features"] = { "location": info_to_join }
         
-        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(data, jsonFile)
 
     print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
@@ -242,7 +245,7 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
             data = json.load(f)
 
         screenshot_compos_frec = headers.copy()
@@ -284,7 +287,7 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
                 info_to_join[column_name] = column_as_vector
             # num_UI_elements += 1
                 
-        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(data, jsonFile)
 
 
@@ -365,7 +368,7 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
         
         if before_DP:
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
                 data = json.load(f)
 
             if consider_relevant_compos:
@@ -394,7 +397,7 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
                     ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid_x)+"-"+str(centroid_y)+"_"+activity] = status
             num_screenshots += 1
                 
-            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
                 
             if activity == decision_point:
@@ -438,7 +441,7 @@ def attention_ui_hierarchy(ui_elements_classification_classes, decision_point, c
         
         if before_DP:
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
                 data = json.load(f)
 
             if consider_relevant_compos:
@@ -467,7 +470,7 @@ def attention_ui_hierarchy(ui_elements_classification_classes, decision_point, c
                     ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid_x)+"-"+str(centroid_y)+"_"+activity] = status
             num_screenshots += 1
                 
-            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
                 
             if activity == decision_point:

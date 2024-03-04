@@ -10,7 +10,8 @@ import numpy as np
 import tensorflow as tf
 from keras.models import model_from_json
 from tqdm import tqdm
-from core.utils import read_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe, get_execution_path
+from core.settings import sep
 from apps.featureextraction.SOM.CNN.CompDetCNN import CompDetCNN
 
 default_ui_elements_classification_classes = ['x0_Button', 'x0_CheckBox', 'x0_CheckedTextView', 'x0_EditText', 'x0_ImageButton', 'x0_ImageView', 'x0_NumberPicker', 'x0_RadioButton', 'x0_RatingBar', 'x0_SeekBar', 'x0_Spinner', 'x0_Switch', 'x0_TextView', 'x0_ToggleButton']
@@ -52,6 +53,7 @@ def check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_ro
     missing_json_file = False
 
     for screenshot in screenshot_filenames:
+        screenshot = os.path.basename(screenshot)
         if not os.path.exists(metadata_json_root + screenshot + '.json'):
             missing_json_file = True
             break
@@ -90,14 +92,15 @@ def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
     :type ui_elements_classification_classes: list
     
     """
-    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
-    ui_elements_crops_npy_root = path_results + 'components_npy' + sep
-    metadata_json_root = path_results + 'components_json' + sep
-    model = execution.ui_elements_classification.model.path, # specific extractors
-    screenshot_colname = execution.case_study.special_colnames["Screenshot"],
-    text_classname = execution.ui_elements_classification.model.text_classname,
-    ui_elements_classification_classes = execution.ui_elements_classification.model.classes,
-    ui_elements_classification_image_shape = execution.ui_elements_classification.model.image_shape,
+    execution_root = get_execution_path(path_scenario)
+    # path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    ui_elements_crops_npy_root = execution_root + 'components_npy' + sep
+    metadata_json_root = execution_root + 'components_json' + sep
+    model = execution.ui_elements_classification.model.path # specific extractors
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    text_classname = execution.ui_elements_classification.model.text_classname
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes
+    ui_elements_classification_image_shape = execution.ui_elements_classification.model.image_shape
     skip = execution.ui_elements_classification.preloaded
     
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
@@ -111,6 +114,7 @@ def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
         print("\n\nLoaded ML model from disk\n")
 
         for screenshot_filename in tqdm(screenshot_filenames, desc=f"Classifying images in {ui_elements_crops_npy_root}"):
+            screenshot_filename = os.path.basename(screenshot_filename)
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
             with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
                 data = json.load(f)
@@ -155,10 +159,10 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
     ui_elements_crops_npy_root = path_results + 'components_npy' + sep
     metadata_json_root = path_results + 'components_json' + sep
     model = execution.ui_elements_classification.model.path, # specific extractors
-    screenshot_colname = execution.case_study.special_colnames["Screenshot"],
-    text_classname = execution.ui_elements_classification.model.text_classname,
-    ui_elements_classification_classes = execution.ui_elements_classification.model.classes,
-    ui_elements_classification_image_shape = execution.ui_elements_classification.model.image_shape,
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    text_classname = execution.ui_elements_classification.model.text_classname
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes
+    ui_elements_classification_image_shape = execution.ui_elements_classification.model.image_shape
     skip = execution.ui_elements_classification.preloaded
 
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)

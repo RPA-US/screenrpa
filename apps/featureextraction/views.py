@@ -22,7 +22,7 @@ def ui_elements_classification(log_path, path_scenario, execution):
     tprint(PLATFORM_NAME + " - " + CLASSIFICATION_PHASE_NAME, "fancy60")
     print(path_scenario+"\n")
     
-    match execution.ui_elements_classification.model.type:
+    match execution.ui_elements_classification.type:
         case "rpa-us":
             output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "uied":

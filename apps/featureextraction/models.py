@@ -136,22 +136,22 @@ def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
 
-def get_ui_elements_classification_old_classes():
+def get_ui_elements_classification_moran():
     return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
 'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
 
-def get_ui_elements_classification_classes():
+def get_ui_elements_classification_uied():
     return "Button, Checkbox, CheckedTextView, EditText, ImageButton, ImageView, NumberPicker, RadioButton, RatingBar, SeekBar, Spinner, Switch, TextView, ToggleButton".split(', ') # this returns a list
 
 class CNNModels(models.Model):
     name = models.CharField(max_length=25, unique=True)
-    path = models.CharField(max_length=255, unique=True)
+    path = models.CharField(max_length=255, unique=True, default="checkpoints/uied/custom-v2.h5")
     image_shape = ArrayField(models.IntegerField(blank=True), default=get_ui_elements_classification_image_shape)
-    classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_image_shape)
+    classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_uied)
     text_classname = models.CharField(max_length=50, default="TextView")
    
     def clean(self):
-        if (self.text_classname not in self.ui_elements_classification_classes):
+        if (self.text_classname not in self.classes):
             raise ValidationError("text_classname must be one of the ui_elements_classification_classes")
 
 class UIElementsClassification(models.Model):

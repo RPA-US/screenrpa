@@ -12,5 +12,5 @@ def get_model_classes(execution):
     return json_func[model_name]
   
 def get_execution_path(param_img_root):
-    return param_img_root[:-1] + '_results/'
+    return param_img_root[:-1] + '_results'
      
