@@ -41,32 +41,7 @@
             <h3 class="mb-0">{% blocktranslate %}Create a new Process Discovery Configuration{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      {{ form.type.label_tag }}
-                      {{ form.type }}
-                      <div class="form-validation">{{ form.type.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      {{ form.configurations.label_tag }}
-                      {{ form.configurations }}
-                      <div class="form-validation">{{ form.configurations.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
-                <i class="fas fa-save"></i> 
-                {% blocktranslate %}Save{% endblocktranslate %}
-              </button>
-            </form>
+            {% include "processdiscovery/form.html" %}
           </div>
         </div>
       </div>
