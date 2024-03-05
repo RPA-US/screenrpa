@@ -46,10 +46,12 @@
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="library">{% blocktranslate %}library{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Algorithms{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}One hot columns{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type"></th>
@@ -70,6 +72,9 @@
                   <td>
                       {{ dtt.created_at }}
                   </td>
+                  <td>
+                    {{ dtt.title }}
+                  </td>
                   <td class="library">
                       {{ dtt.library }}
                   </td>
@@ -82,7 +87,14 @@
                   <td>
                     {{ dtt.columns_to_drop_before_decision_point }}
                   </td>
-                  <td>
+                    <td>
+                      {% if dtt.preloaded %}
+                        {% blocktranslate %}Yes{% endblocktranslate %} |
+                        {{ dtt.preloaded_file }}
+                      {% else %}
+                        {% blocktranslate %}No{% endblocktranslate %}
+                      {% endif %}
+                    </td>
                     <!-- <div class="d-flex align-items-center">
                       <span class="completion mr-2">{{ dtt.executed }}</span>
                       <div>
@@ -101,6 +113,7 @@
                         {% endif %}
                       </div>
                     </div> -->
+                    <td>
                     <span class="badge badge-dot mr-4">
                       {% if dtt.freeze %}
                       <i class="bg-success"></i>

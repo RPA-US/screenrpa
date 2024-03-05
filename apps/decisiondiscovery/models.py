@@ -120,9 +120,9 @@ class DecisionTreeTraining(models.Model):
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     configuration = models.JSONField(default=default_dd_configuration)
-    library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
-    one_hot_columns = ArrayField(models.CharField(max_length=25))
-    columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
+    library = models.CharField(max_length=255, default='sklearn', null=True, blank=True) # 'sklearn'
+    one_hot_columns = ArrayField(models.CharField(max_length=25) , default=list, null=True, blank=True) 
+    columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore, null=True, blank=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
