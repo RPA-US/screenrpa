@@ -235,22 +235,41 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "type",
             "technique_name",
             "consider_relevant_compos",
-            "relevant_compos_predicate"
+            "relevant_compos_predicate",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "identifier": _("Identifier"),
             "type": _("Feature extraction type"),
             "technique_name": _("Technique"),
             "consider_relevant_compos": _("Apply Filtering (Relevant Component Selection)"),
-            "relevant_compos_predicate": _("Condition for a UI Component to be relevant")
+            "relevant_compos_predicate": _("Condition for a UI Component to be relevant"),
+            "preloaded_file":"Preload Execution Results",
+            "title": "Title "
         }
 
         widgets = {
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Feature Extraction Technique"
+                    }
+            ),
             "identifier": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "sta_s"
                     }
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
             ),
             "type": forms.Select(
                 choices=[
