@@ -18,7 +18,9 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             "title",
             "decision_point_activity",
             "columns_to_drop_before_decision_point",
-            "configurations"
+            "configurations",
+            "preloaded_file",
+            "preloaded"
         )
         labels = {
             "title": _("Title"),
@@ -27,14 +29,23 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             "configurations": _("Additional Configurations (JSON)"),
             "columns_to_drop": _("Columns to drop"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
-            "target_label": _("Target label")
+            "target_label": _("Target label"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
             "title": forms.TextInput(attrs={
                     "class": "form-control",
-                    "placeholder": _("Title")
+                    "placeholder": "Extract Training Technique"
                     }
+            ),
+             "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
             ),
             "target_label": forms.TextInput(
                 attrs={
@@ -81,16 +92,35 @@ class DecisionTreeTrainingForm(forms.ModelForm):
             "library",
             "configuration",
             "one_hot_columns",
-            "columns_to_drop_before_decision_point"
+            "columns_to_drop_before_decision_point",
+             "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "library": _("Library"),
             "configuration": _("Configuration"),
             "one_hot_columns": _("One hot columns"),
-            "columns_to_drop_before_decision_point": _("Columns to drop before decision point")
+            "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
+            "preloaded_file":"Preload Execution Results",
+            "title": "Title "
         }
 
         widgets = {
+             "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Decision Tree Technique"
+                    }
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
             "library": forms.TextInput(
                 attrs={
                     "class": "form-control",

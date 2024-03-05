@@ -3,6 +3,13 @@
 <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
     <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
     <div class="pl-lg-4">
+      <div class="col-lg-12">
+        <div class="form-group" id ="title">
+          <label class="form-control-label" for="title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+          {{ form.title }}
+          <div class="form-validation">{{ form.title.errors }}</div>
+        </div>
+      </div>
     <div class="col-lg-12">
         <div class="form-group">
         <label class="form-control-label" for="input-title">{% blocktranslate %}Identifier {% endblocktranslate %}<b class="text-red">*</b></label>
@@ -26,6 +33,23 @@
     </div>
     </div>
     <hr>
+        <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+        <div class="col-12">
+          <div class="form-group" id="preloaded">
+            {{form.preloaded}}
+            <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+          </div>
+          <div class="form-group" id="preloaded_file">
+            {{form.preloaded_file}}
+            <label class="form-control-label" for="preloaded_file">
+              {% if form.preloaded == True %}
+                {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
+              {% endif %}
+            </label>
+            <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
+          </div>
+        </div>
+    <hr>
     <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configurations{% endblocktranslate %}</h6>
     <div class="pl-lg-4">
     <div class="col-lg-12">
@@ -46,13 +70,14 @@
     {% blocktranslate %}Save{% endblocktranslate %}
     </button>
 </form>
+
+
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
   <script>
     document.addEventListener('DOMContentLoaded', () => { 
       const rel_comp_pred = document.getElementById('id_consider_relevant_compos')
       const fe_type = document.getElementById('id_type')
-
       if (rel_comp_pred.checked) {
         document.getElementById('id_relevant_compos_predicate').disabled = false;
       } else {
@@ -129,5 +154,42 @@
           }
       }
   });
+
+  
   </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const title = document.getElementById('id_title');
+  const type = document.getElementById('id_type');
+  //const skip = document.getElementById('id_skip');
+  const preloaded = document.getElementById('id_preloaded');  
+  const preloaded_file = document.getElementById('id_preloaded_file');  
+  //const configurations = document.getElementById('id_configurations');
+  const identifier = document.getElementById('id_identifier');
+  const technique_name = document.getElementById('id_technique_name');
+
+  // Función para habilitar/deshabilitar campos
+  function toggleFields(isPreloadedChecked) {
+    type.disabled = isPreloadedChecked;
+    //skip.disabled = isPreloadedChecked;
+    //configurations.disabled = isPreloadedChecked;
+    identifier.disabled = isPreloadedChecked;
+    technique_name.disabled = isPreloadedChecked;
+    preloaded_file.disabled = !isPreloadedChecked;
+  }
+
+  // Controlador de eventos para el checkbox 'preloaded'
+  preloaded.addEventListener('change', () => {
+    toggleFields(preloaded.checked);
+  });
+
+  // Inicializar los campos al cargar la página
+  toggleFields(preloaded.checked);
+
+  document.getElementById('form').onsubmit = function() {
+    document.getElementById('id_preloaded').readOnly = false;
+  }
+})  
+</script>
 {% endblock javascripts %}
