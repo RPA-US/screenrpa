@@ -44,7 +44,7 @@ class UIElementsDetectionForm(forms .ModelForm):
             ),
             # type is a selectable
             "type": forms.Select(
-                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
+                choices=[('rpa-us', 'Kevin Moran'),('screen2som', 'Screen2SOM'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
                 attrs={
                     "class": "form-control",
                     # If value is screen2som, disable CNN model selectable
@@ -104,14 +104,14 @@ class PrefiltersForm(forms .ModelForm):
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "type": forms.TextInput(
+            "type": forms.Select(
+                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "New prefiltering"
-                    }
+                    "class": "form-control"
+                }
             ),
             "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
+                attrs={"class": "primary-checkbox"}
             ),
             "configurations": forms.Textarea(attrs={
                 'class': 'form-control',

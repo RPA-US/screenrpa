@@ -77,7 +77,7 @@ class Prefilters(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
-    type = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
+    type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
