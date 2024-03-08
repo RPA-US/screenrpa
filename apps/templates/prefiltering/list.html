@@ -46,12 +46,13 @@
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Type{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type"></th>
+                  <th scope="col" class="sort" data-sort=""></th>
                 </tr>
                 </tr>
               </thead>
@@ -70,6 +71,9 @@
                   <td>
                       {{ prefilter.created_at }}
                   </td>
+                  <td>
+                    <a href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">{{ prefilter.title }} </a>
+                  </td>
                   <td class="type">
                       {{ prefilter.type }}
                   </td>
@@ -83,6 +87,17 @@
                   </td>
                   <td class="configurations">
                       {{ prefilter.configurations|truncatechars:50 }}
+                  </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if prefilter.executed %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}Already Executed{% endblocktranslate %}</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}Not executed{% endblocktranslate %}</span>
+                      {% endif %}
+                    </span>
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
@@ -121,15 +136,29 @@
                         <i class="fas fa-ellipsis-v"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                        {% if prefilter.executed > 0 %}
+                        {% if prefilter.active == True and prefilter.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="#">
                           <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
-                        {% elif prefilter.executed == 0 %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/inactive/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif prefilter.active == False and prefilter.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this prefiltering?{% endblocktranslate %}')" href="/fe/prefiltering/delete/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/active/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
+                        {% elif prefilter.active == True and prefilter.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/inactive/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif prefilter.active == False and prefilter.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this prefilter?{% endblocktranslate %}')" href="/fe/prefiltering/delete/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
                           <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/active/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
