@@ -206,7 +206,7 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
         with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(data, jsonFile)
 
-    print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
+    # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
     
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
