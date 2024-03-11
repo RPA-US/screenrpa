@@ -118,23 +118,57 @@ class UIElementsDetection(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
     
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #     if self.preloaded_file :
-    #         # Generate unique folder name based on the uploaded file's name and current time
-    #         folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.type == "screen2som" and not self.ui_elements_classification:
+            ui_elements_classification = UIElementsClassification.objects.create(
+                preloaded=self.preloaded,
+                preloaded_file=self.preloaded_file,
+                freeze=self.freeze,
+                active=self.active,
+                executed=self.executed,
+                model=CNNModels.objects.get_or_create(name="screen2som", path="NA", image_shape=[640, 360, 3], classes=get_ui_elements_classification_screen2som(), text_classname="Text")[0],
+                type=self.type,
+                skip=self.skip,
+                case_study=self.case_study,
+                user=self.user
+            )
 
-    #         #CAMBIAR LOGICA DE GUARDADO DE CARPETA DE RESULTADOS
-    #         folder_path = PRIVATE_STORAGE_ROOT + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep + str(self.id) + sep + folder_name
-    #         os.makedirs(folder_path)
-    #         #Ruta de la carpeta creada: media/UIElemDetection_results/executions/1/preloadedFile_162512
-    #         self.exec_results_folder_complete_path = folder_path
-
-    #         super().save(*args, **kwargs)  
+            self.ui_elements_classification = ui_elements_classification
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
+def get_ui_elements_classification_screen2som():
+    return [ 
+            "WebIcon",
+            "Icon",
+            "Switch",
+            "BtnSq",
+            "BtnPill",
+            "BtnCirc",
+            "CheckboxChecked",
+            "CheckboxUnchecked",
+            "RadiobtnSelected",
+            "RadiobtnUnselected",
+            "TextInput",
+            "Dropdown",
+            "Link",
+            "TabActive",
+            "TabInactive",
+            "Sidebar",
+            "Navbar",
+            "Container",
+            "Image",
+            "BrowserURLInput",
+            "Header", 
+            "BrowserToolbar", 
+            "Toolbar", 
+            "Scrollbar",
+            "Application",
+            "Taskbar", 
+            "Dock"
+        ], 
 
 def get_ui_elements_classification_moran():
     return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 

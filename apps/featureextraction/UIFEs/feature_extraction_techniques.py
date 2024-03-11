@@ -150,7 +150,7 @@ from core.settings import STATUS_VALUES_ID, sep
 #         compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
 
 #         for j in range(0, len(compos_list)):
-#             compo_class = compos_list[j]["class"]
+#             compos_list[j]["class"] = compos_list[j]["class"]
 #             compo_x1 = compos_list[j]["column_min"]
 #             compo_y1 = compos_list[j]["row_min"]
 #             compo_x2 = compos_list[j]["column_max"]
@@ -158,9 +158,9 @@ from core.settings import STATUS_VALUES_ID, sep
 #             centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
 #             centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
 #             compos_list[j]["centroid"] = [centroid_x, centroid_y]
-#             screenshot_compos_frec[compo_class] += 1
+#             screenshot_compos_frec[compos_list[j]["class"]] += 1
             
-#             column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
+#             column_name = compos_list[j]["class"]+"_"+str(screenshot_compos_frec[compos_list[j]["class"]])
 
 #             if column_name in info_to_join:
 #                 if not len(info_to_join[column_name]) == i:
@@ -229,7 +229,7 @@ from core.settings import STATUS_VALUES_ID, sep
 #         compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]        
         
 #         for j in range(0, len(compos_list)):
-#             compo_class = compos_list[j]["class"]
+#             compos_list[j]["class"] = compos_list[j]["class"]
 #             compo_x1 = compos_list[j]["column_min"]
 #             compo_y1 = compos_list[j]["row_min"]
 #             compo_x2 = compos_list[j]["column_max"]
@@ -237,12 +237,12 @@ from core.settings import STATUS_VALUES_ID, sep
 #             centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
 #             centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
 #             compos_list[j]["centroid"] = [centroid_x, centroid_y]
-#             screenshot_compos_frec[compo_class] += 1
+#             screenshot_compos_frec[compos_list[j]["class"]] += 1
             
-#             if compo_class == text_classname:
-#                 column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
+#             if compos_list[j]["class"] == text_classname:
+#                 column_name = compos_list[j]["class"]+"_"+str(screenshot_compos_frec[compos_list[j]["class"]])
 #             else:
-#                 column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
+#                 column_name = compos_list[j]["class"]+"_"+str(screenshot_compos_frec[compos_list[j]["class"]])
 
 #             if column_name in info_to_join:
 #                 if not len(info_to_join[column_name]) == i:
@@ -376,7 +376,7 @@ from core.settings import STATUS_VALUES_ID, sep
 #     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
 def caption_ui_element(ui_log_path, path_scenario, execution):
-    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes
     decision_point = execution.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
@@ -384,7 +384,7 @@ def caption_ui_element(ui_log_path, path_scenario, execution):
     metadata_json_root = path_scenario + 'components_json' + sep
     flattened_log = path_scenario + 'flattened_dataset.json',
     enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-    text_classname = execution.case_study.text_classname,
+    text_classname = execution.case_study.ui_elements_classification.text_classname,
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
     relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
     id = execution.feature_extraction_technique.identifier
@@ -398,7 +398,7 @@ def number_ui_element(ui_log_path, path_scenario, execution):
     """
     Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
     """
-    ui_elements_classification_classes = execution.ui_elements_classification_classes
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes
     decision_point = execution.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
@@ -406,7 +406,7 @@ def number_ui_element(ui_log_path, path_scenario, execution):
     metadata_json_root = path_scenario + 'components_json' + sep
     flattened_log = path_scenario + 'flattened_dataset.json',
     enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-    text_classname = execution.case_study.text_classname,
+    text_classname = execution.case_study.ui_elements_classification.text_classname,
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
     relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
     id = execution.feature_extraction_technique.identifier
@@ -442,17 +442,17 @@ def number_ui_element(ui_log_path, path_scenario, execution):
             compos_list = data["compos"]
 
         for j in range(0, len(compos_list)):
-            compo_class = compos_list[j]["class"]
-            compo_x1 = compos_list[j]["column_min"]
-            compo_y1 = compos_list[j]["row_min"]
-            compo_x2 = compos_list[j]["column_max"]
-            compo_y2 = compos_list[j]["row_max"]
-            centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
-            centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
-            compos_list[j]["centroid"] = [centroid_x, centroid_y]
-            screenshot_compos_frec[compo_class] += 1
+            # Centroid is Already calculated in the prediction
+            # compo_x1 = compos_list[j]["column_min"]
+            # compo_y1 = compos_list[j]["row_min"]
+            # compo_x2 = compos_list[j]["column_max"]
+            # compo_y2 = compos_list[j]["row_max"]
+            # centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
+            # centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
+            # compos_list[j]["centroid"] = [centroid_x, centroid_y]
+            screenshot_compos_frec[compos_list[j]["class"]] += 1
             
-            column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
+            column_name = compos_list[j]["class"]+"_"+str(screenshot_compos_frec[compos_list[j]["class"]])
 
             if column_name in info_to_join:
                 if not len(info_to_join[column_name]) == i:
