@@ -1,15 +1,16 @@
 from shapely.geometry import Polygon
+import copy
 
 def build_tree(tree: list, depth=1):
     """
-    Recursively constructs a tree hierarchy from a list of shapes.
+    Recursively constructs a tree hierarchy from a list of compos.
 
     Args:
-        tree (list): A list of shapes
+        tree (list): A list of compos
         depth (int): The current depth of the tree.
 
     Returns:
-        list: A tree representing the hierarchy of the shapes.
+        list: A tree representing the hierarchy of the compos.
     """
     for shape1 in tree:
         if shape1["depth"] != depth:
@@ -28,6 +29,7 @@ def build_tree(tree: list, depth=1):
                     shape2["depth"] = depth + 1
                     shape1["children"].append(shape2)
                     shape1["type"] = "node"
+                    shape1["xpath"].append(shape2["id"])
             except ZeroDivisionError:
                 continue
         if len(shape1["children"]) > 0:
@@ -39,11 +41,12 @@ def ensure_toplevel(tree:dict, bring_up=None):
     Ensures that the TopLevel labels are in the top level of the tree
 
     Args:
-        tree (list): A tree representing the hierarchy of the shapes.
+        tree (list): A tree representing the hierarchy of the compos.
 
     Returns:
-        tree: A tree representing the hierarchy of the shapes.
+        tree: A tree representing the hierarchy of the compos.
     """
+    # TODO: Rewrite XPath for moved nodes
     if bring_up is None:
         bring_up = []
     children = tree["children"]
@@ -52,7 +55,7 @@ def ensure_toplevel(tree:dict, bring_up=None):
             child["children"], bring_up = ensure_toplevel(child, bring_up=bring_up)
             if len(child["children"]) == 0:
                 child["type"] = "leaf"
-            if child["label"] in ["Application", "Taskbar", "Dock"]:
+            if child["class"] in ["Application", "Taskbar", "Dock"]:
                 bring_up.append(child)
             
     new_children = list(filter(lambda c: c not in bring_up, children))
@@ -70,7 +73,7 @@ def readjust_depth(nodes, depth):
 
     return nodes
 
-def labels_to_soms(labels):
+def labels_to_output(labels):
     """
     Converts a list of labels into  a SOM .
 
@@ -80,25 +83,35 @@ def labels_to_soms(labels):
     Returns:
         dict: SOM.
     """
-    shapes = labels["shapes"]
-    for shape in shapes:
+    compos = labels["compos"]
+    for shape in compos:
         shape["depth"] = 1
         shape["type"] = "leaf"
+        shape["xpath"] = []
 
-    shapes.sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
+    compos.sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
 
     som = {
         "depth": 0,
         "type": "root",
+        "id": 0,
         "points": [
             [0, 0],
-            [0, labels["imageHeight"]],
-            [labels["imageWidth"], 0],
-            [labels["imageWidth"], labels["imageHeight"]],
+            [0, labels["img_shape"][0]],
+            [labels["img_shape"][1], 0],
+            [labels["img_shape"][1], labels["img_shape"][0]]
         ],
-        "children": build_tree(shapes),
+        "centroid": list(Polygon([
+            [0, 0],
+            [0, labels["img_shape"][0]],
+            [labels["img_shape"][1], 0],
+            [labels["img_shape"][1], labels["img_shape"][0]]
+        ]).centroid.coords[0]),
+        "children": build_tree(copy.deepcopy(compos)),
     }
 
     som["children"], _ = ensure_toplevel(som)
+
+    labels["som"] = som
     
-    return som
+    return labels
