@@ -78,9 +78,9 @@ def apply_prefilters(log_path, root_path, special_colnames, configurations):
 
 def prefilters(log_path, root_path, execution):
     
-    special_colnames = execution.case_study.special_colnames,
-    configurations = execution.prefilters.configurations,
-    filters_format_type = execution.prefilters.type,
+    special_colnames = execution.case_study.special_colnames
+    configurations = execution.prefilters.configurations
+    filters_format_type = execution.prefilters.type
     skip = execution.prefilters.preloaded
     
     if not skip:  
@@ -89,6 +89,7 @@ def prefilters(log_path, root_path, execution):
         match filters_format_type:
             case "rpa-us":
                 output = apply_prefilters(log_path, root_path, special_colnames, configurations)
+
             case _:
                 raise Exception(_("You select a type of prefilter that doesnt exists"))
     else:

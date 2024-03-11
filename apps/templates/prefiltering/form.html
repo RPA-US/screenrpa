@@ -40,7 +40,7 @@
                 {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
               {% endif %}
             </label>
-            <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
+            <button onclick="alert('|-- zip\n|   |-- prefilter_attention_maps -> screenshotXXXX.JPEG')">?</button>
           </div>
         </div>
         <hr>
@@ -74,7 +74,6 @@
     
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
-      type.disabled = isPreloadedChecked;
       skip.disabled = isPreloadedChecked;
       configurations.disabled = isPreloadedChecked;
 
