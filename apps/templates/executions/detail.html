@@ -124,11 +124,18 @@
               <div class="pl-lg-4">
                 <div class="card-body">
                   <div class="row icon-examples">
-                    <div class="col-lg-3 col-md-6">
-                      <a class="btn-icon-clipboard{% if execution.monitoring == None %} disabled{% endif %}" href="#" role="button" id="dropdownMenuLink" data-toggle="{% if execution.monitoring != None %}dropdown{% endif %}" aria-haspopup="true" aria-expanded="false">
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.monitoring == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-laptop" style="color: grey "></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
                         </div>
+                      {% endif %}
                       </a>
                       {% if execution.monitoring != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
@@ -218,17 +225,27 @@
                       </div>  
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <div>
-                          <i class="ni ni-vector"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
-                        </div>
-                      </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <!-- Dropdown menu links -->
-                        <a class="dropdown-item" href="/dd/decision-tree-training/list/{{ execution.case_study.id }}">Configurations</a>
-                        <a class="dropdown-item" href="#">Results
+                        {% if execution.decision_tree_training == None %}
+                        <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <div>
+                            <i class="ni ni-vector" style="color: grey;"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
+                          </div>
+                        {% else %}
+                        <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <div>
+                            <i class="ni ni-vector"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
+                          </div>
+                        {% endif %}
+                          
                         </a>
-                      </div>  
+                        {% if execution.decision_tree_training != None %}
+                          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <!-- Dropdown menu links -->
+                            <a class="dropdown-item" href="/dd/decision-tree-training/list/{{ execution.case_study.id }}">Configurations</a>
+                            <a class="dropdown-item" href="#">Results</a>
+                          </div>
+                        {% endif %}
+                      </div> 
                   </div>
                 </div>
               </div>
@@ -249,7 +266,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const monitoring = document.getElementById('id_monitoring_dropdownMenuLink');
+      const monitoring = document.getElementById('id_prefiltering');
       
       // Función para habilitar/deshabilitar campos
       function toggleFields(existPhase) {
@@ -257,7 +274,7 @@
       }
   
       // Inicializar los campos al cargar la página
-      toggleFields(execution.monitoring != null);
+      toggleFields(execution.monitoring == null);
   
     
     })  
