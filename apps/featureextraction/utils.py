@@ -228,9 +228,12 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         is_text = True if len(text)>0 else False
         c = {'id': compo.id, 'class': compo.category}
         c[text_classname] = str(' '.join(text)) if is_text else None
-        (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
-        c['width'] = compo.width
-        c['height'] = compo.height
+        c["points"] = [(x, y), (w, y), (w, h), (x, h)]
+        c["centroid"] = ((x + w) / 2, (y + h) / 2)
+        c["xpath"] = []
+        # (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
+        # c['width'] = compo.width
+        # c['height'] = compo.height
         c['contain'] = [contain_compo.id for contain_compo in compo.contain]
         output['compos'].append(c)
 

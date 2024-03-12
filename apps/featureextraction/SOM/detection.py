@@ -373,12 +373,15 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
                 text_classname: text[0] if is_text else None,
-                "column_min": int(x),
-                "row_min": int(y),
-                "column_max": int(w),
-                "row_max": int(h),
-                "width": int(w - x),
-                "height": int(h - y)
+                "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
+                "centroid": [int((w-x)/2), int((h-y)/2)],
+                "xpath": [],
+                # "column_min": int(x),
+                # "row_min": int(y),
+                # "column_max": int(w),
+                # "row_max": int(h),
+                # "width": int(w - x),
+                # "height": int(h - y)
             })
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))

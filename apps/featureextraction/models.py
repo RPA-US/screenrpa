@@ -171,8 +171,7 @@ def get_ui_elements_classification_screen2som():
         ], 
 
 def get_ui_elements_classification_moran():
-    return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
-'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
+    return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
 
 def get_ui_elements_classification_uied():
     return "Button, Checkbox, CheckedTextView, EditText, ImageButton, ImageView, NumberPicker, RadioButton, RatingBar, SeekBar, Spinner, Switch, TextView, ToggleButton".split(', ') # this returns a list
@@ -187,6 +186,9 @@ class CNNModels(models.Model):
     def clean(self):
         if (self.text_classname not in self.classes):
             raise ValidationError("text_classname must be one of the ui_elements_classification_classes")
+
+    def __str__(self):
+        return self.name
 
 class UIElementsClassification(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
