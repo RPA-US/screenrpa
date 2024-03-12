@@ -149,6 +149,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
         
         with open(root_path + "components_json" + sep + screenshot_filename + '.json', 'r') as f:
             screenshot_json = json.load(f)
+            print("screenshots_json: ", screenshot_json)
         
         if configurations[key]["predicate"] == "is_component_relevant":
             polygon_circles = []
