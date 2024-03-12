@@ -138,8 +138,8 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
     #decision_point = execution.feature_extraction_technique.decision_point_activity
-    ui_elements_classification_classes = get_model_classes(execution)["classes"]
-    text_classname = get_model_classes(execution)["text_classname"]
+    ui_elements_classification_classes = execution.ui_elements_classification.model.classes
+    text_classname = execution.ui_elements_classification.model.text_classname
     
     log = read_ui_log_as_dataframe(ui_log_path)
 
