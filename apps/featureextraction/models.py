@@ -182,6 +182,7 @@ class CNNModels(models.Model):
     image_shape = ArrayField(models.IntegerField(blank=True), default=get_ui_elements_classification_image_shape)
     classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_uied)
     text_classname = models.CharField(max_length=50, default="TextView")
+    model_properties = models.JSONField(null=True, blank=True)
    
     def clean(self):
         if (self.text_classname not in self.classes):
