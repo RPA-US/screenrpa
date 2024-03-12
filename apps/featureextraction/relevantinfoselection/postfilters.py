@@ -251,7 +251,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
 
 def apply_filters(log_path, root_path, execution):
     
-    special_colnames = execution.case_study.special_colnames,
+    special_colnames = execution.case_study.special_colnames
     configurations = execution.postfilters.configurations
     
     times = {}
@@ -275,7 +275,7 @@ def apply_filters(log_path, root_path, execution):
     return times
 
 def postfilters(log_path, root_path, execution):
-    filters_format_type = execution.postfilters.type,
+    filters_format_type = execution.postfilters.type
     skip = execution.postfilters.preloaded
     
     if not skip:  
