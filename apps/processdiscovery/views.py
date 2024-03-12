@@ -23,7 +23,11 @@ from django.utils.translation import gettext_lazy as _
 from pm4py.visualization.petri_net import visualizer as pn_visualizer
 from pm4py.objects.bpmn.exporter import exporter as bpmn_exporter
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
+from sklearn.decomposition import PCA
+from transformers import CLIPProcessor, CLIPModel
+import torch
+from PIL import Image
 
 
 def scene_level(log_path, scenario_path, root_path, special_colnames, configurations, skip, type):
@@ -33,45 +37,56 @@ def scene_level(log_path, scenario_path, root_path, special_colnames, configurat
 
     ui_log = read_ui_log_as_dataframe(log_path)
 
-    def extract_features_from_images(df, root_path, image_col):
-        vgg_model = VGG16(weights='imagenet', include_top=False)
-        img_path = os.path.join(root_path, 'Nano')
+    def extract_features_from_images(df, root_path, image_col, text_col, image_weight, text_weight):
+        # Inicializar CLIP
+        model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+        combined_features = []
 
-        def extract_features(img_path):
-            if not os.path.exists(img_path):
-                raise ValueError(f"La imagen no existe en {img_path}")
-
-            img = cv2.imread(img_path)
-
-            if img is None:
-                raise ValueError(f"No se pudo leer la imagen: {img_path}")
-
-            img = cv2.resize(img, (224, 224))
-            img = np.expand_dims(img, axis=0)
-            return vgg_model.predict(img).flatten()
-        
-        df['features'] = df[image_col].apply(lambda x: extract_features(os.path.join(img_path, x)))
+        for _, row in df.iterrows():
+            img_path = os.path.join(root_path, 'Nano', row[image_col])
+            text = row[text_col]
+            image = Image.open(img_path)
+            inputs = processor(text=[text], images=image, return_tensors="pt", padding=True)
+            with torch.no_grad():
+                outputs = model(**inputs)
+            image_features = outputs.image_embeds.cpu().numpy().flatten() * image_weight
+            text_features = outputs.text_embeds.cpu().numpy().flatten() * text_weight
+            combined_feature = np.hstack((image_features, text_features))
+            combined_features.append(combined_feature)
+        df['combined_features'] = combined_features
         return df
+
     
 
-    def cluster_images(df):
-        features = np.array(df['features'].tolist())
+    def cluster_images(df, use_pca, n_components=0.95):
+        if use_pca:
+            pca = PCA(n_components=n_components)
+            features = pca.fit_transform(np.array(df['combined_features'].tolist()))
+        else:
+            features = np.array(df['combined_features'].tolist())
+
         silhouette_scores = []
-        
-        # Iterar sobre varios valores de n_clusters para encontrar el óptimo
+        best_davies_bouldin_score = float("inf")
+        best_calinski_harabasz_score = -1
         for k in range(2, 11):
             clustering = AgglomerativeClustering(n_clusters=k).fit(features)
             labels = clustering.labels_
-            score = silhouette_score(features, labels)
-            silhouette_scores.append(score)
-        
-        # El número óptimo de clusters es el valor de k que maximiza el coeficiente de silueta
+            silhouette_avg = silhouette_score(features, labels)
+            silhouette_scores.append(silhouette_avg)
+            davies_bouldin = davies_bouldin_score(features, labels)
+            best_davies_bouldin_score = min(best_davies_bouldin_score, davies_bouldin)
+            calinski_harabasz = calinski_harabasz_score(features, labels)
+            best_calinski_harabasz_score = max(best_calinski_harabasz_score, calinski_harabasz)
         optimal_clusters = silhouette_scores.index(max(silhouette_scores)) + 2
-    
         clustering = AgglomerativeClustering(n_clusters=optimal_clusters).fit(features)
         df['activity_label'] = clustering.labels_
         df['activity_label'] = df['activity_label'].astype(str)
+        print(f"Mejor Coeficiente de Silueta: {max(silhouette_scores)} con {optimal_clusters} clusters")
+        print(f"Mejor Davies-Bouldin Score: {best_davies_bouldin_score}")
+        print(f"Mejor Calinski-Harabasz Score: {best_calinski_harabasz_score}")
         return df
+
     
     
     def auto_process_id_assignment(df):
@@ -89,8 +104,8 @@ def scene_level(log_path, scenario_path, root_path, special_colnames, configurat
         return df
 
     
-    ui_log = extract_features_from_images(ui_log, root_path, 'ocel:screenshot:name')
-    ui_log = cluster_images(ui_log)
+    ui_log = extract_features_from_images(ui_log, root_path, 'ocel:screenshot:name', 'header', image_weight=1, text_weight=1)
+    ui_log = cluster_images(ui_log, use_pca=False, n_components=0.95)
     ui_log = auto_process_id_assignment(ui_log)
     folder_path = os.path.join(root_path, 'results')
     
