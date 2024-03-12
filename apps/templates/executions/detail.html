@@ -125,19 +125,20 @@
                 <div class="card-body">
                   <div class="row icon-examples">
                     <div class="col-lg-3 col-md-6">
-                      <!-- <a class="btn btn-lg btn-icon-clipboard dropdown-toggle" -->
-                        <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          <div>
-                            <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
-                          </div>
-                        </a>
+                      <a class="btn-icon-clipboard{% if execution.monitoring == None %} disabled{% endif %}" href="#" role="button" id="dropdownMenuLink" data-toggle="{% if execution.monitoring != None %}dropdown{% endif %}" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
+                        </div>
+                      </a>
+                      {% if execution.monitoring != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/monitoring/list/{{ execution.case_study.id }}">Configurations</a>
-                          <a class="dropdown-item" href="#">Results
-                          </a>
-                        </div>                    
-                    </div>                    
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                                        
                     <div class="col-lg-3 col-md-6">
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
@@ -244,4 +245,23 @@
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const monitoring = document.getElementById('id_monitoring_dropdownMenuLink');
+      
+      // Función para habilitar/deshabilitar campos
+      function toggleFields(existPhase) {
+        monitoring.disabled = existPhase;
+      }
+  
+      // Inicializar los campos al cargar la página
+      toggleFields(execution.monitoring != null);
+  
+    
+    })  
+  </script>
+
+
+{% endblock javascripts %}
