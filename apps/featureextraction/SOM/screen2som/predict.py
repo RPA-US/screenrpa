@@ -23,6 +23,9 @@ def predict(image_path, path_to_save_bordered_images):
     image_pil = cv2.imread(image_path)
 
     detections = dict()
+    detections["img_shape"] = image_pil.shape
+
+    image_pil  = cv2.resize(image_pil, (640, 360))
 
     # Elements level preditions
     elements_compos = sahi_predictions(ELEMENTS_MODEL, image_pil, 240, 240, 0.3, "bbox", 0)
@@ -47,6 +50,13 @@ def predict(image_path, path_to_save_bordered_images):
 
     # Order compos by area
     detections["compos"].sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
+
+    # Resize detections
+    for compo in detections["compos"]:
+        for point in compo["points"]:
+            # Update the point to match new dimensions
+            point[0] = point[0] * detections["img_shape"][1] / image_pil.shape[1]
+            point[1] = point[1] * detections["img_shape"][0] / image_pil.shape[0]
 
     # Image crops from shapes
     recortes = []
