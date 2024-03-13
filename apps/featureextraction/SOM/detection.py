@@ -1,4 +1,5 @@
 import os
+import copy
 from os.path import join as pjoin
 import json
 import time
@@ -23,6 +24,7 @@ import apps.featureextraction.SOM.ip_draw as draw
 from apps.featureextraction.SOM.Component import Component 
 from apps.featureextraction.SOM.sam import get_sam_gui_components_crops 
 from apps.featureextraction.SOM.screen2som.predict import predict as screen2som_predict
+from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
 from .UiComponent import UiComponent #QUIT
 from django.utils.translation import gettext_lazy as _
 
@@ -313,7 +315,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     text_or_not_text = []
 
-    comp_json = {"img_shape": [img.shape], "compos": []}
+    comp_json = {"img_shape": img.shape, "compos": []}
 
     for j in range(0, len(contornos)):
         cont_horizontal = []
@@ -373,15 +375,20 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
                 text_classname: text[0] if is_text else None,
-                "column_min": int(x),
-                "row_min": int(y),
-                "column_max": int(w),
-                "row_max": int(h),
-                "width": int(w - x),
-                "height": int(h - y)
+                "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
+                "centroid": [int((w-x)/2), int((h-y)/2)],
+                "xpath": [],
+                # "column_min": int(x),
+                # "row_min": int(y),
+                # "column_max": int(w),
+                # "row_max": int(h),
+                # "width": int(w - x),
+                # "height": int(h - y)
             })
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))
+
+    comp_json = labels_to_output(copy.deepcopy(comp_json))
 
     return (recortes, comp_json, text_or_not_text, words)
 
@@ -471,17 +478,11 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "screen2som":
-                recortes, compos_json, som = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
+                recortes, compos_json = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
                 screenshot_filename = os.path.basename(image_names[img_index])
                 
                 with open(path_to_save_components_json + screenshot_filename + '.json', "w") as outfile:
                     json.dump(compos_json, outfile)
-
-                if not os.path.exists(path_to_save_components_json + "som/"):
-                    os.mkdir(path_to_save_components_json + "som/")
-
-                with open(path_to_save_components_json + "som/" + screenshot_filename + '_som.json', "w") as outfile:
-                    json.dump(som, outfile)
 
             else:
                 raise Exception("You select a type of UI element detection that doesnt exists")
