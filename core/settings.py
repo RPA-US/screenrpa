@@ -38,7 +38,7 @@ DECISION_FOLDERNAME =           env('DECISION_TREE_TRAINING_FOLDERNAME')
 PLOT_DECISION_TREES =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-PLATFORM_NAME =                             "SCREEN RPA"
+PLATFORM_NAME =                             "  SCREEN RPA"
 MONITORING_PHASE_NAME =                     _("monitoring")
 INFO_PREFILTERING_PHASE_NAME =              _("preselection")
 DETECTION_PHASE_NAME =                      _("detection")
