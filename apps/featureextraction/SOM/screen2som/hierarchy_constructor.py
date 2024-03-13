@@ -29,7 +29,7 @@ def build_tree(tree: list, depth=1):
                     shape2["depth"] = depth + 1
                     shape1["children"].append(shape2)
                     shape1["type"] = "node"
-                    shape1["xpath"].append(shape2["id"])
+                    shape2["xpath"].append(shape1["id"])
             except ZeroDivisionError:
                 continue
         if len(shape1["children"]) > 0:
@@ -46,7 +46,6 @@ def ensure_toplevel(tree:dict, bring_up=None):
     Returns:
         tree: A tree representing the hierarchy of the compos.
     """
-    # TODO: Rewrite XPath for moved nodes
     if bring_up is None:
         bring_up = []
     children = tree["children"]
@@ -57,6 +56,9 @@ def ensure_toplevel(tree:dict, bring_up=None):
                 child["type"] = "leaf"
             if child["class"] in ["Application", "Taskbar", "Dock"]:
                 bring_up.append(child)
+                # remove 1st elements from list(stack), if any
+                if len(child["xpath"]) > 0:
+                    child["xpath"].pop(0)
             
     new_children = list(filter(lambda c: c not in bring_up, children))
 
@@ -68,6 +70,9 @@ def ensure_toplevel(tree:dict, bring_up=None):
 
 def readjust_depth(nodes, depth):
     for node in nodes:
+        # Remove xpath elements no longer needed
+        node["xpath"] = node["xpath"][node["depth"]-depth:]
+        # Readjust depth
         node["depth"] = depth
         node["children"] = readjust_depth(node["children"], depth+1)
 
@@ -110,8 +115,35 @@ def labels_to_output(labels):
         "children": build_tree(copy.deepcopy(compos)),
     }
 
+
     som["children"], _ = ensure_toplevel(som)
+
+    # Copy XPath of som compos to compos
+    for compo in compos:
+        for node in flatten_som(som["children"]):
+            if compo["id"] == node["id"]:
+                compo["xpath"] = node["xpath"]
+                compo["depth"] = node["depth"]
+                compo["type"] = node["type"]
+                break
 
     labels["som"] = som
     
     return labels
+
+def flatten_som(tree):
+    """
+    Flatten the SOM tree into a list of nodes.
+
+    Args:
+        tree (list): A tree representing the hierarchy of the SOM.
+
+    Returns:
+        list: A flattened list of nodes.
+    """
+    flattened = []
+    for node in tree:
+        flattened.append(node)
+        if node["type"] == "node":
+            flattened.extend(flatten_som(node["children"]))
+    return flattened

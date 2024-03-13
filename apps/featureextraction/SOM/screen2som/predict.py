@@ -25,27 +25,26 @@ def predict(image_path, path_to_save_bordered_images):
     detections = dict()
     detections["img_shape"] = image_pil.shape
 
-    image_pil  = cv2.resize(image_pil, (640, 360))
+    image_pil_resized  = cv2.resize(image_pil, (640, 360))
 
     # Elements level preditions
-    elements_compos = sahi_predictions(ELEMENTS_MODEL, image_pil, 240, 240, 0.3, "bbox", 0)
+    elements_compos = sahi_predictions(ELEMENTS_MODEL, image_pil_resized, 240, 240, 0.3, "bbox", 0)
     detections["compos"] = elements_compos
-    detections["img_shape"] = image_pil.shape
 
     # Text level predictions
-    text_compos = sahi_predictions(TEXT_MODEL, image_pil, 240, 240, 0.3, "bbox", len(detections["compos"]) + 1)
+    text_compos = sahi_predictions(TEXT_MODEL, image_pil_resized, 240, 240, 0.3, "bbox", len(detections["compos"]) + 1)
     detections["compos"].extend(text_compos)
 
     # Container Level predictions
-    container_compos = yolo_prediction(CONTAINER_MODEL, image_pil, "bbox", len(detections["compos"]) + 1)
+    container_compos = yolo_prediction(CONTAINER_MODEL, image_pil_resized, "bbox", len(detections["compos"]) + 1)
     detections["compos"].extend(container_compos)
 
     # Application level predictions
-    applevel_compos = yolo_prediction(APPLEVEL_MODEL, image_pil, "seg", len(detections["compos"]) + 1)
+    applevel_compos = yolo_prediction(APPLEVEL_MODEL, image_pil_resized, "seg", len(detections["compos"]) + 1)
     detections["compos"].extend(applevel_compos)
 
     # Top level predictions
-    toplevel_compos = yolo_prediction(TOP_MODEL, image_pil, "seg", len(detections["compos"]) + 1)
+    toplevel_compos = yolo_prediction(TOP_MODEL, image_pil_resized, "seg", len(detections["compos"]) + 1)
     detections["compos"].extend(toplevel_compos)
 
     # Order compos by area
@@ -54,9 +53,9 @@ def predict(image_path, path_to_save_bordered_images):
     # Resize detections
     for compo in detections["compos"]:
         for point in compo["points"]:
-            # Update the point to match new dimensions
-            point[0] = point[0] * detections["img_shape"][1] / image_pil.shape[1]
-            point[1] = point[1] * detections["img_shape"][0] / image_pil.shape[0]
+            # Update the point to match original dimensions
+            point[0] = point[0] * detections["img_shape"][1] / image_pil_resized.shape[1] 
+            point[1] = point[1] * detections["img_shape"][0] / image_pil_resized.shape[0]
 
     # Image crops from shapes
     recortes = []
