@@ -446,7 +446,7 @@ def monitoring(log_path, root_path, execution):
         
         #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
         startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj["ui_log_filename"], ui_log_format_pattern)#en steprecorder
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj.ui_log_filename, ui_log_format_pattern)#en steprecorder
 
         #native_slide_events = "native_slideevents.csv"
 

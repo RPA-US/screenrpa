@@ -1,3 +1,4 @@
+import csv
 import os
 import json
 import time
@@ -532,3 +533,35 @@ class ExecutionDetailView(DetailView):
             "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
             }
         return render(request, "executions/detail.html", context)
+
+#################################################################### PHASE EXECUTIONS RESULTS ####################################################################
+    
+
+class MonitoringResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])       
+        path_to_csv_file = execution.exp_folder_complete_path + "/scenario1/log.csv"       
+        # Inicializar una lista para contener los datos CSV convertidos en diccionarios
+        csv_data = []       
+        # Verificar si la ruta al archivo CSV existe y leer los datos
+        try:
+            with open(path_to_csv_file, 'r', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    csv_data.append(row)
+        except FileNotFoundError:
+            print(f"Archivo no encontrado: {path_to_csv_file}")
+            csv_data = []
+        
+        # # Si se requiere solo la respuesta JSON con los datos del CSV:
+        # if request.GET.get('format') == 'json':
+        #     return JsonResponse(csv_data, safe=False)
+        
+        # Incluir los datos CSV en el contexto para la plantilla
+        context = {
+            "execution": execution,
+            "csv_data": csv_data,  # Datos para ser utilizados en la plantilla HTML
+        }       
+        # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
+        return render(request, "monitoring/result.html", context)

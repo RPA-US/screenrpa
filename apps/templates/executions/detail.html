@@ -141,89 +141,152 @@
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/monitoring/list/{{ execution.case_study.id }}">Configurations</a>
+                          <a class="dropdown-item" href="/case-study/execution/monitoring_result/{{execution.id }}">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                                       
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.prefiltering == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-zoom-split-in" style="color: grey "></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.prefiltering != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/fe/prefiltering/list/{{ execution.case_study.id }}">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
                     </div>
-                                        
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.ui_elements_detection == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-image" style="color: grey "></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
-                          <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                          <i class="ni ni-image"></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
                         </div>
+                      {% endif %}
                       </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <!-- Dropdown menu links -->
-                        <a class="dropdown-item" href="/fe/prefiltering/list/{{ execution.case_study.id }}">Configurations</a>
-                        <a class="dropdown-item" href="#">Results
-                        </a>
-                      </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          <div>
-                            <i class="ni ni-image"></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
-                          </div>
-                        </a>
+                      {% if execution.ui_elements_detection != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/fe/ui-element-detection/list/{{ execution.case_study.id }}">Configurations</a>
-                          <a class="dropdown-item" href="#">Results
-                          </a>
+                          <a class="dropdown-item" href="#">Results</a>
                         </div>
+                      {% endif %}
                     </div>
-                    <div class="col-lg-3 col-md-6">
+
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.postfiltering == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-zoom-split-in" style="color: grey "></i> <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
                         </div>
+                      {% endif %}
                       </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <!-- Dropdown menu links -->
-                        <a class="dropdown-item" href="/fe/postfiltering/list/{{ execution.case_study.id }}">Configurations</a>
-                        <a class="dropdown-item" href="#">Results
-                        </a>
-                      </div>  
+                      {% if execution.postfiltering != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/fe/postfiltering/list/{{ execution.case_study.id }}">Configurations</a>
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
                     </div>
-                    <div class="col-lg-3 col-md-6">
+
+
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.feature_extraction == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-money-coins" style="color: grey "></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
                         </div>
+                      {% endif %}
                       </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <!-- Dropdown menu links -->
-                        <a class="dropdown-item" href="/fe/feature-extraction-technique/list/{{ execution.case_study.id }}">Configurations</a>
-                        <a class="dropdown-item" href="#">Results
-                        </a>
-                      </div>  
-                    </div>
-                    <div class="col-lg-3 col-md-6">
+                      {% if execution.feature_extraction != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/fe/feature-extraction-technique/list/{{ execution.case_study.id }}">Configurations</a>
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>               
+
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.process_discovery == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-sound-wave" style="color: grey "></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-sound-wave"></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
                         </div>
+                      {% endif %}
                       </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <!-- Dropdown menu links -->
-                        <a class="dropdown-item" href="/pd/bpmn/list/{{ execution.case_study.id }}">Configurations</a>
-                        <a class="dropdown-item" href="#">Results
-                        </a>
-                      </div>  
+                      {% if execution.process_discovery != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/pd/bpmn/list/{{ execution.case_study.id }}">Configurations</a>
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
                     </div>
+
+
                     <div class="col-lg-3 col-md-6">
+                      {% if execution.extract_training_dataset == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-settings" style="color: grey;"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-settings"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
                         </div>
+                      {% endif %}
+                        
                       </a>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <!-- Dropdown menu links -->
-                        <a class="dropdown-item" href="/dd/extract-training-dataset/list/{{ execution.case_study.id }}">Configurations</a>
-                        <a class="dropdown-item" href="#">Results
-                        </a>
-                      </div>  
+                      {% if execution.extract_training_dataset != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/dd/extract-training-dataset/list/{{ execution.case_study.id }}">Configurations</a>
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
                     </div>
+                    
+
+
+
+
+
+
+
                     <div class="col-lg-3 col-md-6">
                         {% if execution.decision_tree_training == None %}
                         <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -264,7 +327,7 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
 
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', () => {
       const monitoring = document.getElementById('id_prefiltering');
       
@@ -278,7 +341,7 @@
   
     
     })  
-  </script>
+  </script> -->
 
 
 {% endblock javascripts %}

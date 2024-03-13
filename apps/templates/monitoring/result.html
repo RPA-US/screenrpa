@@ -1,0 +1,70 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} Case studies {% endblock title %}
+
+{% block content %}
+
+<div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/execution/detail/{{ execution.id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Log Processing Results Details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}">{% blocktranslate %}Execution {{ execution.id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Log Processing result{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>         
+        </div>
+      </div>
+    </div>
+  
+  <!-- Page content -->
+  
+    <div class="container-fluid mt--6">
+        <!-- Agregar la tabla para visualizar los datos del CSV -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <!-- ocel:eid,ocel:org:resource,ocel:concept:name,ocel:type:event,ocel:click:coorX,ocel:click:coorY,ocel:screenshot:screenW,ocel:screenshot:screenH,ocel:screenshot:name,ocel:timestamp,FileName,FileCompany,FileDescription,CommandLine,ActionNumber,Pid,ProgramId,FileId,FileVersion -->
+                    <!-- Suponiendo que sabes los nombres de las columnas del CSV, los añades aquí -->
+                    <th>Column1</th>
+                    <th>Column2</th>
+                    <th>Column3</th>
+                    <!-- ... otros nombres de columnas ... -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Iterar sobre los datos del CSV -->
+                {% for row in csv_data %}
+                    <tr>
+                        <!-- Suponiendo que sabes las claves del diccionario correspondiente a las columnas -->
+                        <td>{{ row.Column1 }}</td>
+                        <td>{{ row.Column2 }}</td>
+                        <td>{{ row.Column3 }}</td>
+                        <!-- ... otros datos de columnas ... -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% include "includes/footer.html" %}
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+
+
+
+{% endblock javascripts %}
