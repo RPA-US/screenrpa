@@ -1,4 +1,5 @@
 import os
+import copy
 from os.path import join as pjoin
 import json
 import time
@@ -23,6 +24,7 @@ import apps.featureextraction.SOM.ip_draw as draw
 from apps.featureextraction.SOM.Component import Component 
 from apps.featureextraction.SOM.sam import get_sam_gui_components_crops 
 from apps.featureextraction.SOM.screen2som.predict import predict as screen2som_predict
+from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
 from .UiComponent import UiComponent #QUIT
 from django.utils.translation import gettext_lazy as _
 
@@ -313,7 +315,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     text_or_not_text = []
 
-    comp_json = {"img_shape": [img.shape], "compos": []}
+    comp_json = {"img_shape": img.shape, "compos": []}
 
     for j in range(0, len(contornos)):
         cont_horizontal = []
@@ -385,6 +387,8 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             })
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))
+
+    comp_json = labels_to_output(copy.deepcopy(comp_json))
 
     return (recortes, comp_json, text_or_not_text, words)
 

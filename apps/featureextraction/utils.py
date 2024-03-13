@@ -1,5 +1,6 @@
 import os
 import cv2
+import copy
 import numpy as np
 import json
 from core.settings import sep
@@ -8,6 +9,7 @@ from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 from apps.featureextraction.UIFEs.feature_extraction_techniques import *
+from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
 from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
 from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification
 from django.shortcuts import get_object_or_404
@@ -236,6 +238,8 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         # c['height'] = compo.height
         c['contain'] = [contain_compo.id for contain_compo in compo.contain]
         output['compos'].append(c)
+    
+    output = labels_to_output(copy.deepcopy(output))
 
     json.dump(output, f_out, indent=4)
 
