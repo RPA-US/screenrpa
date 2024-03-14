@@ -31,7 +31,7 @@ urlpatterns = [
     ##
     # Phases Executions results
     path('execution/monitoring_result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
-    
+    path('execution/monitoring_result/download/<int:execution_id>/', views.MonitoringResultDownload.as_view(), name='monitoring_result_download'),
     
 
 

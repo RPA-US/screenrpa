@@ -57,4 +57,13 @@
 
 </body>
 
+{% block head %}
+<style>
+  .custom-scroll {
+    max-height: 500px; /* Ajusta esto según el tamaño de tus filas para mostrar exactamente 5 */
+    overflow-y: auto; /* Habilita el desplazamiento vertical */
+  }
+</style>
+{% endblock head %}
+
 </html>
