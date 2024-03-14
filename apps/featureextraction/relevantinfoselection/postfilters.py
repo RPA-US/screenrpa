@@ -149,8 +149,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
         
         with open(root_path + "components_json" + sep + screenshot_filename + '.json', 'r') as f:
             screenshot_json = json.load(f)
-            print("screenshots_json: ", screenshot_json)
-        
+
         if configurations[key]["predicate"] == "is_component_relevant":
             polygon_circles = []
             polygon_rectangles = []
@@ -160,7 +159,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                 fixation_point_x = float(fixation_coordinates[0])
                 fixation_point_y = float(fixation_coordinates[1])     
                 centre = Point(fixation_point_x, fixation_point_y)
-                radio = fixation_obj["dispersion"] * float(configurations[key]["scale_factor"])
+                radio = fixation_obj["imotions_dispersion"] * float(configurations[key]["scale_factor"])
                 if not pd.isna(radio):
                     polygon_circle = centre.buffer(radio)
                     polygon_circles.append(polygon_circle)
@@ -173,25 +172,39 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                 if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
                     (screenshot_filename in fixation_json): # screenshot has fixation
                         
-                    x_min = compo['row_min']
-                    y_min = compo['column_min']
-                    x_max = compo['row_max']
-                    y_max = compo['column_max']
+                    # x_min = compo['points']
+                    # y_min = compo['column_min']
+                    # x_max = compo['row_max']
+                    # y_max = compo['column_max']
                     
-                    polygon_rect = box(x_min, y_min, x_max, y_max)
-                    intersection = polygon_rect.intersection(fixation_mask)
-
+                    points = compo['points']
+                    # x_values = [point[0] for point in points]
+                    # y_values = [point[1] for point in points]
+                    polygon = Polygon(points)
+                    
+                    # polygon_rect = box(x_min, y_min, x_max, y_max)
+                    intersection = polygon.intersection(fixation_mask)
                     compo["intersection_area"] = intersection.area
+
+                    # if polygon_rect.area > 0 and (intersection.area / polygon_rect.area) > float(configurations[key]["intersection_area_thresh"]):
+                    #     nested = bool(configurations[key]["only_leaf"])
+                    #     if nested and (len(compo["contain"]) > 0 or compo["label"] == "UIGroup"):
+                    #         compo["relevant"] = "Nested"
+                    #         if configurations[key]["consider_nested_as_relevant"] == "True":
+                    #             polygon_rectangles.append(polygon_rect)
+                    #     else:
+                    #         compo["relevant"] = "True"
+                    #         polygon_rectangles.append(polygon_rect)
                     
-                    if polygon_rect.area > 0 and (intersection.area / polygon_rect.area) > float(configurations[key]["intersection_area_thresh"]):
+                    if polygon.area > 0 and (intersection.area / polygon.area) > float(configurations[key]["intersection_area_thresh"]):
                         nested = bool(configurations[key]["only_leaf"])
                         if nested and (len(compo["contain"]) > 0 or compo["label"] == "UIGroup"):
                             compo["relevant"] = "Nested"
                             if configurations[key]["consider_nested_as_relevant"] == "True":
-                                polygon_rectangles.append(polygon_rect)
+                                polygon_rectangles.append(polygon)
                         else:
                             compo["relevant"] = "True"
-                            polygon_rectangles.append(polygon_rect)
+                            polygon_rectangles.append(polygon)
                             
                     else:
                         compo["relevant"] = "False"
