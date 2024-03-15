@@ -173,6 +173,7 @@ class PostfiltersForm(forms .ModelForm):
             ),
             "configurations": forms.Textarea(attrs={
                 'class': 'form-control',
+                'style': 'background-color: #333; color: #fff;',
                 'placeholder': "{'gaze':{'UI_selector': 'all','predicate': '(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])','only_leaf': true},'filter2':{}}",
                 'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
             })
