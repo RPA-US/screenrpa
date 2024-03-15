@@ -17,7 +17,7 @@
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}">{% blocktranslate %}Execution {{ execution.id }}{% endblocktranslate %}</a></li>
+                <li value="{{execution.id}}" class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}">{% blocktranslate %}Execution {{ execution.id}} {% endblocktranslate %}</a> </li>
                 <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Log Processing result{% endblocktranslate %}</a></li>
               </ol>
             </nav>
@@ -49,8 +49,8 @@
 
         <div class="card-footer py-4">
           <nav aria-label="...">
-            <ul class="pagination justify-content-end mb-0" id="pagination">
-              <select id="scenarios-select" class="form-select" style="float: left;">
+            <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+              <select id="scenarios-select" class="btn btn-secondary dropdown-toggle" style="float: left;">
                 {% for scenario in escenarios %}
                   {% if scenario == numeroEscenario %}
                     <option value="{{ scenario }}" selected>{{ scenario }}</option>
@@ -59,7 +59,8 @@
                   {% endif %}
                 {% endfor %}
               </select>
-              <a href="/case-study/execution/monitoring_result/download/{{execution.id }}">
+              <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{numeroEscenario}}">
+              <!-- <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download="True"&scenario={{numeroEscenario}} -->
                 <button class="btn btn-success" style="float: right;" type="button">
                   <i class="ni ni-cloud-download-95"></i> 
                   {% blocktranslate %}Descargar{% endblocktranslate %}
@@ -142,7 +143,10 @@
       var selectedScenario = this.value;
       // Redirige al usuario a la URL deseada, con el ID de ejecución y el escenario seleccionado.
       window.location.href = `/case-study/execution/monitoring_result/${executionId}/?scenario=${selectedScenario}`;
+      //window.location.href = `/case-study/execution/monitoring_result/download/${executionId}/?scenario=${selectedScenario}`;
   });
+
+
 </script>
   
 
