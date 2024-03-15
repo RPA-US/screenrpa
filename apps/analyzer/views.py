@@ -543,7 +543,7 @@ class MonitoringResultDetailView(DetailView):
         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         numeroEscenario = request.GET.get('scenario')
-        #download= request.GET.get('download')
+        download= request.GET.get('download')
 
         if numeroEscenario == None:
             #numeroEscenario = "1"
@@ -573,8 +573,8 @@ class MonitoringResultDetailView(DetailView):
             "numeroEscenario": numeroEscenario
         }     
 
-        # if path_to_csv_file and download=="True":
-        #     MonitoringResultDownload2(path_to_csv_file)  
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file)  
 
 
         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
@@ -597,49 +597,49 @@ def MonitoringResultDownload2(path_to_csv_file):
 
 ##########################################
     
-class MonitoringResultDownload(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])       
-        numeroEscenario = request.GET.get('scenario')
-        #download= request.GET.get('download')
+# class MonitoringResultDownload(DetailView):
+#     def get(self, request, *args, **kwargs):
+#         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])       
+#         numeroEscenario = request.GET.get('scenario')
+#         #download= request.GET.get('download')
 
-        if numeroEscenario == None:
-            #numeroEscenario = "1"
-            numeroEscenario=execution.scenarios_to_study[0]
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ numeroEscenario +"/log.csv"  
+#         if numeroEscenario == None:
+#             #numeroEscenario = "1"
+#             numeroEscenario=execution.scenarios_to_study[0]
+#         path_to_csv_file = execution.exp_folder_complete_path + "/"+ numeroEscenario +"/log.csv"  
 
-        if path_to_csv_file:
-            with open(path_to_csv_file, 'r', newline='') as csvfile:
-                # Crear una respuesta HTTP con el contenido del CSV
-                response = HttpResponse(content_type='text/csv')
-                response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
-                writer = csv.writer(response)
-                reader = csv.reader(csvfile)
-                for row in reader:
-                    writer.writerow(row)
-                return response
+#         if path_to_csv_file:
+#             with open(path_to_csv_file, 'r', newline='') as csvfile:
+#                 # Crear una respuesta HTTP con el contenido del CSV
+#                 response = HttpResponse(content_type='text/csv')
+#                 response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
+#                 writer = csv.writer(response)
+#                 reader = csv.reader(csvfile)
+#                 for row in reader:
+#                     writer.writerow(row)
+#                 return response
             
-        # Inicializar una lista para contener los datos CSV convertidos en diccionarios
-        csv_data = []       
-        # Verificar si la ruta al archivo CSV existe y leer los datos
-        try:
-            with open(path_to_csv_file, 'r', newline='') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    csv_data.append(row)
-        except FileNotFoundError:
-            print(f"Archivo no encontrado: {path_to_csv_file}")
-            csv_data = []
+#         # Inicializar una lista para contener los datos CSV convertidos en diccionarios
+#         csv_data = []       
+#         # Verificar si la ruta al archivo CSV existe y leer los datos
+#         try:
+#             with open(path_to_csv_file, 'r', newline='') as csvfile:
+#                 reader = csv.DictReader(csvfile)
+#                 for row in reader:
+#                     csv_data.append(row)
+#         except FileNotFoundError:
+#             print(f"Archivo no encontrado: {path_to_csv_file}")
+#             csv_data = []
 
-        # Convertir csv_data a JSON
-        csv_data_json = json.dumps(csv_data)
+#         # Convertir csv_data a JSON
+#         csv_data_json = json.dumps(csv_data)
         
-        context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Datos para ser utilizados en la plantilla HTML
-            "escenarios": execution.scenarios_to_study,
-            "numeroEscenario": numeroEscenario
-        }
-        # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
-        return render(request, "monitoring/result.html", context)
+#         context = {
+#             "execution": execution,
+#             "csv_data": csv_data_json,  # Datos para ser utilizados en la plantilla HTML
+#             "escenarios": execution.scenarios_to_study,
+#             "numeroEscenario": numeroEscenario
+#         }
+#         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
+#         return render(request, "monitoring/result.html", context)

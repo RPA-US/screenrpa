@@ -59,8 +59,8 @@
                   {% endif %}
                 {% endfor %}
               </select>
-              <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{numeroEscenario}}">
-              <!-- <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download="True"&scenario={{numeroEscenario}} -->
+              <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{numeroEscenario}}"> -->
+              <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download=True&scenario={{numeroEscenario}}">
                 <button class="btn btn-success" style="float: right;" type="button">
                   <i class="ni ni-cloud-download-95"></i> 
                   {% blocktranslate %}Descargar{% endblocktranslate %}
