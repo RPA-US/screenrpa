@@ -1,0 +1,128 @@
+{% load i18n %}
+
+<form id="processDiscoveryForm" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <!-- General Config Section -->
+  <h6 class="heading-small text-muted mb-4">{% trans "General Config" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="input-title">
+        {{ form.type.label }}<b class="text-red">*</b>
+      </label>
+      {{ form.type }}
+      <div class="form-validation">{{ form.type.errors }}</div>
+    </div>
+  </div>
+
+  <!-- Model Config Section -->
+  <hr class="my-4" />
+  <h6 class="heading-small text-muted mb-4">{% trans "Model Config" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="input-title">
+        {{ form.model_type.label }}
+      </label>
+      <div class="dropdown-select">
+        {{ form.model_type }}
+      </div>
+      <div class="form-validation">{{ form.model_type.errors }}</div>
+    </div>
+    
+    <!-- Weight Fields, hidden by default and shown when 'Clip' is selected -->
+    <div class="row" id="weightsRow" style="display: none;">
+      <div class="col-lg-4">
+        <div class="form-group">
+          {{ form.text_weight.label_tag }}
+          {{ form.text_weight }}
+          <div class="form-validation">{{ form.text_weight.errors }}</div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="form-group">
+          {{ form.image_weight.label_tag }}
+          {{ form.image_weight }}
+          <div class="form-validation">{{ form.image_weight.errors }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.labeling.id_for_label }}">
+        {{ form.labeling.label }}
+      </label>
+      {{ form.labeling }}
+      <div class="form-validation">{{ form.labeling.errors }}</div>
+    </div>
+  </div>
+
+  <!-- Clustering Config Section -->
+  <hr class="my-4" />
+  <h6 class="heading-small text-muted mb-4">{% trans "Clustering Config" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.clustering_type.id_for_label }}">
+        {{ form.clustering_type.label }}
+      </label>
+      {{ form.clustering_type }}
+      <div class="form-validation">{{ form.clustering_type.errors }}</div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.n_components.id_for_label }}">
+        {{ form.n_components.label }}
+      </label>
+      {{ form.n_components }}
+      <div class="form-validation">{{ form.n_components.errors }}</div>
+    </div>
+
+    <div class="form-group d-flex align-items-center justify-content-start">
+      <label class="mr-2" for="{{ form.use_pca.id_for_label }}">
+        {{ form.use_pca.label }}
+      </label>
+      <div class="custom-control custom-switch ml-4">
+        <input type="checkbox" class="custom-control-input" id="{{ form.use_pca.id_for_label }}" name="use_pca" {% if form.use_pca.value %} checked {% endif %}>
+        <label class="custom-control-label" for="{{ form.use_pca.id_for_label }}"></label>
+      </div>
+      <div class="form-validation ml-2">{{ form.use_pca.errors }}</div>
+    </div>
+    
+    <div class="form-group d-flex align-items-center justify-content-start">
+      <label class="mr-2" for="{{ form.show_dendrogram.id_for_label }}">
+        {{ form.show_dendrogram.label }}
+      </label>
+      <div class="custom-control custom-switch ml-4">
+        <input type="checkbox" class="custom-control-input" id="{{ form.show_dendrogram.id_for_label }}" name="show_dendrogram" {% if form.show_dendrogram.value %} checked {% endif %}>
+        <label class="custom-control-label" for="{{ form.show_dendrogram.id_for_label }}"></label>
+      </div>
+      <div class="form-validation ml-2">{{ form.show_dendrogram.errors }}</div>
+    </div>
+    
+  <!-- Configurations JSON Section -->
+  <hr class="my-4" />
+  <h6 class="heading-small text-muted mb-4">{% trans "Configurations" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.configurations.id_for_label }}">
+        {{ form.configurations.label }}
+      </label>
+      {{ form.configurations }}
+      <div class="form-validation">{{ form.configurations.errors }}</div>
+    </div>
+  </div>
+
+  <!-- Submit Button -->
+  <div class="text-right">
+    <button class="btn btn-success" type="submit">
+      <i class="fas fa-save"></i> {% trans "Save" %}
+    </button>
+  </div>
+  
+</form>
+
+<style>
+  .custom-control-label {
+  margin-left: 0.5rem;
+  margin-bottom: 1.8rem; 
+}
+</style>
