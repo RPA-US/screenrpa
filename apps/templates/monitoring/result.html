@@ -31,8 +31,7 @@
     <div class="row">
       <div class="col">
         <div class="card">
-          <div class="custom-scroll">
-          <div class="table-responsive">
+          <div class="table-responsive custom-scroll">
           <table id="csvDataTable" class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
@@ -45,7 +44,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
         </div>
 
 
@@ -133,9 +131,13 @@
         var tr = document.createElement('tr');
         Object.keys(row).forEach(function(key) {
           var td = document.createElement('td');
-          td.textContent = row[key];
+          var value = row[key];
+          //if (value.length > 80) {
+          value = value.substring(0, 80); // Truncar el valor a 80 caracteres
+          //}
+          td.textContent = value;
           tr.appendChild(td);
-        });
+          });
         tbody.appendChild(tr);
       });
     }
