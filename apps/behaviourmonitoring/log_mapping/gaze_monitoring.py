@@ -376,24 +376,24 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
 
   ub_log.to_csv(root_path + "ub_log_fixation.csv")
 
-def monitoring(log_path, root_path, special_colnames, execution):
+def monitoring(log_path, root_path, execution):
   
-    special_colnames = execution.case_study.special_colnames,
-    monitoring_obj = execution.monitoring,
+    special_colnames = execution.case_study.special_colnames
+    monitoring_obj = execution.monitoring
     monitoring_type = monitoring_obj.type
     
     if os.path.exists(log_path):
       logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
       print("Log already exists, it's not needed to execute format conversor")
-    elif "format" in monitoring_obj:
+    elif (getattr(monitoring_obj, 'format') is not None):
       log_filename = "log"
       # TODO: org:resource
-      log_path = format_mht_file(root_path + monitoring_obj["ui_log_filename"], monitoring_obj["format"], root_path, log_filename, "User1")
+      log_path = format_mht_file(root_path + monitoring_obj.ui_log_filename, monitoring_obj.format, root_path, log_filename, 'User1')
   
   
     ui_log = read_ui_log_as_dataframe(log_path)
-    sep = monitoring_obj["ui_log_separator"]
-    eyetracking_log_filename = monitoring_obj["gaze_log_filename"]
+    sep = monitoring_obj.ui_log_separator
+    eyetracking_log_filename = monitoring_obj.gaze_log_filename
     
     if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
         gazeanalysis_log = pd.read_csv(root_path + eyetracking_log_filename, sep=sep)
@@ -412,8 +412,8 @@ def monitoring(log_path, root_path, special_colnames, execution):
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         
         #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj["native_slide_events"], sep)#en el imotions
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj["mht_log_filename"], ui_log_format_pattern)#en steprecorder
+        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj.ui_log_filename, ui_log_format_pattern)#en steprecorder
 
         if os.path.exists(root_path + "fixation.json"):
           fixation_p = json.load(open(root_path + "fixation.json"))

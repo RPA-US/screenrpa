@@ -32,7 +32,7 @@ class CaseStudyForm(forms.ModelForm):
             "title": _("Title"),
             "description": _("Description"),
             "exp_file": _("Log file (zip)"),
-            "scenarios_to_study": _("Do you want to study some scenarios? If so, indicate their folder names. If not, leave it empty."),
+            "scenarios_to_study": _("Do you want to study some scenarios? If so, indicate their folder names. This field cannot be empty."),
             "special_colnames": _("Indicate the special column names (e.g. case_id, activity, timestamp, etc.) of your logs."),
         }
 
@@ -55,7 +55,7 @@ class CaseStudyForm(forms.ModelForm):
                     }
             ),
             "scenarios_to_study": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "['scenario_1', 'scenario_2']"}
+                attrs={"class": "form-control", "placeholder": "If there is only one scenario, just type its name. If there are more than one, separate them by comma. E.g. scenario1, scenario2, scenario3"}
             ),
             "special_colnames": forms.Textarea(
                 attrs={

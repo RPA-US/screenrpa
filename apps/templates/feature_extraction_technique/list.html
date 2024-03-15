@@ -46,8 +46,10 @@
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Technique name{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Identifier{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col"></th>
@@ -69,19 +71,21 @@
                     {{ fe_technique.created_at }}
                   </td>
                   <td>
+                    {{ fe_technique.title }}
+                  </td>
+                  <td>
                     {{ fe_technique.technique_name }}
                   </td>
                   <td>
                     {{ fe_technique.identifier }}
                   </td>
-                  <td>
-                    <div>
-                      {% if fe_technique.executed == 0 %}
-                        {% blocktranslate %}Not executed{% endblocktranslate %}
-                      {% else %}
-                        {% blocktranslate %}Not executed{% endblocktranslate %}
-                      {% endif %}
-                    </div>
+                  <td >
+                    {% if fe_technique.preloaded %}
+                      {% blocktranslate %}Yes{% endblocktranslate %} |
+                      {{ fe_technique.preloaded_file }}
+                    {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                    {% endif %}
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">

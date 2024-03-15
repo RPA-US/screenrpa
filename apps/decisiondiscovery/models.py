@@ -89,8 +89,8 @@ def default_dd_configuration():
 #     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
 class ExtractTrainingDataset(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
     freeze = models.BooleanField(default=False, editable=True)
     target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -112,16 +112,17 @@ class ExtractTrainingDataset(models.Model):
         return 'col to drop: ' + str(self.columns_to_drop)
     
 class DecisionTreeTraining(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    title = models.CharField(max_length=255)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
     freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     configuration = models.JSONField(default=default_dd_configuration)
-    library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
-    one_hot_columns = ArrayField(models.CharField(max_length=25))
-    columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
+    library = models.CharField(max_length=255, default='sklearn', null=True, blank=True) # 'sklearn'
+    one_hot_columns = ArrayField(models.CharField(max_length=25) , default=list, null=True, blank=True) 
+    columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore, null=True, blank=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     

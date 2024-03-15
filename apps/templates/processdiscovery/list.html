@@ -46,8 +46,10 @@
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Type{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type"></th>
@@ -68,11 +70,22 @@
                   <td>
                       {{ processdiscovery.created_at }}
                   </td>
+                  <td>
+                    {{ processdiscovery.title }}
+                  </td>
                   <td class="type">
                       {{ processdiscovery.type }}
                   </td>
                   <td class="configurations">
                       {{ processdiscovery.configurations|truncatechars:100 }}
+                  </td>
+                  <td >
+                    {% if processdiscovery.preloaded %}
+                      {% blocktranslate %}Yes{% endblocktranslate %} |
+                      {{ processdiscovery.preloaded_file }}
+                    {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                    {% endif %}
                   </td>
                   <!-- <td>
                     <div class="d-flex align-items-center">

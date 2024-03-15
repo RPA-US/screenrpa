@@ -16,14 +16,33 @@ class ProcessDiscoveryForm(forms .ModelForm):
             )
         fields = (
             "type",
-            "configurations"
+            "configurations",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "type": _("Type"),
-            "configurations": _("Configurations")
+            "configurations": _("Configurations"),
+             "preloaded_file":"Preload Execution Results",
+            "title": "Title "
         }
 
         widgets = {
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Process discovery Technique"
+                    }
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
             "type": forms.TextInput(
                 attrs={
                     "class": "form-control",

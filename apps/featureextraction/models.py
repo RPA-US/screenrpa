@@ -77,7 +77,7 @@ class Prefilters(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
-    type = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
+    type = models.CharField(max_length=25, default='rpa-us')
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -118,30 +118,37 @@ class UIElementsDetection(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - skip? ' + str(self.skip)
     
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #     if self.preloaded_file :
-    #         # Generate unique folder name based on the uploaded file's name and current time
-    #         folder_name = f"{self.preloaded_file.name.split('.')[0]}_{str(int(time.time()))}"
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.type == "screen2som" and not self.ui_elements_classification:
+            ui_elements_classification = UIElementsClassification.objects.create(
+                preloaded=self.preloaded,
+                preloaded_file=self.preloaded_file,
+                freeze=self.freeze,
+                active=self.active,
+                executed=self.executed,
+                model=CNNModels.objects.get_or_create(name="screen2som", path="NA", image_shape=[640, 360, 3], classes=get_ui_elements_classification_screen2som(), text_classname="Text")[0],
+                type=self.type,
+                skip=self.skip,
+                case_study=self.case_study,
+                user=self.user
+            )
 
-    #         #CAMBIAR LOGICA DE GUARDADO DE CARPETA DE RESULTADOS
-    #         folder_path = PRIVATE_STORAGE_ROOT + sep + 'UIElemDetection_results'+ sep + 'executions'+ sep + str(self.id) + sep + folder_name
-    #         os.makedirs(folder_path)
-    #         #Ruta de la carpeta creada: media/UIElemDetection_results/executions/1/preloadedFile_162512
-    #         self.exec_results_folder_complete_path = folder_path
+            self.ui_elements_classification = ui_elements_classification
 
-    #         super().save(*args, **kwargs)  
+            super().save(*args, **kwargs)
 
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
+def get_ui_elements_classification_screen2som():
+    return  'Text,WebIcon,Icon,Switch,BtnSq,BtnPill,BtnCirc,CheckboxChecked,CheckboxUnchecked,RadiobtnSelected,RadiobtnUnselected,TextInput,Dropdown,Link,TabActive,TabInactive,Sidebar,Navbar,Container,Image,BrowserURLInput,Header,BrowserToolbar,Toolbar,Scrollbar,Application,Taskbar,Dock'.split(',')
 
 def get_ui_elements_classification_moran():
-    return 'x0_Button, x0_CheckBox, x0_CheckedTextView, x0_EditText, x0_ImageButton, x0_ImageView, x0_NumberPicker, x0_RadioButton', 
-'x0_RatingBar, x0_SeekBar, x0_Spinner, x0_Switch, x0_TextView, x0_ToggleButton'.split(', ') # this returns a list
+    return 'x0_Button,x0_CheckBox,x0_CheckedTextView,x0_EditText,x0_ImageButton,x0_ImageView,x0_NumberPicker,x0_RadioButton,x0_RatingBar,x0_SeekBar,x0_Spinner,x0_Switch,x0_TextView,x0_ToggleButton'.split(',') # this returns a list
 
 def get_ui_elements_classification_uied():
-    return "Button, Checkbox, CheckedTextView, EditText, ImageButton, ImageView, NumberPicker, RadioButton, RatingBar, SeekBar, Spinner, Switch, TextView, ToggleButton".split(', ') # this returns a list
+    return "Button,Checkbox,CheckedTextView,EditText,ImageButton,ImageView,NumberPicker,RadioButton,RatingBar,SeekBar,Spinner,Switch,TextView,ToggleButton".split(',') # this returns a list
 
 class CNNModels(models.Model):
     name = models.CharField(max_length=25, unique=True)
@@ -149,10 +156,14 @@ class CNNModels(models.Model):
     image_shape = ArrayField(models.IntegerField(blank=True), default=get_ui_elements_classification_image_shape)
     classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_uied)
     text_classname = models.CharField(max_length=50, default="TextView")
+    model_properties = models.JSONField(null=True, blank=True)
    
     def clean(self):
         if (self.text_classname not in self.classes):
             raise ValidationError("text_classname must be one of the ui_elements_classification_classes")
+
+    def __str__(self):
+        return self.name
 
 class UIElementsClassification(models.Model):
     preloaded = models.BooleanField(default=False, editable=False)
@@ -174,16 +185,17 @@ class UIElementsClassification(models.Model):
         return 'type: ' + self.type + ' - model: ' + self.model
 
 class Postfilters(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True,blank=True)
+    title = models.CharField(max_length=255)
     freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     configurations = JSONField(null=True, blank=True, default=default_filters_conf)
-    type = models.CharField(max_length=25, default='rpa-us')
+    type = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
     skip = models.BooleanField(default=False)
-    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def get_absolute_url(self):
@@ -194,15 +206,16 @@ class Postfilters(models.Model):
     
 
 class FeatureExtractionTechnique(models.Model):
-    preloaded = models.BooleanField(default=False, editable=False)
-    preloaded_file = PrivateFileField("File", null=True)
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
+    title = models.CharField(max_length=255)
     freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    identifier = models.CharField(max_length=25)
-    type = models.CharField(max_length=255, default='SINGLE')
-    technique_name = models.CharField(max_length=255, default='count')
+    identifier = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
+    type = models.CharField(max_length=255, default='SINGLE', null=True, blank=True)
+    technique_name = models.CharField(max_length=255, default='count', null=True, blank=True)
     relevant_compos_predicate = models.CharField(max_length=255, null=True, blank=True)
     consider_relevant_compos = models.BooleanField(default=False)
     configurations = JSONField(null=True, blank=True)

@@ -63,12 +63,12 @@ def extract_training_dataset(log_path, root_path, execution):
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
-    decision_point_activity = execution.feature_extraction_technique.decision_point_activity, 
-    target_label = execution.case_study.target_label,
-    special_colnames = execution.case_study.special_colnames,
-    columns_to_drop = execution.extract_training_dataset.columns_to_drop,
+    decision_point_activity = execution.extract_training_dataset.decision_point_activity
+    target_label = execution.extract_training_dataset.target_label
+    special_colnames = execution.case_study.special_colnames
+    columns_to_drop = execution.extract_training_dataset.columns_to_drop
     path_dataset_saved = root_path
-    actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point,
+    actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point
     
     
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")

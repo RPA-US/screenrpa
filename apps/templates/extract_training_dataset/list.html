@@ -45,10 +45,11 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="title">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="title">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type"></th>
@@ -67,31 +68,25 @@
                     </div>
                   </th>
                   <td>
-                    {{ extract_training_dataset.title }}
-                  </td>
-                  <td>
                     {{ extract_training_dataset.created_at }}
                   </td>
                   <td>
-                    <span class="badge badge-dot mr-4">
-                      {% if extract_training_dataset.active %}
-                      <i class="bg-success"></i>
-                      <span class="status">{% blocktranslate %}Active{% endblocktranslate %}</span>
-                      {% else %}
-                      <i class="bg-danger"></i>
-                      <span class="status">{% blocktranslate %}Not active{% endblocktranslate %}</span>
-                      {% endif %}
-                    </span>
+                    {{ extract_training_dataset.title }}
                   </td>
                   <td>
-                    <div>
-                      {% if extract_training_dataset.executed == 0 %}
-                        {% blocktranslate %}Not executed{% endblocktranslate %}
-                      {% else %}
-                        {% blocktranslate %}Already executed{% endblocktranslate %}
-                      {% endif %}
-                    </div>
-                  </td> -->
+                    {{ extract_training_dataset.columns_to_drop }}
+                  </td>
+                  <td>
+                    {{ extract_training_dataset.columns_to_drop_before_decision_point }}
+                  </td>
+                  <td >
+                    {% if extract_training_dataset.preloaded %}
+                      {% blocktranslate %}Yes{% endblocktranslate %} |
+                      {{ extract_training_dataset.preloaded_file }}
+                    {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                    {% endif %}
+                  </td>
                   <td>
                     <span class="badge badge-dot mr-4">
                       {% if extract_training_dataset.freeze %}
@@ -103,6 +98,7 @@
                       {% endif %}
                     </span>
                   </td>
+                  
                   <td>
                     <span class="badge badge-dot mr-4">
                       {% if extract_training_dataset.active %}
