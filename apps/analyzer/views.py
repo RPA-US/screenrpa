@@ -536,10 +536,8 @@ class ExecutionDetailView(DetailView):
 
 #################################################################### PHASE EXECUTIONS RESULTS ####################################################################
     
-
 class MonitoringResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
-
         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         numeroEscenario = request.GET.get('scenario')
@@ -547,24 +545,16 @@ class MonitoringResultDetailView(DetailView):
 
         if numeroEscenario == None:
             #numeroEscenario = "1"
-            numeroEscenario=execution.scenarios_to_study[0]
+            numeroEscenario=execution.scenarios_to_study[0] #por defecto el primero que se haya indicado
         path_to_csv_file = execution.exp_folder_complete_path + "/"+ numeroEscenario +"/log.csv"  
 
-        # Inicializar una lista para contener los datos CSV convertidos en diccionarios
-        csv_data = []       
-        # Verificar si la ruta al archivo CSV existe y leer los datos
-        try:
-            with open(path_to_csv_file, 'r', newline='') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    csv_data.append(row)
-        except FileNotFoundError:
-            print(f"Archivo no encontrado: {path_to_csv_file}")
-            csv_data = []
-
-        # Convertir csv_data a JSON
-        csv_data_json = json.dumps(csv_data)
+        #DESCARGA DE CSV
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file)  
         
+        #LECTURA DE CSV, CONVERSION A JSON
+        csv_data_json= lectura_csv_json(path_to_csv_file)
+
         # Incluir los datos CSV en el contexto para la plantilla
         context = {
             "execution": execution,
@@ -572,17 +562,25 @@ class MonitoringResultDetailView(DetailView):
             "escenarios": execution.scenarios_to_study,
             "numeroEscenario": numeroEscenario
         }     
-
-        if path_to_csv_file and download=="True":
-            return MonitoringResultDownload2(path_to_csv_file)  
-
-
         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
         return render(request, "monitoring/result.html", context)
 
-
-    
-
+#############################################33
+def lectura_csv_json(path_to_csv_file):
+    # Inicializar una lista para contener los datos CSV convertidos en diccionarios
+    csv_data = []       
+    # Verificar si la ruta al archivo CSV existe y leer los datos
+    try:
+        with open(path_to_csv_file, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                csv_data.append(row)
+    except FileNotFoundError:
+        print(f"Archivo no encontrado: {path_to_csv_file}")
+    # Convertir csv_data a JSON
+    csv_data_json = json.dumps(csv_data)
+    return csv_data_json
+##########################################3
 def MonitoringResultDownload2(path_to_csv_file):
     with open(path_to_csv_file, 'r', newline='') as csvfile:
         # Crear una respuesta HTTP con el contenido del CSV
@@ -594,7 +592,6 @@ def MonitoringResultDownload2(path_to_csv_file):
             writer.writerow(row)
         return response
     
-
 ##########################################
     
 # class MonitoringResultDownload(DetailView):

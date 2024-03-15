@@ -50,15 +50,25 @@
         <div class="card-footer py-4">
           <nav aria-label="...">
             <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
-              <select id="scenarios-select" class="btn btn-secondary dropdown-toggle" style="float: left;">
+              <!-- <select id="scenarios-select" class="btn btn-secondary dropdown-toggle" style="float: left;">
                 {% for scenario in escenarios %}
                   {% if scenario == numeroEscenario %}
-                    <option value="{{ scenario }}" selected>{{ scenario }}</option>
+                    <option  value="{{ scenario }}" selected>{{ scenario }}</option>
                   {% else %}
                     <option value="{{ scenario }}">{{ scenario }}</option>
                   {% endif %}
                 {% endfor %}
-              </select>
+              </select> -->
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{numeroEscenario}}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  {% for scenario in escenarios %}
+                  <a class="dropdown-item" href="/case-study/execution/monitoring_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                  {% endfor %}
+                </div>
+              </div>
               <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{numeroEscenario}}"> -->
               <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download=True&scenario={{numeroEscenario}}">
                 <button class="btn btn-success" style="float: right;" type="button">
