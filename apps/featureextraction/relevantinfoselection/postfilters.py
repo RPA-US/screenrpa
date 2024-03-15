@@ -138,7 +138,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
     # fixation.json -> previous, screenshot001, screenshot002, screenshot003, ... , subsequent
     with open(root_path + 'fixation.json', 'r') as f:
         fixation_json = json.load(f)
-    
+        
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         # screenshot.json -> compos: [
         #     "column_min": 0,
@@ -159,7 +159,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                 fixation_point_x = float(fixation_coordinates[0])
                 fixation_point_y = float(fixation_coordinates[1])     
                 centre = Point(fixation_point_x, fixation_point_y)
-                radio = fixation_obj["imotions_dispersion"] * float(configurations[key]["scale_factor"])
+                radio = float(fixation_obj["imotions_dispersion"]) * float(configurations[key]["scale_factor"])
                 if not pd.isna(radio):
                     polygon_circle = centre.buffer(radio)
                     polygon_circles.append(polygon_circle)
