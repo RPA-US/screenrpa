@@ -540,8 +540,11 @@ class ExecutionDetailView(DetailView):
 class MonitoringResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])       
-        path_to_csv_file = execution.exp_folder_complete_path + "/scenario1/log.csv"       
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        numeroEscenario = request.GET.get('scenario')
+        if numeroEscenario == None:
+            numeroEscenario = "1"
+        path_to_csv_file = execution.exp_folder_complete_path + "/scenario"+ numeroEscenario[-1] +"/log.csv"       
         # Inicializar una lista para contener los datos CSV convertidos en diccionarios
         csv_data = []       
         # Verificar si la ruta al archivo CSV existe y leer los datos
@@ -565,10 +568,14 @@ class MonitoringResultDetailView(DetailView):
         context = {
             "execution": execution,
             "csv_data": csv_data_json,  # Datos para ser utilizados en la plantilla HTML
+            "escenarios": execution.scenarios_to_study,
+            "numeroEscenario": numeroEscenario
         }       
         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
         return render(request, "monitoring/result.html", context)
 
+##########################################
+    
 class MonitoringResultDownload(DetailView):
     def get(self, request, *args, **kwargs):
         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
