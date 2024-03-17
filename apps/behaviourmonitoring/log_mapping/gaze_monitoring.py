@@ -251,12 +251,19 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
   initial_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[0][special_colnames["Timestamp"]], ui_log_timestamp_pattern)
   
   # Loop: Each UI Log row
-  for j in range(len(ui_log)-1):
+  for j in range(len(ui_log)):
+      print(ui_log)
+      print(range(len(ui_log)-1))
+      print(range(len(ui_log)))
+      print (j)
+      print(ui_log.iloc[j][special_colnames["Screenshot"]])
+      print(len(ui_log))
       # Obtain current event timestamp and next event timestamp 
       current_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
       current_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, current_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
-      next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
-      next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
+      if j+1 < len(ui_log):
+        next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
+        next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
       
       if next_timestamp > current_timestamp:
         fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
