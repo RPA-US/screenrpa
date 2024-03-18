@@ -549,8 +549,11 @@ class MonitoringResultDetailView(DetailView):
             
         path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
 
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file)  
 
-        context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
+        context= LogicPhasesResultDetailView(execution, scenarioNumber, path_to_csv_file)  
 
         # Render the HTML template with the context including the CSV data
         return render(request, "monitoring/result.html", context)
@@ -571,8 +574,11 @@ class FeatureExtractionResultDetailView(DetailView):
       
         path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/enriched_log.csv"
         
-
-        context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file)  
+     
+        context= LogicPhasesResultDetailView(execution, scenarioNumber, path_to_csv_file)  
 
         # Render the HTML template with the context including the CSV data
         return render(request, "feature_extraction_technique/result.html", context)
@@ -593,7 +599,11 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
       
         path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/flattened_log.csv"
 
-        context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file) 
+
+        context= LogicPhasesResultDetailView(execution, scenarioNumber, path_to_csv_file)  
 
         # Render the HTML template with the context including the CSV data
         return render(request, "extract_training_dataset/result.html", context)
@@ -601,12 +611,8 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
 ##############################################33
     
 
-def LogicPhasesResultDetailView(execution, scenarioNumber, download,path_to_csv_file):
-
-    # CSV Download
-    if path_to_csv_file and download=="True":
-            return MonitoringResultDownload2(path_to_csv_file)  
-        
+def LogicPhasesResultDetailView(execution, scenarioNumber,path_to_csv_file):
+   
     # CSV Reading and Conversion to JSON
     csv_data_json = read_csv_to_json(path_to_csv_file)
 
