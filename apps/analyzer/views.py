@@ -575,7 +575,7 @@ class FeatureExtractionResultDetailView(DetailView):
         context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
 
         # Render the HTML template with the context including the CSV data
-        return render(request, "monitoring/result.html", context)
+        return render(request, "feature_extraction_technique/result.html", context)
 
 #########################################333
     
@@ -596,7 +596,7 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
         context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
 
         # Render the HTML template with the context including the CSV data
-        return render(request, "monitoring/result.html", context)
+        return render(request, "extract_training_dataset/result.html", context)
 
 ##############################################33
     
