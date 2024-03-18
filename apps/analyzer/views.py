@@ -538,52 +538,52 @@ class ExecutionDetailView(DetailView):
     
 class MonitoringResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
-        # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
+        # Get the Execution object or raise a 404 error if not found
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        numeroEscenario = request.GET.get('scenario')
-        download= request.GET.get('download')
+        scenarioNumber = request.GET.get('scenario')
+        download = request.GET.get('download')
 
-        if numeroEscenario == None:
-            #numeroEscenario = "1"
-            numeroEscenario=execution.scenarios_to_study[0] #por defecto el primero que se haya indicado
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ numeroEscenario +"/log.csv"  
+        if scenarioNumber == None:
+            #scenarioNumber = "1"
+            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
 
-        #DESCARGA DE CSV
+        # CSV Download
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file)  
         
-        #LECTURA DE CSV, CONVERSION A JSON
-        csv_data_json= lectura_csv_json(path_to_csv_file)
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
 
-        # Incluir los datos CSV en el contexto para la plantilla
+        # Include CSV data in the context for the template
         context = {
             "execution": execution,
-            "csv_data": csv_data_json,  # Datos para ser utilizados en la plantilla HTML
-            "escenarios": execution.scenarios_to_study,
-            "numeroEscenario": numeroEscenario
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
         }     
-        # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
+        # Render the HTML template with the context including the CSV data
         return render(request, "monitoring/result.html", context)
 
 #############################################33
-def lectura_csv_json(path_to_csv_file):
-    # Inicializar una lista para contener los datos CSV convertidos en diccionarios
+def read_csv_to_json(path_to_csv_file):
+    # Initialize a list to hold the CSV data converted into dictionaries
     csv_data = []       
-    # Verificar si la ruta al archivo CSV existe y leer los datos
+    # Check if the path to the CSV file exists and read the data
     try:
         with open(path_to_csv_file, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 csv_data.append(row)
     except FileNotFoundError:
-        print(f"Archivo no encontrado: {path_to_csv_file}")
-    # Convertir csv_data a JSON
+        print(f"File not found: {path_to_csv_file}")
+    # Convert csv_data to JSON
     csv_data_json = json.dumps(csv_data)
     return csv_data_json
 ##########################################3
 def MonitoringResultDownload2(path_to_csv_file):
     with open(path_to_csv_file, 'r', newline='') as csvfile:
-        # Crear una respuesta HTTP con el contenido del CSV
+        # Create an HTTP response with the content of the CSV
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
         writer = csv.writer(response)

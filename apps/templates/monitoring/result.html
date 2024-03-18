@@ -27,138 +27,125 @@
     </div>
   </div>
 
-  <div class="container-fluid mt--6">
-    <div class="row">
-      <div class="col">
-        <div class="card">
-          <div class="table-responsive custom-scroll">
-          <table id="csvDataTable" class="table align-items-center table-flush">
-            <thead class="thead-light">
-              <tr>
-                <!-- Los encabezados de la tabla se llenarán dinámicamente con JS -->
-              </tr>
-            </thead>
-            <tbody class="list">
-              <tr>
-              <!-- Los datos de la tabla se llenarán dinámicamente con JS -->
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="table-responsive custom-scroll">
+            <table id="csvDataTable" class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  <!-- Table headers will be dynamically filled with JS -->
+                </tr>
+              </thead>
+              <tbody class="list">
+                <tr>
+                <!-- Table data will be dynamically filled with JS -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
 
-        <div class="card-footer py-4">
-          <nav aria-label="...">
-            <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
-              <!-- <select id="scenarios-select" class="btn btn-secondary dropdown-toggle" style="float: left;">
-                {% for scenario in escenarios %}
-                  {% if scenario == numeroEscenario %}
-                    <option  value="{{ scenario }}" selected>{{ scenario }}</option>
-                  {% else %}
-                    <option value="{{ scenario }}">{{ scenario }}</option>
-                  {% endif %}
-                {% endfor %}
-              </select> -->
-              <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  {{numeroEscenario}}
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  {% for scenario in escenarios %}
-                  <a class="dropdown-item" href="/case-study/execution/monitoring_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+                <!-- <select id="scenarios-select" class="btn btn-secondary dropdown-toggle" style="float: left;">
+                  {% for scenario in scenarios %}
+                    {% if scenario == scenarioNumber %}
+                      <option  value="{{ scenario }}" selected>{{ scenario }}</option>
+                    {% else %}
+                      <option value="{{ scenario }}">{{ scenario }}</option>
+                    {% endif %}
                   {% endfor %}
+                </select> -->
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{scenarioNumber}}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for scenario in scenarios %}
+                    <a class="dropdown-item" href="/case-study/execution/monitoring_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                    {% endfor %}
+                  </div>
                 </div>
-              </div>
-              <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{numeroEscenario}}"> -->
-              <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download=True&scenario={{numeroEscenario}}">
-                <button class="btn btn-success" style="float: right;" type="button">
-                  <i class="ni ni-cloud-download-95"></i> 
-                  {% blocktranslate %}Descargar{% endblocktranslate %}
-                </button>
-              </a>
-            </ul>
-          </nav>
+                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenarioNumber}}"> -->
+                <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download=True&scenario={{scenarioNumber}}">
+                  <button class="btn btn-success" style="float: right;" type="button">
+                    <i class="ni ni-cloud-download-95"></i> 
+                    {% blocktranslate %}Download{% endblocktranslate %}
+                  </button>
+                </a>
+              </ul>
+            </nav>
+          </div>
+          </div>
         </div>
-        </div>
-      </div>
-    </div> 
-    {% include "includes/footer.html" %}
-  </div>
+      </div> 
+      {% include "includes/footer.html" %}
+    </div>
 
-  
+    
 
 
 
-{% endblock content %}
+  {% endblock content %}
 
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}
+  <!-- Specific JS goes HERE --> 
+  {% block javascripts %}
 
-<!-- Inyectar csv_data como un script de tipo "application/json" -->
-<script type="application/json" id="csvDataScript">
-  {{ csv_data|safe }}
-</script>
+  <!-- Inject csv_data as a "application/json" script -->
+  <script type="application/json" id="csvDataScript">
+    {{ csv_data|safe }}
+  </script>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
 
-    // Parsear los datos CSV a JSON de manera segura
-    //var csvData = "{{ csv_data|safe }}";
-    //var csvData = JSON.parse(csvData);
+      // Safely parse CSV data to JSON
+      //var csvData = "{{ csv_data|safe }}";
+      //var csvData = JSON.parse(csvData);
 
-    // Leer el texto de la etiqueta script y parsearlo como JSON
-    var csvDataText = document.getElementById('csvDataScript').textContent;
-    var csvData = JSON.parse(csvDataText);
+      // Read the text from the script tag and parse it as JSON
+      var csvDataText = document.getElementById('csvDataScript').textContent;
+      var csvData = JSON.parse(csvDataText);
 
-    // El resto del código para manipular csvData va aquí...
-    var table = document.getElementById('csvDataTable');
-    var thead = table.querySelector('thead tr');
-    var tbody = table.querySelector('tbody');
+      // The rest of the code to manipulate csvData goes here...
+      var table = document.getElementById('csvDataTable');
+      var thead = table.querySelector('thead tr');
+      var tbody = table.querySelector('tbody');
 
-    if (csvData && csvData.length > 0) {
-      // Añadir encabezados basados en las claves del primer elemento
-      Object.keys(csvData[0]).forEach(function(key) {
-        var th = document.createElement('th');
-        th.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        //th.scope.add('col');
-        //th.classList.add('sort');
-        //th.data-sort.add(key);
-        thead.classList.add('thead-light');
-        thead.appendChild(th);
-      });
+      if (csvData && csvData.length > 0) {
+        // Add headers based on the keys of the first element
+        Object.keys(csvData[0]).forEach(function(key) {
+          var th = document.createElement('th');
+          th.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          //th.scope.add('col');
+          //th.classList.add('sort');
+          //th.data-sort.add(key);
+          thead.classList.add('thead-light');
+          thead.appendChild(th);
+        });
 
-      // Añadir filas de datos
-      csvData.forEach(function(row) {
-        var tr = document.createElement('tr');
-        Object.keys(row).forEach(function(key) {
-          var td = document.createElement('td');
-          var value = row[key];
-          //if (value.length > 80) {
-          value = value.substring(0, 80); // Truncar el valor a 80 caracteres
-          //}
-          td.textContent = value;
-          tr.appendChild(td);
-          });
-        tbody.appendChild(tr);
-      });
-    }
-  });
-</script>
-
-<!-- <script>
-  // Asumiendo que puedes obtener el execution.id de alguna manera en tu JavaScript.
-  var executionId = "{{execution.id}}"; // Reemplaza esto con el valor real
-
-  document.getElementById('scenarios-select').addEventListener('change', function() {
-      var selectedScenario = this.value;
-      // Redirige al usuario a la URL deseada, con el ID de ejecución y el escenario seleccionado.
-      window.location.href = `/case-study/execution/monitoring_result/${executionId}/?scenario=${selectedScenario}`;
-      //window.location.href = `/case-study/execution/monitoring_result/download/${executionId}/?scenario=${selectedScenario}`;
-  });
+        // Add data rows
+        csvData.forEach(function(row) {
+          var tr = document.createElement('tr');
+          Object.keys(row).forEach(function(key) {
+            var td = document.createElement('td');
+            var value = row[key];
+            //if (value.length > 80) {
+            value = value.substring(0, 80); // Truncate the value to 80 characters
+            //}
+            td.textContent = value;
+            tr.appendChild(td);
+            });
+          tbody.appendChild(tr);
+        });
+      }
+    });
+  </script>
 
 
-</script> -->
-  
 
 
 {% endblock javascripts %}
