@@ -137,6 +137,7 @@ dmypy.json
 # Custom Folders
 CSV_exit
 resources/
+metadata/
 mockups
 privatefiles/
 checkpoints/
@@ -171,6 +172,8 @@ media/
 staticfiles/*
 !staticfiles/.gitkeep 
 .vscode/symbols.json
+
+YOLO_Datasets/
 
 apps/static/assets/node_modules
 apps/static/assets/yarn.lock

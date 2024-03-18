@@ -143,8 +143,11 @@ def process_level(folder_path, df):
     bpmn_process(df)
     
     
-
-def process_discovery(log_path, scenario_path, root_path, special_colnames, configurations, skip, type):
+def process_discovery(log_path, scenario_path, root_path, execution):
+    special_colnames = execution.case_study.special_colnames,
+    configurations = execution.process_discovery.configurations,
+    type = execution.process_discovery.type,
+    skip = execution.process_discovery.preloaded
     if not skip:
         # log_path -> media/unzipped/exec_1/Nano/log.csv
         # scenario_path -> media/unzipped/exec_1/Nano/
@@ -200,7 +203,7 @@ class ProcessDiscoveryDetailView(DetailView):
         return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"]})
 
 def set_as_process_discovery_active(request):
-    process_discovery_id = request.GET.get("processdiscovery_id")
+    process_discovery_id = request.GET.get("process_discovery_id")
     case_study_id = request.GET.get("case_study_id")
     process_discovery_list = ProcessDiscovery.objects.filter(case_study_id=case_study_id)
     for m in process_discovery_list:
@@ -210,9 +213,26 @@ def set_as_process_discovery_active(request):
     process_discovery.active = True
     process_discovery.save()
     return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
+
+def set_as_process_discovery_inactive(request):
+    process_discovery_id = request.GET.get("process_discovery_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if ProcessDiscovery.objects.get(pk=process_discovery_id).user != request.user:  
+        raise ValidationError(_("Monitoring doesn't belong to the authenticated user."))
+    if ProcessDiscovery.objects.get(pk=process_discovery_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Monitoring doesn't belong to the Case Study."))
+    process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
+    process_discovery.active = False
+    process_discovery.save()
+    return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
     
 def delete_process_discovery(request):
-    process_discovery_id = request.GET.get("processdiscovery_id")
+    process_discovery_id = request.GET.get("process_discovery_id")
     case_study_id = request.GET.get("case_study_id")
     process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
     if request.user.id != process_discovery.user.id:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 08:58+0000\n"
+"POT-Creation-Date: 2024-02-08 10:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,34 +18,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/behaviourmonitoring/forms.py:22
+#: apps/behaviourmonitoring/forms.py:27
 msgid "Type"
 msgstr "Tipo"
 
-#: apps/behaviourmonitoring/forms.py:23
-msgid "Configurations"
-msgstr "Configuraciones"
+#: apps/behaviourmonitoring/forms.py:28
+msgid "UI Log Filename"
+msgstr ""
 
-#: apps/behaviourmonitoring/models.py:37
+#: apps/behaviourmonitoring/forms.py:29
+msgid "UI Log Separator"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:30
+msgid "Gaze Log Filename"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:31
+msgid "Gaze Log Adjustment"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:32
+msgid "System Info. Log"
+msgstr ""
+
+#: apps/behaviourmonitoring/models.py:44
 msgid "There is already an active monitoring for this case study."
 msgstr "Ya existe un monitoreo activo para este caso de estudio."
 
-#: apps/behaviourmonitoring/views.py:63 apps/behaviourmonitoring/views.py:85
+#: apps/behaviourmonitoring/views.py:65 apps/behaviourmonitoring/views.py:87
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
 
-#: apps/behaviourmonitoring/views.py:65 apps/behaviourmonitoring/views.py:87
+#: apps/behaviourmonitoring/views.py:67 apps/behaviourmonitoring/views.py:89
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr "El caso de estudio no pertenece al usuario autenticado."
 
-#: apps/behaviourmonitoring/views.py:67 apps/behaviourmonitoring/views.py:89
+#: apps/behaviourmonitoring/views.py:69 apps/behaviourmonitoring/views.py:91
 msgid "Monitoring doesn't belong to the authenticated user."
 msgstr "El monitoreo no pertenece al usuario autenticado."
 
-#: apps/behaviourmonitoring/views.py:69 apps/behaviourmonitoring/views.py:91
+#: apps/behaviourmonitoring/views.py:71 apps/behaviourmonitoring/views.py:93
 msgid "Monitoring doesn't belong to the Case Study."
 msgstr "El monitoreo no pertenece al caso de estudio."
 
-#: apps/behaviourmonitoring/views.py:102
+#: apps/behaviourmonitoring/views.py:104
 msgid "This object doesn't belong to the authenticated user"
 msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Configurations"
+#~ msgstr "Configuraciones"

@@ -1,43 +1,60 @@
 {% load i18n %}
-
-<form id="form" method="POST" enctype="multipart/form-data">{% csrf_token %}
+<form id="form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
   <div class="pl-lg-2">
     <div class="col-12">
-      <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+      <div class="form-group" id ="title">
+        <label class="form-control-label" for="title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
         {{ forms.ui_elements_detection.title }}
         <div class="form-validation">{{ forms.ui_elements_detection.title.errors }}</div>
       </div>
     </div>
     <div class="col-12">
-      <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Technique {% endblocktranslate %}<b class="text-red">*</b></label>
+      <div class="form-group" id="type">
+        <label class="form-control-label" for="type">{% blocktranslate %}Detection Technique {% endblocktranslate %}<b class="text-red">*</b></label>
         {{ forms.ui_elements_detection.type }}
         <div class="form-validation">{{ forms.ui_elements_detection.type.errors }}</div>
       </div>
     </div>
     <div class="col-12">
-      <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Classification Model{% endblocktranslate %}</label>
+      <div class="form-group" id="model">
+        <label class="form-control-label" for="model">{% blocktranslate %}Classification Model{% endblocktranslate %}</label>
         {{ forms.ui_elements_classification.model }}
         <div class="form-validation">{{ forms.ui_elements_classification.model.errors }}</div>
       </div>
     </div>
   </div>
   <hr>
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+  <div class="col-12">
+    <div class="form-group" id="preloaded">
+      {{forms.ui_elements_detection.preloaded}}
+      <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+    </div>
+    <div class="form-group" id="preloaded_file">
+      {{forms.ui_elements_detection.preloaded_file}}
+      <label class="form-control-label" for="preloaded_file">
+        {% if forms.ui_elements_detection.preloaded %}
+          {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %} 
+        {% endif %}
+      </label>
+      <button onclick="event.preventDefault();alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
+    </div>
+  </div>
+  <hr>
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
   <div class="pl-lg-2">
     <div class="col-12">
-      <div class="form-group">
+      <div class="form-group" id="ocr">
         {{ forms.ui_elements_detection.ocr }}
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Apply OCR{% endblocktranslate %}</label>
+        <label class="form-control-label" for="ocr">{% blocktranslate %}Apply OCR{% endblocktranslate %}</label>
         <div class="form-validation">{{ forms.ui_elements_detection.ocr.errors }}</div>
       </div>
     </div>
     <div class="col-12">
-      <div class="form-group">
-        <label class="form-control-label" for="input-title">{% blocktranslate %}Additional Configurations{% endblocktranslate %}</label>
+      <div class="form-group" id="configurations">
+        <label class="form-control-label" for="configurations">{% blocktranslate %}Additional Configurations{% endblocktranslate %}</label>
         {{ forms.ui_elements_detection.configurations }}
         <div class="form-validation">{{ forms.ui_elements_detection.configurations.errors }}</div>
       </div>
@@ -50,16 +67,38 @@
 </form>
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const technique = document.getElementById('id_type')
-      if (technique.value == 'screen2som') {
-        document.getElementById('id_model').disabled = true;
-      }
 
-      document.getElementById('form').onsubmit = function() {
-        document.getElementById('id_model').disabled = false;
-      }
-    })
-  </script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const title = document.getElementById('id_title');
+    const detection_technique = document.getElementById('id_type');
+    const model = document.getElementById('id_model');
+    const preloaded = document.getElementById('id_preloaded');
+    const preloaded_file = document.getElementById('id_preloaded_file');
+    const ocr = document.getElementById('id_ocr');  
+    const configurations = document.getElementById('id_configurations');
+
+    // Función para habilitar/deshabilitar campos
+    function toggleFields(isPreloadedChecked) {
+      detection_technique.disabled = isPreloadedChecked;
+      // model.disabled = isPreloadedChecked;
+      ocr.disabled = isPreloadedChecked;
+      configurations.readOnly = isPreloadedChecked;
+      preloaded_file.disabled = !isPreloadedChecked;
+    }
+
+    // Controlador de eventos para el checkbox 'preloaded'
+    preloaded.addEventListener('change', () => {
+      toggleFields(preloaded.checked);
+    });
+
+    // Inicializar los campos al cargar la página
+    toggleFields(preloaded.checked);
+
+    document.getElementById('form').onsubmit = function() {
+      // document.getElementById('id_model').readOnly = false;
+      document.getElementById('id_preloaded').readOnly = false;
+    }
+  })  
+</script>
 {% endblock javascripts %}

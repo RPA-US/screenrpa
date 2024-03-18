@@ -47,6 +47,7 @@
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Technique{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Classification{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
@@ -73,6 +74,14 @@
                     {{ ui_elem_detec.created_at }}
                   </td>
                   <td>
+                    {% if ui_elem_detec.preloaded %}
+                      {% blocktranslate %}Yes{% endblocktranslate %} |
+                      {{ ui_elem_detec.preloaded_file }}
+                    {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                    {% endif %}
+                  </td>
+                  <td>
                     {{ ui_elem_detec.type }}
                   </td>
                   <td>
@@ -85,13 +94,15 @@
                     {% endif %}
                   </td>
                   <td>
-                    <div>
-                      {% if ui_elem_detec.executed == 0 %}
-                        Not executed
+                    <span class="badge badge-dot mr-4">
+                      {% if ui_elem_detec.freeze %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}Already Executed{% endblocktranslate %}</span>
                       {% else %}
-                        Already executed
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}Not Executed{% endblocktranslate %}</span>
                       {% endif %}
-                    </div>
+                    </span>
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
@@ -110,12 +121,32 @@
                         <i class="fas fa-ellipsis-v"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                        {% if ui_elem_detec.executed > 0 %}
-                        <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        {% elif ui_elem_detec.executed == 0 %}
-                        <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this ui element detection?{% endblocktranslate %}')" href="/fe/ui-element-detection/delete/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">{% blocktranslate %}Delete{% endblocktranslate %}</a>
-                        <a class="dropdown-item" href="/fe/ui-element-detection/active/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">{% blocktranslate %}Set as active{% endblocktranslate %}</a>
+                        {% if ui_elem_detec.active == True and ui_elem_detec.freeze == True %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/inactive/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif ui_elem_detec.active == False and ui_elem_detec.freeze == True %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/active/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
+                        {% elif ui_elem_detec.active == True and ui_elem_detec.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/inactive/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif ui_elem_detec.active == False and ui_elem_detec.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/detail/{{ case_study_id }}/{{ ui_elem_detec.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this UI element detection?{% endblocktranslate %}')" href="/fe/ui-element-detection/delete/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">
+                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/fe/ui-element-detection/active/?case_study_id={{ case_study_id }}&ui_elem_detection_id={{ ui_elem_detec.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% endif %}
                       </div>
                     </div>

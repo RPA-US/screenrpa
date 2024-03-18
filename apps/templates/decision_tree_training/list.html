@@ -46,10 +46,15 @@
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="library">{% blocktranslate %}library{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Algorithms{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}One hot columns{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type"></th>
                 </tr>
               </thead>
               <tbody class="list">
@@ -67,11 +72,14 @@
                   <td>
                       {{ dtt.created_at }}
                   </td>
+                  <td>
+                    {{ dtt.title }}
+                  </td>
                   <td class="library">
                       {{ dtt.library }}
                   </td>
                   <td class="configuration">
-                    {{ dtt.configuration|truncatechars:100 }}
+                    {{ dtt.configuration|truncatechars:50 }}
                   </td>
                   <td>
                     {{ dtt.one_hot_columns }}
@@ -79,19 +87,15 @@
                   <td>
                     {{ dtt.columns_to_drop_before_decision_point }}
                   </td>
-                  <td>
-                    <span class="badge badge-dot mr-4">
-                      {% if dtt.active %}
-                      <i class="bg-success"></i>
-                      <span class="status">{% blocktranslate %}active{% endblocktranslate %}</span>
+                    <td>
+                      {% if dtt.preloaded %}
+                        {% blocktranslate %}Yes{% endblocktranslate %} |
+                        {{ dtt.preloaded_file }}
                       {% else %}
-                      <i class="bg-danger"></i>
-                      <span class="status">{% blocktranslate %}not active{% endblocktranslate %}</span>
+                        {% blocktranslate %}No{% endblocktranslate %}
                       {% endif %}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="d-flex align-items-center">
+                    </td>
+                    <!-- <div class="d-flex align-items-center">
                       <span class="completion mr-2">{{ dtt.executed }}</span>
                       <div>
                         {% if dtt.executed == 0 %}
@@ -108,7 +112,28 @@
                         </div>
                         {% endif %}
                       </div>
-                    </div>
+                    </div> -->
+                    <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if dtt.freeze %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}Already Executed{% endblocktranslate %}</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}Not Executed{% endblocktranslate %}</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if dtt.active %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}active{% endblocktranslate %}</span>
+                      {% else %}
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}not active{% endblocktranslate %}</span>
+                      {% endif %}
+                    </span>
                   </td>
                   <td class="text-right">
                     <div class="dropdown">
@@ -116,12 +141,32 @@
                         <i class="fas fa-ellipsis-v"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                        {% if dtt.executed > 0 %}
-                        <a class="dropdown-item" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        {% elif dtt.executed == 0 %}
-                        <a class="dropdown-item" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this decision tree training?{% endblocktranslate %}')" href="/dd/decision-tree-training/delete/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">{% blocktranslate %}Delete{% endblocktranslate %}</a>
-                        <a class="dropdown-item" href="/dd/decision-tree-training/active/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">{% blocktranslate %}Set as active{% endblocktranslate %}</a>
+                        {% if dtt.active == True and dtt.freeze == True %}
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/inactive/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif dtt.active == False and dtt.freeze == True %}
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">
+                          <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="#">
+                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/active/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
+                        {% elif dtt.active == True and dtt.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/inactive/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
+                          <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
+                        {% elif dtt.active == False and dtt.freeze == False %}
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">                        
+                          <i class="fas fa-edit" style="color: orange; vertical-align: 0%;"></i>{% blocktranslate %}Edit{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this decision tree training?{% endblocktranslate %}')" href="/dd/decision-tree-training/delete/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
+                          <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                        <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/active/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
+                          <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% endif %}
                       </div>
                     </div>

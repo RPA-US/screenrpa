@@ -64,25 +64,9 @@
                 <div class="row">
                   <div class="col-lg-6">
                     <div class="form-group">
-                      {{ form.exp_file.label_tag }}
+                      {{ form.exp_file.label_tag }} <br/>
                       {{ form.exp_file }}
                       <div class="form-validation">{{ form.exp_file.errors }}</div>
-                    </div>
-                  </div>
-                  {% comment %} <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.exp_folder_complete_path.label_tag }}
-                      {{ form.exp_folder_complete_path }}
-                      <div class="form-validation">{{ form.exp_folder_complete_path.errors }}</div>
-                    </div>
-                  </div> {% endcomment %}
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      {{ form.gui_class_success_regex.label_tag }}
-                      {{ form.gui_class_success_regex }}
-                      <div class="form-validation">{{ form.gui_class_success_regex.errors }}</div>  
                     </div>
                   </div>
                 </div>
@@ -101,16 +85,7 @@
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
-                      {{ form.target_label.label_tag }}
-                      {{ form.target_label }}
-                      <div class="form-validation">{{ form.target_label.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      {{ form.scenarios_to_study.label_tag }}
+                      {{ form.scenarios_to_study.label_tag }}<b class="text-red">*</b>
                       {{ form.scenarios_to_study }}
                       <div class="form-validation">{{ form.scenarios_to_study.errors }}</div>
                     </div>
@@ -176,4 +151,5 @@
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+{% endblock javascripts %}

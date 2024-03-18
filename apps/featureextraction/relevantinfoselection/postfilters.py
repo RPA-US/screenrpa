@@ -249,7 +249,11 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
     print("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
     logging.info("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
 
-def apply_filters(log_path, root_path, special_colnames, configurations):
+def apply_filters(log_path, root_path, execution):
+    
+    special_colnames = execution.case_study.special_colnames,
+    configurations = execution.postfilters.configurations
+    
     times = {}
     for key in tqdm(configurations, desc="Postfilters have been processed: "):
         # ui_selector = configurations["key"]["UI_selector"]
@@ -270,17 +274,16 @@ def apply_filters(log_path, root_path, special_colnames, configurations):
 
     return times
 
-def info_postfiltering(*data):
-    data_list = list(data)
-    filters_format_type = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
+def postfilters(log_path, root_path, execution):
+    filters_format_type = execution.postfilters.type,
+    skip = execution.postfilters.preloaded
+    
     if not skip:  
         tprint(PLATFORM_NAME + " - " + INFO_POSTFILTERING_PHASE_NAME, "fancy60")
         
         match filters_format_type:
             case "rpa-us":
-                output = apply_filters(*data)
+                output = apply_filters(log_path, root_path, execution)
             case _:
                 raise Exception(_("You select a type of filter that doesnt exists"))
     else:

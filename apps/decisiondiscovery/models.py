@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
+from private_storage.fields import PrivateFileField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -88,11 +89,19 @@ def default_dd_configuration():
 #     return 'ID3, CART, CHAID, C4.5'.split(', ') # this returns a list
 
 class ExtractTrainingDataset(models.Model):
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
+    freeze = models.BooleanField(default=False, editable=True)
+    target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
+    title = models.CharField(max_length=255, blank=True)
     columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
+    decision_point_activity = models.CharField(max_length=255)
+    configurations = models.JSONField(default=dict, blank=True, null=True)
+
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
@@ -103,20 +112,25 @@ class ExtractTrainingDataset(models.Model):
         return 'col to drop: ' + str(self.columns_to_drop)
     
 class DecisionTreeTraining(models.Model):
+    preloaded = models.BooleanField(default=False, editable=True)
+    title = models.CharField(max_length=255)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
+    freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     configuration = models.JSONField(default=default_dd_configuration)
-    library = models.CharField(max_length=255, default='sklearn') # 'sklearn'
-    one_hot_columns = ArrayField(models.CharField(max_length=25))
-    columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore)
+    library = models.CharField(max_length=255, default='sklearn', null=True, blank=True) # 'sklearn'
+    one_hot_columns = ArrayField(models.CharField(max_length=25) , default=list, null=True, blank=True) 
+    columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore, null=True, blank=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def clean(self):
         cleaned_data = super().clean()
-        if not ExtractTrainingDataset.objects.exists(case_study__id=self.case_study.id):
-            raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
+
+        # if not ExtractTrainingDataset.objects.exists(case_study_id=self.case_study.id):
+        #     raise ValidationError(_("To be able to apply decision tree training, a extract training dataset has to exist"))
         return cleaned_data
     
     def get_absolute_url(self):

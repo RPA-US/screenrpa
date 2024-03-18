@@ -10,7 +10,7 @@ from core.utils import read_ui_log_as_dataframe
 from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
-from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents
+from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents, decode_webgazer_timezone
 from apps.behaviourmonitoring.utils import get_monitoring
 
 ms_pattern = '%H-%M-%S.%f'
@@ -78,10 +78,26 @@ def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
     ms = str(hs)+"-"+str(min)+"-"+str(ms)
     time = datetime.datetime.strptime(ms, ms_pattern).time()
     res = start_datetime + datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=time.second, microseconds=time.microsecond)
+    total_seconds = (res - time_begining).total_seconds()
+  elif pattern == "webgazer":
+    # Convertir a número entero (en segundos)
+    js_timestamp_int = int(float(current_timestamp) / 1000)
+    # Convertir a un objeto datetime
+    date_time_obj = datetime.datetime.utcfromtimestamp(js_timestamp_int)
+    # Obtener la hora
+    time = date_time_obj.time()
+    res = datetime.datetime.combine(start_datetime, time)
+    if res < time_begining:
+      total_seconds = 0
+    else:
+      total_seconds = (res - time_begining).total_seconds()
   else:
     time =  datetime.datetime.strptime(current_timestamp, pattern).time()
     res = datetime.datetime.combine(start_datetime, time)
-  return (res - time_begining).total_seconds(), res
+    total_seconds = (res - time_begining).total_seconds()
+  if total_seconds < 0:
+    raise Exception("Timestamps are not well synchronized")
+  return total_seconds, res
 
 
 def format_fixation_point_key(i, gaze_log):
@@ -94,7 +110,7 @@ def gaze_log_get_key(i, gaze_log, gaze_timestamp):
     "start_index": i,
     "ms_start": gaze_log.iloc[i]["Fixation Start"],
     "ms_end": gaze_log.iloc[i]["Fixation End"],
-    "duration": gaze_log.iloc[i]["Fixation Duration"],
+    "duration": gaze_log.iloc[i]["Fixation Duration"], 
     "imotions_dispersion": gaze_log.iloc[i]["Fixation Dispersion"]
   }
   return format_fixation_point_key(i, gaze_log), init
@@ -113,7 +129,7 @@ def update_previous_screenshots_in_splitted_events(fixation_points, j, key, init
   
   return fixation_points 
 
-def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames):
+def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames, gaze_log_timestamp_pattern):
   """
   
   Update fixation points values
@@ -165,7 +181,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
   else:
     fixation_start = gaze_log.iloc[i]["Fixation Start"]
     if fixation_start and (not pd.isnull(fixation_start)):
-      gaze_fixation_start, t = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, 'ms') # + gaze_log_timedelta
+      gaze_fixation_start, t = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, gaze_log_timestamp_pattern) # + gaze_log_timedelta
       key, init = gaze_log_get_key(i, gaze_log, t)
       last_counter = 1
       aux_index = j-last_counter if j != 0 else j
@@ -209,7 +225,7 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
   
   return fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row
 
-def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, monitoring_configurations):
+def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, gaze_log_timestamp_pattern):
   # https://imotions.com/release-notes/imotions-9-1-7/
   startDateTime_gaze_tz = startDateTime_gaze_tz.replace(tzinfo=None)
 
@@ -246,14 +262,12 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
         fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
         key = None
         
-        
-        
         for i in range(last_gaze_log_row, len(gaze_log)-1):
-          gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], "ms")# + gaze_log_timedelta
+          gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], gaze_log_timestamp_pattern)# + gaze_log_timedelta
           
           # Gaze Event between current ui log event and next ui log event
           if gaze_timestamp < next_timestamp:
-            fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames)
+            fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames, gaze_log_timestamp_pattern)
             
           # Gaze Event before current ui log event
           # elif current_timestamp > gaze_timestamp:
@@ -263,11 +277,14 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
             last_gaze_log_row = i
             break
         # Add the dispersion calculation of the last screenshot associated to the UI Log Event
+      
         screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
+        if fixation_points[screenshot_name]["fixation_points"] == {}:	
+          raise Exception("No fixation points in screenshot " + screenshot_name)
         gaze_metrics = fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)]
         metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
         fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)] = metrics_aux
-        
+          
         # If all gaze log events have been covered: break
         if i == len(gaze_log)-2:
           break
@@ -278,7 +295,7 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
         logging.info("behaviourmonitoring/monitoring/gaze_log_mapping line:155. UI Logs events with the same timestamps: next_timestamp (row " + str(j+1) + ") == current_timestamp (row " + str(j) + ")")
   
   last_ui_log_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[len(ui_log)-1][special_colnames["Timestamp"]], ui_log_timestamp_pattern)        
-  last_gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[len(gaze_log)-1]["Timestamp"], "ms")# + gaze_log_timedelta
+  last_gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[len(gaze_log)-1]["Timestamp"], gaze_log_timestamp_pattern)# + gaze_log_timedelta
   
   # Store gaze logs that takes place after last UI log event
   if last_gaze_timestamp > last_ui_log_timestamp:
@@ -286,7 +303,7 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
     for i in range(last_gaze_log_row, len(gaze_log)-1):
       fixation_start = gaze_log.iloc[i]["Fixation Start"]
       if fixation_start and (not pd.isnull(fixation_start)):
-        gaze_fixation_start, t = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, 'ms') # + gaze_log_timedelta
+        gaze_fixation_start, t = get_timestamp(starting_point, startDateTime_gaze_tz, fixation_start, gaze_log_timestamp_pattern) # + gaze_log_timedelta
         key, init = gaze_log_get_key(i, gaze_log, t)
         if key and (key in fixation_points["subsequent"]):
           fixation_points["subsequent"][key]["#events"] += 1
@@ -359,21 +376,24 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
 
   ub_log.to_csv(root_path + "ub_log_fixation.csv")
 
-def monitoring(log_path, root_path, special_colnames, monitoring_obj):
+def monitoring(log_path, root_path, execution):
+  
+    special_colnames = execution.case_study.special_colnames
+    monitoring_obj = execution.monitoring
     monitoring_type = monitoring_obj.type
-    monitoring_configurations = monitoring_obj.configurations
     
     if os.path.exists(log_path):
       logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
       print("Log already exists, it's not needed to execute format conversor")
-    elif "format" in monitoring_configurations:
+    elif (getattr(monitoring_obj, 'format') is not None):
       log_filename = "log"
-      log_path = format_mht_file(root_path + monitoring_configurations["mht_log_filename"], monitoring_configurations["format"], root_path, log_filename, monitoring_configurations["org:resource"])
+      # TODO: org:resource
+      log_path = format_mht_file(root_path + monitoring_obj.ui_log_filename, monitoring_obj.format, root_path, log_filename, 'User1')
   
   
     ui_log = read_ui_log_as_dataframe(log_path)
-    sep = monitoring_configurations["separator"]
-    eyetracking_log_filename = monitoring_configurations["eyetracking_log_filename"]
+    sep = monitoring_obj.ui_log_separator
+    eyetracking_log_filename = monitoring_obj.gaze_log_filename
     
     if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
         gazeanalysis_log = pd.read_csv(root_path + eyetracking_log_filename, sep=sep)
@@ -388,16 +408,19 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
             logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
             raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
+        #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
-        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_configurations["native_slide_events"], sep)
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_configurations["mht_log_filename"], ui_log_format_pattern)
+        
+        #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
+        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj.ui_log_filename, ui_log_format_pattern)#en steprecorder
 
         if os.path.exists(root_path + "fixation.json"):
           fixation_p = json.load(open(root_path + "fixation.json"))
           logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
           print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
         else:
-          fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, monitoring_configurations)
+          fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
         
         # Serializing json
         json_object = json.dumps(fixation_p, indent=4)
@@ -411,7 +434,42 @@ def monitoring(log_path, root_path, special_colnames, monitoring_obj):
         monitoring_obj.ub_log_path = root_path + "fixation.json"
         # update monitoring_obj
         monitoring_obj.save()
+    elif monitoring_type == "webgazer":
+        # fixation.json to Dataframe checker
+        for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
+          if special_colnames[col_name] not in ui_log.columns:
+            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
+        #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
+        #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
+        
+        #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
+        startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
+        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj["ui_log_filename"], ui_log_format_pattern)#en steprecorder
+
+        #native_slide_events = "native_slideevents.csv"
+
+        if os.path.exists(root_path + "fixation.json"):
+          fixation_p = json.load(open(root_path + "fixation.json"))
+          logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
+          print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
+        else:
+          fixation_p = gaze_log_mapping(ui_log, gazeanalysis_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
+        
+        # Serializing json
+        json_object = json.dumps(fixation_p, indent=4)
+        with open(root_path + "fixation.json", "w") as outfile:
+            outfile.write(json_object)
+        logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
+        
+        fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+        
+        monitoring_obj.executed = 100
+        monitoring_obj.ub_log_path = root_path + "fixation.json"
+        # update monitoring_obj
+        monitoring_obj.save()
+ 
     else:
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
         raise Exception("You select a gaze analysis that is not available in the system")

@@ -76,17 +76,20 @@ def apply_prefilters(log_path, root_path, special_colnames, configurations):
         times[key] = {"duration": float(time.time()) - float(start_t)}
     return times
 
-def info_prefiltering(*data):
-    data_list = list(data)
-    filters_format_type = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
+def prefilters(log_path, root_path, execution):
+    
+    special_colnames = execution.case_study.special_colnames
+    configurations = execution.prefilters.configurations
+    filters_format_type = execution.prefilters.type
+    skip = execution.prefilters.preloaded
+    
     if not skip:  
         tprint(PLATFORM_NAME + " - " + INFO_PREFILTERING_PHASE_NAME, "fancy60")
         
         match filters_format_type:
             case "rpa-us":
-                output = apply_prefilters(*data)
+                output = apply_prefilters(log_path, root_path, special_colnames, configurations)
+
             case _:
                 raise Exception(_("You select a type of prefilter that doesnt exists"))
     else:

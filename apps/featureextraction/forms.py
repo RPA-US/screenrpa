@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 from django import forms
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique
+from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique, CNNModels
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -18,7 +18,9 @@ class UIElementsDetectionForm(forms .ModelForm):
             "title",
             "type",
             "configurations",
-            "ocr"
+            "ocr",
+            "preloaded_file",
+            "preloaded",
         )
         labels = {
             "type": _("Type"),
@@ -30,6 +32,7 @@ class UIElementsDetectionForm(forms .ModelForm):
             "type": "Technique *",
             "configurations": "Additional Configurations",
             "ocr": "Apply OCR *",
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
@@ -41,7 +44,7 @@ class UIElementsDetectionForm(forms .ModelForm):
             ),
             # type is a selectable
             "type": forms.Select(
-                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
+                choices=[('rpa-us', 'Kevin Moran'),('screen2som', 'Screen2SOM'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
                 attrs={
                     "class": "form-control",
                     # If value is screen2som, disable CNN model selectable
@@ -60,8 +63,17 @@ class UIElementsDetectionForm(forms .ModelForm):
                 'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
             }),
             "ocr": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
+                attrs={"class": "primary-checkbox"}
             ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+
         }
     
     def __init__(self, *args, **kwargs):
@@ -79,27 +91,40 @@ class PrefiltersForm(forms .ModelForm):
             "type",
             "skip",
             "configurations",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "type": _("Type"),
             "skip": _("Skip"),
-            "configurations": _("Configurations")
+            "configurations": _("Configurations"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
-            "type": forms.TextInput(
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "type": forms.Select(
+                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "uied"
-                    }
+                    "class": "form-control"
+                }
             ),
             "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
+                attrs={"class": "primary-checkbox"}
             ),
             "configurations": forms.Textarea(attrs={
                 'class': 'form-control',
                 'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
-            })
+            }),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            )
         }
 
     def __init__(self, *args, **kwargs):
@@ -116,22 +141,35 @@ class PostfiltersForm(forms .ModelForm):
             "type",
             "skip",
             "configurations",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
             "type": _("Type"),
             "skip": _("Skip"),
-            "configurations": _("Configurations")
+            "configurations": _("Configurations"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
             "type": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "rpa-us"
+                    "placeholder": "New-postfiltering"
                     }
             ),
             "skip": forms.CheckboxInput(
                 attrs={"class": "primary-checkbox", "checked": "checked"}
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
             ),
             "configurations": forms.Textarea(attrs={
                 'class': 'form-control',
@@ -144,24 +182,33 @@ class PostfiltersForm(forms .ModelForm):
         super(PostfiltersForm, self).__init__(*args, **kwargs)
 
 class UIElementsClassificationForm(forms .ModelForm):
+    model = forms.ModelChoiceField(
+        queryset=CNNModels.objects.all().exclude(name="screen2som"),
+        to_field_name="name",
+        empty_label="---",
+        required=False,
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
     class Meta:
         model = UIElementsClassification
         exclude = (
             "user",
+            "preloaded",
+            "preloaded_file",
             )
         fields = (
-            "model",
             "type",
         )
         labels = {
             "type": _("Type"),
             "skip": _("Skip"),
-            "model": _("Model"),
-            "model_properties": _("Model properties")
         }
 
         labels = {
-            "model": "Classification model *",
             "type": "Technique *",
         }
 
@@ -170,14 +217,6 @@ class UIElementsClassificationForm(forms .ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "uied"
-                    }
-            ),
-            "model": forms.Select(
-                # TODO: Use foreign key models
-                choices=[('IGNORE', '---'), ('resources/models/custom-v2.h5', 'RPA US'), ('resources/models/uied.h5', 'UIED')],
-                attrs={
-                    "class": "form-control",
-                    "required": "false"
                     }
             ),
         }
@@ -192,32 +231,77 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "user",
             )
         fields = (
+            "identifier",
+            "type",
             "technique_name",
-            "skip",
-            "identifier"
+            "consider_relevant_compos",
+            "relevant_compos_predicate",
+            "preloaded_file",
+            "preloaded",
+            "title"
         )
         labels = {
-            "technique_name": _("Technique name"),
-            "skip": _("Skip"),
-            "identifier": _("Identifier")
+            "identifier": _("Identifier"),
+            "type": _("Feature extraction type"),
+            "technique_name": _("Technique"),
+            "consider_relevant_compos": _("Apply Filtering (Relevant Component Selection)"),
+            "relevant_compos_predicate": _("Condition for a UI Component to be relevant"),
+            "preloaded_file":"Preload Execution Results",
+            "title": "Title "
         }
 
         widgets = {
-            "technique_name": forms.TextInput(
+            "title": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "status"
+                    "placeholder": "Feature Extraction Technique"
                     }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
             ),
             "identifier": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "sta_s"
                     }
-            )
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "type": forms.Select(
+                choices=[
+                    ('SINGLE', 'Single: Feature extraction just after UI Elem. Detection'), 
+                    ('AGGREGATE', 'Aggregate: Feature extraction after flattening UI log into dataset'), 
+                ],
+                attrs={
+                    "class": "form-control",
+                    "required": "false"
+                }),
+            "technique_name": forms.Select(
+                # choices=[('quantity', 'Quantity of UI Elem. per class'), 
+                #          ('location', 'Location (UI Elem. Centroid)'), 
+                #          ('plaintext', 'Location (UI Elem. Centroid) + Plain Text'), 
+                #          ('status', 'UI Elem. Status'), 
+                #          ('number_ui_element', 'Number of UI Elem.'),
+                #          ('caption_ui_element', 'Caption of UI Elem.')],
+                attrs={
+                    "class": "form-control",
+                    "required": "false"
+                    }
+            ),
+            "consider_relevant_compos": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "relevant_compos_predicate": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": 'compo["relevant"]=="True" or compo["relevant"] == "Nested"',
+                    "required": "false"
+                    }
+            ),
         }
 
     def __init__(self, *args, **kwargs):

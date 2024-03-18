@@ -15,59 +15,44 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from rest_framework import status
 from apps.analyzer.models import CaseStudy, Execution
+from django.utils.translation import gettext_lazy as _
 
-def ui_elements_classification(*data):
+def ui_elements_classification(log_path, path_scenario, execution):
     # Classification can be done with different algorithms
-    data_list = list(data)
-    classifier_type = data_list.pop()
-    data = tuple(data_list)
-
     tprint(PLATFORM_NAME + " - " + CLASSIFICATION_PHASE_NAME, "fancy60")
-    print(data_list[4]+"\n")
+    print(path_scenario+"\n")
     
-    match classifier_type:
+    match execution.ui_elements_classification.type:
         case "rpa-us":
-            output = legacy_ui_elements_classification(*data)
+            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "uied":
-            output = uied_ui_elements_classification(*data)
+            output = uied_ui_elements_classification(log_path, path_scenario, execution)
         case "sam":
-            output = legacy_ui_elements_classification(*data)
+            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "fast-sam":
-            output = legacy_ui_elements_classification(*data)
+            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
         case "screen2som":
             output = None
         case _:
             raise Exception("You select a type of UI element classification that doesnt exists")
     return output
 
-def feature_extraction_technique(*data):
-    tprint(PLATFORM_NAME + " - " + FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+def feature_extraction_technique(log_path, path_scenario, execution):
 
-    data_list = list(data)
-    feature_extraction_technique_name = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
+    fe_type = execution.feature_extraction_technique.type
+    feature_extraction_technique_name = execution.feature_extraction_technique.technique_name
+    skip = execution.feature_extraction_technique.preloaded
     output = None
-
-    print("Feature extraction selected: " + feature_extraction_technique_name+"\n")
     
     if not skip:
-        output = detect_fe_function(feature_extraction_technique_name)(*data)
-    return output
-
-def aggregate_features_as_dataset_columns(*data):
-    tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
-
-    data_list = list(data)
-    agg_feature_extraction_technique_name = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
-    output = None
-
-    print("Aggregate feature extraction selected: " + agg_feature_extraction_technique_name+"\n")
-    
-    if not skip:
-        output = detect_agg_fe_function(agg_feature_extraction_technique_name)(*data)
+        if fe_type == "SINGLE":
+            tprint(PLATFORM_NAME + " - " + FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+            print("Feature extraction selected: " + feature_extraction_technique_name+"\n")
+            output = detect_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
+        else:
+            tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+            print("Aggregate feature extraction selected: " + feature_extraction_technique_name+"\n")
+            output = detect_agg_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
     return output
 
 class FeatureExtractionTechniqueCreateView(CreateView):
@@ -124,6 +109,23 @@ def set_as_feature_extraction_technique_active(request):
     feature_extraction_technique.active = True
     feature_extraction_technique.save()
     return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
+
+def set_as_feature_extraction_technique_inactive(request):
+    feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if FeatureExtractionTechnique.objects.get(pk=feature_extraction_technique_id).user != request.user:  
+        raise ValidationError(_("Feature Extraction Technique doesn't belong to the authenticated user."))
+    if FeatureExtractionTechnique.objects.get(pk=feature_extraction_technique_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Feature Extraction Technique Tree Training doesn't belong to the Case Study."))
+    feature_extraction_technique = FeatureExtractionTechnique.objects.get(id=feature_extraction_technique_id)
+    feature_extraction_technique.active = False
+    feature_extraction_technique.save()
+    return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
     
 def delete_feature_extraction_technique(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
@@ -169,10 +171,11 @@ class UIElementsDetectionCreateView(MultiFormsView):
         if not self.request.user.is_authenticated:
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
-        if self.object.model == 'IGNORE':
-            return
-        else:
+        if form.cleaned_data['model']:
             self.object.type = ui_elem_det_obj.type
+            self.object.model = form.cleaned_data['model']
+        else:
+            return
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         self.object.save()
@@ -220,6 +223,9 @@ class UIElementsDetectionDetailView(MultiFormsView):
                 "type": ui_elements_detection.type,
                 "configurations": ui_elements_detection.configurations,
                 "ocr": ui_elements_detection.ocr,
+                "preloaded": ui_elements_detection.preloaded,
+                "preloaded_file": ui_elements_detection.preloaded_file,
+
             },
             "instance": ui_elements_detection,
         }
@@ -298,6 +304,23 @@ def set_as_ui_elements_detection_active(request):
         ui_elements_classification.save()
 
     return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
+
+def set_as_ui_elements_detection_inactive(request):
+    ui_elements_detection_id = request.GET.get("ui_elem_detection_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))  
+    if UIElementsDetection.objects.get(pk=ui_elements_detection_id).user != request.user:  
+        raise ValidationError(_("Ui Element Detection doesn't belong to the authenticated user."))
+    if UIElementsDetection.objects.get(pk=ui_elements_detection_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Ui Element Detection doesn't belong to the Case Study."))
+    ui_elements_detection = UIElementsDetection.objects.get(id=ui_elements_detection_id)
+    ui_elements_detection.active = False
+    ui_elements_detection.save()
+    return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
     
 def delete_ui_elements_detection(request):
     ui_element_detection_id = request.GET.get("ui_elem_detection_id")
@@ -318,6 +341,7 @@ class PrefiltersCreateView(CreateView):
         context = super(PrefiltersCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
         return context    
+
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
@@ -362,6 +386,23 @@ def set_as_prefilters_active(request):
         m.save()
     prefilter = Prefilters.objects.get(id=prefilter_id)
     prefilter.active = True
+    prefilter.save()
+    return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
+
+def set_as_prefilters_inactive(request):
+    prefilter_id = request.GET.get("prefilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if Prefilters.objects.get(pk=prefilter_id).user != request.user:  
+        raise ValidationError(_("Prefiltering doesn't belong to the authenticated user."))
+    if Prefilters.objects.get(pk=prefilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Prefiltering doesn't belong to the Case Study."))   
+    prefilter = Prefilters.objects.get(id=prefilter_id)
+    prefilter.active = False
     prefilter.save()
     return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
     
@@ -428,6 +469,23 @@ def set_as_postfilters_active(request):
         m.save()
     postfilter = Postfilters.objects.get(id=postfilter_id)
     postfilter.active = True
+    postfilter.save()
+    return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
+
+def set_as_postfilters_inactive(request):
+    postfilter_id = request.GET.get("postfilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if Postfilters.objects.get(pk=postfilter_id).user != request.user:  
+        raise ValidationError(_("Postfiltering doesn't belong to the authenticated user."))
+    if Postfilters.objects.get(pk=postfilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Postfiltering doesn't belong to the Case Study."))   
+    postfilter = Postfilters.objects.get(id=postfilter_id)
+    postfilter.active = False
     postfilter.save()
     return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
     

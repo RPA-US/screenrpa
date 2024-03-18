@@ -1,10 +1,12 @@
 import os
+import copy
 from os.path import join as pjoin
 import json
 import time
 import keras_ocr
 import numpy as np
 import cv2
+import zipfile
 import matplotlib.pyplot as plt
 from . import ip_draw as draw
 import cv2
@@ -12,7 +14,9 @@ from art import tprint
 import logging
 import pickle
 from tqdm import tqdm
+from core.settings import PRIVATE_STORAGE_ROOT, sep
 from core.settings import CROPPING_THRESHOLD, PLATFORM_NAME, DETECTION_PHASE_NAME
+from core.utils import get_execution_path
 from apps.analyzer.utils import format_mht_file, read_ui_log_as_dataframe
 import apps.featureextraction.utils as utils
 from apps.featureextraction.SOM.segment_anything import sam_model_registry, SamAutomaticMaskGenerator
@@ -20,6 +24,7 @@ import apps.featureextraction.SOM.ip_draw as draw
 from apps.featureextraction.SOM.Component import Component 
 from apps.featureextraction.SOM.sam import get_sam_gui_components_crops 
 from apps.featureextraction.SOM.screen2som.predict import predict as screen2som_predict
+from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
 from .UiComponent import UiComponent #QUIT
 from django.utils.translation import gettext_lazy as _
 
@@ -29,6 +34,9 @@ Text boxes detection: KERAS_OCR
 In order to detect the text boxes inside the screenshots, we define the get_keras_ocr_image.
 This function has a list of images as input, and a list of lists with the coordinates of text boxes coordinates
 """
+def unzip_file(zip_file_path, dest_folder_path):
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(dest_folder_path)
 
 def get_ocr_image(pipeline, param_img_root, images_input):
     """
@@ -223,7 +231,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     return clips, uicompos, times
 
 
-def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, img_index, text_classname):
+def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, path_to_save_bordered_images, img_index, text_classname, applied_ocr=False):
     '''
     Analyzes an image and extracts its UI components
 
@@ -254,25 +262,26 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     global_x = []
     words[img_index] = {}
 
-    for j in range(0, len(texto_detectado_ocr[img_index])):
-        coordenada_y = []
-        coordenada_x = []
+    if applied_ocr:
+        for j in range(0, len(texto_detectado_ocr[img_index])):
+            coordenada_y = []
+            coordenada_x = []
 
-        for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
-            coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
-            coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
+            for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
+                coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
+                coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
 
-        word = texto_detectado_ocr[img_index][j][0]
-        centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
-        if word in words[img_index]:
-            words[img_index][word] += [centroid]
-        else:
-            words[img_index][word] = [centroid]
+            word = texto_detectado_ocr[img_index][j][0]
+            centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+            if word in words[img_index]:
+                words[img_index][word] += [centroid]
+            else:
+                words[img_index][word] = [centroid]
 
-        global_y.append(coordenada_y)
-        global_x.append(coordenada_x)
-        # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
-        # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+            global_y.append(coordenada_y)
+            global_x.append(coordenada_x)
+            # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+            # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
 
     # print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
 
@@ -298,7 +307,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     # draw the countours on the image
     cv2.drawContours(img_copy, contornos, -1, (0, 0, 255), 2)
-    cv2.imwrite(path_to_save_bordered_images + image_names[img_index] + '_bordered.png', img_copy)
+    cv2.imwrite(path_to_save_bordered_images + os.path.basename(image_names[img_index]) + '_bordered.png', img_copy)
 
     # We carry out the crops for each detected countour
     recortes = []
@@ -306,7 +315,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     text_or_not_text = []
 
-    comp_json = {"img_shape": [img.shape], "compos": []}
+    comp_json = {"img_shape": img.shape, "compos": []}
 
     for j in range(0, len(contornos)):
         cont_horizontal = []
@@ -366,19 +375,24 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
                 text_classname: text[0] if is_text else None,
-                "column_min": int(x),
-                "row_min": int(y),
-                "column_max": int(w),
-                "row_max": int(h),
-                "width": int(w - x),
-                "height": int(h - y)
+                "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
+                "centroid": [int((w-x)/2), int((h-y)/2)],
+                "xpath": [],
+                # "column_min": int(x),
+                # "row_min": int(y),
+                # "column_max": int(w),
+                # "row_max": int(h),
+                # "width": int(w - x),
+                # "height": int(h - y)
             })
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))
 
+    comp_json = labels_to_output(copy.deepcopy(comp_json))
+
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations):
+def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations, applied_ocr):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
@@ -395,8 +409,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
     :type path_to_save_bordered_images: str
     """
     # Since the path ends with a /, the last element of the split will be an empty string
-    execution_root = param_img_root[:-1]
-    execution_root = execution_root + '_results/'
+    execution_root = get_execution_path(param_img_root)
 
     path_to_save_gui_components_npy = execution_root+"components_npy/"
     path_to_save_components_json = execution_root+"components_json/"
@@ -405,11 +418,11 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
-        screenshot_texts_npy = path_to_save_gui_components_npy + image_names[img_index] + "_texts.npy"
-        screenshot_npy = path_to_save_gui_components_npy + image_names[img_index] + ".npy"
+        screenshot_texts_npy = path_to_save_gui_components_npy + os.path.basename(image_names[img_index]) + "_texts.npy"
+        screenshot_npy = path_to_save_gui_components_npy + os.path.basename(image_names[img_index]) + ".npy"
         exists_screenshot_npy = os.path.exists(screenshot_npy)
 
-        screenshot_json = path_to_save_components_json + image_names[img_index] + ".json"
+        screenshot_json = path_to_save_components_json + os.path.basename(image_names[img_index]) + ".json"
         exists_screenshot_json = os.path.exists(screenshot_json)
         
         overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or (not skip)
@@ -419,10 +432,10 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
         if overwrite:
             start_t = time.time()
             if algorithm == "rpa-us":
-                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname)
+                recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname, applied_ocr=applied_ocr)
                 
                 # save metadata json
-                with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
+                with open(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', "w") as outfile:
                     json.dump(comp_json, outfile)
 
                 # save texts npy
@@ -436,10 +449,10 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     recortes, uicompos, times = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index, times)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
-                utils.save_corners_json(path_to_save_components_json + image_names[img_index] + '.json', uicompos, img_index, text_detected_by_OCR, text_classname)
+                utils.save_corners_json(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', uicompos, img_index, text_detected_by_OCR, text_classname, applied_ocr)
 
             elif algorithm == "sam" or algorithm == "fast-sam":
-                path_to_save_mask_npy=path_to_save_mask_elements+ image_names[img_index]
+                path_to_save_mask_npy=path_to_save_mask_elements+ os.path.basename(image_names[img_index])
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/", sam_type=algorithm)
                 
                 with open(path_to_save_time_of_pipepile+image_names[img_index]+'_sam_time.json','w') as outfile:
@@ -451,7 +464,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     outfile.write(mask_json)
 
                 # save metadata json
-                with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
+                with open(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', "w") as outfile:
                     # json.dump(compos_json, outfile)
                     outfile.write(compos_json)
 
@@ -465,16 +478,11 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "screen2som":
-                recortes, compos_json, som = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
-
-                with open(path_to_save_components_json + image_names[img_index] + '.json', "w") as outfile:
+                recortes, compos_json = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
+                screenshot_filename = os.path.basename(image_names[img_index])
+                
+                with open(path_to_save_components_json + screenshot_filename + '.json', "w") as outfile:
                     json.dump(compos_json, outfile)
-
-                if not os.path.exists(path_to_save_components_json + "som/"):
-                    os.mkdir(path_to_save_components_json + "som/")
-
-                with open(path_to_save_components_json + "som/" + image_names[img_index] + '_som.json', "w") as outfile:
-                    json.dump(som, outfile)
 
             else:
                 raise Exception("You select a type of UI element detection that doesnt exists")
@@ -559,10 +567,19 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, special_colnames, configurations, skip=False, algorithm="legacy", text_classname="text"):
+def ui_elements_detection(param_log_path, param_img_root, execution):
+    log_input_filaname = execution.ui_elements_detection.input_filename
+    special_colnames = execution.case_study.special_colnames
+    configurations = execution.ui_elements_detection.configurations
+    algorithm = execution.ui_elements_detection.type
+    apply_ocr = execution.ui_elements_detection.ocr
+    skip = execution.ui_elements_detection.preloaded
+    text_classname = "text"
+    
+    
     tprint(PLATFORM_NAME + " - " + DETECTION_PHASE_NAME, "fancy60")
     print(param_img_root+"\n")
-    
+
     if os.path.exists(param_log_path):
         logging.info(_("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor"))
         print(_("Log already exists, it's not needed to execute format conversor"))
@@ -573,22 +590,22 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
         else:
             log_filename = "log"
         param_log_path = format_mht_file(param_img_root + log_input_filaname, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
-    
+
     # Log read
     log = read_ui_log_as_dataframe(param_log_path)
     # Extract the names of the screenshots associated to each of the rows in the log
     image_names = log.loc[:, special_colnames["Screenshot"]].values.tolist()
-    pipeline = keras_ocr.pipeline.Pipeline()
+    text_corners = []
     file_exists = os.path.exists(param_img_root + "images_ocr_info.txt")
 
     metadata = { 'screenshots': {} } 
-    
+
     if file_exists:
         print(_("\n\nReading images OCR info from file..."))
         with open(param_img_root + "images_ocr_info.txt", "rb") as fp:   # Unpickling
             text_corners = pickle.load(fp)
-    else:
-        text_corners = []
+    elif apply_ocr:
+        pipeline = keras_ocr.pipeline.Pipeline()
         for img in image_names:
             start_t = time.time()
             ocr_result = get_ocr_image(pipeline, param_img_root, img)
@@ -600,8 +617,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
 
     # print(len(text_corners))
 
-    execution_root = param_img_root[:-1]
-    execution_root = execution_root + '_results/'
+    execution_root = get_execution_path(param_img_root)
 
     bordered = execution_root + "borders/"
     components_npy = execution_root + "components_npy/"
@@ -611,7 +627,7 @@ def ui_elements_detection(param_log_path, param_img_root, log_input_filaname, sp
             os.makedirs(p)
 
     start_t = time.time()
-    metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations)
+    metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations, apply_ocr)
     metadata["duration"] = float(time.time()) - float(start_t)
     return metadata
 

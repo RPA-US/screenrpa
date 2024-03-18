@@ -60,7 +60,7 @@ def save_bordered_images(img_path, detected_shapes, path_to_save_bordered_images
             img,
             np.int32([detected_shapes[i]["points"]]),
             True,
-            tint_colors[detected_shapes[i]["label"]],
+            tint_colors[detected_shapes[i]["class"]],
             2,
         )
 
@@ -68,14 +68,14 @@ def save_bordered_images(img_path, detected_shapes, path_to_save_bordered_images
         cv2.fillPoly(
             img_aux,
             np.int32([detected_shapes[i]["points"]]),
-            tint_colors[detected_shapes[i]["label"]],
+            tint_colors[detected_shapes[i]["class"]],
         )
 
         img = cv2.addWeighted(img_aux, 0.2, img, 0.8, 0)
 
     cv2.imwrite(path_to_save_bordered_images + img_path.split("/")[-1] + "_bordered.png", img)
 
-def coco_to_labelme(coco_anns, type="bbox", id_start=0):
+def coco_to_compos(coco_anns, type="bbox", id_start=1):
     res = []
     for i, ann in enumerate(coco_anns):
         if type == "bbox":
@@ -92,8 +92,10 @@ def coco_to_labelme(coco_anns, type="bbox", id_start=0):
 
             res.append(
                 {
-                    "label": ann["category_name"],
+                    "class": ann["category_name"],
+                    "text": "", #TODO,
                     "points": points,
+                    "centroid": list(Polygon(points).centroid.coords[0])
                 }
             )
 
@@ -105,8 +107,10 @@ def coco_to_labelme(coco_anns, type="bbox", id_start=0):
 
             res.append(
                 {
-                    "label": ann["category_name"],
+                    "class": ann["category_name"],
+                    "text": "", #TODO,
                     "points": points.tolist(),
+                    "centroid": list(Polygon(points).centroid.coords[0])
                 }
             )
         else:
@@ -119,7 +123,7 @@ def coco_to_labelme(coco_anns, type="bbox", id_start=0):
 
 
 
-def json_inference_to_labelme(anns, type="bbox", id_start=0):
+def json_inference_to_compos(anns, type="bbox", id_start=1):
     res = []
     for i, ann in enumerate(anns):
         if type == "bbox":
@@ -137,8 +141,10 @@ def json_inference_to_labelme(anns, type="bbox", id_start=0):
 
             res.append(
                 {
-                    "label": ann["name"],
+                    "class": ann["name"],
+                    "text": "", #TODO,
                     "points": points,
+                    "centroid": list(Polygon(points).centroid.coords[0])
                 }
             )
 
@@ -152,8 +158,10 @@ def json_inference_to_labelme(anns, type="bbox", id_start=0):
 
             res.append(
                 {
-                    "label": ann["name"],
+                    "class": ann["name"],
+                    "text": "", #TODO,
                     "points": points.tolist(),
+                    "centroid": list(Polygon(points).centroid.coords[0])
                 }
             )
         else:

@@ -38,7 +38,7 @@ DECISION_FOLDERNAME =           env('DECISION_TREE_TRAINING_FOLDERNAME')
 PLOT_DECISION_TREES =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-PLATFORM_NAME =                             "SCREEN RPA"
+PLATFORM_NAME =                             "  SCREEN RPA"
 MONITORING_PHASE_NAME =                     _("monitoring")
 INFO_PREFILTERING_PHASE_NAME =              _("preselection")
 DETECTION_PHASE_NAME =                      _("detection")
@@ -50,7 +50,10 @@ AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =   _("aggreate feature extraction")
 DECISION_MODEL_DISCOVERY_PHASE_NAME =       _("decision model discovery")
 
 # System Default Phases
-DEFAULT_PHASES = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
+DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_elements_classification', 'postfilters', 'feature_extraction_technique', 
+                  'process_discovery', 'extract_training_dataset', 'feature_extraction_technique', 'decision_tree_training']
+# DEFAULT_PHASES = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery',
+#                  'feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
 PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique','ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
 MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
@@ -314,7 +317,8 @@ else:
 #===================================================================================================
 
 # Configuration JSON files Paths
-FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
+FE_EXTRACTORS_FILEPATH =            CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
 AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "aggreate_feature_extractors.json"
-STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
-CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
+MODELS_CLASSES_FILEPATH =           CORE_DIR + sep + "configuration" + sep + "models_classes.json"
+STATUS_VALUES_ID =                  CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
+CDLR =                              CORE_DIR + sep + "configuration" + sep + "cdlr.json"

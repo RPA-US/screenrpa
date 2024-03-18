@@ -1,6 +1,8 @@
 import os
+from django.forms.models import model_to_dict
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.core.exceptions import ValidationError
@@ -24,13 +26,7 @@ from django.utils.translation import gettext_lazy as _
 #     indices_to_keep = ~df.isin([np.nan, np.inf, -np.inf]).any(1)
 #     return df[indices_to_keep].astype(np.float64)
 
-def extract_training_dataset(decision_point_activity,
-        target_label,
-        special_colnames,
-        columns_to_drop,
-        log_path="media/enriched_log_feature_extracted.csv", 
-        path_dataset_saved="media", 
-        actions_columns=["Coor_X", "Coor_Y", "MorKeyb", "TextInput", "Click"]):
+def extract_training_dataset(log_path, root_path, execution):
     """
     Iterate for every UI log row:
         For each case:
@@ -67,6 +63,14 @@ def extract_training_dataset(decision_point_activity,
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
+    decision_point_activity = execution.extract_training_dataset.decision_point_activity
+    target_label = execution.extract_training_dataset.target_label
+    special_colnames = execution.case_study.special_colnames
+    columns_to_drop = execution.extract_training_dataset.columns_to_drop
+    path_dataset_saved = root_path
+    actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point
+    
+    
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
     print(log_path+"\n")
 
@@ -83,22 +87,21 @@ def extract_training_dataset(decision_point_activity,
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      
-def decision_tree_training(case_study, path_scenario):
-    "media/flattened_dataset.json",
-    "media", 
-    "sklearn",
-    ['ID3', 'CART', 'CHAID', 'C4.5'],
-    ["Timestamp_start", "Timestamp_end"],
-    'Variant',
-    ['NameApp']
+def decision_tree_training(log_path, path, execution):
+    # "media/flattened_dataset.json",
+    # "media", 
+    # "sklearn",
+    # ['ID3', 'CART', 'CHAID', 'C4.5'],
+    # ["Timestamp_start", "Timestamp_end"],
+    # 'Variant',
+    # ['NameApp']
                            
-    flattened_json_log_path = path_scenario + 'flattened_dataset.json'
-    path = path_scenario
-    implementation = case_study.decision_tree_training.library
-    configuration = case_study.decision_tree_training.configuration
-    columns_to_ignore = case_study.decision_tree_training.columns_to_drop_before_decision_point
-    target_label = case_study.target_label
-    one_hot_columns = case_study.decision_tree_training.one_hot_columns
+    flattened_json_log_path = path + 'flattened_dataset.json'
+    implementation = execution.decision_tree_training.library
+    configuration = execution.decision_tree_training.configuration
+    columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
+    target_label = execution.target_label
+    one_hot_columns = execution.decision_tree_training.one_hot_columns
     k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
     algorithms = configuration["algorithms"] if "algorithms" in configuration else None
     centroid_threshold = int(configuration["centroid_threshold"]) if "centroid_threshold" in configuration else None
@@ -191,10 +194,23 @@ class ExtractTrainingDatasetListView(ListView):
         return queryset
     
 
-class ExtractTrainingDatasetDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        extracting_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
-        return render(request, "extracting_training_dataset/detail.html", {"extracting_training_dataset": extracting_training_dataset, "case_study_id": kwargs["case_study_id"]})
+class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
+    model = ExtractTrainingDataset
+    form_class = ExtractTrainingDatasetForm
+    template_name = "extract_training_dataset/details.html"
+
+    pk_url_kwarg = "extract_training_dataset_id"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ExtractTrainingDatasetDetailView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        context['form'] = ExtractTrainingDatasetForm(initial=model_to_dict(self.object))
+        return context
+
+    # def get_object(self, *args, **kwargs):
+    #     extract_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
+    #     return extract_training_dataset
+        # return render(request, "extract_training_dataset/details.html", {"extract_training_dataset": extract_training_dataset, "case_study_id": kwargs["case_study_id"]})
 
 def set_as_extracting_training_dataset_active(request):
     extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
@@ -205,6 +221,23 @@ def set_as_extracting_training_dataset_active(request):
         m.save()
     extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
     extracting_training_dataset.active = True
+    extracting_training_dataset.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
+
+def set_as_extracting_training_dataset_inactive(request):
+    extracting_training_dataset_id = request.GET.get("extract_training_dataset_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if ExtractTrainingDataset.objects.get(pk=extracting_training_dataset_id).user != request.user:  
+        raise ValidationError(_("Extracting_training_dataset doesn't belong to the authenticated user."))
+    if ExtractTrainingDataset.objects.get(pk=extracting_training_dataset_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Extracting_training_dataset doesn't belong to the Case Study."))
+    extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
+    extracting_training_dataset.active = False
     extracting_training_dataset.save()
     return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
     
@@ -271,6 +304,23 @@ def set_as_decision_tree_training_active(request):
         m.save()
     decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
     decision_tree_training.active = True
+    decision_tree_training.save()
+    return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
+
+def set_as_decision_tree_training_inactive(request):
+    decision_tree_training_id = request.GET.get("decision_tree_training_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if DecisionTreeTraining.objects.get(pk=decision_tree_training_id).user != request.user:  
+        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+    if DecisionTreeTraining.objects.get(pk=decision_tree_training_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))
+    decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
+    decision_tree_training.active = False
     decision_tree_training.save()
     return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
     

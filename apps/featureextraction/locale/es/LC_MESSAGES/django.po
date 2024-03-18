@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 10:53+0000\n"
+"POT-Creation-Date: 2024-02-09 10:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgstr ""
 msgid "*** No model loaded ***"
 msgstr "*** No se cargó ningún modelo ***"
 
-#: apps/featureextraction/SOM/detection.py:563
+#: apps/featureextraction/SOM/detection.py:568
 msgid ""
 "apps/featureextraction/SOM/detection.py Log already exists, it's not needed "
 "to execute format conversor"
@@ -30,12 +30,12 @@ msgstr ""
 "apps/featureextraction/SOM/detection.py El registro ya existe, no es "
 "necesario ejecutar el conversor de formato"
 
-#: apps/featureextraction/SOM/detection.py:564
+#: apps/featureextraction/SOM/detection.py:569
 msgid "Log already exists, it's not needed to execute format conversor"
 msgstr ""
 "El registro ya existe, no es necesario ejecutar el conversor de formato"
 
-#: apps/featureextraction/SOM/detection.py:566
+#: apps/featureextraction/SOM/detection.py:571
 msgid ""
 "apps/featureextraction/SOM/detection.py Format conversor executed! Type: "
 "%(format), Filename: %(filename)"
@@ -43,7 +43,7 @@ msgstr ""
 "¡Se ejecutó el conversor de formato en apps/featureextraction/SOM/detection."
 "py! Tipo: %(format), Nombre de archivo: %(filename)"
 
-#: apps/featureextraction/SOM/detection.py:583
+#: apps/featureextraction/SOM/detection.py:588
 msgid ""
 "\n"
 "\n"
@@ -53,19 +53,19 @@ msgstr ""
 "\n"
 "Leyendo información OCR de las imágenes desde el archivo..."
 
-#: apps/featureextraction/SOM/detection.py:618
+#: apps/featureextraction/SOM/detection.py:626
 msgid "Enter path to images numpy arrays location: "
 msgstr "Ingrese la ruta a la ubicación de los arrays numpy de imágenes: "
 
-#: apps/featureextraction/SOM/detection.py:619
+#: apps/featureextraction/SOM/detection.py:627
 msgid "Enter numpy array file name: "
 msgstr "Ingrese el nombre del archivo de array numpy: "
 
-#: apps/featureextraction/SOM/detection.py:622
+#: apps/featureextraction/SOM/detection.py:630
 msgid "Length: "
 msgstr "Longitud: "
 
-#: apps/featureextraction/SOM/detection.py:624
+#: apps/featureextraction/SOM/detection.py:632
 msgid ""
 "\n"
 "Component: "
@@ -73,11 +73,11 @@ msgstr ""
 "\n"
 "Componente: "
 
-#: apps/featureextraction/SOM/detection.py:628
+#: apps/featureextraction/SOM/detection.py:636
 msgid "Empty component"
 msgstr "Componente vacío"
 
-#: apps/featureextraction/SOM/detection.py:631
+#: apps/featureextraction/SOM/detection.py:639
 msgid ""
 "Do you want to check another image components? Indicate another npy file "
 "name: "
@@ -88,13 +88,12 @@ msgid "You selected a type of sam's checkpoint that does not exists"
 msgstr "Ha seleccionado un tipo de punto de control de SAM que no existe"
 
 #: apps/featureextraction/forms.py:24 apps/featureextraction/forms.py:84
-#: apps/featureextraction/forms.py:121 apps/featureextraction/forms.py:157
+#: apps/featureextraction/forms.py:121 apps/featureextraction/forms.py:167
 msgid "Type"
 msgstr "Tipo"
 
 #: apps/featureextraction/forms.py:25 apps/featureextraction/forms.py:85
-#: apps/featureextraction/forms.py:122 apps/featureextraction/forms.py:158
-#: apps/featureextraction/forms.py:201
+#: apps/featureextraction/forms.py:122 apps/featureextraction/forms.py:168
 msgid "Skip"
 msgstr "Saltar"
 
@@ -102,21 +101,21 @@ msgstr "Saltar"
 msgid "Configurations"
 msgstr "Configuraciones"
 
-#: apps/featureextraction/forms.py:159
-msgid "Model"
-msgstr "Modelo"
-
-#: apps/featureextraction/forms.py:160
-msgid "Model properties"
-msgstr "Propiedades del modelo"
-
 #: apps/featureextraction/forms.py:200
-msgid "Technique name"
+msgid "Identifier"
+msgstr "Identificador "
+
+#: apps/featureextraction/forms.py:201
+msgid "Technique"
 msgstr "Nombre de la técnica"
 
 #: apps/featureextraction/forms.py:202
-msgid "Identifier"
-msgstr "Identificador"
+msgid "Apply filtering (Relevant Component Selection)"
+msgstr "Aplicar filtrado (Selección de components relevantes)"
+
+#: apps/featureextraction/forms.py:203
+msgid "Condition for a UI component to be relevant"
+msgstr "Condición para que un componente UI sea relevante"
 
 #: apps/featureextraction/relevantinfoselection/postfilters.py:285
 msgid "You select a type of filter that doesnt exists"
@@ -125,3 +124,9 @@ msgstr "Ha seleccionado un tipo de filtro que no existe"
 #: apps/featureextraction/relevantinfoselection/prefilters.py:91
 msgid "You select a type of prefilter that doesnt exists"
 msgstr "Ha seleccionado un tipo de pre-filtro que no existe"
+
+#~ msgid "Model"
+#~ msgstr "Modelo"
+
+#~ msgid "Model properties"
+#~ msgstr "Propiedades del modelo"

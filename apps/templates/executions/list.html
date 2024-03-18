@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% load i18n %}
 
-{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
+{% block title %} {% blocktranslate %}Executions{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -10,10 +10,10 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Case Studies{% endblocktranslate %}
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Executions{% endblocktranslate %}
               <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
                 <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                  <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                  <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
                 </ol>
               </nav>
             </h6>
@@ -34,7 +34,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">{% blocktranslate %}Your case studies{% endblocktranslate %}</h3>
+            <h3 class="mb-0">{% blocktranslate %}Your executions{% endblocktranslate %}</h3>
           </div>
           <!-- Light table -->
           <div class="table-responsive">
@@ -51,37 +51,37 @@
                 </tr>
               </thead>
               <tbody class="list">
-                {% for case_study in object_list %}
+                {% for execution in object_list %}
                 <tr>
                   <th scope="row">
                     <div class="media align-items-center">
                       <div class="media-body">
                         <span class="id mb-0 text-sm">
-                        {{ case_study.id }}
+                        {{ execution.id }}
                         </span>
                       </div>
                     </div>
                   </th>
                   <td class="title">
-                    <a href="/case-study/detail/{{ case_study.id }}/">
-                      {{ case_study.title }}
+                    <a href="/case-study/execution/detail/{{ execution.id }}/">
+                      {{ execution.case_study.title }}
                     </a>
                   </td>
                   <td class="created_at">
-                    {{ case_study.created_at }}
+                    {{ execution.created_at }}
                   </td>
                   <td>
-                    {{ case_study.exp_foldername }}
+                    {{ execution.exp_foldername }}
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
-                      {% if case_study.executed == 0 %}
+                      {% if execution.executed == 0 %}
                       <i class="bg-danger"></i>
                       <span class="status">{% blocktranslate %}not executed{% endblocktranslate %}</span>
-                      {% elif case_study.executed == 100 %}
+                      {% elif execution.executed == 100 %}
                       <i class="bg-success"></i>
                       <span class="status">{% blocktranslate %}executed{% endblocktranslate %}</span>
-                      {% elif case_study.executed > 0 %}
+                      {% elif execution.executed > 0 %}
                       <i class="bg-warning"></i>
                       <span class="status">{% blocktranslate %}pending{% endblocktranslate %}</span>
                       {% endif %}
@@ -89,19 +89,19 @@
                   </td>
                   <td>
                     <div class="d-flex align-items-center">
-                      <span class="completion mr-2">{{ case_study.executed }}</span>
+                      <span class="completion mr-2">{{ execution.executed }}</span>
                       <div>
-                        {% if case_study.executed == 0 %}
+                        {% if execution.executed == 0 %}
                         <div class="progress">
-                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
                         </div>
-                        {% elif case_study.executed == 100 %}
+                        {% elif execution.executed == 100 %}
                         <div class="progress">
-                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
                         </div>
-                        {% elif case_study.executed > 0 %}
+                        {% elif execution.executed > 0 %}
                         <div class="progress">
-                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ case_study.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
                         </div>
                         {% endif %}
                       </div>
@@ -114,19 +114,13 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         <div style="display: flex;">
-                          <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
+                          <a class="dropdown-item" href="/case-study/execution/detail/{{ execution.pk }}/">
                             <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this case study?{% endblocktranslate %}')" href="/case-study/delete/?id={{ case_study.pk }}">
-                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
-                          
-                          {% if case_study.any_active %}
-                          <a class="dropdown-item" href="/case-study/execute/?id={{ case_study.pk }}">
-                            <i class="fas fa-play align-icon" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Execute{% endblocktranslate %}</a>
-                          {% else %}
-                          <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
-                            <i class="fas fa-tools align-icon" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Set up at least one setup phase as active for execution.{% endblocktranslate %}</a>
-                          {% endif %}
-                        </div>
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this execution?{% endblocktranslate %}')" href="/case-study/execution/delete/?id={{ execution.pk }}">
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>                          
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to generate the report?{% endblocktranslate %}')" href="{% url 'reporting:report_generate' case_study_id=execution.case_study.id %}">
+                            <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
+                          </div>
                       </div>
                     </div>
                   </td>

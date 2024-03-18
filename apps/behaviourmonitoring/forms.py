@@ -15,26 +15,50 @@ class MonitoringForm(forms .ModelForm):
             "created_at",
             )
         fields = (
+            "title",
             "type",
-            "configurations"
+            "ui_log_filename",
+            "ui_log_separator",
+            "gaze_log_filename",
+            "gaze_log_adjustment",
+            "native_slide_events",
+            "preloaded_file",
+            "preloaded",
         )
         labels = {
             "type": _("Type"),
-            "configurations": _("Configurations")
+            "ui_log_filename": _("UI Log Filename"),
+            "ui_log_separator": _("UI Log Separator"),
+            "gaze_log_filename": _("Gaze Log Filename"),
+            "gaze_log_adjustment": _("Gaze Log Adjustment"),
+            "native_slide_events": _("System Info. Log"),
+            "preloaded_file":"Preload Execution Results"
         }
 
         widgets = {
-            "type": forms.TextInput(
+            # Type is a choice field
+            "type": forms.Select(
+                choices=[('imotions', 'imotions'), ('webgazer', 'webgazer')],
                 attrs={
                     "class": "form-control",
-                    "placeholder": "imotions"
+                    "required": "false"
                     }
             ),
-            "configurations": forms.Textarea(
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "ui_log_filename": forms.TextInput(attrs={"class": "form-control"}),
+            "ui_log_separator": forms.TextInput(attrs={"class": "form-control"}),
+            "gaze_log_filename": forms.TextInput(attrs={"class": "form-control"}),
+            # Gaze log adj. is a float number
+            "gaze_log_adjustment": forms.NumberInput(attrs={"class": "form-control"}),
+            "native_slide_events": forms.TextInput(attrs={"class": "form-control"}),
+                        "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "preloaded_file": forms.FileInput(
                 attrs={
-                    "class": "form-control",
-                    'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
-            })
+                    'accept': '.zip'
+                    }   
+            )
         }
 
     def __init__(self, *args, **kwargs):
