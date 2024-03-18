@@ -261,11 +261,17 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
       # Obtain current event timestamp and next event timestamp 
       current_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
       current_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, current_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
-      if j+1 < len(ui_log):
+      if j < len(ui_log)-1:
         next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
         next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
+      if j == len(ui_log)-1:
+        next_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
+        next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
+      # if j+1 < len(ui_log):
+      #   next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
+      #   next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
       
-      if next_timestamp > current_timestamp:
+      if next_timestamp >= current_timestamp:
         fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
         key = None
         
