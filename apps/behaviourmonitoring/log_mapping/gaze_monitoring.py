@@ -261,25 +261,44 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
       # Obtain current event timestamp and next event timestamp 
       current_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
       current_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, current_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
-      if j < len(ui_log)-1:
+      if j < (len(ui_log)-1):
         next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
         next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
-      if j == len(ui_log)-1:
-        next_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
-        next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
+      # if j == len(ui_log)-1:
+      #   next_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
+      #   next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
       # if j+1 < len(ui_log):
       #   next_timestamp = ui_log.iloc[j+1][special_colnames["Timestamp"]]
       #   next_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, next_timestamp, ui_log_timestamp_pattern)# + ui_log_timedelta
       
-      if next_timestamp >= current_timestamp:
-        fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
-        key = None
+        if next_timestamp > current_timestamp:
+          fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
+          key = None
         
+          for i in range(last_gaze_log_row, len(gaze_log)-1):
+            gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], gaze_log_timestamp_pattern)# + gaze_log_timedelta
+          
+            # Gaze Event between current ui log event and next ui log event
+            if gaze_timestamp < next_timestamp:
+              fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames, gaze_log_timestamp_pattern)
+            
+            # Gaze Event before current ui log event
+            # elif current_timestamp > gaze_timestamp:
+            #   raise Exception("current_timestamp > gaze_timestamp")
+            # Gaze Event after current ui log event and next ui log event
+            else:
+              last_gaze_log_row = i
+              break
+        # Add the dispersion calculation of the last screenshot associated to the UI Log Event
+      #Last Screenshot from ui_log      
+      if j == (len(ui_log)-1):
+        fixation_points[ui_log.iloc[j][special_colnames["Screenshot"]]] = { 'fixation_points': {} }
+        key = None  
         for i in range(last_gaze_log_row, len(gaze_log)-1):
           gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[i]["Timestamp"], gaze_log_timestamp_pattern)# + gaze_log_timedelta
           
           # Gaze Event between current ui log event and next ui log event
-          if gaze_timestamp < next_timestamp:
+          if gaze_timestamp < current_timestamp:
             fixation_points, key, last_fixation_index, last_fixation_index_row, last_ui_log_index_row, last_gaze_log_row = update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fixation_index, last_gaze_log_row, last_fixation_index_row, last_ui_log_index_row, starting_point, initial_timestamp, current_timestamp, startDateTime_ui_log, startDateTime_gaze_tz, special_colnames, gaze_log_timestamp_pattern)
             
           # Gaze Event before current ui log event
@@ -288,9 +307,8 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
           # Gaze Event after current ui log event and next ui log event
           else:
             last_gaze_log_row = i
-            break
-        # Add the dispersion calculation of the last screenshot associated to the UI Log Event
-      
+            break        
+
         screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
         if fixation_points[screenshot_name]["fixation_points"] == {}:	
           raise Exception("No fixation points in screenshot " + screenshot_name)
