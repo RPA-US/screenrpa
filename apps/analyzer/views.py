@@ -546,24 +546,78 @@ class MonitoringResultDetailView(DetailView):
         if scenarioNumber == None:
             #scenarioNumber = "1"
             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+            
         path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
 
-        # CSV Download
-        if path_to_csv_file and download=="True":
+
+        context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "monitoring/result.html", context)
+
+
+##########################################
+    
+class FeatureExtractionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenarioNumber = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenarioNumber == None:
+            #scenarioNumber = "1"
+            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/enriched_log.csv"
+        
+
+        context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "monitoring/result.html", context)
+
+#########################################333
+    
+
+class ExtractTrainingDatasetResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenarioNumber = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenarioNumber == None:
+            #scenarioNumber = "1"
+            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/flattened_log.csv"
+
+        context= LogicPhasesResultDetailView(execution, scenarioNumber, download, path_to_csv_file)  
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "monitoring/result.html", context)
+
+##############################################33
+    
+
+def LogicPhasesResultDetailView(execution, scenarioNumber, download,path_to_csv_file):
+
+    # CSV Download
+    if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file)  
         
-        # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
+    # CSV Reading and Conversion to JSON
+    csv_data_json = read_csv_to_json(path_to_csv_file)
 
-        # Include CSV data in the context for the template
-        context = {
+    # Include CSV data in the context for the template
+    context = {
             "execution": execution,
             "csv_data": csv_data_json,  # Data to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
             "scenarioNumber": scenarioNumber
-        }     
-        # Render the HTML template with the context including the CSV data
-        return render(request, "monitoring/result.html", context)
+        }
+    return context
 
 #############################################33
 def read_csv_to_json(path_to_csv_file):
@@ -592,51 +646,4 @@ def MonitoringResultDownload2(path_to_csv_file):
             writer.writerow(row)
         return response
     
-##########################################
-    
-# class MonitoringResultDownload(DetailView):
-#     def get(self, request, *args, **kwargs):
-#         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
-#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])       
-#         numeroEscenario = request.GET.get('scenario')
-#         #download= request.GET.get('download')
 
-#         if numeroEscenario == None:
-#             #numeroEscenario = "1"
-#             numeroEscenario=execution.scenarios_to_study[0]
-#         path_to_csv_file = execution.exp_folder_complete_path + "/"+ numeroEscenario +"/log.csv"  
-
-#         if path_to_csv_file:
-#             with open(path_to_csv_file, 'r', newline='') as csvfile:
-#                 # Crear una respuesta HTTP con el contenido del CSV
-#                 response = HttpResponse(content_type='text/csv')
-#                 response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
-#                 writer = csv.writer(response)
-#                 reader = csv.reader(csvfile)
-#                 for row in reader:
-#                     writer.writerow(row)
-#                 return response
-            
-#         # Inicializar una lista para contener los datos CSV convertidos en diccionarios
-#         csv_data = []       
-#         # Verificar si la ruta al archivo CSV existe y leer los datos
-#         try:
-#             with open(path_to_csv_file, 'r', newline='') as csvfile:
-#                 reader = csv.DictReader(csvfile)
-#                 for row in reader:
-#                     csv_data.append(row)
-#         except FileNotFoundError:
-#             print(f"Archivo no encontrado: {path_to_csv_file}")
-#             csv_data = []
-
-#         # Convertir csv_data a JSON
-#         csv_data_json = json.dumps(csv_data)
-        
-#         context = {
-#             "execution": execution,
-#             "csv_data": csv_data_json,  # Datos para ser utilizados en la plantilla HTML
-#             "escenarios": execution.scenarios_to_study,
-#             "numeroEscenario": numeroEscenario
-#         }
-#         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
-#         return render(request, "monitoring/result.html", context)
