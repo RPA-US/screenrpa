@@ -652,6 +652,90 @@ def MonitoringResultDownload2(path_to_csv_file):
             writer.writerow(row)
         return response
     
+class UIElementsDetectionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario: str = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        # Create dictionary with images and their corresponding UI elements
+        soms = dict()
+        soms["classes"] = execution.ui_elements_classification.model.classes
+        soms["soms"] = []
+
+        for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
+            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
+                compos = json.load(f)
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_name = compo_json.split("/")[-1].split(".json")[0]
+            img_path = os.path.join(execution.exp_folder_complete_path, scenario, img_name)
+            soms["soms"].append(
+                {
+                    "img": img_name,
+                    "img_path": img_path,
+                    "som": compos
+                }
+            )
+
+        context = {
+            "execution": execution,
+            "scenarios": execution.scenarios_to_study,
+            "soms": soms
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "ui_elements_detection/results.html", context)
+##########################################
+    
+# class MonitoringResultDownload(DetailView):
+#     def get(self, request, *args, **kwargs):
+#         # Obtener el objeto Execution o lanzar un error 404 si no se encuentra
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])       
+#         numeroEscenario = request.GET.get('scenario')
+#         #download= request.GET.get('download')
+
+#         if numeroEscenario == None:
+#             #numeroEscenario = "1"
+#             numeroEscenario=execution.scenarios_to_study[0]
+#         path_to_csv_file = execution.exp_folder_complete_path + "/"+ numeroEscenario +"/log.csv"  
+
+#         if path_to_csv_file:
+#             with open(path_to_csv_file, 'r', newline='') as csvfile:
+#                 # Crear una respuesta HTTP con el contenido del CSV
+#                 response = HttpResponse(content_type='text/csv')
+#                 response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
+#                 writer = csv.writer(response)
+#                 reader = csv.reader(csvfile)
+#                 for row in reader:
+#                     writer.writerow(row)
+#                 return response
+            
+#         # Inicializar una lista para contener los datos CSV convertidos en diccionarios
+#         csv_data = []       
+#         # Verificar si la ruta al archivo CSV existe y leer los datos
+#         try:
+#             with open(path_to_csv_file, 'r', newline='') as csvfile:
+#                 reader = csv.DictReader(csvfile)
+#                 for row in reader:
+#                     csv_data.append(row)
+#         except FileNotFoundError:
+#             print(f"Archivo no encontrado: {path_to_csv_file}")
+#             csv_data = []
+
+#         # Convertir csv_data a JSON
+#         csv_data_json = json.dumps(csv_data)
+        
+#         context = {
+#             "execution": execution,
+#             "csv_data": csv_data_json,  # Datos para ser utilizados en la plantilla HTML
+#             "escenarios": execution.scenarios_to_study,
+#             "numeroEscenario": numeroEscenario
+#         }
+#         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
+#         return render(request, "monitoring/result.html", context)
 ################################
 
 class mostrar_diagrama(DetailView):

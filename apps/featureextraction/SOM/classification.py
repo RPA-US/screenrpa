@@ -158,7 +158,7 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
     path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
     ui_elements_crops_npy_root = path_results + 'components_npy' + sep
     metadata_json_root = path_results + 'components_json' + sep
-    model = execution.ui_elements_classification.model.path, # specific extractors
+    model = execution.ui_elements_classification.model.path # specific extractors
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     text_classname = execution.ui_elements_classification.model.text_classname
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
@@ -167,9 +167,12 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
 
     screenshot_filenames, missing_json_file = check_metadata_json_exists(ui_log_path, screenshot_colname, metadata_json_root)
 
-    loaded_model = CompDetCNN(model, ui_elements_classification_classes, ui_elements_classification_image_shape)
-
     if missing_json_file or (not skip):
+        # load json and create model
+        loaded_model = model_from_json(json.dumps(execution.ui_elements_classification.model.model_properties))
+
+        # load weights into new model
+        loaded_model.load_weights(model)
         crops_info = {}
         
         for img_filename in screenshot_filenames:

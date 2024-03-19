@@ -146,9 +146,11 @@ class Execution(models.Model):
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
     created_at = models.DateTimeField(auto_now_add=True)
     executed = models.IntegerField(default=0, editable=True)
-    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
-    exp_folder_complete_path = models.CharField(max_length=255)
+
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True) # "Nano_Xt6Pt35_1706268943"
+    exp_folder_complete_path = models.CharField(max_length=255) # "/rim/media/unzipped/Nano_Xt6Pt35_1706268943/executions/exec_63"
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)

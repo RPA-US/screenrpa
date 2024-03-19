@@ -183,7 +183,7 @@ class PostfiltersForm(forms .ModelForm):
 
 class UIElementsClassificationForm(forms .ModelForm):
     model = forms.ModelChoiceField(
-        queryset=CNNModels.objects.all(),
+        queryset=CNNModels.objects.all().exclude(name="screen2som"),
         to_field_name="name",
         empty_label="---",
         required=False,
