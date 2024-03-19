@@ -137,6 +137,18 @@ The project is coded using a simple and intuitive structure presented bellow:
 
 <br />
 
+> Paths
+
+In this code, the following paths are used:
+- root_path: media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/
+- scenario_path: media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/scenario1/
+- log_path: media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/scenario1/log.csv
+
+<br />
+
+
+
+
 ## Recompile CSS
 
 To recompile SCSS files, follow this setup:

@@ -47,6 +47,9 @@ def attention_screen_mapping(root_path, fixation_data, screenshot_filename, scal
 
 def attention_areas_prefilter(log_path, root_path, special_colnames, configurations, config_key):
     ui_log = read_ui_log_as_dataframe(log_path)
+    print(root_path)
+    print(log_path)
+    
     # Load the fixation data
     with open(root_path + 'fixation.json', 'r') as f:
         fixation_data = json.load(f)
@@ -77,7 +80,7 @@ def apply_prefilters(log_path, root_path, special_colnames, configurations):
     return times
 
 def prefilters(log_path, root_path, execution):
-    
+    print(execution)
     special_colnames = execution.case_study.special_colnames
     configurations = execution.prefilters.configurations
     filters_format_type = execution.prefilters.type
@@ -86,9 +89,10 @@ def prefilters(log_path, root_path, execution):
     if not skip:  
         tprint(PLATFORM_NAME + " - " + INFO_PREFILTERING_PHASE_NAME, "fancy60")
         
+        #ToFix: Change case to match filters_format_type:
         match filters_format_type:
             case "rpa-us":
-                output = apply_prefilters(log_path, root_path, special_colnames, configurations)
+                output = apply_prefilters(log_path, execution.exp_folder_complete_path, special_colnames, configurations)
 
             case _:
                 raise Exception(_("You select a type of prefilter that doesnt exists"))
