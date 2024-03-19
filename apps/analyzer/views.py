@@ -652,4 +652,10 @@ def MonitoringResultDownload2(path_to_csv_file):
             writer.writerow(row)
         return response
     
+################################
+
+class mostrar_diagrama(DetailView):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'processdiscovery/result.html')
+    #/screenrpa/apps/templates/
 

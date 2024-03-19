@@ -33,7 +33,7 @@ urlpatterns = [
     path('execution/monitoring_result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
     path('execution/featureExtraction_result/<int:execution_id>/', views.FeatureExtractionResultDetailView.as_view(), name='featureExtraction_result'),
     path('execution/extractTrainingDataset_result/<int:execution_id>/', views.ExtractTrainingDatasetResultDetailView.as_view(), name='extractTrainingDataset_result'),
-    
+    path('execution/process_discovery_result/<int:execution_id>/', views.mostrar_diagrama.as_view(), name='process_discovery_result'),
     
 
 
