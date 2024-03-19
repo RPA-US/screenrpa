@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import json
 import cv2
-from .hierarchy_constructor import labels_to_soms
+from .hierarchy_constructor import labels_to_output
 from .utils import *
 from shapely.geometry import Polygon
 
@@ -23,54 +23,62 @@ def predict(image_path, path_to_save_bordered_images):
     image_pil = cv2.imread(image_path)
 
     detections = dict()
+    detections["img_shape"] = image_pil.shape
+
+    image_pil_resized  = cv2.resize(image_pil, (640, 360))
 
     # Elements level preditions
-    elements_shapes = sahi_predictions(ELEMENTS_MODEL, image_pil, 240, 240, 0.3, "bbox", 0)
-    detections["shapes"] = elements_shapes
-    detections["imageWidth"] = image_pil.shape[1]
-    detections["imageHeight"] = image_pil.shape[0]
+    elements_compos = sahi_predictions(ELEMENTS_MODEL, image_pil_resized, 240, 240, 0.3, "bbox", 0)
+    detections["compos"] = elements_compos
 
     # Text level predictions
-    text_shapes = sahi_predictions(TEXT_MODEL, image_pil, 240, 240, 0.3, "bbox", len(detections["shapes"]))
-    detections["shapes"].extend(text_shapes)
+    text_compos = sahi_predictions(TEXT_MODEL, image_pil_resized, 240, 240, 0.3, "bbox", len(detections["compos"]) + 1)
+    detections["compos"].extend(text_compos)
 
     # Container Level predictions
-    container_shapes = yolo_prediction(CONTAINER_MODEL, image_pil, "bbox", len(detections["shapes"]))
-    detections["shapes"].extend(container_shapes)
+    container_compos = yolo_prediction(CONTAINER_MODEL, image_pil_resized, "bbox", len(detections["compos"]) + 1)
+    detections["compos"].extend(container_compos)
 
     # Application level predictions
-    applevel_shapes = yolo_prediction(APPLEVEL_MODEL, image_pil, "seg", len(detections["shapes"]))
-    detections["shapes"].extend(applevel_shapes)
+    applevel_compos = yolo_prediction(APPLEVEL_MODEL, image_pil_resized, "seg", len(detections["compos"]) + 1)
+    detections["compos"].extend(applevel_compos)
 
     # Top level predictions
-    toplevel_shapes = yolo_prediction(TOP_MODEL, image_pil, "seg", len(detections["shapes"]))
-    detections["shapes"].extend(toplevel_shapes)
+    toplevel_compos = yolo_prediction(TOP_MODEL, image_pil_resized, "seg", len(detections["compos"]) + 1)
+    detections["compos"].extend(toplevel_compos)
 
-    # Order shapes by area
-    detections["shapes"].sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
+    # Order compos by area
+    detections["compos"].sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
+
+    # Resize detections
+    for compo in detections["compos"]:
+        for point in compo["points"]:
+            # Update the point to match original dimensions
+            point[0] = point[0] * detections["img_shape"][1] / image_pil_resized.shape[1] 
+            point[1] = point[1] * detections["img_shape"][0] / image_pil_resized.shape[0]
 
     # Image crops from shapes
     recortes = []
 
-    for i, shape in enumerate(detections["shapes"]):
+    for i, shape in enumerate(detections["compos"]):
         x1, y1 = np.min(shape["points"], axis=0)
         x2, y2 = np.max(shape["points"], axis=0)
         recortes.append(image_pil[int(y1):int(y2), int(x1):int(x2)])
 
     # SOM from shapes
-    som = labels_to_soms(copy.deepcopy(detections))
+    predictions = labels_to_output(copy.deepcopy(detections))
 
     # Save bordered images
-    save_bordered_images(image_path, detections["shapes"], path_to_save_bordered_images)
+    save_bordered_images(image_path, detections["compos"], path_to_save_bordered_images)
 
-    return recortes, detections["shapes"], som
+    return recortes, predictions
 
    
 def yolo_prediction(model_path, image_pil, type, id_start):
     model = YOLO(model_path)
 
     result = json.loads(model(image_pil, conf=0.4)[0].tojson())
-    shapes = json_inference_to_labelme(
+    shapes = json_inference_to_compos(
         result, type=type, id_start=id_start
     )
 
@@ -97,7 +105,7 @@ def sahi_predictions(model_path, image_pil, slice_width, slice_height, overlap, 
         perform_standard_pred=True,
     )
     anns = result.to_coco_annotations()
-    shapes = coco_to_labelme(
+    shapes = coco_to_compos(
         anns, type=type, id_start=id_start
     )
 
