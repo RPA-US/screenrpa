@@ -553,7 +553,16 @@ class MonitoringResultDetailView(DetailView):
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file)  
 
-        context= LogicPhasesResultDetailView(execution, scenarioNumber, path_to_csv_file)  
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
+            } 
 
         # Render the HTML template with the context including the CSV data
         return render(request, "monitoring/result.html", context)
@@ -572,13 +581,22 @@ class FeatureExtractionResultDetailView(DetailView):
             #scenarioNumber = "1"
             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
       
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/enriched_log.csv"
+        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #enriched_log.csv
         
         # CSV Download
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file)  
      
-        context= LogicPhasesResultDetailView(execution, scenarioNumber, path_to_csv_file)  
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
+            }
 
         # Render the HTML template with the context including the CSV data
         return render(request, "feature_extraction_technique/result.html", context)
@@ -597,13 +615,22 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
             #scenarioNumber = "1"
             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
       
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/flattened_log.csv"
+        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #flattened_log.csv
 
         # CSV Download
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file) 
 
-        context= LogicPhasesResultDetailView(execution, scenarioNumber, path_to_csv_file)  
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
+            }  
 
         # Render the HTML template with the context including the CSV data
         return render(request, "extract_training_dataset/result.html", context)
@@ -651,7 +678,9 @@ def MonitoringResultDownload2(path_to_csv_file):
         for row in reader:
             writer.writerow(row)
         return response
+    
 #############################################################
+    
 class UIElementsDetectionResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
