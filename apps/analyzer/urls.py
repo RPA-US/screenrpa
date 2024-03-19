@@ -33,5 +33,7 @@ urlpatterns = [
     path('execution/monitoring_result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
     #path('execution/monitoring_result/download/<int:execution_id>/', views.MonitoringResultDownload.as_view(), name='monitoring_result_download'),
     path('execution/ui_elements_detection_result/<int:execution_id>/', views.UIElementsDetectionResultDetailView.as_view(), name='monitoring_result'),
+    path('execution/featureExtraction_result/<int:execution_id>/', views.FeatureExtractionResultDetailView.as_view(), name='featureExtraction_result'),
+    path('execution/extractTrainingDataset_result/<int:execution_id>/', views.ExtractTrainingDatasetResultDetailView.as_view(), name='extractTrainingDataset_result'),
 ]
 

@@ -147,7 +147,7 @@
                     </div>
                                        
                     <div class="col-lg-3 col-md-6" >
-                      {% if execution.prefiltering == None %}
+                      {% if execution.prefilters == None %}
                       <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-zoom-split-in" style="color: grey "></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
@@ -159,7 +159,7 @@
                         </div>
                       {% endif %}
                       </a>
-                      {% if execution.prefiltering != None %}
+                      {% if execution.prefilters != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/fe/prefiltering/list/{{ execution.case_study.id }}">Configurations</a>
@@ -190,7 +190,7 @@
                     </div>
 
                     <div class="col-lg-3 col-md-6" >
-                      {% if execution.postfiltering == None %}
+                      {% if execution.postfilters == None %}
                       <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-zoom-split-in" style="color: grey "></i> <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
@@ -202,7 +202,7 @@
                         </div>
                       {% endif %}
                       </a>
-                      {% if execution.postfiltering != None %}
+                      {% if execution.postfilters != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/fe/postfiltering/list/{{ execution.case_study.id }}">Configurations</a>
@@ -213,7 +213,7 @@
 
 
                     <div class="col-lg-3 col-md-6" >
-                      {% if execution.feature_extraction == None %}
+                      {% if execution.feature_extraction_technique == None %}
                       <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-money-coins" style="color: grey "></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
@@ -225,7 +225,7 @@
                         </div>
                       {% endif %}
                       </a>
-                      {% if execution.feature_extraction != None %}
+                      {% if execution.feature_extraction_technique != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/fe/feature-extraction-technique/list/{{ execution.case_study.id }}">Configurations</a>
