@@ -15,9 +15,11 @@ from django.utils.translation import gettext_lazy as _
 def rectangle_prefilter():
     print("Not implemented yet :)")
 
-def attention_screen_mapping(root_path, fixation_data, screenshot_filename, scale_factor):
+def attention_screen_mapping(log_path,root_path, fixation_data, screenshot_filename, scale_factor):
     # Load the image and create a new black image of the same size
-    image = Image.open(root_path + screenshot_filename)
+    scenario_path = os.path.dirname(log_path)
+    scenario_name = os.path.basename(scenario_path)
+    image = Image.open(scenario_path + '/' + screenshot_filename)
     attention_mask = Image.new('L', image.size, 0)
 
     # Loop through each fixation point and draw a circle on the attention mask
@@ -37,10 +39,12 @@ def attention_screen_mapping(root_path, fixation_data, screenshot_filename, scal
     # Apply the attention mask to the original image
     attention_map = Image.composite(image, Image.new('RGB', image.size, (0, 0, 0)), attention_mask)
 
-    attention_path = root_path + 'prefilter_attention_maps'
+    attention_path = os.path.join(scenario_path, scenario_name+'_results' ,'prefilter_attention_maps')
+    print("atenttion_path: "+ str(attention_path))
+    # attention_path = root_path + 'prefilter_attention_maps'
     
     if not os.path.exists(attention_path):
-        os.mkdir(attention_path)
+        os.makedirs(attention_path)
     
     # Save the resulting attention map
     attention_map.save(attention_path + sep + screenshot_filename)
@@ -49,13 +53,15 @@ def attention_areas_prefilter(log_path, root_path, special_colnames, configurati
     ui_log = read_ui_log_as_dataframe(log_path)
     print(root_path)
     print(log_path)
+    scenario_path = os.path.dirname(log_path)
+    print(scenario_path)
     
     # Load the fixation data
-    with open(root_path + 'fixation.json', 'r') as f:
+    with open(scenario_path + '/fixation.json', 'r') as f:
         fixation_data = json.load(f)
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         if screenshot_filename in fixation_data:
-            attention_screen_mapping(root_path, fixation_data, screenshot_filename, configurations[config_key]["scale_factor"])
+            attention_screen_mapping(log_path, root_path, fixation_data, screenshot_filename, configurations[config_key]["scale_factor"])
         else:
             logging.info(str(screenshot_filename) + " doesn't generate filtered screenshot. It doesn't have fixations related.")
 
@@ -92,6 +98,7 @@ def prefilters(log_path, root_path, execution):
         #ToFix: Change case to match filters_format_type:
         match filters_format_type:
             case "rpa-us":
+                # output = apply_prefilters(log_path, execution.exp_folder_complete_path, special_colnames, configurations)
                 output = apply_prefilters(log_path, execution.exp_folder_complete_path, special_colnames, configurations)
 
             case _:

@@ -253,7 +253,7 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
   # Loop: Each UI Log row
   for j in range(len(ui_log)):
       print("Processing "+ui_log.iloc[j][special_colnames["Screenshot"]]+" out of "+str(len(ui_log))+" screenshots.")
-      print(len(ui_log))
+      print("UI_Log Size"+str(len(ui_log)))
       
       # Obtain current event timestamp and next event timestamp 
       current_timestamp = ui_log.iloc[j][special_colnames["Timestamp"]]
@@ -362,8 +362,7 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
   columns_nan = columns_nan.drop(columns_added)
   
   for ui_event_index in range(len(ui_log)):
-    print("ui_event_index: "+str(ui_event_index))
-    print("UI_log in ui_event_index: " +str(len(ui_log)))
+    print("Processing fixation.json to dataframe. ui_event_index: "+str(ui_event_index)+" out of "+str(len(ui_log))+" total ui_event_index.")
     new_row_json = {}
     screenshot = ui_log.iloc[ui_event_index][special_colnames["Screenshot"]]
     new_row_json[special_colnames["Screenshot"]] = [screenshot]
