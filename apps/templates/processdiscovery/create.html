@@ -12,7 +12,7 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12">
-            <a href="ui-element-classification" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/pd/bpmn/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Process Discovery Configurations{% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}New Process Discovery Configuration{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
@@ -54,9 +54,6 @@
 
 {% endblock content %}
 
-{% block javascripts %}
-<script src="{% static 'assets/js/processdiscovery/weights_fields.js' %}" defer></script>
-{% endblock javascripts %}
 
 
 

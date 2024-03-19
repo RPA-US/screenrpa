@@ -28,7 +28,17 @@ class ProcessDiscovery(models.Model):
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
+
+    # New fields
+    model_type = models.CharField(max_length=10, choices=[('vgg', 'VGG'), ('clip', 'Clip')], default='vgg')
+    text_weight = models.DecimalField(max_digits=5, decimal_places=2, default=0.5)
+    image_weight = models.DecimalField(max_digits=5, decimal_places=2, default=0.5)
+    clustering_type = models.CharField(max_length=20, choices=[('hierarchical', 'Hierarchical')], default='hierarchical')
+    labeling = models.CharField(max_length=10, choices=[('automatic', 'Automatic'), ('manual', 'Manual')], default='automatic')
+    use_pca = models.BooleanField(default=False)
+    n_components = models.FloatField(default=0.95)
+    show_dendrogram = models.BooleanField(default=False) 
+
     def get_absolute_url(self):
         return reverse("processdiscovery:processdiscovery_list", args=[str(self.case_study_id)])
     

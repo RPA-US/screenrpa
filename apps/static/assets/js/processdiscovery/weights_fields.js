@@ -1,41 +1,48 @@
-let isFormProcessed = false;
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('El formulario se está procesasando, script cargado')
     const form = document.querySelector('#processDiscoveryForm');
-
+    console.log('Form', form)
     const modelTypeSelect = document.querySelector('[name="model_type"]');
-    const weightsRow = document.querySelector('#weightsRow');
+    const textWeightInput = document.querySelector('[name="text_weight"]');
+    const imageWeightInput = document.querySelector('[name="image_weight"]');
+    const configurationsField = document.querySelector('[name="configurations"]');
+    console.log(modelTypeSelect, textWeightInput, imageWeightInput, configurationsField)
+    
+    function updateConfigurations() {
+        const configurations = {
+            model_type: modelTypeSelect.value,
+            clustering_type: document.querySelector('[name="clustering_type"]').value,
+            labeling: document.querySelector('[name="labeling"]').value,
+            use_pca: document.querySelector('[name="use_pca"]').checked,
+            n_components: document.querySelector('[name="n_components"]').value,
+            show_dendrogram: document.querySelector('[name="show_dendrogram"]').checked,
+        };
 
-    function toggleWeightFields() {
-        if (modelTypeSelect.value === 'clip') {
-            weightsRow.style.display = 'block';
-        } else {
-            weightsRow.style.display = 'none';
+        if(modelTypeSelect.value === 'clip') {
+            configurations.text_weight = textWeightInput ? textWeightInput.value : '';
+            configurations.image_weight = imageWeightInput ? imageWeightInput.value : '';
         }
+        console.log('Configuraciones actualizadas:', configurations.value)
+        configurationsField.value = JSON.stringify(configurations);
     }
 
-    modelTypeSelect.addEventListener('change', toggleWeightFields);
-    toggleWeightFields();
-
-    form.addEventListener('submit', function(event) {
-        if (!isFormProcessed) {
-            event.preventDefault(); 
-            const configurations = {
-                model_type: document.querySelector('[name="model_type"]').value,
-                model_weights: document.querySelector('[name="model_weights"]').value || '',
-                clustering_type: document.querySelector('[name="clustering_type"]').value,
-                labeling: document.querySelector('[name="labeling"]').value,
-                use_pca: document.querySelector('[name="use_pca"]').checked,
-                n_components: document.querySelector('[name="n_components"]').value,
-                show_dendrogram: document.querySelector('[name="show_dendrogram"]').checked,
-            };
-
-            const configurationsField = document.querySelector('[name="configurations"]');
-            configurationsField.value = JSON.stringify(configurations);
-
-            console.log('Configurations updated:', configurationsField.value);
-
-            isFormProcessed = true; 
-            form.submit(); 
-        }
+    form.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('change', updateConfigurations);
     });
+
+    modelTypeSelect.addEventListener('change', function() {
+        const weightsRow = document.querySelector('#weightsRow');
+        weightsRow.style.display = this.value === 'clip' ? 'block' : 'none';
+        updateConfigurations(); 
+    });
+
+    toggleWeightFields();
+    updateConfigurations();
+
 });
+
+function toggleWeightFields() {
+    const modelTypeSelect = document.querySelector('[name="model_type"]');
+    const weightsRow = document.querySelector('#weightsRow');
+    weightsRow.style.display = modelTypeSelect.value === 'clip' ? 'block' : 'none';
+}
