@@ -12,14 +12,14 @@
         <div class="row align-items-center py-4">
           <div class="col-12">
             <a href="/fe/ui-element-detection/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>Go Back to UI Elements Detection Results</a>
-            <h6 class="h2 text-white d-inline-block mb-0">UI Elements Detection Results</h6>
+            </i>{% blocktranslate %}Go Back to UI Elements Detection Results{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}UI Elements Detection Results{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/list">Execution {{ execution.id }}</a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}/">Execution Details</a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/ui_element_detection_result/{{ execution.id }}/">Execution Details</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/list">{% blocktranslate %}Execution{% endblocktranslate %} {{ execution.id }}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}/">{% blocktranslate %}Execution Details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/ui_element_detection_result/{{ execution.id }}/">{% blocktranslate %}Execution Details{% endblocktranslate %}</a></li>
                 <li class="breadcrumb-item"><a href="#">{{ execution.ui_elements_detection.title.value }}</a></li>
               </ol>
             </nav>
@@ -36,10 +36,27 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">{{ execution.ui_elements_detection.title.value }} Details</h3>
+            <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Detections{% endblocktranslate %}</h3>
           </div>
-          <div class="card-body">
-            <img src="/case-study/private-data/unzipped/Nano_Xt6Pt35_1706268943/executions/exec_63/Nano/screenshot0001.JPEG"/>
+          <div class="card-body d-flex flex-column" style="gap:12px">
+            <section for="content" class="col-12 d-flex justify-content-between">
+              <!-- Dropdown to select imgages with back and forth buttons -->
+              <div for="controls" class="col-4 d-flex justify-content-between">
+                <button id="prev" class="btn btn-outline-light" disabled onclick="prevImage()"><</button>
+                <select id="imgList" class="form-control outline-light" style="border-color:#adb5bd;" onchange="changeImage($value)">
+                  <option value="{{ soms.soms.0.img_path }}">{{ soms.soms.0.img }}</option>
+                  {% for som in soms.soms %}
+                    <option value="{{ som.img_path }}">{{ som.img }}</option>
+                  {% endfor %}
+                </select>
+                <button id="next" class="btn btn-outline-light ml-2" onclick="nextImage()">></button>
+              </div>
+              <h3 class="col-4 align-self-end" id="imgPath">Screen Object Model</h3>
+            </section>
+            <section for="content" class="col-12 d-flex justify-content-between">
+              <img id="bordered-img" class="col-4 img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+              <img id="som-window" class="col-4 img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+            </section>
             <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
           </div>
         </div>
@@ -55,10 +72,45 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
   <script>
+    // Declare list of images from soms json replacing None with empty string
+    soms = {{ soms|safe }};
+    imgList = soms.soms.map(som => som.img_path ? som.img_path : '');
+
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('form').onsubmit = function() {
-        document.getElementById('id_model').disabled = false;
-      }
+        borderedImg = document.getElementById('bordered-img');
     })
+
+    function prevImage() {
+        imgList = document.getElementById('imgList');
+        imgPath = document.getElementById('imgPath');
+        somWindow = document.getElementById('som-window');
+        imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
+        if (imgList.selectedIndex > 0) {
+            imgList.selectedIndex = imgList.selectedIndex - 1;
+            borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+            somWindow.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+        }
+    }
+
+    function nextImage() {
+        imgList = document.getElementById('imgList');
+        imgPath = document.getElementById('imgPath');
+        somWindow = document.getElementById('som-window');
+        imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
+        if (imgList.selectedIndex < imgList.options.length - 1) {
+            imgList.selectedIndex = imgList.selectedIndex + 1;
+            borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+            somWindow.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+        }
+    }
+
+    function changeImage(value) {
+        imgList = document.getElementById('imgList');
+        imgPath = document.getElementById('imgPath');
+        somWindow = document.getElementById('som-window');
+        imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
+        borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+        somWindow.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+    }
   </script>
 {% endblock javascripts %}
