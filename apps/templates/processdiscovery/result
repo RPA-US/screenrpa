@@ -1,0 +1,9 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} Process Discovery {% endblock title %}
+
+
+
+{% endblock content %}

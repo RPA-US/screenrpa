@@ -736,3 +736,10 @@ class UIElementsDetectionResultDetailView(DetailView):
 #         }
 #         # Renderizar la plantilla HTML con el contexto que incluye los datos CSV
 #         return render(request, "monitoring/result.html", context)
+################################
+
+class mostrar_diagrama(DetailView):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'processdiscovery/result.html')
+    #/screenrpa/apps/templates/
+
