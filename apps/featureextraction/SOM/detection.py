@@ -374,7 +374,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             comp_json["compos"].append({
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
-                text_classname: text[0] if is_text else None,
+                text_classname: text[0] if is_text else "",
                 "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
                 "centroid": [int((w-x)/2), int((h-y)/2)],
                 "xpath": [],

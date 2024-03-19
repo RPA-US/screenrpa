@@ -671,7 +671,7 @@ class UIElementsDetectionResultDetailView(DetailView):
                 compos = json.load(f)
             # path is something like: asdsa/.../.../image.PNG.json
             img_name = compo_json.split("/")[-1].split(".json")[0]
-            img_path = os.path.join(execution.exp_folder_complete_path, scenario, img_name)
+            img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
             soms["soms"].append(
                 {
                     "img": img_name,
