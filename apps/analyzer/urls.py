@@ -32,8 +32,6 @@ urlpatterns = [
     # Phases Executions results
     path('execution/monitoring_result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
     #path('execution/monitoring_result/download/<int:execution_id>/', views.MonitoringResultDownload.as_view(), name='monitoring_result_download'),
-    
-
-
+    path('execution/ui_elements_detection_result/<int:execution_id>/', views.UIElementsDetectionResultDetailView.as_view(), name='monitoring_result'),
 ]
 

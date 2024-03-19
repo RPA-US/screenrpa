@@ -592,6 +592,42 @@ def MonitoringResultDownload2(path_to_csv_file):
             writer.writerow(row)
         return response
     
+class UIElementsDetectionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario: str = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        # Create dictionary with images and their corresponding UI elements
+        soms = dict()
+        soms["classes"] = execution.ui_elements_classification.model.classes
+        soms["soms"] = []
+
+        for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
+            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
+                compos = json.load(f)
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_name = compo_json.split("/")[-1].split(".json")[0]
+            img_path = os.path.join(execution.exp_folder_complete_path, scenario, img_name)
+            soms["soms"].append(
+                {
+                    "img": img_name,
+                    "img_path": img_path,
+                    "som": compos
+                }
+            )
+
+        context = {
+            "execution": execution,
+            "scenarios": execution.scenarios_to_study,
+            "soms": soms
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "ui_elements_detection/results.html", context)
 ##########################################
     
 # class MonitoringResultDownload(DetailView):
