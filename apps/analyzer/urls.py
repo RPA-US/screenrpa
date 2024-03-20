@@ -28,5 +28,8 @@ urlpatterns = [
     path('execution/list/', views.ExecutionListView.as_view(), name='execution_list'),
     path('execution/delete/', views.deleteExecution, name='execution_delete'),
     path('execution/detail/<int:execution_id>/', views.ExecutionDetailView.as_view(), name='execution_detail'),
+
+    # Phases Executions results
+    path('execution/process_discovery_result/<int:execution_id>/', views.ProcessDiscoveryResultDetailView.as_view(), name='process_discovery_result'),
 ]
 
