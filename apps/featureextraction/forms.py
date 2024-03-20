@@ -186,7 +186,6 @@ class UIElementsClassificationForm(forms .ModelForm):
         queryset=CNNModels.objects.all().exclude(name="screen2som"),
         to_field_name="name",
         empty_label="---",
-        required=False,
         widget=forms.Select(
             attrs={
                 "class": "form-control",
