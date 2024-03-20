@@ -50,6 +50,9 @@ $ python manage.py makemigrations
 $ python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting
 $ python manage.py migrate
 $
+$ # Populate UI detection models
+$ python manage.py loaddata configuration/models_populate.json
+$
 $ # Start the application (development mode)
 $ python manage.py runserver # default port 8000
 $
