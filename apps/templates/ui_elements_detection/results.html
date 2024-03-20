@@ -42,7 +42,7 @@
             <section for="content" class="col-12 d-flex justify-content-between">
               <!-- Dropdown to select imgages with back and forth buttons -->
               <div for="controls" class="col-4 d-flex justify-content-between">
-                <button id="prev" class="btn btn-outline-light" disabled onclick="prevImage()"><</button>
+                <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
                 <select id="imgList" class="form-control outline-light" style="border-color:#adb5bd;" onchange="changeImage($value)">
                   <option value="{{ soms.soms.0.img_path }}">{{ soms.soms.0.img }}</option>
                   {% for som in soms.soms %}
@@ -55,7 +55,13 @@
             </section>
             <section for="content" class="col-12 d-flex justify-content-between">
               <img id="bordered-img" class="col-4 img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
-              <img id="som-window" class="col-4 img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+              <!--The som is in json format, and it must be contained and be scrollable-->
+              <div id="som-window" class="col-4" style="overflow-y: scroll; max-height: 500px;">
+                <code-block class="language-json">
+                  <pre id="som-json">
+                  </pre>
+                </code-block>
+              </div>
             </section>
             <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
           </div>
@@ -83,34 +89,33 @@
     function prevImage() {
         imgList = document.getElementById('imgList');
         imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('som-window');
+        somWindow = document.getElementById('som-json');
         imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
         if (imgList.selectedIndex > 0) {
             imgList.selectedIndex = imgList.selectedIndex - 1;
             borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-            somWindow.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som, null, 2);
         }
     }
 
     function nextImage() {
         imgList = document.getElementById('imgList');
         imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('som-window');
+        somWindow = document.getElementById('som-json');
         imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
         if (imgList.selectedIndex < imgList.options.length - 1) {
             imgList.selectedIndex = imgList.selectedIndex + 1;
             borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-            somWindow.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som, null, 2);
         }
     }
 
     function changeImage(value) {
         imgList = document.getElementById('imgList');
         imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('som-window');
+        somWindow = document.getElementById('som-json');
         imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
         borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-        somWindow.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
     }
   </script>
 {% endblock javascripts %}
