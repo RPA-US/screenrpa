@@ -127,11 +127,11 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
             # For BPM LOG GENERATOR (old AGOSUIRPA) files
             if SCENARIO_NESTED_FOLDER:
-                path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
+                path_scenario = os.path.join(execution.exp_folder_complete_path, scenario, n)
                 for n in foldername_logs_with_different_size_balance:
                     generate_case_study(execution, path_scenario, times)
             else:
-                path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
+                path_scenario = os.path.join(execution.exp_folder_complete_path, scenario)
                 generate_case_study(execution, path_scenario, times)
             execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
             execution.save()

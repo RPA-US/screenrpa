@@ -21,20 +21,23 @@ def ui_elements_classification(log_path, path_scenario, execution):
     # Classification can be done with different algorithms
     tprint(PLATFORM_NAME + " - " + CLASSIFICATION_PHASE_NAME, "fancy60")
     print(path_scenario+"\n")
-    
-    match execution.ui_elements_classification.type:
-        case "rpa-us":
-            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
-        case "uied":
-            output = uied_ui_elements_classification(log_path, path_scenario, execution)
-        case "sam":
-            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
-        case "fast-sam":
-            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
-        case "screen2som":
-            output = None
-        case _:
-            raise Exception("You select a type of UI element classification that doesnt exists")
+
+    if not execution.ui_elements_detection.preloaded:
+        match execution.ui_elements_classification.type:
+            case "rpa-us":
+                output = legacy_ui_elements_classification(log_path, path_scenario, execution)
+            case "uied":
+                output = uied_ui_elements_classification(log_path, path_scenario, execution)
+            case "sam":
+                output = legacy_ui_elements_classification(log_path, path_scenario, execution)
+            case "fast-sam":
+                output = legacy_ui_elements_classification(log_path, path_scenario, execution)
+            case "screen2som":
+                output = None
+            case _:
+                raise Exception("You select a type of UI element classification that doesnt exists")
+    else:
+        output = None
     return output
 
 def feature_extraction_technique(log_path, path_scenario, execution):

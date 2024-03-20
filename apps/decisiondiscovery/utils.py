@@ -122,7 +122,7 @@ def parse_decision_tree(file_path):
     def get_node_depth(node_str):
         return len(re.findall(r'\|', node_str))
     
-    def build_tree(lines, index, depth):
+    def build_tree(lines, index, depth, max_depth):
         if index < 0:
             node_depth = 0
             node = ['root', 'None', 'None']
@@ -141,7 +141,7 @@ def parse_decision_tree(file_path):
                     max_depth = child_depth if child_depth > max_depth else max_depth
                     
                     if child_depth > node_depth:
-                        child, max_depth, next_index = build_tree(lines, next_index, child_depth)
+                        child, max_depth, next_index = build_tree(lines, next_index, child_depth, max_depth)
                         children.append(child)
                     else:
                         break
@@ -150,10 +150,9 @@ def parse_decision_tree(file_path):
             else:
                 return node, max_depth, next_index
         else:
-           
             return node, max_depth, index
 
-    tree_structure, max_depth, index = build_tree(lines, -1, depth=0)
+    tree_structure, max_depth, index = build_tree(lines, -1, depth=0, max_depth=0)
   
     return tree_structure, max_depth
   

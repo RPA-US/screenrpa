@@ -173,7 +173,7 @@ class UIElementsClassification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    model = models.ForeignKey('CNNModels', on_delete=models.SET_NULL, null=True, blank=True)
+    model = models.ForeignKey('CNNModels', on_delete=models.CASCADE)
     type = models.CharField(max_length=25, default='rpa-us', blank=True, null=True)
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 

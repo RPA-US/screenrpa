@@ -66,8 +66,6 @@ def extract_training_dataset(log_path, root_path, execution):
     decision_point_activity = execution.extract_training_dataset.decision_point_activity
     target_label = execution.extract_training_dataset.target_label
     special_colnames = execution.case_study.special_colnames
-    columns_to_drop = execution.extract_training_dataset.columns_to_drop
-    path_dataset_saved = root_path
     actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point
     
     
@@ -75,15 +73,19 @@ def extract_training_dataset(log_path, root_path, execution):
     print(log_path+"\n")
 
     log = read_ui_log_as_dataframe(log_path)
-
-    # columns_to_drop = [special_colnames["Case"], special_colnames["Activity"], special_colnames["Timestamp"], special_colnames["Screenshot"], special_colnames["Variant"]]
+    process_columns = [special_colnames["Case"], 
+                       special_colnames["Activity"], 
+                       special_colnames["Variant"],
+                       special_colnames["Timestamp"], 
+                       special_colnames["Screenshot"]]
+    
     columns = list(log.columns)
-    for c in columns_to_drop:
+    for c in process_columns:
         if c in columns:
             columns.remove(c)
         
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    flat_dataset_row(log, columns, target_label, path_dataset_saved, special_colnames["Case"], special_colnames["Activity"], 
+    flat_dataset_row(log, columns, target_label, execution.exp_folder_complete_path, special_colnames["Case"], special_colnames["Activity"], 
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      
@@ -96,11 +98,11 @@ def decision_tree_training(log_path, path, execution):
     # 'Variant',
     # ['NameApp']
                            
-    flattened_json_log_path = path + 'flattened_dataset.json'
+    target_label = execution.extract_training_dataset.target_label
+    flattened_json_log_path = os.path.join(path+"_results", 'flattened_dataset.json')
     implementation = execution.decision_tree_training.library
     configuration = execution.decision_tree_training.configuration
     columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
-    target_label = execution.target_label
     one_hot_columns = execution.decision_tree_training.one_hot_columns
     k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
     algorithms = configuration["algorithms"] if "algorithms" in configuration else None
@@ -113,9 +115,8 @@ def decision_tree_training(log_path, path, execution):
     flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
     # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
     
-    path += DECISION_FOLDERNAME + sep
-    if not os.path.exists(path):
-        os.mkdir(path)
+    if not os.path.exists(os.path.join(path, DECISION_FOLDERNAME)):
+        os.mkdir(os.path.join(path, DECISION_FOLDERNAME))
     
     # for col in flattened_dataset.columns:
     #     if "Coor" in col:
@@ -123,15 +124,15 @@ def decision_tree_training(log_path, path, execution):
     
     # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
     flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset.to_csv(path + FLATTENED_DATASET_NAME)
+    flattened_dataset.to_csv(os.path.join(path+"_results",FLATTENED_DATASET_NAME+".csv"))
     columns_len = flattened_dataset.shape[1]
     flattened_dataset = flattened_dataset.fillna('NaN')
     # tree_levels = {}
     
     if implementation == 'sklearn':
-        res, times = sklearn_decision_tree(flattened_dataset, path, configuration, one_hot_columns, target_label, k_fold_cross_validation)
+        res, times = sklearn_decision_tree(flattened_dataset, path+"_results", configuration, one_hot_columns, target_label, k_fold_cross_validation)
     elif implementation == 'chefboost':
-        res, times = chefboost_decision_tree(flattened_dataset, path, algorithms, target_label, k_fold_cross_validation)
+        res, times = chefboost_decision_tree(flattened_dataset, path+"_results", algorithms, target_label, k_fold_cross_validation)
         # TODO: caculate number of tree levels automatically
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')
@@ -366,7 +367,7 @@ def decision_tree_feature_checker(feature_values, centroid_threshold, path):
             }
         }
     """
-    dt_file = path + "decision_tree.log"
+    dt_file = os.path.join(path, "decision_tree.log")
     
     metadata = {}        
     for target_class, fe_values_class in feature_values.items():
