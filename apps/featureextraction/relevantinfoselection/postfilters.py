@@ -9,7 +9,7 @@ from art import tprint
 from tqdm import tqdm
 from shapely.ops import unary_union
 from shapely.geometry import Point, Polygon, box
-from core.utils import get_execution_path, read_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe
 from core.settings import PLATFORM_NAME, INFO_POSTFILTERING_PHASE_NAME, sep
 from apps.featureextraction.utils import draw_geometry_over_image
 from django.utils.translation import gettext_lazy as _
@@ -135,7 +135,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
     This function remove from 'screenshot000X.JPG' the compos that do not receive attention by the user (there's no fixation point that matches compo area)
     """
     ui_log = read_ui_log_as_dataframe(log_path)
-    scenario_results_path = get_execution_path(path_scenario) 
+    scenario_results_path = path_scenario + '_results'
     print("ruta de ui det results:"+scenario_results_path)
     # fixation.json -> previous, screenshot001, screenshot002, screenshot003, ... , subsequent
     with open(path_scenario + 'fixation.json', 'r') as f:

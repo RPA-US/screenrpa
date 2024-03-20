@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from keras.models import model_from_json
 from tqdm import tqdm
-from core.utils import read_ui_log_as_dataframe, get_execution_path
+from core.utils import read_ui_log_as_dataframe
 from core.settings import sep
 from apps.featureextraction.SOM.CNN.CompDetCNN import CompDetCNN
 
@@ -92,7 +92,7 @@ def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
     :type ui_elements_classification_classes: list
     
     """
-    execution_root = get_execution_path(path_scenario)
+    execution_root = path_scenario + "_results"
     # path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
     ui_elements_crops_npy_root = execution_root + 'components_npy' + sep
     metadata_json_root = execution_root + 'components_json' + sep

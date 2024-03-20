@@ -85,7 +85,7 @@ def extract_training_dataset(log_path, root_path, execution):
             columns.remove(c)
         
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    flat_dataset_row(log, columns, target_label, execution.exp_folder_complete_path, special_colnames["Case"], special_colnames["Activity"], 
+    flat_dataset_row(log, columns, target_label, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
                      special_colnames["Timestamp"], decision_point_activity, actions_columns)
 
                      

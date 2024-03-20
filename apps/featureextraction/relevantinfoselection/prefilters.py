@@ -8,7 +8,7 @@ from art import tprint
 from PIL import Image, ImageDraw
 from core.settings import sep
 from core.settings import PLATFORM_NAME, INFO_PREFILTERING_PHASE_NAME, sep
-from core.utils import get_execution_path, read_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe
 from django.utils.translation import gettext_lazy as _
 
 # TODO
@@ -17,7 +17,7 @@ def rectangle_prefilter():
 
 def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_filename, scale_factor):
     
-    scenario_results = get_execution_path(path_scenario)
+    scenario_results = path_scenario + '_results'
     print(scenario_results)
     # Load the image and create a new black image of the same size
     image = Image.open(path_scenario + sep + screenshot_filename)
