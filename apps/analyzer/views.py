@@ -638,19 +638,19 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
 ##############################################33
     
 
-def LogicPhasesResultDetailView(execution, scenarioNumber,path_to_csv_file):
+# def LogicPhasesResultDetailView(execution, scenarioNumber,path_to_csv_file):
    
-    # CSV Reading and Conversion to JSON
-    csv_data_json = read_csv_to_json(path_to_csv_file)
+#     # CSV Reading and Conversion to JSON
+#     csv_data_json = read_csv_to_json(path_to_csv_file)
 
-    # Include CSV data in the context for the template
-    context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenarioNumber": scenarioNumber
-        }
-    return context
+#     # Include CSV data in the context for the template
+#     context = {
+#             "execution": execution,
+#             "csv_data": csv_data_json,  # Data to be used in the HTML template
+#             "scenarios": execution.scenarios_to_study,
+#             "scenarioNumber": scenarioNumber
+#         }
+#     return context
 
 #############################################33
 def read_csv_to_json(path_to_csv_file):
