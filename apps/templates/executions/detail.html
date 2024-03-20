@@ -162,7 +162,7 @@
                       {% if execution.prefilters != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="prefiltering/detail/{{execution.case_study.id}}/{{execution.prefilters.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/fe/prefiltering/detail/{{execution.case_study.id}}/{{execution.prefilters.id}}">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
@@ -183,7 +183,7 @@
                       {% if execution.ui_elements_detection != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="ui-element-detection/detail/{{execution.case_study.id}}/{{execution.ui_elements_detection.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/fe/ui-element-detection/detail/{{execution.case_study.id}}/{{execution.ui_elements_detection.id}}/">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
@@ -205,7 +205,7 @@
                       {% if execution.postfilters != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="posfiltering/detail/{{execution.case_study.id}}/{{execution.postfilters.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/fe/posfiltering/detail/{{execution.case_study.id}}/{{execution.postfilters.id}}">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
@@ -228,8 +228,8 @@
                       {% if execution.feature_extraction_technique != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="feature-extraction-technique/detail/{{execution.case_study.id}}/{{execution.feature_extraction_technique.id}}">Configurations</a>
-                          <a class="dropdown-item" href="#">Results</a>
+                          <a class="dropdown-item" href="/fe/feature-extraction-technique/detail/{{execution.case_study.id}}/{{execution.feature_extraction_technique.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/case-study/execution/featureExtraction_result/{{execution.id}}/">Results</a>
                         </div>
                       {% endif %}
                     </div>               
@@ -250,7 +250,7 @@
                       {% if execution.process_discovery != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="bpmn/detail/{{execution.case_study.id}}/{{execution.process_discovery.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/pd/bpmn/detail/{{execution.case_study.id}}/{{execution.process_discovery.id}}/">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
@@ -274,8 +274,8 @@
                       {% if execution.extract_training_dataset != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="extract-training-dataset/detail/{{execution.case_study.id}}/{{execution.extract_training_dataset.id}}/">Configurations</a>
-                          <a class="dropdown-item" href="#">Results</a>
+                          <a class="dropdown-item" href="/dd/extract-training-dataset/detail/{{execution.case_study.id}}/{{execution.extract_training_dataset.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/case-study/execution/extractTrainingDataset_result/{{execution.id}}/">Results</a>
                         </div>
                       {% endif %}
                     </div>
@@ -304,7 +304,7 @@
                         {% if execution.decision_tree_training != None %}
                           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <!-- Dropdown menu links -->
-                            <a class="dropdown-item" href="decision-tree-training/detail/{{execution.case_study.id}}/{{execution.decision_tree_training.id}}/">Configurations</a>
+                            <a class="dropdown-item" href="/dd/decision-tree-training/detail/{{execution.case_study.id}}/{{execution.decision_tree_training.id}}/">Configurations</a>
                             <a class="dropdown-item" href="#">Results</a>
                           </div>
                         {% endif %}
