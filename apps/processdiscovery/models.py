@@ -31,9 +31,9 @@ class ProcessDiscovery(models.Model):
 
     # New fields
     model_type = models.CharField(max_length=10, choices=[('vgg', 'VGG'), ('clip', 'Clip')], default='vgg')
-    text_weight = models.DecimalField(max_digits=5, decimal_places=2, default=0.5)
-    image_weight = models.DecimalField(max_digits=5, decimal_places=2, default=0.5)
-    clustering_type = models.CharField(max_length=20, choices=[('hierarchical', 'Hierarchical')], default='hierarchical')
+    text_weight = models.FloatField(default=0.5)
+    image_weight = models.FloatField(default=0.5)
+    clustering_type = models.CharField(max_length=20, choices=[('agglomerative', 'Agglomerative'), ('divisive', 'Divisive')], default='agglomerative')
     labeling = models.CharField(max_length=10, choices=[('automatic', 'Automatic'), ('manual', 'Manual')], default='automatic')
     use_pca = models.BooleanField(default=False)
     n_components = models.FloatField(default=0.95)
