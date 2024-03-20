@@ -211,10 +211,8 @@ class Execution(models.Model):
         for ph in DEFAULT_PHASES:
             if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
                 preloaded_file_path = f"{PRIVATE_STORAGE_ROOT}{sep}{getattr(self, ph).preloaded_file.name}"
-                print("scenarios to study:", self.case_study.scenarios_to_study)
-                for scenario in self.case_study.scenarios_to_study:
-                    unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}/{scenario}_results")
-                    print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}/{scenario}_results")
+                unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
+                print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
 
     
     def create_folder_structure(self):
