@@ -1,6 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
 {% load i18n %}
+{% load static %}
 
 {% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
@@ -39,7 +40,7 @@
             <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Detections{% endblocktranslate %}</h3>
           </div>
           <div class="card-body d-flex flex-column" style="gap:12px">
-            <section for="content" class="col-12 d-flex justify-content-between">
+            <section for="content" class="col-12 h d-flex justify-content-between">
               <!-- Dropdown to select imgages with back and forth buttons -->
               <div for="controls" class="col-4 d-flex justify-content-between">
                 <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
@@ -51,17 +52,15 @@
                 </select>
                 <button id="next" class="btn btn-outline-light ml-2" onclick="nextImage()">></button>
               </div>
-              <h3 class="col-4 align-self-end" id="imgPath">Screen Object Model</h3>
+              <h3 class="col-4 align-self-end">Screen Object Model</h3>
             </section>
             <section for="content" class="col-12 d-flex justify-content-between">
               <img id="bordered-img" class="col-4 img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
               <!--The som is in json format, and it must be contained and be scrollable-->
-              <div id="som-window" class="col-4" style="overflow-y: scroll; max-height: 500px;">
-                <code-block class="language-json">
-                  <pre id="som-json">
-                  </pre>
-                </code-block>
-              </div>
+              <textarea id="json-input" autocomplete="off" hidden>
+              </textarea>
+              <pre id="json-display" class="col-4" style="overflow-y:scroll; max-height: 500px;" contenteditable="false">
+              </pre>
             </section>
             <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
           </div>
@@ -77,44 +76,64 @@
 
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
+   <!-- Import a code block library to render and navigate a json object-->
+   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" 
+        crossorigin="anonymous"></script>
+  <script src="{% static 'assets/js/scripts/json-editor.min.js'%}"></script>
   <script>
     // Declare list of images from soms json replacing None with empty string
     soms = {{ soms|safe }};
     imgList = soms.soms.map(som => som.img_path ? som.img_path : '');
 
+    // initialize json visualizer
+    // get JSON 
+    function getJson() {
+      try {
+        return JSON.parse($('#json-input').val());
+      } catch (ex) {
+        alert('Wrong JSON Format: ' + ex);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         borderedImg = document.getElementById('bordered-img');
+        somWindow = document.getElementById('json-input');
+        somWindow.innerHTML = JSON.stringify(soms.soms[0].som.som, null, 2);
+        editor = new JsonEditor('#json-display', getJson());
+        // run editor.load(getJson()) in a virtual thread
+        editor.load(getJson());
     })
 
     function prevImage() {
         imgList = document.getElementById('imgList');
         imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('som-json');
-        imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
+        somWindow = document.getElementById('json-input');
         if (imgList.selectedIndex > 0) {
             imgList.selectedIndex = imgList.selectedIndex - 1;
             borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som, null, 2);
+            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+            // load asyncronously and show with a loading spinner
+            editor.load(getJson());
         }
     }
 
     function nextImage() {
         imgList = document.getElementById('imgList');
         imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('som-json');
-        imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
+        somWindow = document.getElementById('json-input');
         if (imgList.selectedIndex < imgList.options.length - 1) {
             imgList.selectedIndex = imgList.selectedIndex + 1;
             borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som, null, 2);
+            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+            editor.load(getJson());
         }
     }
 
     function changeImage(value) {
         imgList = document.getElementById('imgList');
         imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('som-json');
-        imgPath.innerHTML = imgList.options[imgList.selectedIndex].text;
+        somWindow = document.getElementById('json-input');
         borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
     }
   </script>
