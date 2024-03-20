@@ -9,7 +9,7 @@ from art import tprint
 from tqdm import tqdm
 from shapely.ops import unary_union
 from shapely.geometry import Point, Polygon, box
-from core.utils import read_ui_log_as_dataframe
+from core.utils import get_execution_path, read_ui_log_as_dataframe
 from core.settings import PLATFORM_NAME, INFO_POSTFILTERING_PHASE_NAME, sep
 from apps.featureextraction.utils import draw_geometry_over_image
 from django.utils.translation import gettext_lazy as _
@@ -130,15 +130,17 @@ def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_p
     return res
 
 
-def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
+def gaze_filtering(log_path, path_scenario, special_colnames, configurations, key):
     """
     This function remove from 'screenshot000X.JPG' the compos that do not receive attention by the user (there's no fixation point that matches compo area)
     """
-    ui_log = read_ui_log_as_dataframe(log_path) 
+    ui_log = read_ui_log_as_dataframe(log_path)
+    scenario_results_path = get_execution_path(path_scenario) 
+    print("ruta de ui det results:"+scenario_results_path)
     # fixation.json -> previous, screenshot001, screenshot002, screenshot003, ... , subsequent
-    with open(root_path + 'fixation.json', 'r') as f:
+    with open(path_scenario + 'fixation.json', 'r') as f:
         fixation_json = json.load(f)
-    
+        
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         # screenshot.json -> compos: [
         #     "column_min": 0,
@@ -147,9 +149,9 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
         #     "row_max": 24,
         # ]
         
-        with open(root_path + "components_json" + sep + screenshot_filename + '.json', 'r') as f:
+        with open(scenario_results_path + "components_json" + sep + screenshot_filename + '.json', 'r') as f:
             screenshot_json = json.load(f)
-        
+
         if configurations[key]["predicate"] == "is_component_relevant":
             polygon_circles = []
             polygon_rectangles = []
@@ -159,7 +161,7 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                 fixation_point_x = float(fixation_coordinates[0])
                 fixation_point_y = float(fixation_coordinates[1])     
                 centre = Point(fixation_point_x, fixation_point_y)
-                radio = fixation_obj["dispersion"] * float(configurations[key]["scale_factor"])
+                radio = float(fixation_obj["imotions_dispersion"]) * float(configurations[key]["scale_factor"])
                 if not pd.isna(radio):
                     polygon_circle = centre.buffer(radio)
                     polygon_circles.append(polygon_circle)
@@ -172,25 +174,39 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                 if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
                     (screenshot_filename in fixation_json): # screenshot has fixation
                         
-                    x_min = compo['row_min']
-                    y_min = compo['column_min']
-                    x_max = compo['row_max']
-                    y_max = compo['column_max']
+                    # x_min = compo['points']
+                    # y_min = compo['column_min']
+                    # x_max = compo['row_max']
+                    # y_max = compo['column_max']
                     
-                    polygon_rect = box(x_min, y_min, x_max, y_max)
-                    intersection = polygon_rect.intersection(fixation_mask)
-
+                    points = compo['points']
+                    # x_values = [point[0] for point in points]
+                    # y_values = [point[1] for point in points]
+                    polygon = Polygon(points)
+                    
+                    # polygon_rect = box(x_min, y_min, x_max, y_max)
+                    intersection = polygon.intersection(fixation_mask)
                     compo["intersection_area"] = intersection.area
+
+                    # if polygon_rect.area > 0 and (intersection.area / polygon_rect.area) > float(configurations[key]["intersection_area_thresh"]):
+                    #     nested = bool(configurations[key]["only_leaf"])
+                    #     if nested and (len(compo["contain"]) > 0 or compo["label"] == "UIGroup"):
+                    #         compo["relevant"] = "Nested"
+                    #         if configurations[key]["consider_nested_as_relevant"] == "True":
+                    #             polygon_rectangles.append(polygon_rect)
+                    #     else:
+                    #         compo["relevant"] = "True"
+                    #         polygon_rectangles.append(polygon_rect)
                     
-                    if polygon_rect.area > 0 and (intersection.area / polygon_rect.area) > float(configurations[key]["intersection_area_thresh"]):
+                    if polygon.area > 0 and (intersection.area / polygon.area) > float(configurations[key]["intersection_area_thresh"]):
                         nested = bool(configurations[key]["only_leaf"])
                         if nested and (len(compo["contain"]) > 0 or compo["label"] == "UIGroup"):
                             compo["relevant"] = "Nested"
                             if configurations[key]["consider_nested_as_relevant"] == "True":
-                                polygon_rectangles.append(polygon_rect)
+                                polygon_rectangles.append(polygon)
                         else:
                             compo["relevant"] = "True"
-                            polygon_rectangles.append(polygon_rect)
+                            polygon_rectangles.append(polygon)
                             
                     else:
                         compo["relevant"] = "False"
@@ -199,9 +215,9 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                     compo["relevant"] = "False"
                     
             if configurations[key]["mode"] == "draw":
-                if not os.path.exists(root_path + "postfilter_attention_maps" + sep):
-                    os.makedirs(root_path + "postfilter_attention_maps" + sep)
-                draw_geometry_over_image(root_path + screenshot_filename, polygon_circles, polygon_rectangles, root_path + "postfilter_attention_maps" + sep + screenshot_filename)
+                if not os.path.exists(scenario_results_path + "postfilter_attention_maps" + sep):
+                    os.makedirs(scenario_results_path + "postfilter_attention_maps" + sep)
+                draw_geometry_over_image(path_scenario + screenshot_filename, polygon_circles, polygon_rectangles, scenario_results_path + "postfilter_attention_maps" + sep + screenshot_filename)
             
         else:
             for compo in screenshot_json["compos"]:
@@ -237,21 +253,21 @@ def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
                                 compo["relevant"] = "False"
                                 
                     if configurations[key]["mode"] == "draw":
-                        if not os.path.exists(root_path + "postfilter_attention_maps/"):
-                            os.makedirs(root_path + "postfilter_attention_maps/")
-                        draw_geometry_over_image(root_path + screenshot_filename, polygons, root_path + "postfilter_attention_maps/" + screenshot_filename)
+                        if not os.path.exists(scenario_results_path + "postfilter_attention_maps/"):
+                            os.makedirs(scenario_results_path + "postfilter_attention_maps/")
+                        draw_geometry_over_image(path_scenario + screenshot_filename, polygons, scenario_results_path + "postfilter_attention_maps/" + screenshot_filename)
                         
                 else:
                     compo["relevant"] = "False"
 
-        with open(root_path + "components_json" + sep + screenshot_filename + '.json', "w") as jsonFile:
+        with open(scenario_results_path + "components_json" + sep + screenshot_filename + '.json', "w") as jsonFile:
             json.dump(screenshot_json, jsonFile, indent=4)
     print("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
     logging.info("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
 
-def apply_filters(log_path, root_path, execution):
+def apply_filters(log_path, path_scenario, execution):
     
-    special_colnames = execution.case_study.special_colnames,
+    special_colnames = execution.case_study.special_colnames
     configurations = execution.postfilters.configurations
     
     times = {}
@@ -263,7 +279,7 @@ def apply_filters(log_path, root_path, execution):
         start_t = time.time()
         match key:
             case "gaze":
-                gaze_filtering(log_path, root_path, special_colnames, configurations, "gaze")
+                gaze_filtering(log_path, path_scenario, special_colnames, configurations, "gaze")
             case _:
                 s = "but not executed. It's not one of the possible filters to apply!"
                 pass
@@ -274,18 +290,19 @@ def apply_filters(log_path, root_path, execution):
 
     return times
 
-def postfilters(log_path, root_path, execution):
-    filters_format_type = execution.postfilters.type,
+def postfilters(log_path, path_scenario, execution):
+    filters_format_type = execution.postfilters.type
     skip = execution.postfilters.preloaded
     
     if not skip:  
         tprint(PLATFORM_NAME + " - " + INFO_POSTFILTERING_PHASE_NAME, "fancy60")
         
-        match filters_format_type:
-            case "rpa-us":
-                output = apply_filters(log_path, root_path, execution)
-            case _:
-                raise Exception(_("You select a type of filter that doesnt exists"))
+        # match filters_format_type:
+        #     case "rpa-us":
+        #         output = apply_filters(log_path, path_scenario, execution)
+        output = apply_filters(log_path, path_scenario, execution)
+        #     case _:
+        #         raise Exception(_("You select a type of filter that doesnt exists"))
     else:
         logging.info("Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!")
         output = "Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!"

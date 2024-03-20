@@ -39,13 +39,14 @@ def get_exp_foldername(exp_folder_complete_path):
 
 def default_prefilters_conf():
     return dict({
-                "prefilter1":{
-                    
-                },
-                "prefilter2":{
-                
+    		    "gaze": {
+        		        "UI_selector": "all",
+        		        "predicate": "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])",
+        		        "only_leaf": True,
+			            "scale_factor":10
+    	        	}
                 }
-                })
+            )
     
 def default_filters_conf():
     return dict({

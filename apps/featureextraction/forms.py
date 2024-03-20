@@ -154,14 +154,14 @@ class PostfiltersForm(forms .ModelForm):
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "type": forms.TextInput(
+            "type": forms.Select(
+                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "New-postfiltering"
-                    }
+                    "class": "form-control"
+                }
             ),
             "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
+                attrs={"class": "primary-checkbox", "checked": "unchecked"}
             ),
             "preloaded_file": forms.FileInput(
                 attrs={
