@@ -143,6 +143,7 @@ In this code, the following paths are used:
 - root_path: media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/
 - scenario_path: media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/scenario1/
 - log_path: media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/scenario1/log.csv
+- scenario_results_path:  media/unzipped/case_study_XXXXXXXXX/executions/exec_XX/scenario1_results/
 
 <br />
 

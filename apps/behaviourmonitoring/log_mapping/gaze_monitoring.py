@@ -362,7 +362,7 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
   columns_nan = columns_nan.drop(columns_added)
   
   for ui_event_index in range(len(ui_log)):
-    print("Processing fixation.json to dataframe. ui_event_index: "+str(ui_event_index)+" out of "+str(len(ui_log))+" total ui_event_index.")
+    print("Processing fixation.json to dataframe. ui_event_index: "+str(ui_event_index)+" out of "+str((len(ui_log)-1))+" ## "+str(int(ui_event_index*100/(len(ui_log)-1))) + "% ##")
     new_row_json = {}
     screenshot = ui_log.iloc[ui_event_index][special_colnames["Screenshot"]]
     new_row_json[special_colnames["Screenshot"]] = [screenshot]
