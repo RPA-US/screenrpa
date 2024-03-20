@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import os
 from numpyencoder import NumpyEncoder
 
 def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
@@ -50,7 +51,7 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
                             "Timestamp_start": log.at[index, timestamp_column_name],
                             target_label: log.at[index, target_label]
                         }
-                if activity != decision_point_activity:
+                if decision_point_activity in activity:
                     for h in columns:
                         log_dict[c][h+"_"+activity] = log.at[index, h]
                 else:
@@ -66,7 +67,7 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
     json_object = json.dumps(log_dict, cls=NumpyEncoder, indent=4)
 
     # Writing to one_row_per_case.json
-    with open(path_dataset_saved + "flattened_dataset.json", "w") as outfile:
+    with open(os.path.join(path_dataset_saved, "flattened_dataset.json"), "w") as outfile:
         outfile.write(json_object)
 
     return log_dict
