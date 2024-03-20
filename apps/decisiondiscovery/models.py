@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
 def get_default_extract_training_columns_to_ignore():
-    return 'Coor_X, Coor_Y, Case'.split(', ') # this returns a list
+    return 'Coor_X, Coor_Y, Click'.split(', ') # this returns a list
 
 def get_default_decision_tree_columns_to_ignore():
     return 'Timestamp_start, Timestamp_end'.split(', ') # this returns a list
@@ -97,7 +97,6 @@ class ExtractTrainingDataset(models.Model):
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     title = models.CharField(max_length=255, blank=True)
-    columns_to_drop = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
     decision_point_activity = models.CharField(max_length=255)
     configurations = models.JSONField(default=dict, blank=True, null=True)
@@ -109,7 +108,7 @@ class ExtractTrainingDataset(models.Model):
         return reverse("decisiondiscovery:extract_training_dataset_list", args=[str(self.case_study_id)])    
     
     def __str__(self):
-        return 'col to drop: ' + str(self.columns_to_drop)
+        return 'col to drop: ' + str(self.title)
     
 class DecisionTreeTraining(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)

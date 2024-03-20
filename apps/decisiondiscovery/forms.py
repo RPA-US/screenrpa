@@ -27,7 +27,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             "decision_point_activity": _("Decision Point To Study"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "configurations": _("Additional Configurations (JSON)"),
-            "columns_to_drop": _("Columns to drop"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "target_label": _("Target label"),
             "preloaded_file":"Preload Execution Results"
@@ -51,12 +50,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": _("Variant")
-                    }
-            ),
-            "columns_to_drop": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "My Dataset Extraction Technique"
                     }
             ),
             "decision_point_activity": forms.TextInput(
