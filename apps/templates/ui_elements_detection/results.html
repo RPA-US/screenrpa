@@ -55,16 +55,16 @@
                 </select>
                 <button id="next" class="btn btn-outline-light ml-2" onclick="nextImage()">></button>
               </div>
-              <h3 class="col-4 align-self-end">Screen Object Model</h3>
+              <h3 class="col-6 align-self-end">Screen Object Model</h3>
             </section>
             <section for="content" class="col-12 d-flex justify-content-between">
-              <div class=col-4 "">
+              <div class=col-6 "">
                 <img id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
               </div>
               <!--The som is in json format, and it must be contained and be scrollable-->
               <textarea id="json-input" autocomplete="off" hidden>
               </textarea>
-              <div class="col-4">
+              <div class="col-6">
                 <pre id="json-display" style="overflow-y:scroll;max-height:300px" contenteditable="false">
                 </pre>
               </div>
@@ -95,7 +95,7 @@
     <script src="{% static 'assets/js/scripts/json-editor.min.js'%}"></script>
     <script>
     // Declare list of images from soms json replacing None with empty string
-    soms = {{ soms|safe }};
+    soms = {{ soms|handle_none|safe }};
     imgList = soms.soms.map(som => som.img_path ? som.img_path : '');
 
     // initialize json visualizer
