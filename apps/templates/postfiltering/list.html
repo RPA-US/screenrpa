@@ -16,7 +16,7 @@
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/>"{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
                 <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Postfiltering Configurations{% endblocktranslate %}</a></li>
               </ol>
             </nav>
@@ -46,6 +46,7 @@
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Type{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
@@ -66,6 +67,9 @@
                       </div>
                     </div>
                   </th>
+                  <td>
+                    <a href="/fe/postfiltering/detail/{{ case_study_id }}/{{ postfilter.pk }}/">{{ postfilter.title }} </a>
+                  </td>
                   <td>
                     {{ postfilter.created_at }}
                   </td>

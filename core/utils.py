@@ -10,7 +10,4 @@ def get_model_classes(execution):
     json_func = json.load(f)
     model_name = execution.ui_elements_detection.type
     return json_func[model_name]
-  
-def get_execution_path(param_img_root):
-    return param_img_root[:-1] + '_results/'
      

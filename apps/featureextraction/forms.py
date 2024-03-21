@@ -50,10 +50,12 @@ class UIElementsDetectionForm(forms .ModelForm):
                     # If value is screen2som, disable CNN model selectable
                     "onchange": """
                         if (this.value == 'screen2som') {
-                            document.getElementById('id_model').value = 'IGNORE';
                             document.getElementById('id_model').disabled = true;
+                            document.getElementById('id_model').value = '';
+                            document.getElementById('id_model').required = false;
                         } else {
                             document.getElementById('id_model').disabled = false;
+                            document.getElementById('id_model').required = true;
                         }
                         """
                     }
@@ -154,14 +156,14 @@ class PostfiltersForm(forms .ModelForm):
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "type": forms.TextInput(
+            "type": forms.Select(
+                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "New-postfiltering"
-                    }
+                    "class": "form-control"
+                }
             ),
             "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox", "checked": "checked"}
+                attrs={"class": "primary-checkbox", "checked": "unchecked"}
             ),
             "preloaded_file": forms.FileInput(
                 attrs={
@@ -182,6 +184,7 @@ class PostfiltersForm(forms .ModelForm):
         super(PostfiltersForm, self).__init__(*args, **kwargs)
 
 class UIElementsClassificationForm(forms .ModelForm):
+    # Add a 'IGNORE' default value with string ---
     model = forms.ModelChoiceField(
         queryset=CNNModels.objects.all().exclude(name="screen2som"),
         to_field_name="name",

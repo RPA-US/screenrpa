@@ -1,7 +1,7 @@
 import json
 import os
 from core.settings import STATUS_VALUES_ID, sep
-from core.utils import read_ui_log_as_dataframe, get_model_classes, get_execution_path
+from core.utils import read_ui_log_as_dataframe, get_model_classes
 
 def find_st_id(st_value):
     res = None
@@ -127,7 +127,7 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     Column name: compoclass+int
     Column value: centroid 
     """
-    execution_root = get_execution_path(path_scenario)
+    execution_root = path_scenario + '_results'
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
@@ -158,55 +158,59 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
 
     for i, screenshot_filename in enumerate(screenshot_filenames):
         screenshot_filename = os.path.basename(screenshot_filename)
-        # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
-            data = json.load(f)
-
-        screenshot_compos_frec = headers.copy()
         
-        # TODO: retrieve the information of the file depending on the output_format of the model, what is the format of components_json files
-        output_format = get_model_classes(execution)["output_format"]
-        
-        if consider_relevant_compos:
-            compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
-        else:
-            compos_list = data["compos"]
+        # Check if the file exists, if exists, then we can continue
+        if os.path.exists(os.path.join(metadata_json_root, screenshot_filename + '.json')):
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
+                data = json.load(f)
 
-        for j in range(0, len(compos_list)):
-            compo_class = compos_list[j]["class"]
+            screenshot_compos_frec = headers.copy()
             
-            # Centroid is Already calculated in the prediction
-            # compo_x1 = compos_list[j]["column_min"]
-            # compo_y1 = compos_list[j]["row_min"]
-            # compo_x2 = compos_list[j]["column_max"]
-            # compo_y2 = compos_list[j]["row_max"]
-            # centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
-            # centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
-            # compos_list[j]["centroid"] = [centroid_x, centroid_y]
-            screenshot_compos_frec[compo_class] += 1
+            # TODO: retrieve the information of the file depending on the output_format of the model, what is the format of components_json files
+            output_format = get_model_classes(execution)["output_format"]
             
-            column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
-
-            if column_name in info_to_join:
-                if not len(info_to_join[column_name]) == i:
-                    for k in range(len(info_to_join[column_name]),i):
-                        info_to_join[column_name].append("")
-                info_to_join[column_name].append(compos_list[j]["centroid"])
+            if consider_relevant_compos:
+                compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
             else:
-                column_as_vector = []
-                for k in range(0,i):
-                    column_as_vector.append("")
-                column_as_vector.append(compos_list[j]["centroid"])
-                info_to_join[column_name] = column_as_vector
-            # num_UI_elements += 1
+                compos_list = data["compos"]
+
+            for j in range(0, len(compos_list)):
+                compo_class = compos_list[j]["class"]
                 
-        if "features" in data:
-            data["features"]["location"] = info_to_join
+                # Centroid is Already calculated in the prediction
+                # compo_x1 = compos_list[j]["column_min"]
+                # compo_y1 = compos_list[j]["row_min"]
+                # compo_x2 = compos_list[j]["column_max"]
+                # compo_y2 = compos_list[j]["row_max"]
+                # centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
+                # centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
+                # compos_list[j]["centroid"] = [centroid_x, centroid_y]
+                screenshot_compos_frec[compo_class] += 1
+                
+                column_name = compo_class+"_"+str(screenshot_compos_frec[compo_class])
+
+                if column_name in info_to_join:
+                    if not len(info_to_join[column_name]) == i:
+                        for k in range(len(info_to_join[column_name]),i):
+                            info_to_join[column_name].append("")
+                    info_to_join[column_name].append(compos_list[j]["centroid"])
+                else:
+                    column_as_vector = []
+                    for k in range(0,i):
+                        column_as_vector.append("")
+                    column_as_vector.append(compos_list[j]["centroid"])
+                    info_to_join[column_name] = column_as_vector
+                # num_UI_elements += 1
+                    
+            if "features" in data:
+                data["features"]["location"] = info_to_join
+            else:
+                data["features"] = { "location": info_to_join }
+            
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
+                json.dump(data, jsonFile)
         else:
-            data["features"] = { "location": info_to_join }
-        
-        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
-            json.dump(data, jsonFile)
+            print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
 
     # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
     
