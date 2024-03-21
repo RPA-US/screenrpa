@@ -1426,20 +1426,20 @@ msgstr "Detección de elementos de UI"
 
 #: apps/templates/ui_elements_detection/results.html:25
 msgid "Execution"
-msgstr "Ejecutar"
+msgstr "Ejecución"
 
 #: apps/templates/ui_elements_detection/results.html:26
 #: apps/templates/ui_elements_detection/results.html:27
 msgid "Execution Details"
-msgstr "Ejecutar"
+msgstr "Detalles de Ejecucion"
 
 #: apps/templates/ui_elements_detection/results.html:44
 msgid "Detections"
-msgstr "Ejecutar"
+msgstr "Detecciones"
 
 #: apps/templates/ui_elements_detection/results.html:80
 msgid "Loading Screen Object Model..."
-msgstr ""
+msgstr "Cargando Screen Object Model..."
 
 #: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:420
 msgid "open('foo"
