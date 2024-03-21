@@ -30,8 +30,6 @@ msgstr ""
 "lo esperado"
 
 #: apps/analyzer/collect_results.py:106
-#, fuzzy, python-format
-#| msgid "Condition %(expression) is not fulfilled"
 msgid "Condition %(expression) is not fulfilled"
 msgstr "La condición %(expression) no se cumple"
 
@@ -188,8 +186,6 @@ msgstr ""
 "%(DEFAULT_PHASES)s"
 
 #: apps/analyzer/views.py:389
-#, fuzzy, python-format
-#| msgid "Case study with id:%(id) is being generated ..."
 msgid "Case study with id:%(id) is being generated ..."
 msgstr "Se está generando el caso de estudio con ID:%(id) ..."
 
@@ -210,8 +206,6 @@ msgstr ""
 "inténtelo de nuevo en unos minutos"
 
 #: apps/analyzer/views.py:432
-#, fuzzy, python-format
-#| msgid "Case Study with id %(id) raised an exception: "
 msgid "Case Study with id %(id) raised an exception: "
 msgstr "El caso de estudio con ID %(id) generó una excepción: "
 
