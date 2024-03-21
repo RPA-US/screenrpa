@@ -3,10 +3,9 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tensorflow.keras.applications import VGG16
-from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+from scipy.cluster.hierarchy import dendrogram, linkage
 # from sklearn.cluster import AgglomerativeClustering
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.views.generic import ListView, CreateView, DetailView
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404
@@ -27,11 +26,10 @@ from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_har
 from sklearn.decomposition import PCA
 from transformers import CLIPProcessor, CLIPModel
 import torch
-from torchvision.models import vgg16
-from torchvision.transforms import transforms
-from keras.applications.vgg16 import VGG16, preprocess_input
-from tensorflow.keras.utils import img_to_array
+from keras.applications.vgg16 import VGG16
 from PIL import Image
+import tensorflow as tf
+from tqdm import tqdm
 
 
 def scene_level(log_path, scenario_path, execution):
@@ -45,9 +43,9 @@ def scene_level(log_path, scenario_path, execution):
             processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
             return model, processor
         elif model_type == 'vgg':
+            tf.config.set_visible_devices([], 'GPU')
             model = VGG16(weights='imagenet', include_top=False)
-            transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
-            return model, transform
+            return model, None
     
     def process_image_clip(image, text, processor, model, image_weight, text_weight):
         inputs = processor(text=[text], images=image, return_tensors="pt", padding=True)
@@ -57,18 +55,20 @@ def scene_level(log_path, scenario_path, execution):
         text_features = outputs.text_embeds.cpu().numpy().flatten() * text_weight
         return np.hstack((image_features, text_features))
     
-    def process_image_vgg(image, model):
-        img_array = img_to_array(image) 
-        img_array_expanded_dims = np.expand_dims(img_array, axis=0)  
-        preprocessed_image = preprocess_input(img_array_expanded_dims)  
-        features = model.predict(preprocessed_image).flatten()  
+    def process_image_vgg(img_path, model):
+        img = cv2.imread(img_path)
+        if img is None:
+            raise ValueError("Image not found")
+        img = cv2.resize(img, (224, 224))
+        img = np.expand_dims(img, axis=0)   
+        features = model.predict(img).flatten()
         return features
     
     def extract_features_from_images(df, scenario_path, image_col, text_col, image_weight, text_weight, model_type):
-        model, processor_or_transform = load_model(process_discovery.model_type)
+        model, processor_or_transform = load_model(model_type)
         combined_features = []
 
-        for _, row in df.iterrows():
+        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Extracting features with CLIP from Image'):
             img_path = os.path.join(scenario_path, row[image_col])
             image = Image.open(img_path).convert('RGB')
 
@@ -76,7 +76,7 @@ def scene_level(log_path, scenario_path, execution):
                 text = row[text_col]
                 features = process_image_clip(image, text, processor_or_transform, model, image_weight, text_weight)
             elif model_type == 'vgg':
-                features = process_image_vgg(image, model)
+                features = process_image_vgg(img_path, model)
             
             combined_features.append(features)
         
@@ -97,7 +97,7 @@ def scene_level(log_path, scenario_path, execution):
         calinski_harabasz = calinski_harabasz_score(features, labels)
         return silhouette_avg, davies_bouldin, calinski_harabasz
 
-    def perform_clustering(features, method='agglomerative', n_clusters=2):
+    def perform_clustering(features, method, n_clusters=2):
         if method == 'agglomerative':
             clustering_model = AgglomerativeClustering(n_clusters=n_clusters)
         elif method == 'divisive': 
@@ -109,32 +109,33 @@ def scene_level(log_path, scenario_path, execution):
         labels = clustering_model.labels_
         return labels
 
-    def find_optimal_clusters(features, min_clusters=2, max_clusters=10, method='agglomerative'):
+    def find_optimal_clusters(features, clustering_type, min_clusters=2, max_clusters=10):
         best_score = -1
         optimal_clusters = min_clusters
-        for k in range(min_clusters, max_clusters + 1):
-            labels = perform_clustering(features, method, n_clusters=k)
+    
+        for k in tqdm(range(min_clusters, max_clusters + 1), desc='Finding optimal clusters'):
+            labels = perform_clustering(features, clustering_type, n_clusters=k)
             silhouette_avg, _, _ = evaluate_clusters(features, labels)
             if silhouette_avg > best_score:
                 best_score = silhouette_avg
                 optimal_clusters = k
-                
-        # Perform clustering with the optimal number of clusters
-        optimal_labels = perform_clustering(features, method, n_clusters=optimal_clusters)
+                    
+        optimal_labels = perform_clustering(features, clustering_type, n_clusters=optimal_clusters)
         silhouette_avg, davies_bouldin, calinski_harabasz = evaluate_clusters(features, optimal_labels)
-        
-        print(f"Method: {method}, Optimal Clusters: {optimal_clusters}, Best Silhouette Score: {silhouette_avg}")
-        print(f"Davies-Bouldin Score: {davies_bouldin}, Calinski-Harabasz Score: {calinski_harabasz}")
-        
+             
+        tqdm.write(f"Method: {clustering_type}, Optimal Clusters: {optimal_clusters}, Best Silhouette Score: {silhouette_avg}")
+        tqdm.write(f"Davies-Bouldin Score: {davies_bouldin}, Calinski-Harabasz Score: {calinski_harabasz}")
+
         return optimal_clusters, optimal_labels
 
-    def cluster_images(df, use_pca, n_components=0.95, method='agglomerative'):
+    def cluster_images(df, use_pca, clustering_type, n_components=0.95):
+        tqdm.write('Starting Clustering...')
         features = np.array(df['combined_features'].tolist())
         
         if use_pca:
             features = apply_pca(features, n_components)
         
-        _, labels = find_optimal_clusters(features, method=method)
+        _, labels = find_optimal_clusters(features, clustering_type)
         df['activity_label'] = labels.astype(str)
         
         return df
@@ -175,7 +176,7 @@ def scene_level(log_path, scenario_path, execution):
     
     def generate_dendrogram(df, show_dendrogram, features_column='combined_features', folder_path='results'):
         if not show_dendrogram:
-            print("La generación del dendrograma no se ha indicado. Finalizando.")
+            print("Dendrogram generation has been skipped.")
             return
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
@@ -220,7 +221,7 @@ def scene_level(log_path, scenario_path, execution):
     '''
     ui_log = read_ui_log_as_dataframe(log_path)
     ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], 'header', image_weight=image_weight, text_weight=text_weight, model_type=model_type)
-    ui_log = cluster_images(ui_log, use_pca, n_components, method=clustering_type)
+    ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)
     ui_log = process_id_assignment(ui_log, labeling_mode=labeling)
 
     folder_path = os.path.join(root_path, 'results')
@@ -260,8 +261,12 @@ def process_level(folder_path, df, execution):
             f.write(dot.source)
         bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
 
+
     petri_net_process(df, special_colnames)
-    bpmn_process(df, special_colnames)
+    try:
+        bpmn_process(df, special_colnames)
+    except Exception as e:
+        print(f'Error generating BPMN: {e} Continuing with Petrinet...')
     
     
 def process_discovery(log_path, scenario_path, execution):
