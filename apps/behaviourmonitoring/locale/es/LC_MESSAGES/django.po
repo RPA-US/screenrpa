@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-08 10:43+0000\n"
+"POT-Creation-Date: 2024-03-21 10:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/behaviourmonitoring/forms.py:27
+#: apps/behaviourmonitoring/forms.py:29
 msgid "Type"
 msgstr "Tipo"
 
-#: apps/behaviourmonitoring/forms.py:28
+#: apps/behaviourmonitoring/forms.py:30
 msgid "UI Log Filename"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:29
+#: apps/behaviourmonitoring/forms.py:31
 msgid "UI Log Separator"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:30
+#: apps/behaviourmonitoring/forms.py:32
 msgid "Gaze Log Filename"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:31
+#: apps/behaviourmonitoring/forms.py:33
 msgid "Gaze Log Adjustment"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:32
+#: apps/behaviourmonitoring/forms.py:34
 msgid "System Info. Log"
 msgstr ""
 
-#: apps/behaviourmonitoring/models.py:44
+#: apps/behaviourmonitoring/models.py:48
 msgid "There is already an active monitoring for this case study."
 msgstr "Ya existe un monitoreo activo para este caso de estudio."
 
