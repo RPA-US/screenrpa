@@ -57,17 +57,15 @@
               </div>
               <h3 class="col-6 align-self-end">Screen Object Model</h3>
             </section>
-            <section for="content" class="col-12 d-flex justify-content-between">
+            <section for="som-content" class="col-12 d-flex justify-content-between">
               <div class=col-6 "">
                 <img id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
               </div>
               <!--The som is in json format, and it must be contained and be scrollable-->
               <textarea id="json-input" autocomplete="off" hidden>
               </textarea>
-              <div class="col-6">
-                <pre id="json-display" style="overflow-y:scroll;max-height:300px" contenteditable="false">
-                </pre>
-              </div>
+              <pre id="json-display" class="col-6" style="overflow-y:scroll;height: inherit;" contenteditable="false">
+              </pre>
             </section>
             <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
           </div>
@@ -94,6 +92,18 @@
         crossorigin="anonymous"></script>
     <script src="{% static 'assets/js/scripts/json-editor.min.js'%}"></script>
     <script>
+    // Set json viewer height
+    function adjustContainerHeight() {
+        var section = document.querySelector('section[for="som-content"]');
+        var image = document.getElementById('bordered-img');
+        var imageHeight = image.clientHeight;
+        section.style.height = imageHeight + 'px';
+    }
+
+    window.addEventListener('resize', function() {
+        adjustContainerHeight();
+    });
+
     // Declare list of images from soms json replacing None with empty string
     soms = {{ soms|handle_none|safe }};
     imgList = soms.soms.map(som => som.img_path ? som.img_path : '');
@@ -117,6 +127,11 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(function() {
+          adjustContainerHeight();
+        }, 0);
+        // Disable prev btn
+        document.getElementById('prev').disabled = true;
         borderedImg = document.getElementById('bordered-img');
         somWindow = document.getElementById('json-input');
         somWindow.innerHTML = JSON.stringify(soms.soms[0].som.som, null, 2);
@@ -135,9 +150,11 @@
         somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
         setTimeout(function() {
           editor.load(getJson());
+          adjustContainerHeight();
           hideLoadingOverlay();
         }, 0);
       }
+      updateControls(imgList.selectedIndex);
     }
 
     function nextImage() {
@@ -151,9 +168,11 @@
             somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
             setTimeout(function() {
               editor.load(getJson());
+              adjustContainerHeight();
               hideLoadingOverlay();
             }, 0);
         }
+        updateControls(imgList.selectedIndex);
     }
 
     function changeImage(value) {
@@ -165,8 +184,26 @@
         somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
         setTimeout(function() {
           editor.load(getJson());
+          adjustContainerHeight();
           hideLoadingOverlay();
         }, 0);
+        updateControls(imgList.selectedIndex);
+    }
+
+    function updateControls(selectedIndex) {
+        imgList = document.getElementById('imgList');
+        prev = document.getElementById('prev');
+        next = document.getElementById('next');
+        if (selectedIndex == 0) {
+            prev.disabled = true;
+        } else {
+            prev.disabled = false;
+        }
+        if (selectedIndex == imgList.options.length - 1) {
+            next.disabled = true;
+        } else {
+            next.disabled = false;
+        }
     }
   </script>
 {% endblock javascripts %}
