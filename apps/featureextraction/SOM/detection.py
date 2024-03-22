@@ -417,11 +417,11 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
-        screenshot_texts_npy = path_to_save_gui_components_npy + os.path.basename(image_names[img_index]) + "_texts.npy"
-        screenshot_npy = path_to_save_gui_components_npy + os.path.basename(image_names[img_index]) + ".npy"
+        screenshot_texts_npy = os.path.join(path_to_save_gui_components_npy, os.path.basename(image_names[img_index]) + "_texts.npy")
+        screenshot_npy = os.path.join(path_to_save_gui_components_npy, os.path.basename(image_names[img_index]) + ".npy")
         exists_screenshot_npy = os.path.exists(screenshot_npy)
 
-        screenshot_json = path_to_save_components_json + os.path.basename(image_names[img_index]) + ".json"
+        screenshot_json = os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + ".json")
         exists_screenshot_json = os.path.exists(screenshot_json)
         
         overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or (not skip)
@@ -434,7 +434,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname, applied_ocr=applied_ocr)
                 
                 # save metadata json
-                with open(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', "w") as outfile:
+                with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
                     json.dump(comp_json, outfile)
 
                 # save texts npy
@@ -448,22 +448,22 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     recortes, uicompos, times = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index, times)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
-                utils.save_corners_json(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', uicompos, img_index, text_detected_by_OCR, text_classname, applied_ocr)
+                utils.save_corners_json(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), uicompos, img_index, text_detected_by_OCR, text_classname, applied_ocr)
 
             elif algorithm == "sam" or algorithm == "fast-sam":
                 path_to_save_mask_npy=path_to_save_mask_elements+ os.path.basename(image_names[img_index])
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/", sam_type=algorithm)
                 
-                with open(path_to_save_time_of_pipepile+image_names[img_index]+'_sam_time.json','w') as outfile:
+                with open(os.path.join(path_to_save_time_of_pipepile, image_names[img_index]+'_sam_time.json'),'w') as outfile:
                     json.dump(dict_times,outfile)
 
                 #TODO save mask(sam) json
-                with open(path_to_save_components_json +image_names[img_index]+'_sam_mask.json','w') as outfile:
+                with open(os.path.join(path_to_save_components_json, image_names[img_index]+'_sam_mask.json'),'w') as outfile:
                     # json.dump(mask_json,outfile)
                     outfile.write(mask_json)
 
                 # save metadata json
-                with open(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', "w") as outfile:
+                with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
                     # json.dump(compos_json, outfile)
                     outfile.write(compos_json)
 
@@ -480,7 +480,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 recortes, compos_json = screen2som_predict(os.path.join(param_img_root, image_names[img_index]), path_to_save_bordered_images)
                 screenshot_filename = os.path.basename(image_names[img_index])
                 
-                with open(path_to_save_components_json + screenshot_filename + '.json', "w") as outfile:
+                with open(os.path.join(path_to_save_components_json, screenshot_filename + '.json'), "w") as outfile:
                     json.dump(compos_json, outfile)
 
             else:

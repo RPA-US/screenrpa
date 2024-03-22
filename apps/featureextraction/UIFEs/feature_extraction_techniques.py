@@ -1,7 +1,8 @@
-from core.utils import read_ui_log_as_dataframe
-import pandas as pd
+import os
 import json
+import pandas as pd
 from core.settings import STATUS_VALUES_ID, sep
+from core.utils import read_ui_log_as_dataframe
 
 # def find_st_id(st_value):
 #     res = None
@@ -381,12 +382,12 @@ def caption_ui_element(ui_log_path, path_scenario, execution):
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = path_scenario + 'components_json' + sep
-    flattened_log = path_scenario + 'flattened_dataset.json',
-    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-    text_classname = execution.case_study.ui_elements_classification.text_classname,
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    metadata_json_root = os.path.join(path_scenario, 'components_json')
+    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv'
+    text_classname = execution.case_study.ui_elements_classification.text_classname
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
     
     print("Not implemented yet :)")
@@ -403,12 +404,12 @@ def number_ui_element(ui_log_path, path_scenario, execution):
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = path_scenario + 'components_json' + sep
-    flattened_log = path_scenario + 'flattened_dataset.json',
-    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-    text_classname = execution.case_study.ui_elements_classification.text_classname,
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    metadata_json_root = os.path.join(path_scenario, 'components_json')
+    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
+    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv'
+    text_classname = execution.case_study.ui_elements_classification.text_classname
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
     
     log = read_ui_log_as_dataframe(ui_log_path)
