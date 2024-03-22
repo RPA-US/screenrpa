@@ -410,10 +410,10 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
     # Since the path ends with a /, the last element of the split will be an empty string
     execution_root = param_img_root + '_results'
 
-    path_to_save_gui_components_npy = execution_root+"components_npy/"
-    path_to_save_components_json = execution_root+"components_json/"
-    path_to_save_mask_elements=execution_root+'sam_mask_elements/'
-    path_to_save_time_of_pipepile=execution_root+'time_pipeline/'
+    path_to_save_gui_components_npy = os.path.join(execution_root, "components_npy")
+    path_to_save_components_json = os.path.join(execution_root, "components_json")
+    path_to_save_mask_elements=os.path.join(execution_root, 'sam_mask_elements')
+    path_to_save_time_of_pipepile=os.path.join(execution_root, 'time_pipeline')
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
@@ -618,9 +618,9 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
 
     execution_root = param_img_root + '_results'
 
-    bordered = execution_root + "borders/"
-    components_npy = execution_root + "components_npy/"
-    components_json = execution_root + "components_json/"
+    bordered = os.path.join(execution_root, "borders")
+    components_npy = os.path.join(execution_root, "components_npy")
+    components_json = os.path.join(execution_root, "components_json")
     for p in [bordered, components_npy, components_json]:
         if not os.path.exists(p):
             os.makedirs(p)
