@@ -1,3 +1,4 @@
+import os
 from core.settings import CDLR
 import urllib.parse
 import json
@@ -30,14 +31,14 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
 
     # Retorno de la fecha y hora de inicio ajustada: Devuelve la fecha y hora de inicio ajustada a la zona horaria correcta
     # Leer el archivo completo
-    with open(native_slideevents_path + native_slideevents_filename, 'r') as file:
+    with open(os.path.join(native_slideevents_path,native_slideevents_filename), 'r') as file:
         data = file.readlines()
     # Encontrar los índices donde están las etiquetas #METADATA y #DATA
     metadata_index = data.index('#METADATA\n')
     encodedStr = data[metadata_index-1:metadata_index][0]
     native_properties= urllib.parse.unquote(encodedStr)
     native_properties= json.loads(native_properties)
-    with open(native_slideevents_path + "native_properties.json", 'w') as f:
+    with open(os.path.join(native_slideevents_path,"native_properties.json"), 'w') as f:
             json.dump(native_properties, f, indent=4)
     # data_index = data.index('#DATA\n')
     # # Crear dos listas separadas para los metadatos y los datos
@@ -58,7 +59,7 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
 
 #Tengo que convertir el formado del UTC del json que obtengo de de fixations_updated_centroids a un formato astimezone.
 def decode_webgazer_timezone(native_slideevents_path):
-    with open(native_slideevents_path + "webgazer_properties.json", 'r') as file:
+    with open(os.path.join(native_slideevents_path , "webgazer_properties.json"), 'r') as file:
         data = json.load(file)
     
     res = parse(data["SlideShowStartDateTime"])

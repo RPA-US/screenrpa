@@ -31,8 +31,8 @@
 
 ```bash
 $ # Get the code
-$ git clone https://github.com/RPA-US/rim.git
-$ cd rim
+$ git clone https://github.com/RPA-US/screenrpa.git
+$ cd screenrpa
 $
 $ # Virtualenv modules installation (Unix based systems)
 $ virtualenv env
