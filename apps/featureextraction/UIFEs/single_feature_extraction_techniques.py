@@ -488,8 +488,8 @@ def centroid_ui_element_class(ui_log_path, path_scenario, execution):
     Column name: compoclass+int
     Column value: centroid 
     """
-    metadata_json_root = os.path.join(execution_root, 'components_json')
     execution_root = path_scenario + '_results'
+    metadata_json_root = os.path.join(execution_root, 'components_json')
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
     relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate

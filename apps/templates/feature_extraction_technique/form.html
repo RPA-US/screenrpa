@@ -140,9 +140,9 @@
           // Definir las opciones basadas en el tipo seleccionado
           var options;
           if (type === 'SINGLE') {
-            options = ['number_ui_element', 'caption_ui_element'];
+            options = ['number_ui_element', 'plaintext', 'location', 'caption_ui_element'];
           } else if (type === 'AGGREGATE') {
-            options = ['status', 'plaintext', 'location', 'quantity'];
+            options = ['status', 'quantity'];
           }
 
           // Añadir las nuevas opciones al select
