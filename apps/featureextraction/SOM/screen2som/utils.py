@@ -74,7 +74,7 @@ def save_bordered_images(img_path, detected_shapes, path_to_save_bordered_images
 
         img = cv2.addWeighted(img_aux, 0.2, img, 0.8, 0)
 
-    cv2.imwrite(os.path.join(path_to_save_bordered_images, img_path.split('/')[-1] + "_bordered.png"), img)
+    cv2.imwrite(os.path.join(path_to_save_bordered_images, os.path.basename(img_path) + "_bordered.png"), img)
 
 def coco_to_compos(coco_anns, type="bbox", id_start=1):
     res = []
