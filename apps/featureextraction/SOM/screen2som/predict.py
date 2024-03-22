@@ -19,7 +19,7 @@ TOP_MODEL = "checkpoints/screen2som/toplevel.pt"
 
 
 
-def predict(image_path, path_to_save_bordered_images):
+def predict(image_path, img_index, path_to_save_bordered_images, text_detected_by_OCR):
     image_pil = cv2.imread(image_path)
 
     detections = dict()
@@ -56,6 +56,7 @@ def predict(image_path, path_to_save_bordered_images):
             # Update the point to match original dimensions
             point[0] = point[0] * detections["img_shape"][1] / image_pil_resized.shape[1] 
             point[1] = point[1] * detections["img_shape"][0] / image_pil_resized.shape[0]
+        compo["centroid"] = list(Polygon(compo["points"]).centroid.coords[0])
 
     # Image crops from shapes
     recortes = []
@@ -64,6 +65,8 @@ def predict(image_path, path_to_save_bordered_images):
         x1, y1 = np.min(shape["points"], axis=0)
         x2, y2 = np.max(shape["points"], axis=0)
         recortes.append(image_pil[int(y1):int(y2), int(x1):int(x2)])
+
+    merge_text_with_OCR(detections, img_index, text_detected_by_OCR)
 
     # SOM from shapes
     predictions = labels_to_output(copy.deepcopy(detections))
