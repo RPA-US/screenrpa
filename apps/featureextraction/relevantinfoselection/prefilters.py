@@ -20,7 +20,7 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
     scenario_results = path_scenario + '_results'
     print(scenario_results)
     # Load the image and create a new black image of the same size
-    image = Image.open(path_scenario + sep + screenshot_filename)
+    image = Image.open(os.path.join(path_scenario,screenshot_filename))
     attention_mask = Image.new('L', image.size, 0)
 
     # Loop through each fixation point and draw a circle on the attention mask
@@ -48,17 +48,13 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
         os.makedirs(attention_path)
     
     # Save the resulting attention map
-    attention_map.save(attention_path + sep + screenshot_filename)
+    attention_map.save(os.path.join(attention_path ,screenshot_filename))
     print(screenshot_filename+" prefiltered correctly and saved in: "+ str(attention_path))
 
 def attention_areas_prefilter(log_path, path_scenario, special_colnames, configurations, config_key):
     ui_log = read_ui_log_as_dataframe(log_path)
-    print(path_scenario)
-    print(log_path)
-
-    
     # Load the fixation data
-    with open(path_scenario + 'fixation.json', 'r') as f:
+    with open(os.path.join(path_scenario, 'fixation.json'), 'r') as f:
         fixation_data = json.load(f)
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         if screenshot_filename in fixation_data:
@@ -87,9 +83,6 @@ def apply_prefilters(log_path, path_scenario, special_colnames, configurations):
     return times
 
 def prefilters(log_path, path_scenario, execution):
-    print(execution)
-    print(path_scenario)
-    print(execution.exp_folder_complete_path)
     special_colnames = execution.case_study.special_colnames
     configurations = execution.prefilters.configurations
     filters_format_type = execution.prefilters.type

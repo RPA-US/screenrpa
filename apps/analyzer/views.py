@@ -115,7 +115,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         # tprint("Relevance Information Miner", "pepper")
         if execution:
             if len(execution.scenarios_to_study) > 0:
-                aux_path = execution.exp_folder_complete_path + sep + execution.scenarios_to_study[0]
+                aux_path = os.path.join(execution.exp_folder_complete_path, execution.scenarios_to_study[0])
             else:
                 aux_path = execution.exp_folder_complete_path
             # if not os.path.exists(aux_path):
@@ -124,7 +124,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             aux_path = execution.exp_folder_complete_path
         
         # For BPM LOG GENERATOR (old AGOSUIRPA) files
-        foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
+        foldername_logs_with_different_size_balance = get_foldernames_as_list(os.path.join(aux_path))
         
         for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
             # For BPM LOG GENERATOR (old AGOSUIRPA) files
@@ -163,7 +163,7 @@ def case_study_generator(data):
 
         # Introduce a default value for scencarios_to_study if there is none
         if not data['scenarios_to_study']:
-            data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
+            data['scenarios_to_study'] = get_foldernames_as_list(os.path.join(data['exp_folder_complete_path']))
 
         phases = data["phases_to_execute"].copy()
         cs_serializer = CaseStudySerializer(data=data)
