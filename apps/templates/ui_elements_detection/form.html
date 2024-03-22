@@ -78,6 +78,10 @@
     const ocr = document.getElementById('id_ocr');  
     const configurations = document.getElementById('id_configurations');
 
+    if (detection_technique.value != 'screen2som') {
+      model.required = true;
+    }
+
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
       /*
@@ -98,7 +102,7 @@
     toggleFields(preloaded.checked);
 
     document.getElementById('form').onsubmit = function() {
-      // document.getElementById('id_model').readOnly = false;
+      document.getElementById('id_model').disabled = false;
       document.getElementById('id_preloaded').readOnly = false;
     }
   })  

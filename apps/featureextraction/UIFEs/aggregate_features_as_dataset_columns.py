@@ -35,8 +35,8 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = path_scenario + 'components_json' + sep
-    flattened_log = path_scenario + 'flattened_dataset.json',
+    metadata_json_root = os.path.join(path_scenario, 'components_json')
+    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
     enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
     text_classname = execution.case_study.ui_elements_classification.text_classname,
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
@@ -164,8 +164,8 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = path_scenario + 'components_json' + sep
-    flattened_log = path_scenario + 'flattened_dataset.json',
+    metadata_json_root = os.path.join(path_scenario, 'components_json')
+    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
     enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
     text_classname = execution.case_study.ui_elements_classification.text_classname,
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,

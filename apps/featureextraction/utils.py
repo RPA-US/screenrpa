@@ -559,19 +559,19 @@ def scale_coordinates(coord, src_resolution, dest_resolution):
 
 
 def draw_ui_compos_borders(exp_path):
-    root_path = exp_path + "_results" + sep + "components_json" + sep
+    root_path = os.path.join(exp_path + "_results", "components_json")
     arr = os.listdir(root_path)
 
     if not os.path.exists(root_path):
         os.makedirs(root_path)
     
     for compo_json_filename in arr:
-        with open(root_path + compo_json_filename, 'r') as f:
+        with open(os.path.join(root_path, compo_json_filename), 'r') as f:
             print(compo_json_filename)
             compo_json = json.load(f)
             
         # Load image
-        image = cv2.imread(exp_path + sep + compo_json_filename[:19])
+        image = cv2.imread(os.path.join(exp_path, compo_json_filename[:19]))
         
         for compo in compo_json["compos"]:
             # Extract component properties
@@ -606,12 +606,12 @@ def draw_ui_compos_borders(exp_path):
 
             
         # Save the image with component borders
-        output_path = exp_path + "_results" + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        output_path = os.path.join(exp_path + "_results", "compo_json_borders", compo_json_filename[:19])  # Replace with your desired output file path
         cv2.imwrite(output_path, image)
         image = None
 
 
-        with open(root_path + compo_json_filename, "w") as outfile:
+        with open(os.path.join(root_path, compo_json_filename), "w") as outfile:
             json.dump(compo_json, outfile, indent=4)
             
 def get_geometry_list_points(coords, geometry):

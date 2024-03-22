@@ -58,7 +58,7 @@ def get_ocr_image(pipeline, param_img_root, images_input):
 
     # Get a set of three example images
     images = [
-        keras_ocr.tools.read(param_img_root + path) for path in images_input
+        keras_ocr.tools.read(os.path.join(param_img_root, path)) for path in images_input
     ]
     # Each list of predictions in prediction_groups is a list of
     # (word, box) tuples.
@@ -249,7 +249,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
     '''
     words = {}
 
-    image_path = param_img_root + image_names[img_index]
+    image_path = os.path.join(param_img_root, image_names[img_index])
     # Read the image
     img = cv2.imread(image_path)
     img_copy = img.copy()
@@ -410,18 +410,18 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
     # Since the path ends with a /, the last element of the split will be an empty string
     execution_root = param_img_root + '_results'
 
-    path_to_save_gui_components_npy = execution_root+"components_npy/"
-    path_to_save_components_json = execution_root+"components_json/"
-    path_to_save_mask_elements=execution_root+'sam_mask_elements/'
-    path_to_save_time_of_pipepile=execution_root+'time_pipeline/'
+    path_to_save_gui_components_npy = os.path.join(execution_root, "components_npy")
+    path_to_save_components_json = os.path.join(execution_root, "components_json")
+    path_to_save_mask_elements=os.path.join(execution_root, 'sam_mask_elements')
+    path_to_save_time_of_pipepile=os.path.join(execution_root, 'time_pipeline')
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
-        screenshot_texts_npy = path_to_save_gui_components_npy + os.path.basename(image_names[img_index]) + "_texts.npy"
-        screenshot_npy = path_to_save_gui_components_npy + os.path.basename(image_names[img_index]) + ".npy"
+        screenshot_texts_npy = os.path.join(path_to_save_gui_components_npy, os.path.basename(image_names[img_index]) + "_texts.npy")
+        screenshot_npy = os.path.join(path_to_save_gui_components_npy, os.path.basename(image_names[img_index]) + ".npy")
         exists_screenshot_npy = os.path.exists(screenshot_npy)
 
-        screenshot_json = path_to_save_components_json + os.path.basename(image_names[img_index]) + ".json"
+        screenshot_json = os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + ".json")
         exists_screenshot_json = os.path.exists(screenshot_json)
         
         overwrite = (not exists_screenshot_json) or (not exists_screenshot_npy) or (not skip)
@@ -434,7 +434,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 recortes, comp_json, text_or_not_text, words = get_gui_components_crops(param_img_root, image_names, text_detected_by_OCR, path_to_save_bordered_images, img_index, text_classname, applied_ocr=applied_ocr)
                 
                 # save metadata json
-                with open(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', "w") as outfile:
+                with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
                     json.dump(comp_json, outfile)
 
                 # save texts npy
@@ -448,22 +448,22 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     recortes, uicompos, times = get_uied_gui_components_crops(param_img_root, path_to_save_bordered_images, image_names, img_index, times)
 
                 # store all bounding boxes from the ui elements that are in 'uicompos'
-                utils.save_corners_json(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', uicompos, img_index, text_detected_by_OCR, text_classname, applied_ocr)
+                utils.save_corners_json(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), uicompos, img_index, text_detected_by_OCR, text_classname, applied_ocr)
 
             elif algorithm == "sam" or algorithm == "fast-sam":
                 path_to_save_mask_npy=path_to_save_mask_elements+ os.path.basename(image_names[img_index])
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/", sam_type=algorithm)
                 
-                with open(path_to_save_time_of_pipepile+image_names[img_index]+'_sam_time.json','w') as outfile:
+                with open(os.path.join(path_to_save_time_of_pipepile, image_names[img_index]+'_sam_time.json'),'w') as outfile:
                     json.dump(dict_times,outfile)
 
                 #TODO save mask(sam) json
-                with open(path_to_save_components_json +image_names[img_index]+'_sam_mask.json','w') as outfile:
+                with open(os.path.join(path_to_save_components_json, image_names[img_index]+'_sam_mask.json'),'w') as outfile:
                     # json.dump(mask_json,outfile)
                     outfile.write(mask_json)
 
                 # save metadata json
-                with open(path_to_save_components_json + os.path.basename(image_names[img_index]) + '.json', "w") as outfile:
+                with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
                     # json.dump(compos_json, outfile)
                     outfile.write(compos_json)
 
@@ -477,10 +477,10 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "screen2som":
-                recortes, compos_json = screen2som_predict(param_img_root + image_names[img_index], path_to_save_bordered_images)
+                recortes, compos_json = screen2som_predict(os.path.join(param_img_root, image_names[img_index]), path_to_save_bordered_images)
                 screenshot_filename = os.path.basename(image_names[img_index])
                 
-                with open(path_to_save_components_json + screenshot_filename + '.json', "w") as outfile:
+                with open(os.path.join(path_to_save_components_json, screenshot_filename + '.json'), "w") as outfile:
                     json.dump(compos_json, outfile)
 
             else:
@@ -588,20 +588,20 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
             log_filename = configurations["formatted_log_name"]
         else:
             log_filename = "log"
-        param_log_path = format_mht_file(param_img_root + log_input_filaname, configurations["format"], param_img_root, log_filename, configurations["org:resource"])
+        param_log_path = format_mht_file(os.path.join(param_img_root, log_input_filaname), configurations["format"], param_img_root, log_filename, configurations["org:resource"])
 
     # Log read
     log = read_ui_log_as_dataframe(param_log_path)
     # Extract the names of the screenshots associated to each of the rows in the log
     image_names = log.loc[:, special_colnames["Screenshot"]].values.tolist()
     text_corners = []
-    file_exists = os.path.exists(param_img_root + "images_ocr_info.txt")
+    file_exists = os.path.exists(os.path.join(param_img_root, "images_ocr_info.txt"))
 
     metadata = { 'screenshots': {} } 
 
     if file_exists:
         print(_("\n\nReading images OCR info from file..."))
-        with open(param_img_root + "images_ocr_info.txt", "rb") as fp:   # Unpickling
+        with open(os.path.join(param_img_root, "images_ocr_info.txt"), "rb") as fp:   # Unpickling
             text_corners = pickle.load(fp)
     elif apply_ocr:
         pipeline = keras_ocr.pipeline.Pipeline()
@@ -611,16 +611,16 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
             text_corners.append(ocr_result[0])
             metadata['screenshots'][img] = {"get_ocr_image duration": float(time.time()) - float(start_t)}
 
-        with open(param_img_root + "images_ocr_info.txt", "wb") as fp:  # Pickling
+        with open(os.path.join(param_img_root, "images_ocr_info.txt"), "wb") as fp:  # Pickling
             pickle.dump(text_corners, fp)
 
     # print(len(text_corners))
 
     execution_root = param_img_root + '_results'
 
-    bordered = execution_root + "borders/"
-    components_npy = execution_root + "components_npy/"
-    components_json = execution_root + "components_json/"
+    bordered = os.path.join(execution_root, "borders")
+    components_npy = os.path.join(execution_root, "components_npy")
+    components_json = os.path.join(execution_root, "components_json")
     for p in [bordered, components_npy, components_json]:
         if not os.path.exists(p):
             os.makedirs(p)
