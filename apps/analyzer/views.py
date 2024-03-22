@@ -51,6 +51,8 @@ from apps.analyzer.collect_results import experiments_results_collectors
 
 def generate_case_study(execution, path_scenario, times):
     log_filename = 'log.csv'
+    log_path = os.path.join(path_scenario, log_filename)
+    
     n = 0
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
         if getattr(execution, function_to_exec) is not None:
@@ -60,7 +62,7 @@ def generate_case_study(execution, path_scenario, times):
             else:
                 times[n] = {}
                 if function_to_exec == "decision_tree_training":
-                    res, fe_checker, tree_times, columns_len = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                    res, fe_checker, tree_times, columns_len = eval(function_to_exec)(log_path, path_scenario, execution)
                     times[n][function_to_exec] = tree_times
                     times[n][function_to_exec]["columns_len"] = columns_len
                     # times[n][function_to_exec]["tree_levels"] = tree_levels
@@ -69,7 +71,7 @@ def generate_case_study(execution, path_scenario, times):
                 elif function_to_exec == "feature_extraction_technique":
                     if (getattr(execution, function_to_exec).type == "SINGLE" and i == 5) or (getattr(execution, function_to_exec).type == "AGGREGATE" and i == 8):
                         start_t = time.time()
-                        num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                        num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution)
                         times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
                         # Additional feature extraction metrics
                         times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
@@ -78,11 +80,11 @@ def generate_case_study(execution, path_scenario, times):
                         times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
-                    filtering_times = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                    filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
                     times[n][function_to_exec] = filtering_times
                 else:
                     start_t = time.time()
-                    output = eval(function_to_exec)(path_scenario + log_filename, path_scenario, execution)
+                    output = eval(function_to_exec)(log_path, path_scenario, execution)
                     times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
 
             n += 1
@@ -127,11 +129,11 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
             # For BPM LOG GENERATOR (old AGOSUIRPA) files
             if SCENARIO_NESTED_FOLDER:
-                path_scenario = execution.exp_folder_complete_path + sep + scenario + sep + n + sep 
+                path_scenario = os.path.join(execution.exp_folder_complete_path, scenario, n)
                 for n in foldername_logs_with_different_size_balance:
                     generate_case_study(execution, path_scenario, times)
             else:
-                path_scenario = execution.exp_folder_complete_path + sep + scenario + sep
+                path_scenario = os.path.join(execution.exp_folder_complete_path, scenario)
                 generate_case_study(execution, path_scenario, times)
             execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
             execution.save()

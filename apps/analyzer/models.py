@@ -2,6 +2,7 @@ import os
 import subprocess
 import zipfile
 import time
+import shutil
 from email.policy import default
 from xmlrpc.client import Boolean
 from django.db import models
@@ -22,6 +23,20 @@ from django.utils.translation import gettext_lazy as _
 def unzip_file(zip_file_path, dest_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
         zip_ref.extractall(dest_folder_path)
+        
+def unzip_file_here(zip_file_path, dest_folder_path):
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        for member in zip_ref.namelist():
+            filename = os.path.basename(member)
+            # skip directories
+            if not filename:
+                continue
+
+            # copy file (taken from zipfile's extract)
+            source = zip_ref.open(member)
+            target = open(os.path.join(dest_folder_path, filename), "wb")
+            with source, target:
+                shutil.copyfileobj(source, target)
 
 
 def default_special_colnames():
@@ -211,8 +226,8 @@ class Execution(models.Model):
         for ph in DEFAULT_PHASES:
             if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
                 preloaded_file_path = f"{PRIVATE_STORAGE_ROOT}{sep}{getattr(self, ph).preloaded_file.name}"
-                unzip_file(preloaded_file_path, self.exp_folder_complete_path)
-                print("Preloaded file unzipped!:", self.exp_folder_complete_path)
+                unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
+                print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
 
     
     def create_folder_structure(self):

@@ -186,7 +186,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     X = preprocessor.fit_transform(X)
     X_df = pd.DataFrame(X)
     feature_names = list(preprocessor.get_feature_names_out())
-    X_df.to_csv(param_path + "preprocessed_df.csv", header=feature_names)
+    X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
@@ -204,7 +204,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     text_representation = export_text(tree_classifier, feature_names=feature_names)
     print("Decision Tree Rules:\n", text_representation)
     
-    with open(param_path + "decision_tree.log", "w") as fout:
+    with open(os.path.join(param_path, "decision_tree.log"), "w") as fout:
         fout.write(text_representation)
         
     # estimator = clf_model.estimators_[5]
@@ -226,7 +226,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
         target = list(df[target_label].unique())
         target_casted = [str(t) for t in target]
         img = plot_decision_tree(
-            param_path + "decision_tree", tree_classifier, feature_names, target_casted)
+            os.path.join(param_path, "decision_tree"), tree_classifier, feature_names, target_casted)
         plt.imshow(img)
         plt.show()
 
@@ -246,12 +246,12 @@ def best_model_grid_search(X_train, y_train, tree_classifier, k_fold_cross_valid
     }
 
     # Perform GridSearchCV to find the best hyperparameters
-    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, k_fold_cross_validation=k_fold_cross_validation)
+    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, cv=k_fold_cross_validation)
     grid_search.fit(X_train, y_train)
 
     # Get the best hyperparameters and train the final model
     best_tree_classifier = grid_search.best_estimator_
-    print(_("Grid Search Best Params:\n"), grid_search.best_params_)
+    print("Grid Search Best Params:\n", grid_search.best_params_)
     
     best_tree_classifier.fit(X_train, y_train)
     
@@ -265,9 +265,9 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
     # skf.get_n_splits(X, y)
 
     for i, (train_index, test_index) in enumerate(skf.split(X, y)):
-        print(_("Fold %(i):") % {'i': i})
-        print(_("  Train: index=%(train_index)") % {'train_index': train_index})
-        print(_("  Test:  index=%(test_index)") % {'test_index': test_index})
+        print("Fold {}:".format(i))
+        print("Train: index={}".format(train_index))
+        print("Test:  index={}".format(test_index))
         X_train_fold, X_test_fold = X.iloc[train_index], X.iloc[test_index]
         y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
         
@@ -276,7 +276,7 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
         elif library == "sklearn":
             current_iteration_model = model.fit(X_train_fold, y_train_fold)
         else:
-            raise Exception(_("Decision Model Option Not Valid"))
+            raise Exception("Decision Model Option Not Valid")
 
         metrics_acc = []
         metrics_precision = []
@@ -290,7 +290,7 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
         elif library == "sklearn":
             y_pred = current_iteration_model.predict(X_test_fold)
         else:
-            raise Exception(_("Decision Model Option Not Valid"))
+            raise Exception("Decision Model Option Not Valid")
             
         metrics_acc.append(accuracy_score(y_test_fold, y_pred))
         metrics_precision.append(precision_score(y_test_fold, y_pred, average='weighted'))
@@ -301,6 +301,5 @@ def cross_validation(X, y, config, target_label, library, model, k_fold_cross_va
     accuracies['precision'] = np.mean(metrics_precision)
     accuracies['recall'] = np.mean(metrics_recall)
     accuracies['f1_score'] = np.mean(metrics_f1)
-    
-    print(_("  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) ") % {'acc': accuracies['accuracy'], 'f1': accuracies['f1_score']})
+    print("Stratified K-Fold:  accuracy={} f1_score={}".format(accuracies['accuracy'], accuracies['f1_score']))
     return accuracies

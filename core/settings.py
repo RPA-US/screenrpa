@@ -44,7 +44,7 @@ INFO_PREFILTERING_PHASE_NAME =              _("preselection")
 DETECTION_PHASE_NAME =                      _("detection")
 CLASSIFICATION_PHASE_NAME =                 _("classification")
 INFO_POSTFILTERING_PHASE_NAME =             _("selection")
-FEATURE_EXTRACTION_PHASE_NAME =             _("feature extraction")
+SINGLE_FEATURE_EXTRACTION_PHASE_NAME =             _("feature extraction")
 FLATTENING_PHASE_NAME =                     _("flattening")
 AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =   _("aggreate feature extraction")
 DECISION_MODEL_DISCOVERY_PHASE_NAME =       _("decision model discovery")
@@ -317,7 +317,7 @@ else:
 #===================================================================================================
 
 # Configuration JSON files Paths
-FE_EXTRACTORS_FILEPATH =            CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
+SINGLE_FE_EXTRACTORS_FILEPATH =     CORE_DIR + sep + "configuration" + sep + "single_feature_extractors.json"
 AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "aggreate_feature_extractors.json"
 MODELS_CLASSES_FILEPATH =           CORE_DIR + sep + "configuration" + sep + "models_classes.json"
 STATUS_VALUES_ID =                  CORE_DIR + sep + "configuration" + sep + "status_values_id.json"

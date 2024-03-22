@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from keras.models import model_from_json
 from tqdm import tqdm
-from core.utils import read_ui_log_as_dataframe, get_execution_path
+from core.utils import read_ui_log_as_dataframe
 from core.settings import sep
 from apps.featureextraction.SOM.CNN.CompDetCNN import CompDetCNN
 
@@ -92,10 +92,10 @@ def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
     :type ui_elements_classification_classes: list
     
     """
-    execution_root = get_execution_path(path_scenario)
+    execution_root = path_scenario + "_results"
     # path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
-    ui_elements_crops_npy_root = execution_root + 'components_npy' + sep
-    metadata_json_root = execution_root + 'components_json' + sep
+    ui_elements_crops_npy_root = os.path.join(execution_root, 'components_npy')
+    metadata_json_root = os.path.join(execution_root, 'components_json')
     model = execution.ui_elements_classification.model.path # specific extractors
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     text_classname = execution.ui_elements_classification.model.text_classname
@@ -116,15 +116,15 @@ def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
         for screenshot_filename in tqdm(screenshot_filenames, desc=f"Classifying images in {ui_elements_crops_npy_root}"):
             screenshot_filename = os.path.basename(screenshot_filename)
             # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-            with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
                 data = json.load(f)
 
-            clips =  np.load(ui_elements_crops_npy_root+ screenshot_filename + ".npy", allow_pickle=True).tolist()
+            clips =  np.load(os.path.join(ui_elements_crops_npy_root, screenshot_filename + ".npy"), allow_pickle=True).tolist()
             result = classifier['Elements'].predict(clips)
 
             for j in range(0, len(result)):
                 data["compos"][j]["class"] = result[j]
-            with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile)
 
 
@@ -156,8 +156,8 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
     """
     
     path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
-    ui_elements_crops_npy_root = path_results + 'components_npy' + sep
-    metadata_json_root = path_results + 'components_json' + sep
+    ui_elements_crops_npy_root = os.path.join(path_results, 'components_npy')
+    metadata_json_root = os.path.join(path_results, 'components_json')
     model = execution.ui_elements_classification.model.path # specific extractors
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     text_classname = execution.ui_elements_classification.model.text_classname
@@ -176,13 +176,13 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
         crops_info = {}
         
         for img_filename in screenshot_filenames:
-            crops = np.load(ui_elements_crops_npy_root + img_filename + ".npy", allow_pickle=True)
-            text_crops = np.load(ui_elements_crops_npy_root + img_filename+"_texts.npy", allow_pickle=True)
+            crops = np.load(os.path.join(ui_elements_crops_npy_root, img_filename + ".npy"), allow_pickle=True)
+            text_crops = np.load(os.path.join(ui_elements_crops_npy_root, img_filename+"_texts.npy"), allow_pickle=True)
             crops_info[img_filename] = {'content': crops, 'text': text_crops}    
 
         # we reduce their size to adapt them to the neural network entry
         for i in range(0, len(crops_info)):
-            preprocessed_crops_filename = ui_elements_crops_npy_root + "preprocessed_" + screenshot_filenames[i] + ".npy"
+            preprocessed_crops_filename = os.path.join(ui_elements_crops_npy_root, "preprocessed_" + screenshot_filenames[i] + ".npy")
             preprocessed_crops_exists = os.path.exists(preprocessed_crops_filename)
             
             if not preprocessed_crops_exists:
@@ -217,9 +217,9 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
             # crop_imgs[screenshot_filenames[i]]["result_freq_df"] = crop_imgs[screenshot_filenames[i]]["result_freq"].to_frame().T
             
             # Update the json file with components
-            with open(metadata_json_root + screenshot_filenames[i] + '.json', 'r') as f:
+            with open(os.path.join(metadata_json_root, screenshot_filenames[i] + '.json'), 'r') as f:
                 data = json.load(f)
             for j in range(0, len(result_mapped)):
                 data["compos"][j]["class"] = result_mapped[j]
-            with open(metadata_json_root + screenshot_filenames[i] + '.json', "w") as jsonFile:
+            with open(os.path.join(metadata_json_root, screenshot_filenames[i] + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile)

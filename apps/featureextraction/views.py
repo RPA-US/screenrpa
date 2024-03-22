@@ -1,5 +1,5 @@
 from art import tprint
-from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
+from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from apps.utils import MultiFormsView
@@ -9,7 +9,7 @@ from apps.featureextraction.SOM.classification import legacy_ui_elements_classif
 from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique
 from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm, FeatureExtractionTechniqueForm
 from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
-from .utils import detect_fe_function, detect_agg_fe_function
+from .utils import detect_single_fe_function, detect_agg_fe_function
 from .utils import draw_ui_compos_borders
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -21,20 +21,23 @@ def ui_elements_classification(log_path, path_scenario, execution):
     # Classification can be done with different algorithms
     tprint(PLATFORM_NAME + " - " + CLASSIFICATION_PHASE_NAME, "fancy60")
     print(path_scenario+"\n")
-    
-    match execution.ui_elements_classification.type:
-        case "rpa-us":
-            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
-        case "uied":
-            output = uied_ui_elements_classification(log_path, path_scenario, execution)
-        case "sam":
-            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
-        case "fast-sam":
-            output = legacy_ui_elements_classification(log_path, path_scenario, execution)
-        case "screen2som":
-            output = None
-        case _:
-            raise Exception("You select a type of UI element classification that doesnt exists")
+
+    if not execution.ui_elements_detection.preloaded:
+        match execution.ui_elements_classification.type:
+            case "rpa-us":
+                output = legacy_ui_elements_classification(log_path, path_scenario, execution)
+            case "uied":
+                output = uied_ui_elements_classification(log_path, path_scenario, execution)
+            case "sam":
+                output = legacy_ui_elements_classification(log_path, path_scenario, execution)
+            case "fast-sam":
+                output = legacy_ui_elements_classification(log_path, path_scenario, execution)
+            case "screen2som":
+                output = None
+            case _:
+                raise Exception("You select a type of UI element classification that doesnt exists")
+    else:
+        output = None
     return output
 
 def feature_extraction_technique(log_path, path_scenario, execution):
@@ -46,9 +49,9 @@ def feature_extraction_technique(log_path, path_scenario, execution):
     
     if not skip:
         if fe_type == "SINGLE":
-            tprint(PLATFORM_NAME + " - " + FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
-            print("Feature extraction selected: " + feature_extraction_technique_name+"\n")
-            output = detect_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
+            tprint(PLATFORM_NAME + " - " + SINGLE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
+            print("Single feature extraction selected: " + feature_extraction_technique_name+"\n")
+            output = detect_single_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
         else:
             tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
             print("Aggregate feature extraction selected: " + feature_extraction_technique_name+"\n")
@@ -271,7 +274,7 @@ class UIElementsDetectionDetailView(MultiFormsView):
 
         self.object = form.save(commit=False)
         if not ui_elem_det_obj.ui_elements_classification:
-            if self.object.model == 'IGNORE':
+            if self.object.model == '':
                 return
 
             self.object.user = self.request.user
@@ -279,7 +282,7 @@ class UIElementsDetectionDetailView(MultiFormsView):
             self.object.save()
             ui_elem_det_obj.ui_elements_classification = self.object
             ui_elem_det_obj.save()
-        elif self.object.model == 'IGNORE':
+        elif self.object.model == '':
             UIElementsClassification.objects.filter(pk=ui_elem_det_obj.ui_elements_classification.id).delete()
         else:
             UIElementsClassification.objects.filter(pk=ui_elem_det_obj.ui_elements_classification.id).update(**form.cleaned_data)
