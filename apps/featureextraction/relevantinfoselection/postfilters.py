@@ -136,9 +136,9 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
     """
     ui_log = read_ui_log_as_dataframe(log_path)
     scenario_results_path = path_scenario + '_results'
-    print("ruta de ui det results:"+scenario_results_path)
+    print("UI Element Detection Path Results: "+scenario_results_path)
     # fixation.json -> previous, screenshot001, screenshot002, screenshot003, ... , subsequent
-    with open(path_scenario + 'fixation.json', 'r') as f:
+    with open(os.path.join(path_scenario , 'fixation.json'), 'r') as f:
         fixation_json = json.load(f)
         
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
@@ -149,7 +149,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
         #     "row_max": 24,
         # ]
         
-        with open(scenario_results_path + "components_json" + sep + screenshot_filename + '.json', 'r') as f:
+        with open(os.path.join(scenario_results_path,"components_json", screenshot_filename +'.json'), 'r') as f:
             screenshot_json = json.load(f)
 
         if configurations[key]["predicate"] == "is_component_relevant":
@@ -215,9 +215,9 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
                     compo["relevant"] = "False"
                     
             if configurations[key]["mode"] == "draw":
-                if not os.path.exists(scenario_results_path + "postfilter_attention_maps" + sep):
-                    os.makedirs(scenario_results_path + "postfilter_attention_maps" + sep)
-                draw_geometry_over_image(path_scenario + screenshot_filename, polygon_circles, polygon_rectangles, scenario_results_path + "postfilter_attention_maps" + sep + screenshot_filename)
+                if not os.path.exists(os.path.join(scenario_results_path ,"postfilter_attention_maps")):
+                    os.makedirs(os.path.join(scenario_results_path ,"postfilter_attention_maps"))
+                draw_geometry_over_image(os.path.join(path_scenario,screenshot_filename), polygon_circles, polygon_rectangles, os.path.join(scenario_results_path ,"postfilter_attention_maps",screenshot_filename))
             
         else:
             for compo in screenshot_json["compos"]:
@@ -253,14 +253,14 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
                                 compo["relevant"] = "False"
                                 
                     if configurations[key]["mode"] == "draw":
-                        if not os.path.exists(scenario_results_path + "postfilter_attention_maps/"):
-                            os.makedirs(scenario_results_path + "postfilter_attention_maps/")
-                        draw_geometry_over_image(path_scenario + screenshot_filename, polygons, scenario_results_path + "postfilter_attention_maps/" + screenshot_filename)
+                        if not os.path.exists(scenario_results_path , "postfilter_attention_maps"):
+                            os.makedirs(scenario_results_path , "postfilter_attention_maps")
+                        draw_geometry_over_image(os.path.join(path_scenario , screenshot_filename), polygons, os.path.join(scenario_results_path, "postfilter_attention_maps", screenshot_filename))
                         
                 else:
                     compo["relevant"] = "False"
 
-        with open(scenario_results_path + "components_json" + sep + screenshot_filename + '.json', "w") as jsonFile:
+        with open(os.path.join(scenario_results_path , "components_json" , screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(screenshot_json, jsonFile, indent=4)
     print("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
     logging.info("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
@@ -309,7 +309,7 @@ def postfilters(log_path, path_scenario, execution):
     return output
 
 def draw_postfilter_relevant_ui_compos_borders(exp_path):
-    root_path = exp_path + "_results" + sep + "components_json" + sep
+    root_path = os.path.join(exp_path + "_results" , "components_json")
     arr = os.listdir(root_path)
 
     if not os.path.exists(root_path):
@@ -321,7 +321,7 @@ def draw_postfilter_relevant_ui_compos_borders(exp_path):
             compo_json = json.load(f)
             
         # Load image
-        image = cv2.imread(exp_path + sep + compo_json_filename[:19])
+        image = cv2.imread(os.path.join(exp_path) ,compo_json_filename[:19])
         
         
         for compo in compo_json["compos"]:
@@ -346,10 +346,10 @@ def draw_postfilter_relevant_ui_compos_borders(exp_path):
 
             
         # Save the image with component borders
-        output_path = exp_path + "_results" + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        output_path =os.path.join(exp_path+" _results", "compo_json_borders",compo_json_filename[:19])  # Replace with your desired output file path
         cv2.imwrite(output_path, image)
         image = None
 
 
-        with open(root_path + compo_json_filename, "w") as outfile:
+        with open(os.path.join(root_path , compo_json_filename), "w") as outfile:
             json.dump(compo_json, outfile, indent=4)
