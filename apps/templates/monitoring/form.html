@@ -66,6 +66,27 @@
                 {{ form.native_slide_events }}
                 <div class="form-validation">{{ form.native_slide_events.errors }}</div>
             </div>
+            <h6 id="webgazer_options" class="heading-small text-muted mb-4" style="display: none;">{% blocktranslate %}Webgazer options{% endblocktranslate %}</h6>
+            <div class="form-group" id="screen_inches_id_div" style="display: none;">
+                <label class="form-control-label" for="input-title">{% blocktranslate %}Screen Inches{% endblocktranslate %}</label>
+                {{ form.screen_inches }}
+                <div class="form-validation">{{ form.screen_inches.errors }}</div>
+            </div>
+            <div class="form-group" id ="observer_camera_distance_id_div"  style="display: none;">
+              <label class="form-control-label" for="input-title">{% blocktranslate %}Observer Camera Distance (in centimetres){% endblocktranslate %}</label>
+              {{ form.observer_camera_distance }}
+              <div class="form-validation">{{ form.observer_camera_distance.errors }}</div>
+            </div>
+            <div class="form-group" id ="screen_width_id_div"  style="display: none;">
+              <label class="form-control-label" for="input-title">{% blocktranslate %}Screen Width (in pixels){% endblocktranslate %}</label>
+              {{ form.screen_width }}
+              <div class="form-validation">{{ form.screen_width.errors }}</div>
+            </div>
+            <div class="form-group" id ="screen_height_id_div"  style="display: none;">
+              <label class="form-control-label" for="input-title">{% blocktranslate %}Screen Height (in pixels){% endblocktranslate %}</label>
+              {{ form.screen_height }}
+              <div class="form-validation">{{ form.screen_height.errors }}</div>
+            </div>
         </div>
     </div>
     <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
@@ -86,8 +107,18 @@
       const gaze_log_filename = document.getElementById('id_gaze_log_filename');
       const gaze_log_adjustment = document.getElementById('id_gaze_log_adjustment');
       const native_slide_events = document.getElementById('id_native_slide_events');
-      
-      
+      const screen_inches = document.getElementById('id_screen_inches');
+      const observer_camera_distance = document.getElementById('id_observer_camera_distance');
+      const screen_width = document.getElementById('id_screen_width');
+      const screen_height = document.getElementById('id_screen_height');
+
+      const screen_inches_id_div = document.getElementById('screen_inches_id_div');
+      const observer_camera_distance_id_div = document.getElementById('observer_camera_distance_id_div');
+      const screen_width_id_div = document.getElementById('screen_width_id_div');
+      const screen_height_id_div = document.getElementById('screen_height_id_div');
+
+
+      var webgazerOptions = document.getElementById('webgazer_options');
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {
         type.disabled = isPreloadedChecked;
@@ -96,14 +127,40 @@
         gaze_log_filename.readOnly = isPreloadedChecked;
         gaze_log_adjustment.readOnly = isPreloadedChecked;
         native_slide_events.readOnly = isPreloadedChecked;
+        screen_inches.readOnly = isPreloadedChecked
+        observer_camera_distance.readOnly = isPreloadedChecked
+        screen_width.readOnly = isPreloadedChecked
+        screen_height.readOnly = isPreloadedChecked
 
         preloaded_file.disabled = !isPreloadedChecked;
       }
+
+      type.addEventListener('change', () => {
+        if (type.value == 'webgazer') {
+          screen_inches_id_div.style.display = 'block';
+          observer_camera_distance_id_div.style.display = 'block';
+          webgazerOptions.style.display = 'block';
+          screen_width_id_div.style.display = 'block';
+          screen_height_id_div.style.display = 'block';
+          native_slide_events.value = 'webgazer_properties.json'
+          gaze_log_filename.value = 'webgazer_gazeData.csv'
+        } else {
+          screen_inches.style.display = 'none';
+          observer_camera_distance_id_div.style.display = 'none';
+          webgazerOptions.style.display = 'none';
+          screen_width_id_div.style.display = 'none';
+          screen_height_id_div.style.display = 'none';
+          native_slide_events.value = 'Native_SlideEvents.csv'
+          gaze_log_filename.value = 'ET_RExtAPI-GazeAnalysis.csv'
+        }
+      });
   
       // Controlador de eventos para el checkbox 'preloaded'
       preloaded.addEventListener('change', () => {
         toggleFields(preloaded.checked);
       });
+
+
   
       // Inicializar los campos al cargar la página
       toggleFields(preloaded.checked);
@@ -114,4 +171,5 @@
       }
     })  
   </script>
+
   {% endblock javascripts %}

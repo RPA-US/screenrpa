@@ -24,6 +24,10 @@ class MonitoringForm(forms .ModelForm):
             "native_slide_events",
             "preloaded_file",
             "preloaded",
+            "screen_inches",
+            "observer_camera_distance",
+            "screen_width",
+            "screen_height"
         )
         labels = {
             "type": _("Type"),
@@ -32,7 +36,11 @@ class MonitoringForm(forms .ModelForm):
             "gaze_log_filename": _("Gaze Log Filename"),
             "gaze_log_adjustment": _("Gaze Log Adjustment"),
             "native_slide_events": _("System Info. Log"),
-            "preloaded_file":"Preload Execution Results"
+            "preloaded_file":"Preload Execution Results",
+            "screen:_inches":_("Screen Inches"),
+            "observer_camera_distance":_("Observer to Webcam distance (in cm)"),
+            "screen_width":_("Screen Width (in pixels)"),
+            "screen_height":_("Screen Height (in pixels)")
         }
 
         widgets = {
@@ -58,7 +66,11 @@ class MonitoringForm(forms .ModelForm):
                 attrs={
                     'accept': '.zip'
                     }   
-            )
+            ),
+            "screen_inches": forms.NumberInput(attrs={"class": "form-control"}),
+            "observer_camera_distance": forms.NumberInput(attrs={"class": "form-control"}),
+            "screen_width": forms.NumberInput(attrs={"class": "form-control"}),
+            "screen_height": forms.NumberInput(attrs={"class": "form-control"})
         }
 
     def __init__(self, *args, **kwargs):

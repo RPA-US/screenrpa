@@ -15,25 +15,25 @@ OBSERVER_CAMERA_DISTANCE = 50 #cm
 
 ################# Auxiliars Functions #################
 
-def get_distance_threshold_by_resolution():
-    user32 = ctypes.windll.user32
-    user32.SetProcessDPIAware()
-    width, height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1) #Screen Resolution
+def get_distance_threshold_by_resolution(screen_inches, inch_per_centimetres, observer_camera_distance, width, height):
+    # user32 = ctypes.windll.user32
+    # user32.SetProcessDPIAware()
+    # width, height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1) #Screen Resolution
     
     angle_radians = np.radians(1)
     sin_value = np.sin(angle_radians)#Sin(1º) value
     print(f"sin(1º) = {sin_value}")
     
-    radius_diameter = sin_value*50*2 #diámetro en cm
+    radius_diameter = sin_value*observer_camera_distance*2 #diámetro en cm
     print(f"Fixation Boundary (diameter): {radius_diameter} cm.")
 
     screen_diagonal_pixels = math.sqrt((width)**2 + (height)**2)#diagonal de la pantalla en píxeles. Dependiendo de la resolución de la pantalla, tendrá un valor diferente
     print(f"Screen Diagonal Resolution (in pixels): {screen_diagonal_pixels} px.")
     
-    pixels_per_inches = screen_diagonal_pixels/SCREEN_INCHES
+    pixels_per_inches = screen_diagonal_pixels/screen_inches
     print(f"Pixels per Inches: {pixels_per_inches} px/inches.")
 
-    pixels_per_centimetres = pixels_per_inches/INCH_PER_CENTIMETRES
+    pixels_per_centimetres = pixels_per_inches/inch_per_centimetres
     print(f"Pixels per centimetres: {pixels_per_centimetres} px/centimetres.")
 
     pixels_threshold_i_dt = int(radius_diameter * pixels_per_centimetres)
@@ -41,9 +41,9 @@ def get_distance_threshold_by_resolution():
     
     return pixels_threshold_i_dt
 
-def get_minimum_fixation_gazepoints():
+def get_minimum_fixation_gazepoints(device_frequency=DEVICE_FREQUENCY, fixation_minimum_duration=FIXATION_MINIMUM_DURATION):
     
-    minimum_fixation_gazepoints = round(DEVICE_FREQUENCY*FIXATION_MINIMUM_DURATION/1000)
+    minimum_fixation_gazepoints = round(device_frequency*fixation_minimum_duration/1000)
     # print(f"The minimum gaze points considered to be a possible fixation is {minimum_fixation_gazepoints},\naccording to our device refresh rate and the established fixation minimum duration (100ms).\n")
     
     return minimum_fixation_gazepoints
@@ -164,8 +164,6 @@ def preprocess_gaze_log(df, gaze_x_colname, gaze_y_colname, min_points, distance
             
     return df
 
-preprocess_df = preprocess_gaze_log(df, "Gaze X", "Gaze Y", get_minimum_fixation_gazepoints(), get_distance_threshold_by_resolution())
-print("fixation min points for this experiment", get_minimum_fixation_gazepoints())
 
 def add_saccade_index(df):
     df = df.copy()
@@ -177,17 +175,9 @@ def add_saccade_index(df):
             saccade_index += 1
     return df
 
-preProcessed_saccade_index_df = add_saccade_index(preprocess_df)
 
 def int_index(df):
     df = df.copy()
     df['Saccade Index'] = df['Saccade Index'].astype('Int64')
     df['Fixation Index'] = df['Fixation Index'].astype('Int64')
     return df
-
-postprocessed_df = int_index(preProcessed_saccade_index_df)
-                             
-postprocessed_df.to_csv("webgazer_gazeData_postProcessed.csv")
-postprocessed_df
-
-print(postprocessed_df.dtypes)
