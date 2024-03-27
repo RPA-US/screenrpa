@@ -1,6 +1,11 @@
 {
-    "caption": "caption_ui_element",
-    "location": "centroid_ui_element_class",
-    "plaintext": "centroid_ui_element_class_or_plaintext",
-    "number_ui_element": "number_ui_element"
+    "ui_elem_location-class": "centroid_ui_element_class",
+    "ui_elem_location-class_plaintext": "centroid_ui_element_class_or_plaintext",
+    "class-ui_elem_location": "class_centroid_ui_element",
+    "class_plaintext-ui_elem_location": "class_or_plaintext_centroid_ui_element",
+    "xpath-class": "xpath_class",
+    "xpath+ui_elem_class-existence": "xpath_ui_elem_class_existence",
+    "ui_compo-existence": "ui_compo_existence",
+    "xpath-class_filtered_by_attention": "xpath_class_filtered_by_attention",
+    "ui_compos_stats": "ui_compos_stats"
 }

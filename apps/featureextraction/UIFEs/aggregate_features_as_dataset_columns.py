@@ -159,17 +159,15 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
     Components such as (1) sheets, (2) app bars, or (3) dialogs cannot inherit a pressed state
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
-    ui_elements_classification_classes = execution.ui_elements_classification.model.classes
+    execution_root = path_scenario + '_results'
     decision_point = execution.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = os.path.join(path_scenario, 'components_json')
-    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
-    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
-    text_classname = execution.case_study.ui_elements_classification.text_classname,
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
+    metadata_json_root = os.path.join(execution_root, 'components_json')
+    flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
+    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
+    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
     
     with open(flattened_log, 'r') as f:
