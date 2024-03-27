@@ -549,8 +549,8 @@ class MonitoringResultDetailView(DetailView):
             #scenarioNumber = "1"
             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
             
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
-
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file)  
@@ -583,8 +583,9 @@ class FeatureExtractionResultDetailView(DetailView):
             #scenarioNumber = "1"
             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
       
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #enriched_log.csv
-        
+        # TODO: Sujeto a cambios en la estructura de la carpeta
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #enriched_log.csv
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file)  
@@ -617,8 +618,8 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
             #scenarioNumber = "1"
             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
       
-        path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #flattened_log.csv
-
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #flattened_log.csv
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return MonitoringResultDownload2(path_to_csv_file) 
