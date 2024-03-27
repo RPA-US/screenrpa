@@ -1,5 +1,4 @@
 import os
-from os.path import join as pjoin
 import json
 import time
 import cv2
@@ -104,10 +103,10 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
 
     resize_height = 800
-    input_img_path = pjoin(param_img_root, image_names[img_index])
+    input_img_path = os.path.join(param_img_root, image_names[img_index])
 
     name = input_img_path.split('/')[-1][:-4] if '/' in input_img_path else input_img_path.split('\\')[-1][:-4]
-    ip_root = pjoin(path_to_save_bordered_images, "ip")
+    ip_root = os.path.join(path_to_save_bordered_images, "ip")
     if not os.path.exists(ip_root):
         os.mkdir(ip_root)
     
@@ -136,7 +135,7 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     time4=time.time()
     # *** Step 5 *** save detection result
     draw_bounding_box(image_copy, uicompos, show=False, name='merged compo', 
-                           write_path=pjoin(ip_root, name + '.jpg'), 
+                           write_path=os.path.join(ip_root, name + '.jpg'), 
                            wait_key=0)
     
     time5=time.time()

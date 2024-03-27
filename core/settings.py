@@ -57,6 +57,10 @@ DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_eleme
 PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique','ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
 MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
+#WEBGAZER CONSTANTS
+INCH_PER_CENTIMETRES = 2.54 #1 inch =  2.54cm
+DEVICE_FREQUENCY = 15 #Hz. Frequency of our Eyetracker software (Webgazer)
+FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum G
 #===================================================================================================
 #===================================================================================================
 
