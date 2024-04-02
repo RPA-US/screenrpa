@@ -16,7 +16,7 @@ from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 from django.utils.translation import gettext_lazy as _
 
-def get_foldernames_as_list(path, sep):
+def get_foldernames_as_list(path,sep):
     folders_and_files = os.listdir(path)
     foldername_logs_with_different_size_balance = []
     for f in folders_and_files:
@@ -51,7 +51,7 @@ def store_screenshots(payload, path_to_store_screenshots):
         os.mkdir(path_to_store_screenshots)
 
     # Save the image to a file
-    with open(path_to_store_screenshots + filename, 'wb') as f:
+    with open(os.path.join(path_to_store_screenshots ,filename), 'wb') as f:
         f.write(image_data_decoded)
         print(f"Saved image file {filename}")
 
@@ -110,7 +110,7 @@ def from_html_to_xes(org_resource, myhtml, root_file_path, output_filename):
       ET.SubElement(event, 'string', {'key': 'FileId'}).text = each_action.get("FileId")
       ET.SubElement(event, 'string', {'key': 'FileVersion'}).text = each_action.get("FileVersion")
 
-    res_path = root_file_path + output_filename + '.xes'
+    res_path =os.path.join( root_file_path,output_filename + '.xes')
     # Write the XES document to a file
     with open(res_path, 'wb') as f:
         f.write(ET.tostring(xes, pretty_print=True))
@@ -155,7 +155,7 @@ def from_html_to_csv(org_resource, myhtml, root_file_path, output_filename):
         event['FileVersion'] = each_action.get("FileVersion")
         events.append(event)
 
-    res_path = root_file_path + output_filename + '.csv'
+    res_path = os.path.join(root_file_path, output_filename + '.csv')
 
     # Write the events to a CSV file
     df = pd.DataFrame(events)

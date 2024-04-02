@@ -1,3 +1,4 @@
+import os
 from art import tprint
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.http import HttpResponseRedirect, HttpResponse
@@ -516,7 +517,7 @@ def draw_postfilter(request, execution_id):
             # if cs.exists() :
             # cs = cs[0]
             for scenario in execution.scenarios_to_study:
-                draw_postfilter_relevant_ui_compos_borders(execution.exp_folder_complete_path + sep + scenario)
+                draw_postfilter_relevant_ui_compos_borders(os.path.join(execution.exp_folder_complete_path, scenario))
 
             # else:
             #     raise Exception("You don't have permissions to access this files")
@@ -541,7 +542,7 @@ def draw_ui_compos(request, execution_id):
             # if cs.exists() :
             # cs = cs[0]
             for scenario in execution.scenarios_to_study:
-                draw_ui_compos_borders(execution.exp_folder_complete_path + sep + scenario)
+                draw_ui_compos_borders(os.path.join(execution.exp_folder_complete_path ,scenario))
 
             # else:
             #     raise Exception("You don't have permissions to access this files")

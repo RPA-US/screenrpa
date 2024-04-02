@@ -477,7 +477,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "screen2som":
-                recortes, compos_json = screen2som_predict(os.path.join(param_img_root, image_names[img_index]), path_to_save_bordered_images)
+                recortes, compos_json = screen2som_predict(os.path.join(param_img_root, image_names[img_index]), img_index, path_to_save_bordered_images, text_detected_by_OCR)
                 screenshot_filename = os.path.basename(image_names[img_index])
                 
                 with open(os.path.join(path_to_save_components_json, screenshot_filename + '.json'), "w") as outfile:
