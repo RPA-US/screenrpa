@@ -44,10 +44,11 @@ INFO_PREFILTERING_PHASE_NAME =              _("preselection")
 DETECTION_PHASE_NAME =                      _("detection")
 CLASSIFICATION_PHASE_NAME =                 _("classification")
 INFO_POSTFILTERING_PHASE_NAME =             _("selection")
-SINGLE_FEATURE_EXTRACTION_PHASE_NAME =             _("feature extraction")
+SINGLE_FEATURE_EXTRACTION_PHASE_NAME =      _("feature extraction")
 FLATTENING_PHASE_NAME =                     _("flattening")
 AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =   _("aggreate feature extraction")
 DECISION_MODEL_DISCOVERY_PHASE_NAME =       _("decision model discovery")
+ENRICHED_LOG_SUFFIX =                       "_enriched"
 
 # System Default Phases
 DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_elements_classification', 'postfilters', 'feature_extraction_technique', 

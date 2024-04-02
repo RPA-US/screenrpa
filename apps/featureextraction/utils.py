@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
-from apps.featureextraction.UIFEs.feature_extraction_techniques import *
+from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
 from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
 from core.settings import SINGLE_FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
 from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification

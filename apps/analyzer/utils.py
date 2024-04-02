@@ -12,7 +12,7 @@ from lxml import html
 # from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
 # from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery
 # from apps.decisiondiscovery.utils import get_extract_training_dataset, case_study_has_extract_training_dataset, get_decision_tree_training, case_study_has_decision_tree_training
-from apps.featureextraction.UIFEs.feature_extraction_techniques import *
+from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 from django.utils.translation import gettext_lazy as _
 
