@@ -16,11 +16,13 @@ from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 from django.utils.translation import gettext_lazy as _
 
-def get_foldernames_as_list(path,sep):
+def get_foldernames_as_list(path):
     folders_and_files = os.listdir(path)
     foldername_logs_with_different_size_balance = []
     for f in folders_and_files:
-        if os.path.isdir(path+sep+f):
+        # path+sep+f
+        aux = os.path.join(path, f)
+        if os.path.isdir(aux):
             foldername_logs_with_different_size_balance.append(f)
     return foldername_logs_with_different_size_balance
 

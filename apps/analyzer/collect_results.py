@@ -147,7 +147,7 @@ def experiments_results_collectors_old_structure(case_study, decision_tree_filen
                          desc=_("Experiment results that have been processed")):
         time.sleep(.1)
         scenario_path = case_study.exp_folder_complete_path + sep + scenario
-        family_size_balance_variations = get_foldernames_as_list(scenario_path, sep)
+        family_size_balance_variations = get_foldernames_as_list(scenario_path)
         # if case_study.drop and (case_study.drop in family_size_balance_variations):
         #     family_size_balance_variations.remove(case_study.drop)
         json_f = open(times_info_path+"-"+case_study.exp_foldername+"-metainfo.json")
@@ -254,7 +254,7 @@ def experiments_results_collectors(execution, decision_tree_filename):
         accuracy = []
 
     # TODO: new experiment files structure
-    scenarios = get_foldernames_as_list(execution.exp_folder_complete_path, sep)
+    scenarios = get_foldernames_as_list(execution.exp_folder_complete_path)
     for scenario in tqdm(scenarios, desc=_("Experiment results that have been processed")):
         time.sleep(.1)
         scenario_path = execution.exp_folder_complete_path + sep + scenario
