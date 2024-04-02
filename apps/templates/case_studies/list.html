@@ -190,14 +190,19 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
 <script>
-// Show the pop-up with a fade in transition when the document is ready
-$(document).ready(function(){
-  $("#popup").fadeIn(1500);
-});
-
-// Function to close the pop-up
-function closePopup() {
-  $("#popup").hide();
-}
+  // Show the pop-up with a fade in transition when the document is ready
+  $(document).ready(function(){
+    // Check if the cookie 'popupClosed' exists and if it's not 'true'
+    if (document.cookie.replace(/(?:(?:^|.*;\s*)popupClosed\s*\=\s*([^;]*).*$)|^.*$/, "$1") !== "true") {
+      $("#popup").fadeIn(1500);
+    }
+  });
+  
+  // Function to close the pop-up
+  function closePopup() {
+    $("#popup").hide();
+    // Set a cookie 'popupClosed' to 'true' when the pop-up is closed
+    document.cookie = "popupClosed=true; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+  }
   </script>
   {% endblock javascripts %}
