@@ -71,12 +71,22 @@
             </section>
             <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
           </div>
-          <div class="card-body d-flex flex-wrap col-12 justify-content-sm-between">
-            {% for class, color in soms.classes.items %}
-              <!-- Stylized checkbox for each class made with a button -->
-              <button id="toggle-class-{{class}}" onclick="toggleClassMask(this, '{{class}}')" class="mb-2 btn" style="border-radius: 15px;">{{ class }}</button>
-            {% endfor %}
-          </div>
+          <section>
+            <div class="col-12 pl-4 pr-4 d-flex justify-content-between">
+              <h3>{%blocktranslate %}Show detections from classes:{% endblocktranslate %}</h3>
+              <!-- Show all detections switch -->
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="show-all" onclick="toggleAllMasks(this)">
+                <label class="custom-control-label" for="show-all">{% blocktranslate %}Show all{% endblocktranslate %}</label>
+              </div>
+            </div>
+            <div class="card-body d-flex flex-wrap col-12 pt-0 justify-content-sm-between">
+              {% for class, color in soms.classes.items %}
+                <!-- Stylized checkbox for each class made with a button -->
+                <button id="toggle-class-{{class}}" onclick="toggleClassMask(this, '{{class}}')" class="mb-2 btn" style="border-radius: 15px;">{{ class }}</button>
+              {% endfor %}
+            </div>
+          </section>
         </div>
       </div>
     </div>
@@ -152,6 +162,21 @@
       imgList = document.getElementById('imgList');
       selectedIndex = imgList.selectedIndex;
       updatePolygons(showMasks, selectedIndex)
+    }
+
+    function toggleAllMasks(switchInput) {
+      if (switchInput.checked) {
+        showMasks = Object.keys(classes);
+        document.querySelectorAll('button[id^="toggle-class-"]').forEach(button => {
+          button.style.backgroundColor = classes[button.id.split('-')[2]] + '60';
+        });
+      } else {
+        showMasks = [];
+        document.querySelectorAll('button[id^="toggle-class-"]').forEach(button => {
+          button.style.backgroundColor = '#ffffff' + '00';
+        });
+      }
+      updatePolygons(showMasks, imgList.selectedIndex);
     }
 
     function updatePolygons(showMasks, selectedIndex) {
