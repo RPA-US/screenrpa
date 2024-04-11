@@ -44,9 +44,9 @@
             <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Detections{% endblocktranslate %}</h3>
           </div>
           <div class="card-body d-flex flex-column" style="gap:12px">
-            <section for="content" class="col-12 d-flex justify-content-between">
+            <section for="content" class="col-12 p-0 d-flex justify-content-between">
               <!-- Dropdown to select imgages with back and forth buttons -->
-              <div for="controls" class="col-4 d-flex justify-content-between">
+              <div for="controls" class="col-4 p-0 d-flex justify-content-between">
                 <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
                 <select id="imgList" class="form-control outline-light" style="border-color:#adb5bd;" onchange="changeImage(this.value)">
                   {% for som in soms.soms %}
@@ -55,10 +55,10 @@
                 </select>
                 <button id="next" class="btn btn-outline-light ml-2" onclick="nextImage()">></button>
               </div>
-              <h3 class="col-6 align-self-end">Screen Object Model</h3>
+              <h3 class="col-6 p-0 align-self-end">Screen Object Model</h3>
             </section>
-            <section for="som-content" class="col-12 d-flex justify-content-between">
-              <div class="col-6">
+            <section for="som-content" class="col-12 p-0 d-flex justify-content-between">
+              <div class="col-6 pl-0">
                 <div style="position: relative; overflow:hidden">
                   <img onload="adjustContainerHeight()" id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
                 </div>
