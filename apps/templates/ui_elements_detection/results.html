@@ -80,10 +80,10 @@
                 <label class="custom-control-label" for="show-all">{% blocktranslate %}Show all{% endblocktranslate %}</label>
               </div>
             </div>
-            <div class="card-body d-flex flex-wrap col-12 pt-0 justify-content-sm-between">
+            <div class="card-body d-flex flex-wrap col-12 pt-0 justify-content-sm-between" style="gap:8px">
               {% for class, color in soms.classes.items %}
                 <!-- Stylized checkbox for each class made with a button -->
-                <button id="toggle-class-{{class}}" onclick="toggleClassMask(this, '{{class}}')" class="mb-2 btn" style="border-radius: 15px;">{{ class }}</button>
+                <button id="toggle-class-{{class}}" onclick="toggleClassMask(this, '{{class}}')" class="btn m-0 flex-grow-1" style="border-radius: 15px;">{{ class }}</button>
               {% endfor %}
             </div>
           </section>
