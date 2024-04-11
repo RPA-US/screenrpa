@@ -44,7 +44,7 @@
             <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Detections{% endblocktranslate %}</h3>
           </div>
           <div class="card-body d-flex flex-column" style="gap:12px">
-            <section for="content" class="col-12 h d-flex justify-content-between">
+            <section for="content" class="col-12 d-flex justify-content-between">
               <!-- Dropdown to select imgages with back and forth buttons -->
               <div for="controls" class="col-4 d-flex justify-content-between">
                 <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
@@ -58,8 +58,10 @@
               <h3 class="col-6 align-self-end">Screen Object Model</h3>
             </section>
             <section for="som-content" class="col-12 d-flex justify-content-between">
-              <div class=col-6 "">
-                <img id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+              <div class="col-6">
+                <div style="position: relative; overflow:hidden">
+                  <img onload="adjustContainerHeight()" id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+                </div>
               </div>
               <!--The som is in json format, and it must be contained and be scrollable-->
               <textarea id="json-input" autocomplete="off" hidden>
@@ -69,7 +71,7 @@
             </section>
             <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
           </div>
-          <div class="card-body d-flex flex-wrap">
+          <div class="card-body d-flex flex-wrap col-12 justify-content-sm-between">
             {% for class, color in soms.classes.items %}
               <!-- Stylized checkbox for each class made with a button -->
               <button id="toggle-class-{{class}}" onclick="toggleClassMask(this, '{{class}}')" class="mb-2 btn" style="border-radius: 15px;">{{ class }}</button>
@@ -100,10 +102,11 @@
     <script>
     // Set json viewer height
     function adjustContainerHeight() {
-        var section = document.querySelector('section[for="som-content"]');
-        var image = document.getElementById('bordered-img');
-        var imageHeight = image.clientHeight;
-        section.style.height = imageHeight + 'px';
+      var section = document.querySelector('section[for="som-content"]');
+      var image = document.getElementById('bordered-img');
+      var imageHeight = image.clientHeight;
+      section.style.height = imageHeight + 'px';
+      updatePolygons(showMasks, imgList.selectedIndex);
     }
 
     window.addEventListener('resize', function() {
@@ -116,6 +119,8 @@
 
     // Get the classes of the classification method
     classes = soms.classes;
+    showMasks = []
+    svgs = []
 
     // initialize json visualizer
     // get JSON 
@@ -138,10 +143,56 @@
     function toggleClassMask(button, className) {
       if (button.style.backgroundColor !== 'rgba(255, 255, 255, 0)') {
         button.style.backgroundColor = '#ffffff' + '00';
+        showMasks = showMasks.filter(mask => mask !== className);
       } else {
         button.style.backgroundColor = classes[className] + '60';
-        console.log(button.style.backgroundColor)
+        showMasks.push(className);
       }
+      // Get selected image index
+      imgList = document.getElementById('imgList');
+      selectedIndex = imgList.selectedIndex;
+      updatePolygons(showMasks, selectedIndex)
+    }
+
+    function updatePolygons(showMasks, selectedIndex) {
+      // Remove all polygons
+      svgs.forEach(polygon => polygon.remove());
+      svgs = [];
+      // Add polygons for each class
+      compos = soms.soms.at(selectedIndex).som.compos;
+
+      selectedCompos = Object.values(compos).filter(compo =>
+        showMasks.includes(compo.class)
+      );
+
+      function scalePoints(points, originalWidth, originalHeight, imageWidth, imageHeight) {
+        scaledPoints = []
+        points.forEach(point => {
+          scaledPoints.push(point[0] * imageWidth / originalWidth, point[1] * imageHeight / originalHeight)
+        })
+        return scaledPoints
+      }
+
+      selectedCompos.forEach(compo => {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.style.position = "absolute";
+        svg.style.top = "0";
+        svg.style.left = "0";
+        svg.style.width = borderedImg.clientWidth + "px";
+        svg.style.height = borderedImg.clientHeight + "px";
+
+        var polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        var className = compo.class;
+        var scaledPoints = scalePoints(compo.points, originalWidth, originalHeight, borderedImg.clientWidth, borderedImg.clientHeight);
+        polygon.setAttribute('points', scaledPoints);
+        polygon.setAttribute('fill', classes[className] + '60');
+        polygon.setAttribute('stroke', classes[className]);
+        polygon.setAttribute('stroke-width', '2');
+
+        svg.appendChild(polygon);
+        document.getElementById('bordered-img').insertAdjacentElement('afterend', svg);
+        svgs.push(svg);
+      })
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -149,7 +200,7 @@
         for (const [key, value] of Object.entries(classes)) {
           var button = document.getElementById('toggle-class-' + key);
           // Semi-transparent background
-          button.style.backgroundColor = value + '60'; 
+          button.style.backgroundColor = '#ffffff' + '00'; 
           // color borders
           button.style.borderColor = value;
           button.style.borderWidth = '2px';
@@ -165,6 +216,11 @@
         somWindow.innerHTML = JSON.stringify(soms.soms[0].som.som, null, 2);
         editor = new JsonEditor('#json-display', getJson());
         editor.load(getJson())
+
+        imgList = document.getElementById('imgList');
+        originalHeight = borderedImg.naturalHeight;
+        originalWidth = borderedImg.naturalWidth;
+        updatePolygons(showMasks, imgList.selectedIndex);
     })
 
     function prevImage() {
@@ -183,39 +239,48 @@
         }, 0);
       }
       updateControls(imgList.selectedIndex);
+      originalHeight = borderedImg.naturalHeight;
+      originalWidth = borderedImg.naturalWidth;
+      updatePolygons(showMasks, imgList.selectedIndex);
     }
 
     function nextImage() {
-        showLoadingOverlay();
-        imgList = document.getElementById('imgList');
-        imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('json-input');
-        if (imgList.selectedIndex < imgList.options.length - 1) {
-            imgList.selectedIndex = imgList.selectedIndex + 1;
-            borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-            somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
-            setTimeout(function() {
-              editor.load(getJson());
-              adjustContainerHeight();
-              hideLoadingOverlay();
-            }, 0);
-        }
-        updateControls(imgList.selectedIndex);
+      showLoadingOverlay();
+      imgList = document.getElementById('imgList');
+      imgPath = document.getElementById('imgPath');
+      somWindow = document.getElementById('json-input');
+      if (imgList.selectedIndex < imgList.options.length - 1) {
+          imgList.selectedIndex = imgList.selectedIndex + 1;
+          borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+          somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+          setTimeout(function() {
+            editor.load(getJson());
+            adjustContainerHeight();
+            hideLoadingOverlay();
+          }, 0);
+      }
+      updateControls(imgList.selectedIndex);
+      originalHeight = borderedImg.naturalHeight;
+      originalWidth = borderedImg.naturalWidth;
+      updatePolygons(showMasks, imgList.selectedIndex);
     }
 
     function changeImage(value) {
-        showLoadingOverlay();
-        imgList = document.getElementById('imgList');
-        imgPath = document.getElementById('imgPath');
-        somWindow = document.getElementById('json-input');
-        borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-        somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
-        setTimeout(function() {
-          editor.load(getJson());
-          adjustContainerHeight();
-          hideLoadingOverlay();
-        }, 0);
-        updateControls(imgList.selectedIndex);
+      showLoadingOverlay();
+      imgList = document.getElementById('imgList');
+      imgPath = document.getElementById('imgPath');
+      somWindow = document.getElementById('json-input');
+      borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+      somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+      setTimeout(function() {
+        editor.load(getJson());
+        adjustContainerHeight();
+        hideLoadingOverlay();
+      }, 0);
+      updateControls(imgList.selectedIndex);
+      originalHeight = borderedImg.naturalHeight;
+      originalWidth = borderedImg.naturalWidth;
+      updatePolygons(showMasks, imgList.selectedIndex);
     }
 
     function updateControls(selectedIndex) {

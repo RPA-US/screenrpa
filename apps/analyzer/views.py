@@ -712,14 +712,11 @@ class UIElementsDetectionResultDetailView(DetailView):
             img_name = compo_json.split("/")[-1].split(".json")[0]
             img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
 
-            flattened = UIElementsDetectionResultDetailView.flatten_compos(compos, [])
-
             soms["soms"].append(
                 {
                     "img": img_name,
                     "img_path": img_path,
-                    "som": compos,
-                    "flattened": flattened
+                    "som": compos
                 }
             )
 
@@ -731,14 +728,6 @@ class UIElementsDetectionResultDetailView(DetailView):
 
         #return HttpResponse(json.dumps(context), content_type="application/json")
         return render(request, "ui_elements_detection/results.html", context)
-    
-    @classmethod
-    def flatten_compos(cls, compos, flattened):
-        for compo in compos:
-            flattened.append(compo)
-            if "children" in compo:
-                flattened = UIElementsDetectionResultDetailView.flatten_compos(compo["children"], flattened)
-        return flattened
 
 
 ############################################################
