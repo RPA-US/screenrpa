@@ -1,6 +1,7 @@
 import csv
 import os
 import json
+import random
 import time
 import threading
 from tqdm import tqdm
@@ -695,7 +696,13 @@ class UIElementsDetectionResultDetailView(DetailView):
 
         # Create dictionary with images and their corresponding UI elements
         soms = dict()
-        soms["classes"] = execution.ui_elements_classification.model.classes
+
+        classes = execution.ui_elements_classification.model.classes
+        colors = []
+        for i in range(len(classes)):
+            colors.append("#%06x" % random.randint(0, 0xFFFFFF))
+        soms["classes"] = {k: v for k, v in zip(classes, colors)} 
+
         soms["soms"] = []
 
         for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
@@ -704,11 +711,15 @@ class UIElementsDetectionResultDetailView(DetailView):
             # path is something like: asdsa/.../.../image.PNG.json
             img_name = compo_json.split("/")[-1].split(".json")[0]
             img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
+
+            flattened = UIElementsDetectionResultDetailView.flatten_compos(compos, [])
+
             soms["soms"].append(
                 {
                     "img": img_name,
                     "img_path": img_path,
-                    "som": compos
+                    "som": compos,
+                    "flattened": flattened
                 }
             )
 
@@ -720,6 +731,15 @@ class UIElementsDetectionResultDetailView(DetailView):
 
         #return HttpResponse(json.dumps(context), content_type="application/json")
         return render(request, "ui_elements_detection/results.html", context)
+    
+    @classmethod
+    def flatten_compos(cls, compos, flattened):
+        for compo in compos:
+            flattened.append(compo)
+            if "children" in compo:
+                flattened = UIElementsDetectionResultDetailView.flatten_compos(compo["children"], flattened)
+        return flattened
+
 
 ############################################################
 
