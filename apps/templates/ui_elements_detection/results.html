@@ -209,15 +209,17 @@
         setTimeout(function() {
           adjustContainerHeight();
         }, 0);
-        // Disable prev btn
-        document.getElementById('prev').disabled = true;
+        // Disable prev or next btn if needed
+        imgList = document.getElementById('imgList');
+        document.getElementById('prev').disabled = imgList.selectedIndex == 0;
+        document.getElementById('next').disabled = imgList.selectedIndex == imgList.options.length - 1;
+
         borderedImg = document.getElementById('bordered-img');
         somWindow = document.getElementById('json-input');
         somWindow.innerHTML = JSON.stringify(soms.soms[0].som.som, null, 2);
         editor = new JsonEditor('#json-display', getJson());
         editor.load(getJson())
 
-        imgList = document.getElementById('imgList');
         originalHeight = borderedImg.naturalHeight;
         originalWidth = borderedImg.naturalWidth;
         updatePolygons(showMasks, imgList.selectedIndex);
