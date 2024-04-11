@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-21 10:01+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,16 +19,16 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: apps/decisiondiscovery/forms.py:26
-msgid "Title "
+msgid "Title"
 msgstr "Título "
 
 #: apps/decisiondiscovery/forms.py:27
-msgid "Decision Point To Study "
+msgid "Decision Point To Study"
 msgstr "Punto de Decisión a Estudiar "
 
 #: apps/decisiondiscovery/forms.py:28 apps/decisiondiscovery/forms.py:30
 #: apps/decisiondiscovery/forms.py:97
-msgid "Columns to drop before decision point "
+msgid "Columns to drop before decision point"
 msgstr "Columnas a eliminar antes del punto de decisión "
 
 #: apps/decisiondiscovery/forms.py:29

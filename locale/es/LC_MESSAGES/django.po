@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-21 10:00+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -157,7 +157,7 @@ msgstr "Configuración"
 #: apps/templates/decision_tree_training/form.html:68
 #: apps/templates/extract_training_dataset/form.html:67
 #: apps/templates/feature_extraction_technique/form.html:70
-#: apps/templates/monitoring/form.html:73
+#: apps/templates/monitoring/form.html:94
 #: apps/templates/postfiltering/form.html:59
 #: apps/templates/prefiltering/form.html:59
 #: apps/templates/processdiscovery/form.html:51
@@ -1039,7 +1039,7 @@ msgid "Follow us on Twitter"
 msgstr "Síguenos en Twitter"
 
 #: apps/templates/includes/navigation-fullscreen.html:68
-#: apps/templates/includes/sidenav.html:132
+#: apps/templates/includes/sidenav.html:142
 msgid "PRO Version"
 msgstr "Versión PRO"
 
@@ -1087,6 +1087,10 @@ msgstr "Recursos"
 #: apps/templates/includes/sidenav.html:123
 msgid "More solutions"
 msgstr "Configuración"
+
+#: apps/templates/includes/sidenav.html:132
+msgid "Access to Webgazer"
+msgstr "Acceso a Webgazer"
 
 #: apps/templates/layouts/base-fullscreen.html:55
 msgid ""
@@ -1168,6 +1172,26 @@ msgstr "Ajusten en el Gaze Log"
 #: apps/templates/monitoring/form.html:65
 msgid "System Info. Log"
 msgstr "Log de Info. del Sistema"
+
+#: apps/templates/monitoring/form.html:69
+msgid "Webgazer options"
+msgstr "Opciones de Webgazer"
+
+#: apps/templates/monitoring/form.html:71
+msgid "Screen Inches"
+msgstr "Pulgadas de la pantalla"
+
+#: apps/templates/monitoring/form.html:76
+msgid "Observer Camera Distance (in centimetres)"
+msgstr "Distancia del observador a la cámara (en centímetros)"
+
+#: apps/templates/monitoring/form.html:81
+msgid "Screen Width (in pixels)"
+msgstr "Ancho de la pantalla (en píxeles)"
+
+#: apps/templates/monitoring/form.html:86
+msgid "Screen Height (in pixels)"
+msgstr "Altura de la pantalla (en píxeles)"
 
 #: apps/templates/monitoring/list.html:15
 #: apps/templates/monitoring/list.html:40
@@ -1437,7 +1461,15 @@ msgstr "Detalles de Ejecucion"
 msgid "Detections"
 msgstr "Detecciones"
 
+#: apps/templates/ui_elements_detection/results.html:76
+msgid "Show detections from classes:"
+msgstr "Mostrar detecciones de las clases:"
+
 #: apps/templates/ui_elements_detection/results.html:80
+msgid "Show all"
+msgstr "Mostrar todo"
+
+#: apps/templates/ui_elements_detection/results.html:96
 msgid "Loading Screen Object Model..."
 msgstr "Cargando Screen Object Model..."
 

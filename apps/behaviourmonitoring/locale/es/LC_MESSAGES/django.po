@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-21 10:01+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,47 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/behaviourmonitoring/forms.py:29
+#: apps/behaviourmonitoring/forms.py:33
 msgid "Type"
 msgstr "Tipo"
 
-#: apps/behaviourmonitoring/forms.py:30
+#: apps/behaviourmonitoring/forms.py:34
 msgid "UI Log Filename"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:31
+#: apps/behaviourmonitoring/forms.py:35
 msgid "UI Log Separator"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:32
+#: apps/behaviourmonitoring/forms.py:36
 msgid "Gaze Log Filename"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:33
+#: apps/behaviourmonitoring/forms.py:37
 msgid "Gaze Log Adjustment"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:34
+#: apps/behaviourmonitoring/forms.py:38
 msgid "System Info. Log"
 msgstr ""
 
-#: apps/behaviourmonitoring/models.py:48
+#: apps/behaviourmonitoring/forms.py:40
+msgid "Screen Inches"
+msgstr "Pulgadas de la pantalla"
+
+#: apps/behaviourmonitoring/forms.py:41
+msgid "Observer to Webcam distance (in cm)"
+msgstr "Distancia del observador a la webcam (cm)"
+
+#: apps/behaviourmonitoring/forms.py:42
+msgid "Screen Width (in pixels)"
+msgstr "Anchura de la pantalla (en píxeles)"
+
+#: apps/behaviourmonitoring/forms.py:43
+msgid "Screen Height (in pixels)"
+msgstr "Altura de la pantalla (en píxeles)
+
+#: apps/behaviourmonitoring/models.py:51
 msgid "There is already an active monitoring for this case study."
 msgstr "Ya existe un monitoreo activo para este caso de estudio."
 

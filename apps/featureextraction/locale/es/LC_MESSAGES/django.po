@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-21 10:01+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -83,7 +83,7 @@ msgid ""
 "name: "
 msgstr ""
 
-#: apps/featureextraction/SOM/sam.py:190
+#: apps/featureextraction/SOM/sam.py:189
 msgid "You selected a type of sam's checkpoint that does not exists"
 msgstr "Ha seleccionado un tipo de punto de control de SAM que no existe"
 
@@ -102,7 +102,7 @@ msgid "Configurations"
 msgstr "Configuraciones"
 
 #: apps/featureextraction/forms.py:247
-msgid "Identifier "
+msgid "Identifier"
 msgstr "Identificador "
 
 #: apps/featureextraction/forms.py:248
@@ -125,46 +125,46 @@ msgstr "Condición para que un componente UI sea relevante"
 msgid "exp_folder_complete_path separators not coherent"
 msgstr "separador de exp_folder_complete_path no coherente"
 
-#: apps/featureextraction/views.py:121 apps/featureextraction/views.py:316
-#: apps/featureextraction/views.py:400 apps/featureextraction/views.py:483
+#: apps/featureextraction/views.py:122 apps/featureextraction/views.py:317
+#: apps/featureextraction/views.py:401 apps/featureextraction/views.py:484
 msgid "User must be authenticated."
 msgstr "El usuario ha de estar autenticado"
 
-#: apps/featureextraction/views.py:123 apps/featureextraction/views.py:318
-#: apps/featureextraction/views.py:402 apps/featureextraction/views.py:485
+#: apps/featureextraction/views.py:124 apps/featureextraction/views.py:319
+#: apps/featureextraction/views.py:403 apps/featureextraction/views.py:486
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr "El caso de estudio no pertenece al usuario"
 
-#: apps/featureextraction/views.py:125
+#: apps/featureextraction/views.py:126
 msgid "Feature Extraction Technique doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:127
+#: apps/featureextraction/views.py:128
 msgid ""
 "Feature Extraction Technique Tree Training doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:320
+#: apps/featureextraction/views.py:321
 msgid "Ui Element Detection doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:322
+#: apps/featureextraction/views.py:323
 msgid "Ui Element Detection doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:404
+#: apps/featureextraction/views.py:405
 msgid "Prefiltering doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:406
+#: apps/featureextraction/views.py:407
 msgid "Prefiltering doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:487
+#: apps/featureextraction/views.py:488
 msgid "Postfiltering doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:489
+#: apps/featureextraction/views.py:490
 msgid "Postfiltering doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
