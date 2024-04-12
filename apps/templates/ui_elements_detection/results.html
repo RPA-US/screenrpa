@@ -213,9 +213,19 @@
         polygon.setAttribute('stroke-width', '2');
         polygon.setAttribute('id', `polygon-id-${compo.id}`)
 
-        svg.appendChild(polygon);
-        polygons.push(polygon);
+        var linktojsonelement = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+        linktojsonelement.setAttribute('style', 'height: fit-content; width: fit-content; cursor: pointer;');
+        linktojsonelement.appendChild(polygon);
+        linktojsonelement.setAttribute('onclick', `gotoJsonCompo(${compo.id})`);
+        svg.appendChild(linktojsonelement);
+        polygons.push(linktojsonelement);
       })
+    }
+
+    function gotoJsonCompo(compoId) {
+      var jsoncompo = document.getElementById(`json-compo-${compoId}`);
+      var topPos = jsoncompo.offsetTop;
+      document.getElementById('json-display').scrollTop = topPos;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -239,12 +249,12 @@
 
         borderedImg = document.getElementById('bordered-img');
         somWindow = document.getElementById('json-input');
-        somWindow.innerHTML = JSON.stringify(soms.soms[0].som.som, null, 2);
+        somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
         editor = new JsonEditor('#json-display', getJson());
         editor.load(getJson())
 
-        originalHeight = borderedImg.naturalHeight;
-        originalWidth = borderedImg.naturalWidth;
+        originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+        originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
         updatePolygons(showMasks, imgList.selectedIndex);
     })
 
@@ -264,8 +274,8 @@
         }, 0);
       }
       updateControls(imgList.selectedIndex);
-      originalHeight = borderedImg.naturalHeight;
-      originalWidth = borderedImg.naturalWidth;
+      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
       updatePolygons(showMasks, imgList.selectedIndex);
     }
 
@@ -285,8 +295,8 @@
           }, 0);
       }
       updateControls(imgList.selectedIndex);
-      originalHeight = borderedImg.naturalHeight;
-      originalWidth = borderedImg.naturalWidth;
+      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
       updatePolygons(showMasks, imgList.selectedIndex);
     }
 
@@ -303,8 +313,8 @@
         hideLoadingOverlay();
       }, 0);
       updateControls(imgList.selectedIndex);
-      originalHeight = borderedImg.naturalHeight;
-      originalWidth = borderedImg.naturalWidth;
+      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
       updatePolygons(showMasks, imgList.selectedIndex);
     }
 
