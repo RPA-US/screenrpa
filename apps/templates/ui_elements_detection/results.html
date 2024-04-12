@@ -61,6 +61,7 @@
               <div class="col-6 pl-0">
                 <div style="position: relative; overflow:hidden">
                   <img onload="adjustContainerHeight()" id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+                  <svg id="svg-masks" style="position: absolute; top: 0px; left: 0px"></svg>
                 </div>
               </div>
               <!--The som is in json format, and it must be contained and be scrollable-->
@@ -130,7 +131,7 @@
     // Get the classes of the classification method
     classes = soms.classes;
     showMasks = []
-    svgs = []
+    polygons = []
 
     // initialize json visualizer
     // get JSON 
@@ -181,8 +182,8 @@
 
     function updatePolygons(showMasks, selectedIndex) {
       // Remove all polygons
-      svgs.forEach(polygon => polygon.remove());
-      svgs = [];
+      polygons.forEach(polygon => polygon.remove());
+      polygons = [];
       // Add polygons for each class
       compos = soms.soms.at(selectedIndex).som.compos;
 
@@ -198,14 +199,11 @@
         return scaledPoints
       }
 
-      selectedCompos.forEach(compo => {
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.style.position = "absolute";
-        svg.style.top = "0";
-        svg.style.left = "0";
-        svg.style.width = borderedImg.clientWidth + "px";
-        svg.style.height = borderedImg.clientHeight + "px";
+      var svg = document.querySelector('svg[id="svg-masks"]');
+      svg.style.width = borderedImg.clientWidth + "px";
+      svg.style.height = borderedImg.clientHeight + "px";
 
+      selectedCompos.forEach(compo => {
         var polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         var className = compo.class;
         var scaledPoints = scalePoints(compo.points, originalWidth, originalHeight, borderedImg.clientWidth, borderedImg.clientHeight);
@@ -213,10 +211,10 @@
         polygon.setAttribute('fill', classes[className] + '60');
         polygon.setAttribute('stroke', classes[className]);
         polygon.setAttribute('stroke-width', '2');
+        polygon.setAttribute('id', `polygon-id-${compo.id}`)
 
         svg.appendChild(polygon);
-        document.getElementById('bordered-img').insertAdjacentElement('afterend', svg);
-        svgs.push(svg);
+        polygons.push(polygon);
       })
     }
 
