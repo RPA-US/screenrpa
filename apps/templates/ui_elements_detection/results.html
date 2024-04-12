@@ -208,10 +208,17 @@
         var className = compo.class;
         var scaledPoints = scalePoints(compo.points, originalWidth, originalHeight, borderedImg.clientWidth, borderedImg.clientHeight);
         polygon.setAttribute('points', scaledPoints);
-        polygon.setAttribute('fill', classes[className] + '60');
+        polygon.setAttribute('fill', classes[className] + '40');
         polygon.setAttribute('stroke', classes[className]);
         polygon.setAttribute('stroke-width', '2');
         polygon.setAttribute('id', `polygon-id-${compo.id}`)
+        // Change fill color on hover to make it more visible 
+        polygon.addEventListener('mouseover', function() {
+          polygon.setAttribute('fill', classes[className] + '60');
+        });
+        polygon.addEventListener('mouseout', function() {
+          polygon.setAttribute('fill', classes[className] + '40');
+        });
 
         var linktojsonelement = document.createElementNS('http://www.w3.org/2000/svg', 'a');
         linktojsonelement.setAttribute('style', 'height: fit-content; width: fit-content; cursor: pointer;');
