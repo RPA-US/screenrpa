@@ -186,3 +186,4 @@ apps/featureextraction/SOM/checkpoints/
 apps/processdiscovery/notebooks/
 apps/notebooks
 apps/decisiondiscovery/notebooks/*.csv
+apps/decisiondiscovery/notebooks/*.txt
