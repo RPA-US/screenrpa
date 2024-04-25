@@ -1,5 +1,7 @@
+import csv
 import os
 import json
+import random
 import time
 import threading
 from tqdm import tqdm
@@ -534,3 +536,204 @@ class ExecutionDetailView(DetailView):
             "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
             }
         return render(request, "executions/detail.html", context)
+
+#################################################################### PHASE EXECUTIONS RESULTS ####################################################################
+    
+class MonitoringResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenarioNumber = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenarioNumber == None:
+            #scenarioNumber = "1"
+            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+            
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file)  
+
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
+            } 
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "monitoring/result.html", context)
+
+
+##########################################
+    
+class FeatureExtractionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenarioNumber = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenarioNumber == None:
+            #scenarioNumber = "1"
+            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+        # TODO: Sujeto a cambios en la estructura de la carpeta
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #enriched_log.csv
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file)  
+     
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
+            }
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "feature_extraction_technique/result.html", context)
+
+#########################################333
+    
+
+class ExtractTrainingDatasetResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenarioNumber = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenarioNumber == None:
+            #scenarioNumber = "1"
+            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #flattened_log.csv
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return MonitoringResultDownload2(path_to_csv_file) 
+
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenarioNumber": scenarioNumber
+            }  
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "extract_training_dataset/result.html", context)
+
+##############################################33
+    
+
+# def LogicPhasesResultDetailView(execution, scenarioNumber,path_to_csv_file):
+   
+#     # CSV Reading and Conversion to JSON
+#     csv_data_json = read_csv_to_json(path_to_csv_file)
+
+#     # Include CSV data in the context for the template
+#     context = {
+#             "execution": execution,
+#             "csv_data": csv_data_json,  # Data to be used in the HTML template
+#             "scenarios": execution.scenarios_to_study,
+#             "scenarioNumber": scenarioNumber
+#         }
+#     return context
+
+#############################################33
+def read_csv_to_json(path_to_csv_file):
+    # Initialize a list to hold the CSV data converted into dictionaries
+    csv_data = []       
+    # Check if the path to the CSV file exists and read the data
+    try:
+        with open(path_to_csv_file, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                csv_data.append(row)
+    except FileNotFoundError:
+        print(f"File not found: {path_to_csv_file}")
+    # Convert csv_data to JSON
+    csv_data_json = json.dumps(csv_data)
+    return csv_data_json
+##########################################3
+def MonitoringResultDownload2(path_to_csv_file):
+    with open(path_to_csv_file, 'r', newline='') as csvfile:
+        # Create an HTTP response with the content of the CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
+        writer = csv.writer(response)
+        reader = csv.reader(csvfile)
+        for row in reader:
+            writer.writerow(row)
+        return response
+    
+#############################################################
+    
+class UIElementsDetectionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario: str = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        # Create dictionary with images and their corresponding UI elements
+        soms = dict()
+
+        classes = execution.ui_elements_classification.model.classes
+        colors = []
+        for i in range(len(classes)):
+            colors.append("#%06x" % random.randint(0, 0xFFFFFF))
+        soms["classes"] = {k: v for k, v in zip(classes, colors)} 
+
+        soms["soms"] = []
+
+        for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
+            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
+                compos = json.load(f)
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_name = compo_json.split("/")[-1].split(".json")[0]
+            img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
+
+            soms["soms"].append(
+                {
+                    "img": img_name,
+                    "img_path": img_path,
+                    "som": compos
+                }
+            )
+
+        context = {
+            "execution": execution,
+            "scenarios": execution.scenarios_to_study,
+            "soms": soms
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "ui_elements_detection/results.html", context)
+
+
+############################################################
+
+class mostrar_diagrama(DetailView):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'processdiscovery/result.html')
+    #/screenrpa/apps/templates/
+

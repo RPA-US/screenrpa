@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-12 10:08+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -89,7 +89,9 @@ msgstr "Crear cuenta"
 #: apps/templates/processdiscovery/list.html:4
 #: apps/templates/reporting/list.html:4
 #: apps/templates/ui_elements_detection/create.html:5
+#: apps/templates/ui_elements_detection/details.html:5
 #: apps/templates/ui_elements_detection/list.html:4
+#: apps/templates/ui_elements_detection/results.html:10
 msgid "Case studies"
 msgstr "Casos de estudio"
 
@@ -134,28 +136,31 @@ msgstr "Crear un nuevo caso de estudio"
 #: apps/templates/feature_extraction_technique/form.html:4
 #: apps/templates/monitoring/form.html:4
 #: apps/templates/postfiltering/detail.html:46
+#: apps/templates/postfiltering/form.html:5
 #: apps/templates/prefiltering/detail.html:46
+#: apps/templates/prefiltering/form.html:5
+#: apps/templates/processdiscovery/form.html:6
 #: apps/templates/ui_elements_detection/form.html:4
 msgid "General information"
 msgstr "Información general"
 
-#: apps/templates/case_studies/create.html:93
-#: apps/templates/case_studies/detail.html:84
+#: apps/templates/case_studies/create.html:76
+#: apps/templates/case_studies/detail.html:76
 #: apps/templates/executions/detail.html:84
-#: apps/templates/extract_training_dataset/form.html:18
-#: apps/templates/monitoring/form.html:22
-#: apps/templates/ui_elements_detection/form.html:29
+#: apps/templates/extract_training_dataset/form.html:35
+#: apps/templates/monitoring/form.html:39
+#: apps/templates/ui_elements_detection/form.html:46
 msgid "Configuration"
 msgstr "Configuración"
 
-#: apps/templates/case_studies/create.html:165
-#: apps/templates/decision_tree_training/create.html:83
-#: apps/templates/extract_training_dataset/form.html:50
-#: apps/templates/feature_extraction_technique/form.html:39
-#: apps/templates/monitoring/form.html:56
-#: apps/templates/postfiltering/create.html:76
-#: apps/templates/prefiltering/create.html:74
-#: apps/templates/processdiscovery/create.html:67
+#: apps/templates/case_studies/create.html:139
+#: apps/templates/decision_tree_training/form.html:68
+#: apps/templates/extract_training_dataset/form.html:67
+#: apps/templates/feature_extraction_technique/form.html:70
+#: apps/templates/monitoring/form.html:94
+#: apps/templates/postfiltering/form.html:59
+#: apps/templates/prefiltering/form.html:59
+#: apps/templates/processdiscovery/form.html:51
 msgid "Save"
 msgstr "Guardar"
 
@@ -176,9 +181,14 @@ msgstr "Detalles del caso de estudio %(case_study.id)s"
 
 #: apps/templates/case_studies/detail.html:46
 #: apps/templates/case_studies/list.html:45
+#: apps/templates/decision_tree_training/list.html:49
 #: apps/templates/executions/detail.html:46
 #: apps/templates/executions/list.html:45
-#: apps/templates/extract_training_dataset/list.html:48
+#: apps/templates/extract_training_dataset/list.html:49
+#: apps/templates/feature_extraction_technique/list.html:49
+#: apps/templates/postfiltering/list.html:49
+#: apps/templates/prefiltering/list.html:49
+#: apps/templates/processdiscovery/list.html:49
 #: apps/templates/ui_elements_detection/list.html:48
 msgid "Title"
 msgstr "Título"
@@ -202,82 +212,71 @@ msgid "This is a case study full of data..."
 msgstr "Este es un caso de estudio lleno de datos..."
 
 #: apps/templates/case_studies/detail.html:68
-#: apps/templates/executions/detail.html:68
-msgid "Folder path"
+msgid "Case Study Folder Path"
 msgstr "Ruta de la carpeta"
 
-#: apps/templates/case_studies/detail.html:76
-#: apps/templates/executions/detail.html:76
-msgid "Decision Oracle"
-msgstr "Oráculo de decisión"
-
-#: apps/templates/case_studies/detail.html:77
-#: apps/templates/executions/detail.html:77
-msgid "CheckBox_4_D and ImageView_2_B"
-msgstr "CheckBox_4_D e ImageView_2_B"
-
-#: apps/templates/case_studies/detail.html:87
-#: apps/templates/executions/detail.html:87
-msgid "Special columns names"
+#: apps/templates/case_studies/detail.html:79
+msgid "Special UI log columns names"
 msgstr "Nombres de columnas especiales"
 
-#: apps/templates/case_studies/detail.html:107
-#: apps/templates/executions/detail.html:107
-msgid "Target label column name"
-msgstr "Nombre de columna de etiqueta objetivo"
-
-#: apps/templates/case_studies/detail.html:108
-#: apps/templates/executions/detail.html:108
-msgid "Variant"
-msgstr "Variante"
-
-#: apps/templates/case_studies/detail.html:115
+#: apps/templates/case_studies/detail.html:99
 #: apps/templates/executions/detail.html:115
 msgid "Scenarios to study"
 msgstr "Escenarios a estudiar"
 
-#: apps/templates/case_studies/detail.html:116
+#: apps/templates/case_studies/detail.html:100
 #: apps/templates/executions/detail.html:116
 msgid "['scenario1', 'scenario2']"
 msgstr "['escenario1', 'escenario2']"
 
-#: apps/templates/case_studies/detail.html:123
+#: apps/templates/case_studies/detail.html:107
+#: apps/templates/executions/detail.html:123
 msgid "Set Up Phases"
 msgstr "Fases de configuración"
 
-#: apps/templates/case_studies/detail.html:130
+#: apps/templates/case_studies/detail.html:114
+#: apps/templates/executions/detail.html:131
+#: apps/templates/executions/detail.html:136
 #: apps/templates/monitoring/detail.html:21
 #: apps/templates/monitoring/list.html:20
 msgid "Log Processing"
 msgstr "Monitoreo de comportamiento"
 
-#: apps/templates/case_studies/detail.html:137
+#: apps/templates/case_studies/detail.html:121
+#: apps/templates/executions/detail.html:153
+#: apps/templates/executions/detail.html:158
 msgid "Pre-Filtering"
 msgstr "Pre-filtrado"
 
-#: apps/templates/case_studies/detail.html:144
+#: apps/templates/case_studies/detail.html:128
+#: apps/templates/executions/detail.html:174
+#: apps/templates/executions/detail.html:179
 msgid "UI Elements Detection"
 msgstr "Detección de elementos de UI"
 
-#: apps/templates/case_studies/detail.html:158
+#: apps/templates/case_studies/detail.html:142
+#: apps/templates/executions/detail.html:219
+#: apps/templates/executions/detail.html:224
 msgid "Feature extraction"
 msgstr "Extracción de características"
 
-#: apps/templates/case_studies/detail.html:165
+#: apps/templates/case_studies/detail.html:149
+#: apps/templates/executions/detail.html:241
+#: apps/templates/executions/detail.html:246
 msgid "Process Discovery"
 msgstr "Descubrimiento de procesos"
 
-#: apps/templates/case_studies/detail.html:172
+#: apps/templates/case_studies/detail.html:156
+#: apps/templates/executions/detail.html:264
+#: apps/templates/executions/detail.html:269
 msgid "Extract training dataset"
 msgstr "Extraer conjunto de datos de entrenamiento"
 
-#: apps/templates/case_studies/detail.html:179
+#: apps/templates/case_studies/detail.html:163
+#: apps/templates/executions/detail.html:294
+#: apps/templates/executions/detail.html:299
 msgid "Decision tree training"
 msgstr "Entrenamiento del árbol de decisiones"
-
-#: apps/templates/case_studies/detail.html:186
-msgid "Reporting"
-msgstr "Generación de informes"
 
 #: apps/templates/case_studies/exp_files.html:16
 #: apps/templates/case_studies/list.html:13
@@ -314,45 +313,45 @@ msgid "Export experiment data"
 msgstr "Exportar datos del experimento"
 
 #: apps/templates/case_studies/exp_files.html:88
-#: apps/templates/case_studies/list.html:146
-#: apps/templates/decision_tree_training/list.html:141
-#: apps/templates/executions/list.html:137
-#: apps/templates/extract_training_dataset/list.html:133
-#: apps/templates/feature_extraction_technique/list.html:125
-#: apps/templates/monitoring/list.html:149
-#: apps/templates/postfiltering/list.html:133
-#: apps/templates/prefiltering/list.html:133
-#: apps/templates/processdiscovery/list.html:133
+#: apps/templates/case_studies/list.html:145
+#: apps/templates/decision_tree_training/list.html:186
+#: apps/templates/executions/list.html:139
+#: apps/templates/extract_training_dataset/list.html:162
+#: apps/templates/feature_extraction_technique/list.html:160
+#: apps/templates/monitoring/list.html:156
+#: apps/templates/postfiltering/list.html:180
+#: apps/templates/prefiltering/list.html:181
+#: apps/templates/processdiscovery/list.html:180
 #: apps/templates/reporting/list.html:96
-#: apps/templates/ui_elements_detection/list.html:135
+#: apps/templates/ui_elements_detection/list.html:166
 msgid "Previous"
 msgstr "Anterior"
 
 #: apps/templates/case_studies/exp_files.html:95
-#: apps/templates/decision_tree_training/list.html:148
-#: apps/templates/extract_training_dataset/list.html:140
-#: apps/templates/feature_extraction_technique/list.html:132
-#: apps/templates/monitoring/list.html:156
-#: apps/templates/postfiltering/list.html:140
-#: apps/templates/prefiltering/list.html:140
-#: apps/templates/processdiscovery/list.html:140
+#: apps/templates/decision_tree_training/list.html:193
+#: apps/templates/extract_training_dataset/list.html:169
+#: apps/templates/feature_extraction_technique/list.html:167
+#: apps/templates/monitoring/list.html:163
+#: apps/templates/postfiltering/list.html:187
+#: apps/templates/prefiltering/list.html:188
+#: apps/templates/processdiscovery/list.html:187
 #: apps/templates/reporting/list.html:103
-#: apps/templates/ui_elements_detection/list.html:142
+#: apps/templates/ui_elements_detection/list.html:173
 msgid "(current)"
 msgstr "(actual)"
 
 #: apps/templates/case_studies/exp_files.html:101
-#: apps/templates/case_studies/list.html:159
-#: apps/templates/decision_tree_training/list.html:154
-#: apps/templates/executions/list.html:150
-#: apps/templates/extract_training_dataset/list.html:146
-#: apps/templates/feature_extraction_technique/list.html:138
-#: apps/templates/monitoring/list.html:162
-#: apps/templates/postfiltering/list.html:146
-#: apps/templates/prefiltering/list.html:146
-#: apps/templates/processdiscovery/list.html:146
+#: apps/templates/case_studies/list.html:158
+#: apps/templates/decision_tree_training/list.html:199
+#: apps/templates/executions/list.html:152
+#: apps/templates/extract_training_dataset/list.html:175
+#: apps/templates/feature_extraction_technique/list.html:173
+#: apps/templates/monitoring/list.html:169
+#: apps/templates/postfiltering/list.html:193
+#: apps/templates/prefiltering/list.html:194
+#: apps/templates/processdiscovery/list.html:193
 #: apps/templates/reporting/list.html:109
-#: apps/templates/ui_elements_detection/list.html:148
+#: apps/templates/ui_elements_detection/list.html:179
 msgid "Next"
 msgstr "Siguiente"
 
@@ -379,7 +378,7 @@ msgstr "ID"
 #: apps/templates/case_studies/list.html:46
 #: apps/templates/decision_tree_training/list.html:48
 #: apps/templates/executions/list.html:46
-#: apps/templates/extract_training_dataset/list.html:49
+#: apps/templates/extract_training_dataset/list.html:48
 #: apps/templates/feature_extraction_technique/list.html:48
 #: apps/templates/monitoring/list.html:48
 #: apps/templates/postfiltering/list.html:48
@@ -396,11 +395,15 @@ msgid "Foldername"
 msgstr "Nombre de carpeta"
 
 #: apps/templates/case_studies/list.html:48
+#: apps/templates/decision_tree_training/list.html:56
 #: apps/templates/executions/list.html:48
-#: apps/templates/extract_training_dataset/list.html:50
-#: apps/templates/feature_extraction_technique/list.html:52
-#: apps/templates/monitoring/list.html:52
-#: apps/templates/ui_elements_detection/list.html:53
+#: apps/templates/extract_training_dataset/list.html:54
+#: apps/templates/feature_extraction_technique/list.html:54
+#: apps/templates/monitoring/list.html:53
+#: apps/templates/postfiltering/list.html:54
+#: apps/templates/prefiltering/list.html:54
+#: apps/templates/processdiscovery/list.html:54
+#: apps/templates/ui_elements_detection/list.html:54
 msgid "Status"
 msgstr "Estado"
 
@@ -425,63 +428,55 @@ msgid "pending"
 msgstr "pendiente"
 
 #: apps/templates/case_studies/list.html:118
-#: apps/templates/decision_tree_training/list.html:120
-#: apps/templates/decision_tree_training/list.html:122
+#: apps/templates/decision_tree_training/list.html:146
+#: apps/templates/decision_tree_training/list.html:153
 #: apps/templates/executions/list.html:118
-#: apps/templates/extract_training_dataset/list.html:101
-#: apps/templates/feature_extraction_technique/list.html:104
-#: apps/templates/feature_extraction_technique/list.html:106
-#: apps/templates/monitoring/list.html:107
-#: apps/templates/monitoring/list.html:114
-#: apps/templates/postfiltering/list.html:112
-#: apps/templates/postfiltering/list.html:114
-#: apps/templates/prefiltering/list.html:112
-#: apps/templates/prefiltering/list.html:114
-#: apps/templates/processdiscovery/list.html:112
-#: apps/templates/processdiscovery/list.html:114
-#: apps/templates/ui_elements_detection/list.html:114
-#: apps/templates/ui_elements_detection/list.html:116
+#: apps/templates/extract_training_dataset/list.html:121
+#: apps/templates/extract_training_dataset/list.html:128
+#: apps/templates/feature_extraction_technique/list.html:120
+#: apps/templates/feature_extraction_technique/list.html:127
+#: apps/templates/monitoring/list.html:116
+#: apps/templates/monitoring/list.html:123
+#: apps/templates/postfiltering/list.html:140
+#: apps/templates/postfiltering/list.html:147
+#: apps/templates/prefiltering/list.html:141
+#: apps/templates/prefiltering/list.html:148
+#: apps/templates/processdiscovery/list.html:140
+#: apps/templates/processdiscovery/list.html:147
+#: apps/templates/ui_elements_detection/list.html:126
+#: apps/templates/ui_elements_detection/list.html:133
 msgid "Details"
 msgstr "Detalles"
 
 #: apps/templates/case_studies/list.html:119
-#: apps/templates/executions/list.html:119
 msgid "Are you sure you want to delete this case study?"
 msgstr "¿Estás seguro de que quieres eliminar este caso de estudio?"
 
 #: apps/templates/case_studies/list.html:120
-#: apps/templates/decision_tree_training/list.html:123
+#: apps/templates/decision_tree_training/list.html:167
 #: apps/templates/executions/list.html:120
-#: apps/templates/extract_training_dataset/list.html:108
-#: apps/templates/monitoring/list.html:123
-#: apps/templates/monitoring/list.html:130
-#: apps/templates/postfiltering/list.html:115
-#: apps/templates/prefiltering/list.html:115
-#: apps/templates/processdiscovery/list.html:115
-#: apps/templates/ui_elements_detection/list.html:117
+#: apps/templates/extract_training_dataset/list.html:144
+#: apps/templates/feature_extraction_technique/list.html:141
+#: apps/templates/monitoring/list.html:137
+#: apps/templates/postfiltering/list.html:161
+#: apps/templates/prefiltering/list.html:162
+#: apps/templates/processdiscovery/list.html:161
+#: apps/templates/ui_elements_detection/list.html:147
 #: venv/lib/python3.10/site-packages/django/forms/formsets.py:496
 msgid "Delete"
 msgstr "Eliminar"
 
-#: apps/templates/case_studies/list.html:121
-msgid "Are you sure you want to generate the report?"
-msgstr "¿Estás seguro de que quieres generar el informe?"
-
-#: apps/templates/case_studies/list.html:122
-msgid "Generate report"
-msgstr "Generar reporte"
-
-#: apps/templates/case_studies/list.html:125
+#: apps/templates/case_studies/list.html:124
 msgid "Execute"
 msgstr "Ejecutar"
 
-#: apps/templates/case_studies/list.html:128
+#: apps/templates/case_studies/list.html:127
 msgid "Set up at least one setup phase as active for execution."
 msgstr ""
 "Configure al menos una fase de configuración como activa para la ejecución."
 
-#: apps/templates/case_studies/list.html:153
-#: apps/templates/executions/list.html:144
+#: apps/templates/case_studies/list.html:152
+#: apps/templates/executions/list.html:146
 msgid "current"
 msgstr "actual"
 
@@ -513,8 +508,6 @@ msgstr "Entrenamiento del árbol de decisiones"
 #: apps/templates/reporting/list.html:19
 #: apps/templates/ui_elements_detection/create.html:20
 #: apps/templates/ui_elements_detection/list.html:19
-#, fuzzy, python-format
-#| msgid "Case Study %(case_study_id)s"
 msgid "Case Study %(case_study_id)s"
 msgstr "Caso de estudio %(case_study.id)s"
 
@@ -530,6 +523,50 @@ msgstr "Nuevo entrenamiento del árbol de decisiones"
 msgid "Create a new Decision Tree Training Configuration"
 msgstr ""
 "Crear una nueva configuración del entrenamiento del árbol de decisiones"
+
+#: apps/templates/decision_tree_training/form.html:8
+#: apps/templates/extract_training_dataset/form.html:10
+#: apps/templates/feature_extraction_technique/form.html:8
+#: apps/templates/monitoring/form.html:8
+#: apps/templates/postfiltering/form.html:9
+#: apps/templates/prefiltering/form.html:9
+#: apps/templates/processdiscovery/form.html:9
+#: apps/templates/ui_elements_detection/form.html:8
+msgid "Title "
+msgstr "Título"
+
+#: apps/templates/decision_tree_training/form.html:31
+#: apps/templates/extract_training_dataset/form.html:18
+#: apps/templates/feature_extraction_technique/form.html:36
+#: apps/templates/monitoring/form.html:22
+#: apps/templates/postfiltering/form.html:30
+#: apps/templates/prefiltering/form.html:30
+#: apps/templates/processdiscovery/form.html:22
+#: apps/templates/ui_elements_detection/form.html:29
+msgid "Preload Execution Results"
+msgstr ""
+
+#: apps/templates/decision_tree_training/form.html:35
+#: apps/templates/extract_training_dataset/form.html:22
+#: apps/templates/feature_extraction_technique/form.html:40
+#: apps/templates/monitoring/form.html:26
+#: apps/templates/postfiltering/form.html:34
+#: apps/templates/prefiltering/form.html:34
+#: apps/templates/processdiscovery/form.html:26
+#: apps/templates/ui_elements_detection/form.html:33
+msgid "Preload Execution Results .zip"
+msgstr ""
+
+#: apps/templates/decision_tree_training/form.html:41
+#: apps/templates/extract_training_dataset/form.html:28
+#: apps/templates/feature_extraction_technique/form.html:46
+#: apps/templates/monitoring/form.html:32
+#: apps/templates/postfiltering/form.html:40
+#: apps/templates/prefiltering/form.html:40
+#: apps/templates/processdiscovery/form.html:32
+#: apps/templates/ui_elements_detection/form.html:39
+msgid "Preloaded File already uploaded"
+msgstr ""
 
 #: apps/templates/decision_tree_training/list.html:14
 #: apps/templates/extract_training_dataset/list.html:14
@@ -557,70 +594,203 @@ msgstr "Entrenamiento del árbol de decisiones"
 msgid "Your configurations"
 msgstr "Configuración"
 
-#: apps/templates/decision_tree_training/list.html:49
+#: apps/templates/decision_tree_training/list.html:50
 msgid "library"
 msgstr "librería"
 
-#: apps/templates/decision_tree_training/list.html:50
+#: apps/templates/decision_tree_training/list.html:51
 msgid "Algorithms"
 msgstr "Algoritmos"
 
-#: apps/templates/decision_tree_training/list.html:51
+#: apps/templates/decision_tree_training/list.html:52
 msgid "One hot columns"
 msgstr "Columnas one hot"
 
-#: apps/templates/decision_tree_training/list.html:52
+#: apps/templates/decision_tree_training/list.html:53
+#: apps/templates/extract_training_dataset/list.html:51
 msgid "Columns to drop before decision point"
 msgstr "Columnas a eliminar antes del punto de decisión"
 
-#: apps/templates/decision_tree_training/list.html:86
-#: apps/templates/feature_extraction_technique/list.html:90
-#: apps/templates/postfiltering/list.html:78
-#: apps/templates/prefiltering/list.html:78
-#: apps/templates/processdiscovery/list.html:78
+#: apps/templates/decision_tree_training/list.html:54
+#: apps/templates/extract_training_dataset/list.html:52
+#: apps/templates/feature_extraction_technique/list.html:52
+#: apps/templates/monitoring/list.html:50
+#: apps/templates/postfiltering/list.html:51
+#: apps/templates/prefiltering/list.html:51
+#: apps/templates/processdiscovery/list.html:52
+#: apps/templates/ui_elements_detection/list.html:50
+msgid "Preloaded results"
+msgstr ""
+
+#: apps/templates/decision_tree_training/list.html:55
+#: apps/templates/extract_training_dataset/list.html:53
+#: apps/templates/feature_extraction_technique/list.html:53
+#: apps/templates/monitoring/list.html:52
+#: apps/templates/postfiltering/list.html:53
+#: apps/templates/prefiltering/list.html:53
+#: apps/templates/processdiscovery/list.html:53
+#: apps/templates/ui_elements_detection/list.html:53
+msgid "Executed"
+msgstr "Ejecutado"
+
+#: apps/templates/decision_tree_training/list.html:92
+#: apps/templates/extract_training_dataset/list.html:84
+#: apps/templates/feature_extraction_technique/list.html:84
+#: apps/templates/monitoring/list.html:77
+#: apps/templates/postfiltering/list.html:81
+#: apps/templates/prefiltering/list.html:82
+#: apps/templates/processdiscovery/list.html:84
+#: apps/templates/ui_elements_detection/list.html:78
+#: apps/templates/ui_elements_detection/list.html:89
+#: apps/templates/ui_elements_detection/list.html:91
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:771
+msgid "Yes"
+msgstr ""
+
+#: apps/templates/decision_tree_training/list.html:95
+#: apps/templates/extract_training_dataset/list.html:87
+#: apps/templates/feature_extraction_technique/list.html:87
+#: apps/templates/monitoring/list.html:80
+#: apps/templates/postfiltering/list.html:84
+#: apps/templates/prefiltering/list.html:85
+#: apps/templates/processdiscovery/list.html:87
+#: apps/templates/ui_elements_detection/list.html:81
+#: apps/templates/ui_elements_detection/list.html:93
+#: venv/lib/python3.10/site-packages/django/forms/widgets.py:772
+msgid "No"
+msgstr ""
+
+#: apps/templates/decision_tree_training/list.html:120
+#: apps/templates/extract_training_dataset/list.html:94
+#: apps/templates/feature_extraction_technique/list.html:94
+#: apps/templates/monitoring/list.html:90
+#: apps/templates/postfiltering/list.html:94
+#: apps/templates/prefiltering/list.html:95
+#: apps/templates/processdiscovery/list.html:114
 #: apps/templates/ui_elements_detection/list.html:100
+msgid "Already Executed"
+msgstr "Ya ejecutado"
+
+#: apps/templates/decision_tree_training/list.html:123
+#: apps/templates/extract_training_dataset/list.html:97
+#: apps/templates/feature_extraction_technique/list.html:97
+#: apps/templates/monitoring/list.html:93
+#: apps/templates/postfiltering/list.html:97
+#: apps/templates/processdiscovery/list.html:117
+#: apps/templates/ui_elements_detection/list.html:103
+msgid "Not Executed"
+msgstr "No ejecutado"
+
+#: apps/templates/decision_tree_training/list.html:131
+#: apps/templates/feature_extraction_technique/list.html:105
+#: apps/templates/postfiltering/list.html:105
+#: apps/templates/prefiltering/list.html:106
+#: apps/templates/processdiscovery/list.html:125
+#: apps/templates/ui_elements_detection/list.html:111
 msgid "active"
 msgstr "activo"
 
-#: apps/templates/decision_tree_training/list.html:89
-#: apps/templates/feature_extraction_technique/list.html:93
-#: apps/templates/postfiltering/list.html:81
-#: apps/templates/prefiltering/list.html:81
-#: apps/templates/processdiscovery/list.html:81
-#: apps/templates/ui_elements_detection/list.html:103
+#: apps/templates/decision_tree_training/list.html:134
+#: apps/templates/feature_extraction_technique/list.html:108
+#: apps/templates/postfiltering/list.html:108
+#: apps/templates/prefiltering/list.html:109
+#: apps/templates/processdiscovery/list.html:128
+#: apps/templates/ui_elements_detection/list.html:114
 msgid "not active"
 msgstr "no activo"
 
-#: apps/templates/decision_tree_training/list.html:123
+#: apps/templates/decision_tree_training/list.html:148
+#: apps/templates/decision_tree_training/list.html:155
+#: apps/templates/extract_training_dataset/list.html:123
+#: apps/templates/extract_training_dataset/list.html:130
+#: apps/templates/feature_extraction_technique/list.html:122
+#: apps/templates/feature_extraction_technique/list.html:129
+#: apps/templates/monitoring/list.html:118
+#: apps/templates/monitoring/list.html:125
+#: apps/templates/postfiltering/list.html:142
+#: apps/templates/postfiltering/list.html:149
+#: apps/templates/prefiltering/list.html:143
+#: apps/templates/prefiltering/list.html:150
+#: apps/templates/processdiscovery/list.html:142
+#: apps/templates/processdiscovery/list.html:149
+#: apps/templates/ui_elements_detection/list.html:128
+#: apps/templates/ui_elements_detection/list.html:135
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#: apps/templates/decision_tree_training/list.html:150
+#: apps/templates/decision_tree_training/list.html:162
+#: apps/templates/extract_training_dataset/list.html:125
+#: apps/templates/extract_training_dataset/list.html:137
+#: apps/templates/feature_extraction_technique/list.html:124
+#: apps/templates/feature_extraction_technique/list.html:136
+#: apps/templates/monitoring/list.html:120
+#: apps/templates/monitoring/list.html:132
+#: apps/templates/postfiltering/list.html:144
+#: apps/templates/postfiltering/list.html:156
+#: apps/templates/prefiltering/list.html:145
+#: apps/templates/prefiltering/list.html:157
+#: apps/templates/processdiscovery/list.html:144
+#: apps/templates/processdiscovery/list.html:156
+#: apps/templates/ui_elements_detection/list.html:130
+#: apps/templates/ui_elements_detection/list.html:142
+msgid "Deactivate"
+msgstr "Desactivar"
+
+#: apps/templates/decision_tree_training/list.html:157
+#: apps/templates/decision_tree_training/list.html:169
+#: apps/templates/extract_training_dataset/list.html:132
+#: apps/templates/extract_training_dataset/list.html:142
+#: apps/templates/feature_extraction_technique/list.html:131
+#: apps/templates/feature_extraction_technique/list.html:143
+#: apps/templates/monitoring/list.html:127
+#: apps/templates/monitoring/list.html:139
+#: apps/templates/postfiltering/list.html:151
+#: apps/templates/postfiltering/list.html:163
+#: apps/templates/prefiltering/list.html:152
+#: apps/templates/prefiltering/list.html:164
+#: apps/templates/processdiscovery/list.html:151
+#: apps/templates/processdiscovery/list.html:163
+#: apps/templates/ui_elements_detection/list.html:137
+#: apps/templates/ui_elements_detection/list.html:149
+msgid "Activate"
+msgstr "Activar"
+
+#: apps/templates/decision_tree_training/list.html:160
+#: apps/templates/decision_tree_training/list.html:165
+#: apps/templates/extract_training_dataset/list.html:135
+#: apps/templates/extract_training_dataset/list.html:140
+#: apps/templates/feature_extraction_technique/list.html:134
+#: apps/templates/feature_extraction_technique/list.html:139
+#: apps/templates/monitoring/list.html:130
+#: apps/templates/monitoring/list.html:135
+#: apps/templates/postfiltering/list.html:154
+#: apps/templates/postfiltering/list.html:159
+#: apps/templates/prefiltering/list.html:155
+#: apps/templates/prefiltering/list.html:160
+#: apps/templates/processdiscovery/list.html:154
+#: apps/templates/processdiscovery/list.html:159
+#: apps/templates/ui_elements_detection/list.html:140
+#: apps/templates/ui_elements_detection/list.html:145
+msgid "Edit"
+msgstr "Editar"
+
+#: apps/templates/decision_tree_training/list.html:166
+#: apps/templates/feature_extraction_technique/list.html:140
 msgid "Are you sure you want to delete this decision tree training?"
 msgstr "¿Estás seguro de que quieres eliminar este árbol de decisiones?"
 
-#: apps/templates/decision_tree_training/list.html:124
-#: apps/templates/feature_extraction_technique/list.html:108
-#: apps/templates/postfiltering/list.html:116
-#: apps/templates/prefiltering/list.html:116
-#: apps/templates/processdiscovery/list.html:116
-#: apps/templates/ui_elements_detection/list.html:118
-msgid "Set as active"
-msgstr "Marcar como activo"
-
 #: apps/templates/executions/detail.html:5
 #: apps/templates/executions/list.html:4 apps/templates/executions/list.html:13
-#, fuzzy
-#| msgid "Execute"
 msgid "Executions"
 msgstr "Ejecutar"
 
 #: apps/templates/executions/detail.html:15
-#, fuzzy
-#| msgid "Go Back to Case Studies"
 msgid "Go Back to Executions"
 msgstr "Volver a Casos de estudio"
 
 #: apps/templates/executions/detail.html:16
 #: apps/templates/executions/detail.html:36
-#, fuzzy, python-format
-#| msgid "Pre-Filtering %(prefilter.id)s details"
 msgid "Execution %(execution.id)s details"
 msgstr "Detalles de pre-filtrado %(prefilter.id)s"
 
@@ -630,22 +800,57 @@ msgid "Execution %(execution.id)s"
 msgstr ""
 
 #: apps/templates/executions/detail.html:47
-#, fuzzy
-#| msgid "Not Executed"
 msgid "Nice Execution"
 msgstr "No ejecutado"
 
 #: apps/templates/executions/detail.html:61
-#, fuzzy
-#| msgid "This is a case study full of data..."
 msgid "This is a execution full of data..."
 msgstr "Este es un caso de estudio lleno de datos..."
 
+#: apps/templates/executions/detail.html:68
+msgid "Folder path"
+msgstr "Ruta de la carpeta"
+
+#: apps/templates/executions/detail.html:76
+msgid "Decision Oracle"
+msgstr "Oráculo de decisión"
+
+#: apps/templates/executions/detail.html:77
+msgid "CheckBox_4_D and ImageView_2_B"
+msgstr "CheckBox_4_D e ImageView_2_B"
+
+#: apps/templates/executions/detail.html:87
+msgid "Special columns names"
+msgstr "Nombres de columnas especiales"
+
+#: apps/templates/executions/detail.html:107
+msgid "Target label column name"
+msgstr "Nombre de columna de etiqueta objetivo"
+
+#: apps/templates/executions/detail.html:108
+msgid "Variant"
+msgstr "Variante"
+
+#: apps/templates/executions/detail.html:196
+#: apps/templates/executions/detail.html:201
+msgid "Post-filtering"
+msgstr "Post-filtrado"
+
 #: apps/templates/executions/list.html:37
-#, fuzzy
-#| msgid "Your configurations"
 msgid "Your executions"
 msgstr "Configuración"
+
+#: apps/templates/executions/list.html:119
+msgid "Are you sure you want to delete this execution?"
+msgstr "¿Estás seguro de que quieres eliminar este pre-filtrado?"
+
+#: apps/templates/executions/list.html:121
+msgid "Are you sure you want to generate the report?"
+msgstr "¿Estás seguro de que quieres generar el informe?"
+
+#: apps/templates/executions/list.html:122
+msgid "Generate report"
+msgstr "Generar reporte"
 
 #: apps/templates/extract_training_dataset/create.html:15
 #: apps/templates/extract_training_dataset/details.html:15
@@ -679,21 +884,15 @@ msgstr "Extraer configuración de datos de entrenamiento"
 msgid "Extract Training Dataset Details"
 msgstr "Extraer conjunto de datos de entrenamiento"
 
-#: apps/templates/extract_training_dataset/form.html:10
-#: apps/templates/monitoring/form.html:8
-#: apps/templates/ui_elements_detection/form.html:8
-msgid "Title "
-msgstr "Título"
-
-#: apps/templates/extract_training_dataset/form.html:23
+#: apps/templates/extract_training_dataset/form.html:40
 msgid "Decision Point to Study "
 msgstr "Punto de decisión a estudiar"
 
-#: apps/templates/extract_training_dataset/form.html:32
+#: apps/templates/extract_training_dataset/form.html:49
 msgid "User Actions Columns "
 msgstr "Columnas de Acciones del Usuario "
 
-#: apps/templates/extract_training_dataset/form.html:41
+#: apps/templates/extract_training_dataset/form.html:58
 msgid "Additional Configuration (JSON)"
 msgstr "Configuraciones adicionales"
 
@@ -703,48 +902,49 @@ msgstr "Configuraciones adicionales"
 msgid "Extract Training Dataset Configurations"
 msgstr "Extraer configuración de datos de entrenamiento"
 
-#: apps/templates/extract_training_dataset/list.html:51
-#: apps/templates/feature_extraction_technique/list.html:51
-#: apps/templates/monitoring/list.html:51
-#: apps/templates/ui_elements_detection/list.html:52
-msgid "Executed"
-msgstr "Ejecutado"
+#: apps/templates/extract_training_dataset/list.html:50
+msgid "Columns to drop"
+msgstr "Columnas a descartar"
 
-#: apps/templates/extract_training_dataset/list.html:77
-#: apps/templates/monitoring/list.html:92
+#: apps/templates/extract_training_dataset/list.html:106
+#: apps/templates/monitoring/list.html:101
 msgid "Active"
 msgstr "Activo"
 
-#: apps/templates/extract_training_dataset/list.html:80
-msgid "Not active"
+#: apps/templates/extract_training_dataset/list.html:109
+#: apps/templates/monitoring/list.html:104
+msgid "Not Active"
 msgstr "No activo"
 
-#: apps/templates/extract_training_dataset/list.html:103
-#: apps/templates/monitoring/list.html:109
-#: apps/templates/monitoring/list.html:116
-msgid "Duplicate"
-msgstr "Duplicar"
-
-#: apps/templates/extract_training_dataset/list.html:106
-#: apps/templates/monitoring/list.html:121
-#: apps/templates/monitoring/list.html:128
-msgid "Edit"
-msgstr "Editar"
-
-#: apps/templates/extract_training_dataset/list.html:107
-msgid ""
-"Are you sure you want to delete this extract_training_dataset log mapping?"
+#: apps/templates/extract_training_dataset/list.html:143
+msgid "Are you sure you want to delete this extract training dataset?"
 msgstr "¿Estás seguro de que quieres eliminar esta extracción de datos?"
 
-#: apps/templates/extract_training_dataset/list.html:112
-msgid "Deactivate"
-msgstr "Desactivar"
+#: apps/templates/extract_training_dataset/result.html:15
+#: apps/templates/feature_extraction_technique/result.html:15
+#: apps/templates/monitoring/result.html:15
+msgid "Go Back to Execution"
+msgstr "Volver a Casos de estudio"
 
-#: apps/templates/extract_training_dataset/list.html:115
-#: apps/templates/monitoring/list.html:118
-#: apps/templates/monitoring/list.html:132
-msgid "Activate"
-msgstr "Activar"
+#: apps/templates/extract_training_dataset/result.html:16
+msgid "Extract Training Dataset Results Details"
+msgstr "Extraer conjunto de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/result.html:20
+#: apps/templates/feature_extraction_technique/result.html:20
+#: apps/templates/monitoring/result.html:20
+msgid "Execution %(execution.id)s "
+msgstr "Detalles de pre-filtrado %(prefilter.id)s"
+
+#: apps/templates/extract_training_dataset/result.html:21
+msgid "Extract Training Dataset result"
+msgstr "Extraer conjunto de datos de entrenamiento"
+
+#: apps/templates/extract_training_dataset/result.html:67
+#: apps/templates/feature_extraction_technique/result.html:67
+#: apps/templates/monitoring/result.html:76
+msgid "Download"
+msgstr "Descargar informe"
 
 #: apps/templates/feature_extraction_technique/create.html:15
 msgid "Go Back to Feature Extraction Technique Configurations"
@@ -768,37 +968,37 @@ msgid "Create a new Feature Extraction Technique Configuration"
 msgstr ""
 "Crear una nueva configuración de técnicas de extracción de características"
 
-#: apps/templates/feature_extraction_technique/form.html:8
-#, fuzzy
-#| msgid "Identifier"
+#: apps/templates/feature_extraction_technique/form.html:15
 msgid "Identifier "
 msgstr "Identificador"
 
-#: apps/templates/feature_extraction_technique/form.html:15
-#: apps/templates/ui_elements_detection/form.html:15
+#: apps/templates/feature_extraction_technique/form.html:22
+#: apps/templates/monitoring/form.html:15
+#: apps/templates/postfiltering/form.html:16
+#: apps/templates/prefiltering/form.html:16
+msgid "Type "
+msgstr "Tipo"
+
+#: apps/templates/feature_extraction_technique/form.html:29
 msgid "Technique "
 msgstr "Nombre de la técnica"
 
-#: apps/templates/feature_extraction_technique/form.html:22
-#: apps/templates/monitoring/list.html:50
+#: apps/templates/feature_extraction_technique/form.html:53
+#: apps/templates/monitoring/list.html:51
 #: apps/templates/postfiltering/detail.html:65
-#: apps/templates/postfiltering/list.html:50
+#: apps/templates/postfiltering/list.html:52
 #: apps/templates/prefiltering/detail.html:65
-#: apps/templates/prefiltering/list.html:50
-#: apps/templates/processdiscovery/list.html:50
+#: apps/templates/prefiltering/list.html:52
+#: apps/templates/processdiscovery/list.html:51
 #: apps/templates/reporting/list.html:50
 msgid "Configurations"
 msgstr "Configuraciones"
 
-#: apps/templates/feature_extraction_technique/form.html:27
-#, fuzzy
-#| msgid "Apply Filtering (Relevant Component Selection)"
+#: apps/templates/feature_extraction_technique/form.html:58
 msgid "Apply filtering (Relevant Component Selection)"
 msgstr "Aplicar Filtrado (Selección de components relevantes)"
 
-#: apps/templates/feature_extraction_technique/form.html:31
-#, fuzzy
-#| msgid "Condition for a UI Component to be relevant"
+#: apps/templates/feature_extraction_technique/form.html:62
 msgid "Condition for a UI component to be relevant"
 msgstr "Condición para que un Componente UI sea relevante"
 
@@ -808,24 +1008,21 @@ msgstr "Condición para que un Componente UI sea relevante"
 msgid "Feature Extraction Technique Configurations"
 msgstr "Configuraciones de técnicas de extracción de características"
 
-#: apps/templates/feature_extraction_technique/list.html:49
+#: apps/templates/feature_extraction_technique/list.html:50
 msgid "Technique name"
 msgstr "Nombre de la técnica"
 
-#: apps/templates/feature_extraction_technique/list.html:50
+#: apps/templates/feature_extraction_technique/list.html:51
 msgid "Identifier"
 msgstr "Identificador"
 
-#: apps/templates/feature_extraction_technique/list.html:80
-#: apps/templates/feature_extraction_technique/list.html:82
-msgid "Not executed"
-msgstr "No ejecutado"
+#: apps/templates/feature_extraction_technique/result.html:16
+msgid "Feature Extraction Results Details"
+msgstr "Configuraciones de técnicas de extracción de características"
 
-#: apps/templates/feature_extraction_technique/list.html:107
-msgid "Are you sure you want to delete this feature extraction technique?"
-msgstr ""
-"¿Estás seguro de que quieres eliminar esta técnica de extracción de "
-"características?"
+#: apps/templates/feature_extraction_technique/result.html:21
+msgid "Feature Extraction result"
+msgstr "Extracción de características"
 
 #: apps/templates/includes/footer-fullscreen.html:9
 #: apps/templates/includes/footer.html:8
@@ -842,7 +1039,7 @@ msgid "Follow us on Twitter"
 msgstr "Síguenos en Twitter"
 
 #: apps/templates/includes/navigation-fullscreen.html:68
-#: apps/templates/includes/sidenav.html:132
+#: apps/templates/includes/sidenav.html:142
 msgid "PRO Version"
 msgstr "Versión PRO"
 
@@ -890,6 +1087,10 @@ msgstr "Recursos"
 #: apps/templates/includes/sidenav.html:123
 msgid "More solutions"
 msgstr "Configuración"
+
+#: apps/templates/includes/sidenav.html:132
+msgid "Access to Webgazer"
+msgstr "Acceso a Webgazer"
 
 #: apps/templates/layouts/base-fullscreen.html:55
 msgid ""
@@ -952,72 +1153,73 @@ msgstr "Monitoreo %(monitoring.id)s"
 msgid "Edit fields"
 msgstr "Editar campos"
 
-#: apps/templates/monitoring/form.html:15
-msgid "Type "
-msgstr "Tipo"
-
-#: apps/templates/monitoring/form.html:26
+#: apps/templates/monitoring/form.html:43
 msgid "UI Log Filename"
 msgstr "Nombre del UI Log "
 
-#: apps/templates/monitoring/form.html:31
+#: apps/templates/monitoring/form.html:48
 msgid "UI Log Separator"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:38
+#: apps/templates/monitoring/form.html:55
 msgid "Gaze Log Filename"
 msgstr "Nombre del Gaze Log"
 
-#: apps/templates/monitoring/form.html:43
+#: apps/templates/monitoring/form.html:60
 msgid "Gaze Log Adjustment"
 msgstr "Ajusten en el Gaze Log"
 
-#: apps/templates/monitoring/form.html:48
+#: apps/templates/monitoring/form.html:65
 msgid "System Info. Log"
 msgstr "Log de Info. del Sistema"
 
+#: apps/templates/monitoring/form.html:69
+msgid "Webgazer options"
+msgstr "Opciones de Webgazer"
+
+#: apps/templates/monitoring/form.html:71
+msgid "Screen Inches"
+msgstr "Pulgadas de la pantalla"
+
+#: apps/templates/monitoring/form.html:76
+msgid "Observer Camera Distance (in centimetres)"
+msgstr "Distancia del observador a la cámara (en centímetros)"
+
+#: apps/templates/monitoring/form.html:81
+msgid "Screen Width (in pixels)"
+msgstr "Ancho de la pantalla (en píxeles)"
+
+#: apps/templates/monitoring/form.html:86
+msgid "Screen Height (in pixels)"
+msgstr "Altura de la pantalla (en píxeles)"
+
 #: apps/templates/monitoring/list.html:15
 #: apps/templates/monitoring/list.html:40
-msgid "Behaviour Monitoring Configurations"
-msgstr "Configuraciones de monitoreo de comportamiento"
+msgid "Log Processing Configurations"
+msgstr "Nueva configuración de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/list.html:49
 #: apps/templates/postfiltering/detail.html:57
-#: apps/templates/postfiltering/list.html:49
+#: apps/templates/postfiltering/list.html:50
 #: apps/templates/prefiltering/detail.html:57
-#: apps/templates/prefiltering/list.html:49
-#: apps/templates/processdiscovery/list.html:49
+#: apps/templates/prefiltering/list.html:50
+#: apps/templates/processdiscovery/list.html:50
 #: apps/templates/reporting/list.html:49
 msgid "Type"
 msgstr "Tipo"
 
-#: apps/templates/monitoring/list.html:81
-#: apps/templates/extract_training_dataset/list.html:87
-msgid "Already Executed"
-msgstr "Ya ejecutado"
-
-#: apps/templates/monitoring/list.html:84
-#: apps/templates/extract_training_dataset/list.html:89
-msgid "Not Executed"
-msgstr "No ejecutado"
-
-#: apps/templates/monitoring/list.html:95
-msgid "Not Active"
-msgstr "No activo"
-
-#: apps/templates/monitoring/list.html:111
-msgid "Inactivate"
-msgstr "Inactivo"
-
-#: apps/templates/monitoring/list.html:122
-#: apps/templates/monitoring/list.html:129
+#: apps/templates/monitoring/list.html:136
 msgid "Are you sure you want to delete this monitoring log mapping?"
 msgstr ""
 "¿Estás seguro de que quieres eliminar este mapeo de registro de monitoreo?"
 
-#: apps/templates/monitoring/list.html:125
-msgid "Inacivate"
-msgstr "Inactivo"
+#: apps/templates/monitoring/result.html:16
+msgid "Log Processing Results Details"
+msgstr "Detalles de la configuración de monitoreo de comportamiento"
+
+#: apps/templates/monitoring/result.html:21
+msgid "Log Processing result"
+msgstr "Monitoreo de comportamiento"
 
 #: apps/templates/postfiltering/create.html:15
 msgid "Go Back to Post-Filtering Configurations"
@@ -1071,8 +1273,8 @@ msgstr "Configuraciones de post-filtrado"
 msgid "New Postfiltering Configuration"
 msgstr "Nueva configuración de post-filtrado"
 
-#: apps/templates/postfiltering/list.html:115
-msgid "Are you sure you want to delete this postfiltering?"
+#: apps/templates/postfiltering/list.html:160
+msgid "Are you sure you want to delete this postfilter?"
 msgstr "¿Estás seguro de que quieres eliminar este post-filtrado?"
 
 #: apps/templates/prefiltering/create.html:15
@@ -1130,8 +1332,12 @@ msgstr "Configuraciones de pre-filtrado"
 msgid "Prefilter Configurations"
 msgstr "Configuraciones de pre-filtrado"
 
-#: apps/templates/prefiltering/list.html:115
-msgid "Are you sure you want to delete this prefiltering?"
+#: apps/templates/prefiltering/list.html:98
+msgid "Not executed"
+msgstr "No ejecutado"
+
+#: apps/templates/prefiltering/list.html:161
+msgid "Are you sure you want to delete this prefilter?"
 msgstr "¿Estás seguro de que quieres eliminar este pre-filtrado?"
 
 #: apps/templates/processdiscovery/create.html:15
@@ -1161,9 +1367,11 @@ msgstr "Crear una nueva configuración de descubrimiento de procesos"
 msgid "Process Discovery Configurations"
 msgstr "Configuraciones de descubrimiento de procesos"
 
-#: apps/templates/processdiscovery/list.html:115
-msgid "Are you sure you want to delete this process discovery?"
-msgstr "¿Estás seguro de que quieres eliminar este descubrimiento de procesos?"
+#: apps/templates/processdiscovery/list.html:160
+#: apps/templates/ui_elements_detection/list.html:146
+msgid "Are you sure you want to delete this UI element detection?"
+msgstr ""
+"¿Estás seguro de que quieres eliminar esta detección de elementos de UI?"
 
 #: apps/templates/reporting/list.html:15 apps/templates/reporting/list.html:20
 #: apps/templates/reporting/list.html:40
@@ -1198,15 +1406,19 @@ msgstr "Nueva detección de elementos de UI"
 msgid "Create a new UI Elements Detection Configuration"
 msgstr "Crear una nueva configuración de detección de elementos de UI"
 
+#: apps/templates/ui_elements_detection/form.html:15
+msgid "Detection Technique "
+msgstr "Nueva técnica de extracción de características"
+
 #: apps/templates/ui_elements_detection/form.html:22
 msgid "Classification Model"
 msgstr "Clasificación de elementos de UI"
 
-#: apps/templates/ui_elements_detection/form.html:34
+#: apps/templates/ui_elements_detection/form.html:51
 msgid "Apply OCR"
 msgstr "Aplicar OCR"
 
-#: apps/templates/ui_elements_detection/form.html:40
+#: apps/templates/ui_elements_detection/form.html:57
 msgid "Additional Configurations"
 msgstr "Configuraciones adicionales"
 
@@ -1220,29 +1432,49 @@ msgstr "Configuraciones de detección de elementos de UI"
 msgid "New UI Elements Detection"
 msgstr "Nueva detección de elementos de UI"
 
-#: apps/templates/ui_elements_detection/list.html:50
+#: apps/templates/ui_elements_detection/list.html:51
 msgid "Technique"
 msgstr "Técnica"
 
-#: apps/templates/ui_elements_detection/list.html:51
+#: apps/templates/ui_elements_detection/list.html:52
 msgid "Classification"
 msgstr "Clasificación"
 
-#: apps/templates/ui_elements_detection/list.html:80
-#: apps/templates/ui_elements_detection/list.html:82
-#: venv/lib/python3.10/site-packages/django/forms/widgets.py:771
-msgid "Yes"
-msgstr ""
+#: apps/templates/ui_elements_detection/results.html:20
+msgid "Go Back to UI Elements Detection Details"
+msgstr "Volver a detalles de detección de elementos de UI"
 
-#: apps/templates/ui_elements_detection/list.html:84
-#: venv/lib/python3.10/site-packages/django/forms/widgets.py:772
-msgid "No"
-msgstr ""
+#: apps/templates/ui_elements_detection/results.html:21
+msgid "UI Elements Detection Results"
+msgstr "Detección de elementos de UI"
 
-#: apps/templates/ui_elements_detection/list.html:117
-msgid "Are you sure you want to delete this ui element detection?"
-msgstr ""
-"¿Estás seguro de que quieres eliminar esta detección de elementos de UI?"
+#: apps/templates/ui_elements_detection/results.html:25
+msgid "Execution"
+msgstr "Ejecución"
+
+#: apps/templates/ui_elements_detection/results.html:26
+msgid "Execution Details"
+msgstr "Detalles de Ejecucion"
+
+#: apps/templates/ui_elements_detection/results.html:27
+msgid "Detections"
+msgstr "Detecciones"
+
+#: apps/templates/ui_elements_detection/results.html:44
+msgid "Detections"
+msgstr "Detecciones"
+
+#: apps/templates/ui_elements_detection/results.html:76
+msgid "Show detections from classes:"
+msgstr "Mostrar detecciones de las clases:"
+
+#: apps/templates/ui_elements_detection/results.html:80
+msgid "Show all"
+msgstr "Mostrar todo"
+
+#: apps/templates/ui_elements_detection/results.html:96
+msgid "Loading Screen Object Model..."
+msgstr "Cargando Screen Object Model..."
 
 #: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:420
 msgid "open('foo"
@@ -1483,8 +1715,6 @@ msgid "Couldn't detect Bash version, shell completion is not supported."
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/click/termui.py:160
-#, fuzzy
-#| msgid "Reporting Configurations"
 msgid "Repeat for confirmation"
 msgstr "Configuraciones de generación de informes"
 
@@ -1546,8 +1776,6 @@ msgid "{value!r} is not a valid UUID."
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/click/types.py:811
-#, fuzzy
-#| msgid "My files"
 msgid "file"
 msgstr "Mis archivos"
 
@@ -1604,8 +1832,6 @@ msgid "Static Files"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/contrib/syndication/apps.py:7
-#, fuzzy
-#| msgid " notifications."
 msgid "Syndication"
 msgstr " notificaciones."
 
@@ -1861,8 +2087,6 @@ msgid ""
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1471
-#, fuzzy
-#| msgid "I agree with the "
 msgid "Date (with time)"
 msgstr "Estoy de acuerdo con la "
 
@@ -1883,8 +2107,6 @@ msgid ""
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1758
-#, fuzzy
-#| msgid "Configuration"
 msgid "Duration"
 msgstr "Configuración"
 
@@ -1893,8 +2115,6 @@ msgid "Email address"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1835
-#, fuzzy
-#| msgid "Folder path"
 msgid "File path"
 msgstr "Ruta de la carpeta"
 
@@ -1999,8 +2219,6 @@ msgid "Universally unique identifier"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/db/models/fields/files.py:232
-#, fuzzy
-#| msgid "Filename"
 msgid "File"
 msgstr "Nombre de archivo"
 
@@ -2218,8 +2436,6 @@ msgid "Clear"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/forms/widgets.py:440
-#, fuzzy
-#| msgid "current"
 msgid "Currently"
 msgstr "actual"
 
@@ -2349,8 +2565,6 @@ msgid "Fri"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/utils/dates.py:21
-#, fuzzy
-#| msgid "Status"
 msgid "Sat"
 msgstr "Estado"
 
@@ -2400,8 +2614,6 @@ msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/utils/dates.py:33
 #: venv/lib/python3.10/site-packages/tornado/locale.py:289
-#, fuzzy
-#| msgid "Remember me"
 msgid "September"
 msgstr "Recordarme"
 
@@ -2417,8 +2629,6 @@ msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/utils/dates.py:36
 #: venv/lib/python3.10/site-packages/tornado/locale.py:292
-#, fuzzy
-#| msgid "Remember me"
 msgid "December"
 msgstr "Recordarme"
 
@@ -2571,8 +2781,6 @@ msgid "August"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/utils/dates.py:75
-#, fuzzy
-#| msgid "Remember me"
 msgctxt "alt. month"
 msgid "September"
 msgstr "Recordarme"
@@ -2588,8 +2796,6 @@ msgid "November"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/django/utils/dates.py:78
-#, fuzzy
-#| msgid "Remember me"
 msgctxt "alt. month"
 msgid "December"
 msgstr "Recordarme"
@@ -2920,8 +3126,6 @@ msgid "Enter a valid version number in X.Y.Z format."
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/semantic_version/django_fields.py:52
-#, fuzzy
-#| msgid "PRO Version"
 msgid "Version"
 msgstr "Versión PRO"
 
@@ -3022,8 +3226,36 @@ msgctxt "stick"
 msgid "club"
 msgstr ""
 
-#~ msgid "Columns to drop"
-#~ msgstr "Columnas a descartar"
+#~ msgid "Reporting"
+#~ msgstr "Generación de informes"
+
+#~ msgid "Set as active"
+#~ msgstr "Marcar como activo"
+
+#~ msgid "Not active"
+#~ msgstr "No activo"
+
+#~ msgid "Are you sure you want to delete this feature extraction technique?"
+#~ msgstr ""
+#~ "¿Estás seguro de que quieres eliminar esta técnica de extracción de "
+#~ "características?"
+
+#~ msgid "Behaviour Monitoring Configurations"
+#~ msgstr "Configuraciones de monitoreo de comportamiento"
+
+#~ msgid "Inactivate"
+#~ msgstr "Inactivo"
+
+#~ msgid "Inacivate"
+#~ msgstr "Inactivo"
+
+#~ msgid "Are you sure you want to delete this process discovery?"
+#~ msgstr ""
+#~ "¿Estás seguro de que quieres eliminar este descubrimiento de procesos?"
+
+#~ msgid "Are you sure you want to delete this ui element detection?"
+#~ msgstr ""
+#~ "¿Estás seguro de que quieres eliminar esta detección de elementos de UI?"
 
 #~ msgid "Skip"
 #~ msgstr "Saltar"
@@ -3036,9 +3268,6 @@ msgstr ""
 
 #~ msgid "text"
 #~ msgstr "texto"
-
-#~ msgid "Post-filtering"
-#~ msgstr "Post-filtrado"
 
 #~ msgid "Go Back to UI Elements Classification Configurations"
 #~ msgstr "Volver a Configuración de clasificación de elementos de UI"
@@ -3066,7 +3295,3 @@ msgstr ""
 
 #~ msgid "Model properties"
 #~ msgstr "Propiedades del modelo"
-
-#~ msgid "Are you sure you want to delete this UI element detection?"
-#~ msgstr ""
-#~ "¿Estás seguro de que quieres eliminar esta detección de elementos de UI?"

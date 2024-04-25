@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-12 10:09+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,82 +18,104 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/decisiondiscovery/decision_trees.py:254
-msgid "Grid Search Best Params:\n"
-msgstr "Mejores parámetros de búsqueda en cuadrícula:\n"
-
-#: apps/decisiondiscovery/decision_trees.py:268
-msgid "Fold %(i):"
-msgstr "Iteración %(i):"
-
-#: apps/decisiondiscovery/decision_trees.py:269
-msgid "  Train: index=%(train_index)"
-msgstr "  Entrenamiento: índice=%(train_index)"
-
-#: apps/decisiondiscovery/decision_trees.py:270
-msgid "  Test:  index=%(test_index)"
-msgstr "  Prueba:  índice=%(test_index)"
-
-#: apps/decisiondiscovery/decision_trees.py:279
-#: apps/decisiondiscovery/decision_trees.py:293
-msgid "Decision Model Option Not Valid"
-msgstr "Opción de modelo de decisión no válida"
-
-#: apps/decisiondiscovery/decision_trees.py:305
-msgid "  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) "
-msgstr "  K-Fold Estratificado:  precisión=%(acc) puntaje_f1=%(f1) "
-
-#: apps/decisiondiscovery/forms.py:24
-msgid "Title "
+#: apps/decisiondiscovery/forms.py:26
+msgid "Title"
 msgstr "Título "
 
-#: apps/decisiondiscovery/forms.py:25
-msgid "Decision Point To Study "
+#: apps/decisiondiscovery/forms.py:27
+msgid "Decision Point To Study"
 msgstr "Punto de Decisión a Estudiar "
 
-#: apps/decisiondiscovery/forms.py:26 apps/decisiondiscovery/forms.py:76
-msgid "Columns to drop before decision point "
+#: apps/decisiondiscovery/forms.py:28 apps/decisiondiscovery/forms.py:30
+#: apps/decisiondiscovery/forms.py:97
+msgid "Columns to drop before decision point"
 msgstr "Columnas a eliminar antes del punto de decisión "
 
-#: apps/decisiondiscovery/forms.py:27
+#: apps/decisiondiscovery/forms.py:29
 msgid "Additional Configurations (JSON)"
 msgstr "Configuración adiccional (JSON)"
 
-#: apps/decisiondiscovery/forms.py:73
+#: apps/decisiondiscovery/forms.py:31
+msgid "Target label"
+msgstr "Clase objetivo"
+
+#: apps/decisiondiscovery/forms.py:52
+msgid "Variant"
+msgstr "Variante"
+
+#: apps/decisiondiscovery/forms.py:94
 msgid "Library"
 msgstr "Librería"
 
-#: apps/decisiondiscovery/forms.py:74
+#: apps/decisiondiscovery/forms.py:95
 msgid "Configuration"
 msgstr "Configuración"
 
-#: apps/decisiondiscovery/forms.py:75
+#: apps/decisiondiscovery/forms.py:96
 msgid "One hot columns"
 msgstr "Columnas one hot"
 
-#: apps/decisiondiscovery/models.py:124
-msgid ""
-"To be able to apply decision tree training, a extract training dataset has "
-"to exist"
-msgstr ""
-"Para poder aplicar el entrenamiento del árbol de decisiones, tiene que "
-"existir un conjunto de datos de entrenamiento extraído"
-
-#: apps/decisiondiscovery/utils.py:212
+#: apps/decisiondiscovery/utils.py:211
 msgid "The identifier does not follow the pattern"
 msgstr "El identificador no sigue el patrón"
 
-#: apps/decisiondiscovery/views.py:140
+#: apps/decisiondiscovery/views.py:142
 msgid "Decision model chosen is not an option"
 msgstr "El modelo de decisión elegido no es una opción"
 
-#: apps/decisiondiscovery/views.py:169 apps/decisiondiscovery/views.py:257
+#: apps/decisiondiscovery/views.py:171 apps/decisiondiscovery/views.py:233
+#: apps/decisiondiscovery/views.py:267 apps/decisiondiscovery/views.py:316
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
 
-#: apps/decisiondiscovery/views.py:306
+#: apps/decisiondiscovery/views.py:235 apps/decisiondiscovery/views.py:318
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr "Este objeto no pertenece al usuario autenticado"
+
+#: apps/decisiondiscovery/views.py:237
+msgid "Extracting_training_dataset doesn't belong to the authenticated user."
+msgstr "Este objeto no pertenece al usuario autenticado"
+
+#: apps/decisiondiscovery/views.py:239
+msgid "Extracting_training_dataset doesn't belong to the Case Study."
+msgstr "Esta configuracion no pertenece al caso de estudio"
+
+#: apps/decisiondiscovery/views.py:320
+msgid "Decision Tree Training doesn't belong to the authenticated user."
+msgstr "Este objeto no pertenece al usuario autenticado"
+
+#: apps/decisiondiscovery/views.py:322
+msgid "Decision Tree Training doesn't belong to the Case Study."
+msgstr "Esta configuracion no pertenece al caso de estudio"
+
+#: apps/decisiondiscovery/views.py:333
 msgid "This object doesn't belong to the authenticated user"
 msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Grid Search Best Params:\n"
+#~ msgstr "Mejores parámetros de búsqueda en cuadrícula:\n"
+
+#~ msgid "Fold %(i):"
+#~ msgstr "Iteración %(i):"
+
+#~ msgid "  Train: index=%(train_index)"
+#~ msgstr "  Entrenamiento: índice=%(train_index)"
+
+#~ msgid "  Test:  index=%(test_index)"
+#~ msgstr "  Prueba:  índice=%(test_index)"
+
+#~ msgid "Decision Model Option Not Valid"
+#~ msgstr "Opción de modelo de decisión no válida"
+
+#~ msgid "  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) "
+#~ msgstr "  K-Fold Estratificado:  precisión=%(acc) puntaje_f1=%(f1) "
+
+#~ msgid ""
+#~ "To be able to apply decision tree training, a extract training dataset "
+#~ "has to exist"
+#~ msgstr ""
+#~ "Para poder aplicar el entrenamiento del árbol de decisiones, tiene que "
+#~ "existir un conjunto de datos de entrenamiento extraído"
 
 #~ msgid "Columns to drop"
 #~ msgstr "Columnas a eliminar"

@@ -1,0 +1,145 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} Case studies {% endblock title %}
+
+{% block content %}
+
+<div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/execution/detail/{{ execution.id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Feature Extraction Results Details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+                <li value="{{execution.id}}" class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}">{% blocktranslate %}Execution {{ execution.id}} {% endblocktranslate %}</a> </li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Feature Extraction result{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>         
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="table-responsive custom-scroll">
+            <table id="csvDataTable" class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  <!-- Table headers will be dynamically filled with JS -->
+                </tr>
+              </thead>
+              <tbody class="list">
+                <tr>
+                <!-- Table data will be dynamically filled with JS -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{scenarioNumber}}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for scenario in scenarios %}
+                    <a class="dropdown-item" href="/case-study/execution/featureExtraction_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                    {% endfor %}
+                  </div>
+                </div>
+                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenarioNumber}}"> -->
+                <a href="/case-study/execution/featureExtraction_result/{{execution.id}}/?download=True&scenario={{scenarioNumber}}">
+                  <button class="btn btn-success" style="float: right;" type="button">
+                    <i class="ni ni-cloud-download-95"></i> 
+                    {% blocktranslate %}Download{% endblocktranslate %}
+                  </button>
+                </a>
+              </ul>
+            </nav>
+          </div>
+          </div>
+        </div>
+      </div> 
+      {% include "includes/footer.html" %}
+    </div>
+
+    
+
+
+
+  {% endblock content %}
+
+  <!-- Specific JS goes HERE --> 
+  {% block javascripts %}
+
+  <!-- Inject csv_data as a "application/json" script -->
+  <script type="application/json" id="csvDataScript">
+    {{ csv_data|safe }}
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Safely parse CSV data to JSON
+      //var csvData = "{{ csv_data|safe }}";
+      //var csvData = JSON.parse(csvData);
+
+      // Read the text from the script tag and parse it as JSON
+      var csvDataText = document.getElementById('csvDataScript').textContent;
+      var csvData = JSON.parse(csvDataText);
+
+      // The rest of the code to manipulate csvData goes here...
+      var table = document.getElementById('csvDataTable');
+      var thead = table.querySelector('thead tr');
+      var tbody = table.querySelector('tbody');
+
+      if (csvData && csvData.length > 0) {
+        // Add headers based on the keys of the first element
+        Object.keys(csvData[0]).forEach(function(key) {
+          var th = document.createElement('th');
+          th.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          //th.scope.add('col');
+          //th.classList.add('sort');
+          //th.data-sort.add(key);
+          thead.classList.add('thead-light');
+          thead.appendChild(th);
+        });
+
+        // Add data rows
+        csvData.forEach(function(row) {
+          var tr = document.createElement('tr');
+          Object.keys(row).forEach(function(key) {
+            var td = document.createElement('td');
+            var value = row[key];
+            //if (value.length > 80) {
+            value = value.substring(0, 80); // Truncate the value to 80 characters
+            //}
+            td.textContent = value;
+            tr.appendChild(td);
+            });
+          tbody.appendChild(tr);
+        });
+      }
+    });
+  </script>
+
+
+
+
+{% endblock javascripts %}
+
+
+

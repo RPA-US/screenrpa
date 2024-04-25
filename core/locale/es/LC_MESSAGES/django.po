@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 11:50+0000\n"
+"POT-Creation-Date: 2024-04-11 10:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: core/settings.py:42
 msgid "monitoring"
 msgstr "monitoreo"
@@ -53,10 +54,10 @@ msgstr "extracción agregada de características"
 msgid "decision model discovery"
 msgstr "descubrimiento de modelo de decisión"
 
-#: core/settings.py:189
+#: core/settings.py:196
 msgid "English"
 msgstr "Inglés"
 
-#: core/settings.py:190
+#: core/settings.py:197
 msgid "Spanish"
 msgstr "Español"
