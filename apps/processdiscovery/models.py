@@ -11,7 +11,9 @@ def default_process_discovery():
                  "labeling": "automatic",
                  "use_pca": False,
                  "n_components": 2,
-                 "show_dendrogram:": False,
+                 "show_dendrogram": False,
+                 "remove_loops": False,
+                 "text_column": "",
                  })
 
 
@@ -38,6 +40,8 @@ class ProcessDiscovery(models.Model):
     use_pca = models.BooleanField(default=False)
     n_components = models.FloatField(default=0.95)
     show_dendrogram = models.BooleanField(default=False) 
+    remove_loops = models.BooleanField(default=False)
+    text_column = models.CharField(max_length=255)
 
     def get_absolute_url(self):
         return reverse("processdiscovery:processdiscovery_list", args=[str(self.case_study_id)])

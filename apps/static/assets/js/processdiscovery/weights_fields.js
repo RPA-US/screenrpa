@@ -1,13 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('El formulario se está procesasando, script cargado')
+    console.log('El formulario se está procesando, script cargado');
     const form = document.querySelector('#processDiscoveryForm');
-    console.log('Form', form)
     const modelTypeSelect = document.querySelector('[name="model_type"]');
     const textWeightInput = document.querySelector('[name="text_weight"]');
     const imageWeightInput = document.querySelector('[name="image_weight"]');
     const configurationsField = document.querySelector('[name="configurations"]');
-    console.log(modelTypeSelect, textWeightInput, imageWeightInput, configurationsField)
-    
+    const textColumnSelect = document.querySelector('[name="text_column"]');
+    const removeLoopsCheckbox = document.querySelector('[name="remove_loops"]');
+
+    console.log(modelTypeSelect, textWeightInput, imageWeightInput, configurationsField, textColumnSelect, removeLoopsCheckbox);
+
     function updateConfigurations() {
         const configurations = {
             model_type: modelTypeSelect.value,
@@ -16,13 +18,16 @@ document.addEventListener('DOMContentLoaded', function() {
             use_pca: document.querySelector('[name="use_pca"]').checked,
             n_components: document.querySelector('[name="n_components"]').value,
             show_dendrogram: document.querySelector('[name="show_dendrogram"]').checked,
+            remove_loops: removeLoopsCheckbox.checked,
         };
 
-        if(modelTypeSelect.value === 'clip') {
-            configurations.text_weight = textWeightInput ? textWeightInput.value : '';
-            configurations.image_weight = imageWeightInput ? imageWeightInput.value : '';
+        if (modelTypeSelect.value === 'clip') {
+            configurations.text_weight = textWeightInput.value;
+            configurations.image_weight = imageWeightInput.value;
+            configurations.text_column = textColumnSelect.value;
         }
-        console.log('Configuraciones actualizadas:', configurations.value)
+        
+        console.log('Configuraciones actualizadas:', configurations);
         configurationsField.value = JSON.stringify(configurations);
     }
 
@@ -31,14 +36,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     modelTypeSelect.addEventListener('change', function() {
-        const weightsRow = document.querySelector('#weightsRow');
-        weightsRow.style.display = this.value === 'clip' ? 'block' : 'none';
+        toggleWeightFields();
         updateConfigurations(); 
     });
 
     toggleWeightFields();
     updateConfigurations();
-
 });
 
 function toggleWeightFields() {

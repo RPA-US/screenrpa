@@ -55,7 +55,18 @@
           <div class="form-validation">{{ form.image_weight.errors }}</div>
         </div>
       </div>
-    </div>
+      <div class="col-lg-4">
+        <div class="form-group">
+          <label class="form-control-label" for="id_text_column">
+            {{ form.text_column.label }}
+          </label>
+          <div class="dropdown-select">
+            {{ form.text_column }}
+          </div>
+          <div class="form-validation">{{ form.text_column.errors }}</div>
+        </div>
+      </div>
+  </div>
     
     <div class="form-group">
       <label class="form-control-label" for="id_labeling">
@@ -63,6 +74,18 @@
       </label>
       {{ form.labeling }}
       <div class="form-validation">{{ form.labeling.errors }}</div>
+    </div>
+  
+
+    <div class="form-group d-flex align-items-center justify-content-start">
+      <label class="mr-2" for="{{ form.remove_loops.id_for_label }}">
+        {{ form.remove_loops.label }}
+      </label>
+      <div class="custom-control custom-switch ml-4">
+        <input type="checkbox" class="custom-control-input" id="{{ form.remove_loops.id_for_label }}" name="remove_loops" {% if form.remove_loops.value %} checked {% endif %}>
+        <label class="custom-control-label" for="{{ form.remove_loops.id_for_label }}"></label>
+      </div>
+      <div class="form-validation ml-2">{{ form.remove_loops.errors }}</div>
     </div>
   </div>
 

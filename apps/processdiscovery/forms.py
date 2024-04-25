@@ -26,6 +26,8 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "use_pca",
             "n_components",
             "show_dendrogram",
+            "remove_loops",
+            "text_column"
         )
         labels = {
             "type": _("Type"),
@@ -40,6 +42,8 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "use_pca": _("Use PCA"),
             "n_components": _("N Components"),
             "show_dendrogram": _("Show Dendrogram"),
+            "remove_loops": _("Remove Loops"),
+            "text_column": _("Text Column"),
         }
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Process discovery Technique"}),
@@ -55,7 +59,16 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "use_pca": forms.CheckboxInput(attrs={'class': 'custom-control-input'}),
             "n_components": forms.NumberInput(attrs={'class': 'form-control'}),
             "show_dendrogram": forms.CheckboxInput(attrs={'class': 'custom-control-input'}),
+            "remove_loops": forms.CheckboxInput(attrs={'class': 'custom-control-input'}),
+            "text_column": forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
+        case_study_instance = kwargs.pop('case_study', None)
         super(ProcessDiscoveryForm, self).__init__(*args, **kwargs)
+        special_colnames = case_study_instance.special_colnames
+        text_column_choices = [(value, key) for key, value in special_colnames.items()]
+        self.fields['text_column'] = forms.ChoiceField(
+            choices=text_column_choices,
+            widget=forms.Select(attrs={'class': 'form-control'}),
+            label=_("Text Column"))

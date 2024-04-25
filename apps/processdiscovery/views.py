@@ -68,18 +68,25 @@ def scene_level(log_path, scenario_path, execution):
         model, processor_or_transform = load_model(model_type)
         combined_features = []
 
-        for index, row in tqdm(df.iterrows(), total=df.shape[0], desc='Extracting features with CLIP from Image'):
+        if model_type == 'clip':
+            pbar = tqdm(total=df.shape[0], desc='Extracting features with CLIP from Image')
+        
+        for index, row in df.iterrows():
             img_path = os.path.join(scenario_path, row[image_col])
             image = Image.open(img_path).convert('RGB')
 
             if model_type == 'clip':
                 text = row[text_col]
                 features = process_image_clip(image, text, processor_or_transform, model, image_weight, text_weight)
+                pbar.update(1)  
             elif model_type == 'vgg':
                 features = process_image_vgg(img_path, model)
             
             combined_features.append(features)
-        
+
+        if model_type == 'clip':
+            pbar.close()  
+
         df['combined_features'] = combined_features
         return df
     
@@ -144,7 +151,7 @@ def scene_level(log_path, scenario_path, execution):
     '''
     Labeling WorkFlow
     '''
-    def auto_labeling(df):
+    def auto_labeling(df, remove_loops):
         activity_inicial = df['activity_label'].iloc[0]
         process_id = 1
         process_ids = [process_id]
@@ -154,6 +161,7 @@ def scene_level(log_path, scenario_path, execution):
                     process_id += 1
                 process_ids.append(process_id)
         df['process_id'] = process_ids
+        if remove_loops: df = remove_duplicate_activities(df, 'activity_label')
         return df
 
     def manual_labeling(df):
@@ -161,13 +169,19 @@ def scene_level(log_path, scenario_path, execution):
         # For now, it simply returns the DataFrame unchanged.
         return df
 
-    def process_id_assignment(df, labeling_mode='automatic'):
+    def process_id_assignment(df, remove_loops, labeling_mode='automatic'):
         if labeling_mode == 'automatic':
-            df = auto_labeling(df)
+            df = auto_labeling(df, remove_loops)
         elif labeling_mode == 'manual':
             df = manual_labeling(df)
         else:
             raise ValueError("Unsupported labeling mode. Choose 'automatic' or 'manual'.")
+        return df
+    
+    def remove_duplicate_activities(df, activity_column):
+        to_remove = df[activity_column].eq(df[activity_column].shift())
+        df = df[~to_remove]
+        
         return df
 
     '''
@@ -215,14 +229,16 @@ def scene_level(log_path, scenario_path, execution):
     use_pca = process_discovery.use_pca
     n_components = process_discovery.n_components
     show_dendrogram = process_discovery.show_dendrogram
+    remove_loops = process_discovery.remove_loops
+    text_column = process_discovery.text_column
    
     '''
     Process Discovery Execution Main Workflow
     '''
     ui_log = read_ui_log_as_dataframe(log_path)
-    ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], 'header', image_weight=image_weight, text_weight=text_weight, model_type=model_type)
+    ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], text_column, image_weight=image_weight, text_weight=text_weight, model_type=model_type)
     ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)
-    ui_log = process_id_assignment(ui_log, labeling_mode=labeling)
+    ui_log = process_id_assignment(ui_log, remove_loops, labeling_mode=labeling)
 
     folder_path = os.path.join(root_path, 'results')
     
@@ -284,7 +300,18 @@ class ProcessDiscoveryCreateView(CreateView):
     model = ProcessDiscovery
     form_class = ProcessDiscoveryForm
     template_name = "processdiscovery/create.html"
-    
+
+    def get_form_kwargs(self):
+        kwargs = super(ProcessDiscoveryCreateView, self).get_form_kwargs()
+        case_study_id = self.kwargs.get('case_study_id')
+        if case_study_id:
+            try:
+                case_study_instance = CaseStudy.objects.get(pk=case_study_id)
+                kwargs['case_study'] = case_study_instance
+            except CaseStudy.DoesNotExist:
+                raise ValidationError(_("CaseStudy with the given ID does not exist."))
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super(ProcessDiscoveryCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -295,7 +322,9 @@ class ProcessDiscoveryCreateView(CreateView):
             raise ValidationError(_("User must be authenticated."))
         self.object = form.save(commit=False)
         self.object.user = self.request.user
-        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
+        case_study_id = self.kwargs.get('case_study_id')
+        if case_study_id:
+            self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
