@@ -1441,8 +1441,8 @@ msgid "Classification"
 msgstr "Clasificación"
 
 #: apps/templates/ui_elements_detection/results.html:20
-msgid "Go Back to UI Elements Detection Results"
-msgstr "Volver a configuraciones de detección de elementos de UI"
+msgid "Go Back to UI Elements Detection Details"
+msgstr "Volver a detalles de detección de elementos de UI"
 
 #: apps/templates/ui_elements_detection/results.html:21
 msgid "UI Elements Detection Results"
@@ -1453,9 +1453,12 @@ msgid "Execution"
 msgstr "Ejecución"
 
 #: apps/templates/ui_elements_detection/results.html:26
-#: apps/templates/ui_elements_detection/results.html:27
 msgid "Execution Details"
 msgstr "Detalles de Ejecucion"
+
+#: apps/templates/ui_elements_detection/results.html:27
+msgid "Detections"
+msgstr "Detecciones"
 
 #: apps/templates/ui_elements_detection/results.html:44
 msgid "Detections"
