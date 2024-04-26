@@ -52,7 +52,7 @@
               <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
                 <div class="dropdown">
                   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{scenarioNumber}}
+                    {{scenario}}
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     {% for scenario in scenarios %}
@@ -60,8 +60,8 @@
                     {% endfor %}
                   </div>
                 </div>
-                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenarioNumber}}"> -->
-                <a href="/case-study/execution/featureExtraction_result/{{execution.id}}/?download=True&scenario={{scenarioNumber}}">
+                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenario}}"> -->
+                <a href="/case-study/execution/featureExtraction_result/{{execution.id}}/?download=True&scenario={{scenario}}">
                   <button class="btn btn-success" style="float: right;" type="button">
                     <i class="ni ni-cloud-download-95"></i> 
                     {% blocktranslate %}Download{% endblocktranslate %}
