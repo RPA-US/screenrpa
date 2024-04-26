@@ -35,6 +35,29 @@
             <div class="card-body">
               <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
           </div>
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{scenario}}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for scenario in scenarios %}
+                    <a class="dropdown-item" href="/case-study/execution/decision_tree_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                    {% endfor %}
+                  </div>
+                </div>
+                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenario}}"> -->
+                <a href="/case-study/execution/decision_tree_result/{{execution.id}}/?download=True&scenario={{scenario}}">
+                  <button class="btn btn-success" style="float: right;" type="button">
+                    <i class="ni ni-cloud-download-95"></i> 
+                    {% blocktranslate %}Download{% endblocktranslate %}
+                  </button>
+                </a>
+              </ul>
+            </nav>
+          </div>
           </div>
         </div>
       </div> 
