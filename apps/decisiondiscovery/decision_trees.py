@@ -227,7 +227,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     saved_data = {
         'classifier': tree_classifier,
         'feature_names': feature_names,
-        'class_names': df['Variant'].unique().tolist(),
+        #'class_names': sorted(df['Variant'].unique().tolist()),
     }
     with open(os.path.join(param_path, 'decision_tree_ale.pkl'), 'wb') as fid:
         pickle.dump(saved_data, fid)

@@ -36,3 +36,6 @@ RUN apt upgrade libstdc++6 -y
 
 # Installs cudnn8
 RUN apt install libcudnn8 libcudnn8-dev -y
+
+# Install graphviz
+RUN apt-get update && apt-get install -y graphviz

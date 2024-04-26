@@ -52,7 +52,11 @@ from sklearn import tree
 import io
 import pickle
 import base64
-
+import pickle
+import base64
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
 
 #============================================================================================================================
 #============================================================================================================================
@@ -752,6 +756,10 @@ class DecisionTreeResultDetailView(DetailView):
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
         
         tree_image_base64 = tree_to_png_base64(path_to_tree_file, download) 
+
+        if download:
+            downloadPrueba(png_image)
+
         # Include CSV data in the context for the template
         context = {
             "execution": execution,
@@ -774,36 +782,41 @@ def tree_to_png_base64(path_to_tree_file, download):
         # Obtener el clasificador y los nombres de las características del diccionario cargado
         clasificador_loaded = loaded_data['classifier']
         feature_names_loaded = loaded_data['feature_names']
-        class_names_loaded = loaded_data['class_names']
+        #class_names_loaded = loaded_data['class_names']
 
     except FileNotFoundError:
         print(f"File not found: {path_to_tree_file}")
         return None
     
 
-    #fig = plt.figure(figsize=(25, 20))
-    #_ = tree.plot_tree(clasificador_loaded, filled=True)
-    fig, ax = plt.subplots(figsize=(25, 20))
-    tree.plot_tree(clasificador_loaded, filled=True, ax=ax, feature_names=feature_names_loaded)
+     # Crear StringIO para guardar la salida de Graphviz
+    dot_data = io.StringIO()
 
-    
-    # Guardar la figura en un buffer de memoria
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
+    # Exportar el modelo a formato Graphviz
+    export_graphviz(clasificador_loaded, out_file=dot_data,
+                    filled=True, rounded=True,
+                    special_characters=True,
+                    feature_names=feature_names_loaded,
+                    class_names=True)
 
-    if download=="True":
-        response = HttpResponse(buf.getvalue(), content_type='image/png')
-        response['Content-Disposition'] = 'attachment; filename="decision_tree.png"'
-        return response
-    
-    # Codificar el contenido del buffer en base64 y prepararlo para HTML
-    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    # Usar pydotplus para crear una imagen desde el dot_data
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+    png_image = graph.create_png()
+
+    if download:
+        downloadPrueba(png_image)
+
+    # Codificar el contenido de la imagen en base64 y prepararlo para HTML
+    image_base64 = base64.b64encode(png_image).decode('utf-8')
 
     return f'data:image/png;base64,{image_base64}'
 
 ####################################################################
-
+def downloadPrueba(png_image):
+    # Preparar una respuesta HTTP para la descarga del archivo
+    response = HttpResponse(png_image, content_type='image/png')
+    response['Content-Disposition'] = 'attachment; filename="decision_tree.png"'
+    return response
     
         
  
