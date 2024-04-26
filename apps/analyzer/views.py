@@ -46,6 +46,13 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+# Result Treeimport json
+import matplotlib.pyplot as plt
+from sklearn import tree
+import io
+import pickle
+import base64
+
 
 #============================================================================================================================
 #============================================================================================================================
@@ -732,8 +739,83 @@ class UIElementsDetectionResultDetailView(DetailView):
 
 ############################################################
 
-class mostrar_diagrama(DetailView):
+class DecisionTreeResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
-        return render(request, 'processdiscovery/result.html')
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+              
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+        
+
+        tree_image_base64 = tree_to_png_base64(path_to_tree_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "tree_to_png": tree_image_base64,  # Png to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario
+            }
+        return render(request, 'decision_tree_training/result.html', context)
     #/screenrpa/apps/templates/
+
+#    http://127.0.0.1:8000/es/case-study/execution/decision_tree_result/33/
+def tree_to_png_base64(path_to_tree_file):
+    # Cargar los datos del árbol de decisión desde el archivo de registro (suponiendo que está en formato JSON)
+    try:
+        with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
+            loaded_data = pickle.load(archivo)
+        # Obtener el clasificador y los nombres de las características del diccionario cargado
+        clasificador_loaded = loaded_data['classifier']
+        feature_names_loaded = loaded_data['feature_names']
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+    
+    #fig = plt.figure(figsize=(25, 20))
+    #_ = tree.plot_tree(clasificador_loaded, filled=True)
+    fig, ax = plt.subplots(figsize=(25, 20))
+    tree.plot_tree(clasificador_loaded, filled=True, ax=ax)
+
+    # Guardar la figura en un buffer de memoria
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    # Codificar el contenido del buffer en base64 y prepararlo para HTML
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    return f'data:image/png;base64,{image_base64}'
+
+# def tree_to_png(path_to_tree_file):
+#     # Cargar los datos del árbol de decisión desde el archivo de registro (suponiendo que está en formato JSON)
+#     try:
+#         with open(path_to_tree_file, 'r') as f:
+#             tree_data = json.load(f)
+#     except FileNotFoundError:
+#         print(f"File not found: {path_to_tree_file}")
+#         return None
+
+#     # Generar la imagen del árbol de decisión
+#     clf = tree.DecisionTreeClassifier()  # Crear un clasificador de árbol de decisión
+#     clf.tree_ = tree_data  # Asignar los datos del árbol al clasificador
+
+#     fig = plt.figure(figsize=(25, 20))
+#     _ = tree.plot_tree(clf, filled=True)
+#     # Guardar la figura en un buffer de memoria
+#     buf = io.BytesIO()
+#     fig.savefig(buf, format='png')
+#     buf.seek(0)
+#     # Guardar la imagen en un archivo
+#     with open(output_filename, 'wb') as f:
+#         f.write(buf.read())
+#     # Limpiar la figura para liberar memoria
+#     plt.close(fig)
+#     return output_filename
+
+
+    
 
