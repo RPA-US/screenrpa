@@ -407,9 +407,10 @@ class ReportCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(ReportCreateView, self).get_context_data(**kwargs)
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])
         
-        context['execution'] = self.kwargs.get('execution')
+        execution_id = self.kwargs.get('execution_id')
+        execution = Execution.objects.get(pk=execution_id)
+        context['execution'] = execution
         reports = PDD.objects.filter(execution=execution).order_by('-created_at')
         context['reports'] = reports
         return context 
@@ -427,7 +428,5 @@ class ReportCreateView(CreateView):
 
 
 
-        context = {
-            "reports": reports,
-            "execution": execution, 
-            }
+
+ 

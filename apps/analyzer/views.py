@@ -548,8 +548,6 @@ class ExecutionDetailView(DetailView):
         context = {
             "reports": reports,
             "execution": execution, 
-            "single_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
             }
         return render(request, "executions/detail.html", context)
 

@@ -14,7 +14,6 @@ class ReportingForm(forms.ModelForm):
         fields = (
             "objective",
             "purpose",
-            "indice_contenido",
             "process_overview",
             "applications_used",
             "as_is_process_map",
@@ -25,7 +24,6 @@ class ReportingForm(forms.ModelForm):
         labels = {
             "objective": _("Objective"),
             "purpose": _("Purpose"),
-            "indice_contenido": _("Content Index"),
             "process_overview": _("Process Overview"),
             "applications_used": _("Applications Used"),
             "as_is_process_map": _("AS IS Process Map"),
@@ -34,7 +32,7 @@ class ReportingForm(forms.ModelForm):
         }
 
         widgets = {
-            "objective": forms.TextInput(attrs={"class": "form-control", "placeholder": _("Objective of the PDD")}),
+            "objective": forms.Textarea(attrs={"class": "form-control", "placeholder": _("Objective of the PDD")}),
             "purpose": forms.Textarea(attrs={"class": "form-control", "placeholder": _("Purpose of the PDD...")}),
             #"indice_contenido": forms.CheckboxSelectMultiple(choices=PDD.CONTENT_INDEX_CHOICES),
             "process_overview": forms.CheckboxInput(attrs={"class": "form-check-input"}),
@@ -46,8 +44,6 @@ class ReportingForm(forms.ModelForm):
 
     def clean_objective(self):
         objective = self.cleaned_data.get("objective")
-        if PDD.objects.filter(objective=objective).exists():
-            raise forms.ValidationError(_("Objective already exists"))
         return objective
 
     def clean_purpose(self):
