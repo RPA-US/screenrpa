@@ -312,21 +312,24 @@
                 <div class="card-body">
                   <div class="row icon-examples">
                     {% for report in reports %}
-                    <div class="col-lg-3 col-md-6">
-                      <div class="card">
-                        <!-- Card body with report name -->
-                        <div class="card-body">
-                          <h5 class="card-title">{{ report.name }}</h5>
-                          <a href="#" class="btn btn-primary" target="_blank">
-                            <i class="ni ni-cloud-download-95"></i> Reporte
-                          </a>
-                        </div>
-                      </div>
-                    </div>
+                      <div class="col-lg-3 col-md-6">                        
+                          <div class="card-body">
+                            <h5 class="card-title">{{ report.name }}</h5>
+                            <!-- Botón que activa el dropdown -->
+                            <a href="#" class="btn btn-primary" id="dropdownMenuLink{{ report.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <i class="ni ni-cloud-download-95"></i> Reporte
+                            </a>
+                            <!-- Contenido del dropdown -->
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ report.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <a class="dropdown-item" href="#">Download</a>
+                              <a class="dropdown-item" href="#">Delete</a>
+                            </div>
+                          </div>                                             
+                      </div> 
                     {% empty %}
-                    <div class="col-12">
-                      <p>No hay reportes asociados con esta ejecución.</p>
-                    </div>
+                      <div class="col-12">
+                        <p>No hay reportes asociados con esta ejecución.</p>
+                      </div>
                     {% endfor %}
                   </div>
                 </div>
