@@ -15,7 +15,7 @@ from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
 from apps.analyzer.models import CaseStudy, Execution # add this
-
+from .forms import ReportingForm
 
 # Create your views here.
 
@@ -398,3 +398,36 @@ class ReportGenerateView_ALE(DetailView):
         pdd.save()
 
         return response
+    
+
+class ReportCreateView(CreateView):
+    model = PDD
+    form_class = ReportingForm
+    template_name = "reporting/create.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportCreateView, self).get_context_data(**kwargs)
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+        
+        context['execution'] = self.kwargs.get('execution')
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at')
+        context['reports'] = reports
+        return context 
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError(_("User must be authenticated."))
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+    
+
+
+
+
+        context = {
+            "reports": reports,
+            "execution": execution, 
+            }
