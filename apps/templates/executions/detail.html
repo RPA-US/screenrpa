@@ -308,12 +308,35 @@
                   
                 </div>
               </div>
-              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Reports{% endblocktranslate %}</h6>
-              <div class="card-body">
-                <button class="btn btn-success" style="float: right;" href="/pdd/generate/{{execution.case_study.id}}">
-                  <i class="ni ni-chart-bar-32"></i> 
-                  {% blocktranslate %}Crear reporte{% endblocktranslate %}
-                </button>
+                <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Reports{% endblocktranslate %}</h6>
+                <div class="card-body">
+                  <div class="row icon-examples">
+                    {% for report in reports %}
+                    <div class="col-lg-3 col-md-6">
+                      <div class="card">
+                        <!-- Card body with report name -->
+                        <div class="card-body">
+                          <h5 class="card-title">{{ report.name }}</h5>
+                          <a href="#" class="btn btn-primary" target="_blank">
+                            <i class="ni ni-cloud-download-95"></i> Reporte
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                      <p>No hay reportes asociados con esta ejecución.</p>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="card-body">
+                  <a class="btn btn-success" style="float: right;" href="/reporting/pdd/generate/{{execution.id}}">
+                      <i class="ni ni-chart-bar-32"></i> 
+                      {% blocktranslate %}Crear reporte{% endblocktranslate %}
+                  </a>
+              </div>
+            </div>
               </div>
             </form>
           </div>

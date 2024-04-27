@@ -14,7 +14,7 @@ from django.views.generic import ListView, DetailView, CreateView
 from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
-    
+from apps.analyzer.models import CaseStudy, Execution # add this
 
 
 # Create your views here.
@@ -316,6 +316,7 @@ def ui_screen_trace_back_reporting(case_study_id):
 # TODO:
 class ReportGenerateView(DetailView):
     def get(self, request, *args, **kwargs):
+        print("se ejecuta")
         cs = get_object_or_404(PDD, id=kwargs["case_study_id"], active=True)
         
         document = ui_screen_trace_back_reporting(cs.id)
@@ -373,3 +374,27 @@ class ReportListView(ListView):
         queryset = PDD.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
         
         return queryset
+
+
+#############################################################################################
+## VERSIONES DE ALE
+
+class ReportGenerateView_ALE(DetailView):
+    def get(self, request, *args, **kwargs):
+        model = Execution
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"]) 
+
+        pdd = PDD.objects.create(
+            execution=execution,
+            user=request.user  
+        )
+        report_path = os.path.join(execution.exp_folder_complete_path,'exec_'+str(execution.id)+'_reports', 'report.docx')
+
+        # Simulate report creation (you should replace this with your actual report generation logic)
+        with open(report_path, 'wb') as file:
+            file.write(b'PDF content or whatever content you generate')
+
+        pdd.file.name = report_path
+        pdd.save()
+
+        return response

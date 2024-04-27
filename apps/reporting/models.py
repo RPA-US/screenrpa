@@ -7,7 +7,7 @@ from private_storage.fields import PrivateFileField
 class PDD(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     file = PrivateFileField("PDD")
-    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
+    execution = models.ForeignKey('apps_analyzer.Execution', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:

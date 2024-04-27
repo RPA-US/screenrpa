@@ -39,6 +39,7 @@ urlpatterns = [
     path('execution/decision_tree_result/<int:execution_id>/', views.DecisionTreeResultDetailView.as_view(), name='decisionTree_result'),
     path('execution/process_discovery_result/<int:execution_id>/', views.ProcessDiscoveryResultDetailView.as_view(), name='processDiscovery_result'),
     
+    
 
 ]
 

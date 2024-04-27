@@ -34,6 +34,7 @@ from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy, Execution   
 from apps.behaviourmonitoring.models import Monitoring
+from apps.reporting.models import PDD
 from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
@@ -57,6 +58,7 @@ import base64
 from sklearn.tree import export_graphviz
 from IPython.display import Image
 import pydotplus
+
 
 #============================================================================================================================
 #============================================================================================================================
@@ -541,7 +543,10 @@ def deleteExecution(request):
 class ExecutionDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at')
+
         context = {
+            "reports": reports,
             "execution": execution, 
             "single_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="SINGLE"), 
             "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
