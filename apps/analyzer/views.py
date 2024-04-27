@@ -836,7 +836,6 @@ class ProcessDiscoveryResultDetailView(DetailView):
         with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
             bpmn_content = file.read()
 
-        prueba="Hola mundo"
         # Include CSV data in the context for the template
         context = {
             "execution": execution,

@@ -281,12 +281,6 @@
                     </div>
                     
 
-
-
-
-
-
-
                     <div class="col-lg-3 col-md-6">
                         {% if execution.decision_tree_training == None %}
                         <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -309,8 +303,17 @@
                           </div>
                         {% endif %}
                       </div> 
+                      
                   </div>
+                  
                 </div>
+              </div>
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Reports{% endblocktranslate %}</h6>
+              <div class="card-body">
+                <button class="btn btn-success" style="float: right;" href="/pdd/generate/{{execution.case_study.id}}">
+                  <i class="ni ni-chart-bar-32"></i> 
+                  {% blocktranslate %}Crear reporte{% endblocktranslate %}
+                </button>
               </div>
             </form>
           </div>
