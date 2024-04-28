@@ -58,7 +58,7 @@ import base64
 from sklearn.tree import export_graphviz
 from IPython.display import Image
 import pydotplus
-
+from sklearn.tree import _tree
 
 #============================================================================================================================
 #============================================================================================================================
@@ -762,14 +762,17 @@ class DecisionTreeResultDetailView(DetailView):
         tree_image_base64 = tree_to_png_base64(path_to_tree_file, download) 
 
         if download:
-            downloadPrueba(png_image)
+            downloadPrueba(tree_image_base64)
+
+        tree_rules= extract_tree_rules(path_to_tree_file)
 
         # Include CSV data in the context for the template
         context = {
             "execution": execution,
             "tree_to_png": tree_image_base64,  # Png to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
+            "scenario": scenario,
+            "tree_rules": tree_rules,
             }
         return render(request, 'decision_tree_training/result.html', context)
     #/screenrpa/apps/templates/
@@ -787,7 +790,7 @@ def tree_to_png_base64(path_to_tree_file, download):
         clasificador_loaded = loaded_data['classifier']
         feature_names_loaded = loaded_data['feature_names']
         #class_names_loaded = loaded_data['class_names']
-
+        class_names_loaded = [str(item) for item in loaded_data['class_names']]
     except FileNotFoundError:
         print(f"File not found: {path_to_tree_file}")
         return None
@@ -801,7 +804,7 @@ def tree_to_png_base64(path_to_tree_file, download):
                     filled=True, rounded=True,
                     special_characters=True,
                     feature_names=feature_names_loaded,
-                    class_names=True)
+                    class_names=class_names_loaded)
 
     # Usar pydotplus para crear una imagen desde el dot_data
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
@@ -816,6 +819,62 @@ def tree_to_png_base64(path_to_tree_file, download):
     return f'data:image/png;base64,{image_base64}'
 
 ####################################################################
+
+def extract_tree_rules(path_to_tree_file):
+    try:
+        with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
+            loaded_data = pickle.load(archivo)
+        # Obtener el clasificador y los nombres de las características del diccionario cargado
+        tree = loaded_data['classifier']
+        feature_names = loaded_data['feature_names']
+        classes = loaded_data['class_names']
+
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+    
+    """
+    Función que recorre las ramas de un árbol de decisión y extrae las reglas
+    obtenidas para clasificar cada una de las variables objetivo
+    
+    Parametros:
+    - tree: El modelo árbol de decisión.
+    - feature_names: Lista de los atributos del dataset.
+    - classes: Clases posibles de la variable objetivo, ordenada ascendentemente
+    """
+    # accede al objeto interno tree_ del árbol de decisión
+    tree_ = tree.tree_
+    feature_name = [
+        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+        for i in tree_.feature
+    ]
+
+    # Crear un diccionario para almacenar las reglas de cada clase
+    rules_per_class = {cls: [] for cls in classes}
+
+    def recurse(node, parent_rule):
+        if tree_.feature[node] != _tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            left_rule = parent_rule + [f"{name} <= {threshold:.2f}"]
+            right_rule = parent_rule + [f"{name} > {threshold:.2f}"]
+
+            recurse(tree_.children_left[node], left_rule)
+            recurse(tree_.children_right[node], right_rule)
+        else:
+            rule = " & ".join(parent_rule)
+            target = classes[tree_.value[node].argmax()]
+            # Agregar la regla a la lista correspondiente de su clase en el diccionario
+            rules_per_class[target].append(rule)
+
+    recurse(0, [])
+
+    # Convertir el diccionario en una lista de reglas por clase
+    return rules_per_class
+
+
+####################################################################
+
 def downloadPrueba(png_image):
     # Preparar una respuesta HTTP para la descarga del archivo
     response = HttpResponse(png_image, content_type='image/png')

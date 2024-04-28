@@ -34,6 +34,17 @@
             <!-- Display the decision tree image -->
             <div class="card-body custom-scrol">
               <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+              <div class="card-body">
+                <!-- Bucle para mostrar las reglas del árbol -->
+                {% for class, rules in tree_rules.items %}
+                    <h5>{{ class }}</h5>
+                    <ul>
+                        {% for rule in rules %}
+                            <li>{{ rule }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            </div>
           </div>
           <div class="card-footer py-4">
             <nav aria-label="...">
