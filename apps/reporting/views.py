@@ -443,8 +443,23 @@ def deleteReport(request):
 
     return HttpResponseRedirect(reverse("analyzer:execution_detail", kwargs={"execution_id": removed_report.execution.id}))
 
+#############################################################################################3
+
+def reportingConfigurationDetail(request):
+    
+    report = get_object_or_404(PDD, pk=report_id)
+
+    form = ReportingForm(read_only=True, instance=report)  # Todos los campos estarán desactivados
+
+    return render(request, 'reporting/create.html', {'form': form})
 
 
-
-
- 
+class ReportingConfigurationDetail(DetailView):
+    def get(self, request, *args, **kwargs):
+        report = get_object_or_404(PDD, id=kwargs["report_id"])
+        
+        form = ReportingForm(read_only=True, instance=report)  # Todos los campos estarán desactivados
+        context = {"form": form,
+            "execution": report.execution,
+            }
+        return render(request, 'reporting/create.html', context)

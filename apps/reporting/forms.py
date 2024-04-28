@@ -53,4 +53,15 @@ class ReportingForm(forms.ModelForm):
     
 
     def __init__(self, *args, **kwargs):
+        self.read_only = kwargs.pop('read_only', False)
         super(ReportingForm, self).__init__(*args, **kwargs)
+
+        #condicion para ver la vista en detalle
+        if self.read_only:
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
+
+        #condicion para descactivar campos con dependencia
+        if self.instance.execution.process_discovery == None:
+            # Oculta el campo si process_discovery no es None
+            self.fields['detailed_as_is_process_actions'].widget = forms.HiddenInput()

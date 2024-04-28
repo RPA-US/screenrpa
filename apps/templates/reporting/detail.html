@@ -71,7 +71,7 @@
                                   {{ form.applications_used.label_tag }} 
                                   <span class="ml-2">(No Bloqueado)</span>
                               </div>    
-                               {% if execution.process_discovery != None %}                          
+                              {% if execution.process_discovery != None %}                          
                               <div class="form-check">
                                   {{ form.as_is_process_map }}
                                   {{ form.as_is_process_map.label_tag }} 
@@ -83,7 +83,7 @@
                                   {{ form.detailed_as_is_process_actions.label_tag }} 
                                   <span class="ml-2">(Bloqueado: Process Discovery)</span>
                               </div>
-                               {% endif %} 
+                              {% endif %}
                               <div class="form-check">
                                   {{ form.input_data_description }}
                                   {{ form.input_data_description.label_tag }} 
