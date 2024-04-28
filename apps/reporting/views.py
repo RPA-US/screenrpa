@@ -16,6 +16,7 @@ from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
 from apps.analyzer.models import CaseStudy, Execution # add this
 from .forms import ReportingForm
+from django.urls import reverse
 
 # Create your views here.
 
@@ -375,7 +376,8 @@ class ReportListView(ListView):
         
         return queryset
 
-
+#############################################################################################
+#############################################################################################
 #############################################################################################
 ## VERSIONES DE ALE
 
@@ -400,6 +402,7 @@ class ReportGenerateView_ALE(DetailView):
         return response
     
 
+#########################################################################
 class ReportCreateView(CreateView):
     model = PDD
     form_class = ReportingForm
@@ -424,6 +427,21 @@ class ReportCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
     
+#############################################################################################
+
+def deleteReport(request):
+    report_id = request.GET.get("report_id")
+
+    removed_report = PDD.objects.get(id=report_id)
+    if request.user.id != removed_report.user.id:
+        raise Exception(_("This case study doesn't belong to the authenticated user"))
+    #podria ser interesante, para no borrar un reporte que se esta generando
+
+    #if removed_report.executed != 0:
+    #    raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
+    removed_report.delete()
+
+    return HttpResponseRedirect(reverse("analyzer:execution_detail", kwargs={"execution_id": removed_report.execution.id}))
 
 
 
