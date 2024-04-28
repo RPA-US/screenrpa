@@ -462,4 +462,4 @@ class ReportingConfigurationDetail(DetailView):
         context = {"form": form,
             "execution": report.execution,
             }
-        return render(request, 'reporting/create.html', context)
+        return render(request, 'reporting/detail.html', context)
