@@ -35,14 +35,16 @@
             <div class="card-body custom-scrol">
               <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
               <div class="card-body">
-                <!-- Bucle para mostrar las reglas del árbol -->
+                <!-- Loop to display the rules of the tree -->
                 {% for class, rules in tree_rules.items %}
-                    <h5>{{ class }}</h5>
-                    <ul>
-                        {% for rule in rules %}
-                            <li>{{ rule }}</li>
-                        {% endfor %}
-                    </ul>
+                    <div class="mb-3">
+                        <h5 class="h3 mb-0">{{ class }}</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for rule in rules %}
+                                <li class="list-group-item">{{ rule }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 {% endfor %}
             </div>
           </div>
