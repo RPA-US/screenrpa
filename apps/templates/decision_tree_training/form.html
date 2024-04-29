@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+    <button class="btn btn-success" id="mainSubmitButton" style="float: right;" type="submit" value="submit" >
       <i class="fas fa-save"></i> 
       {% blocktranslate %}Save{% endblocktranslate %}
     </button>
@@ -81,10 +81,13 @@
     
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {
-        preloaded_file.disabled = !isPreloadedChecked;
-        libr.disabled = isPreloadedChecked;
-        one_hot_columns.disabled = isPreloadedChecked;
+
+        if (!document.getElementById('form').readOnly) {
+          preloaded_file.disabled = !isPreloadedChecked;
+          libr.disabled = isPreloadedChecked;
+          one_hot_columns.disabled = isPreloadedChecked;
       }
+    }
     
       // Controlador de eventos para el checkbox 'preloaded'
       preloaded.addEventListener('change', () => {

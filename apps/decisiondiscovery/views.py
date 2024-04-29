@@ -199,14 +199,19 @@ class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
     model = ExtractTrainingDataset
     form_class = ExtractTrainingDatasetForm
     template_name = "extract_training_dataset/details.html"
-
     pk_url_kwarg = "extract_training_dataset_id"
-    
+
     def get_context_data(self, **kwargs):
-        context = super(ExtractTrainingDatasetDetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
-        context['form'] = ExtractTrainingDatasetForm(initial=model_to_dict(self.object))
+        # Set the form with read-only configurations and instance data
+        context['form'] = self.form_class(initial=model_to_dict(self.object), read_only=True, instance=self.object)
         return context
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()  # Ensure the object is fetched
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)
 
     # def get_object(self, *args, **kwargs):
     #     extract_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
@@ -294,7 +299,13 @@ class DecisionTreeTrainingListView(ListView):
 class DecisionTreeTrainingDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
-        return render(request, "decision_tree_training/detail.html", {"decision_tree_training": decision_tree_training, "case_study_id": kwargs["case_study_id"]})
+        form = DecisionTreeTrainingForm(read_only=True, instance=decision_tree_training)
+
+        context= {"decision_tree_training": decision_tree_training, 
+                  "case_study_id": kwargs["case_study_id"],
+                  "form": form,}
+
+        return render(request, "decision_tree_training/detail.html", context)
 
 def set_as_decision_tree_training_active(request):
     decision_tree_training_id = request.GET.get("decision_tree_training_id")
