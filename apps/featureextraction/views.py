@@ -100,7 +100,20 @@ class FeatureExtractionTechniqueListView(ListView):
 class FeatureExtractionTechniqueDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         feature_extraction_technique = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
-        return render(request, "feature_extraction_technique/detail.html", {"feature_extraction_technique": feature_extraction_technique, "case_study_id": kwargs["case_study_id"]})
+        form = FeatureExtractionTechniqueForm(read_only=True, instance=feature_extraction_technique)
+
+        context = {
+            "feature_extraction_technique": feature_extraction_technique,
+            "case_study_id": kwargs["case_study_id"],
+            "form": form,
+        }
+
+        return render(request, "feature_extraction_technique/detail.html", context)
+        
+    
+
+
+    
 
 def set_as_feature_extraction_technique_active(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
