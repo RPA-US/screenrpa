@@ -140,7 +140,16 @@ class ProcessDiscoveryListView(ListView):
 class ProcessDiscoveryDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
-        return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"]})
+        
+        
+        form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)  # Todos los campos estarán desactivados
+        context = {"form": form,
+            "process_discovery": process_discovery,
+             "case_study_id": kwargs["case_study_id"],
+            }
+        return render(request, "processdiscovery/detail.html", context)
+
+
 
 def set_as_process_discovery_active(request):
     process_discovery_id = request.GET.get("process_discovery_id")
