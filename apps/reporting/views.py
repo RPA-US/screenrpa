@@ -497,7 +497,7 @@ def download_report_zip(request, report_id):
     report = get_object_or_404(PDD, pk=report_id)
     execution= report.execution
 
-    zip_filename = f"execution_{execution.id}_reports_{execution.id}.zip"
+    zip_filename = f"execution_{execution.id}_reports_{report.id}.zip"
 
     zip_path = os.path.join(settings.MEDIA_ROOT, zip_filename)
 
