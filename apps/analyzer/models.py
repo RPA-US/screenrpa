@@ -241,9 +241,6 @@ class Execution(models.Model):
         #If the phases own the preloaded_file, the preloaded_file wil be unzipped from media/ and it will be stored
         #in the corresponding execution_id folder 
     
-        # Create a folder for reports
-        reports_folder = os.path.join(self.exp_folder_complete_path, f"exec_{self.id}_reports")
-        os.makedirs(reports_folder)
 
         if not os.path.exists(self.exp_folder_complete_path):
             os.makedirs(self.exp_folder_complete_path)
