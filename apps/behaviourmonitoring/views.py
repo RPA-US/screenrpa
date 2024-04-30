@@ -53,7 +53,11 @@ class MonitoringListView(ListView, LoginRequiredMixin):
 class MonitoringDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
-        return render(request, "monitoring/detail.html", {"monitoring": monitoring})
+        form = MonitoringForm(read_only=True, instance=monitoring)
+        context = {"monitoring": monitoring,
+                   "form": form}
+        
+        return render(request, "monitoring/detail.html", context)
     
 
 def set_as_active(request):
