@@ -130,7 +130,11 @@ class PrefiltersForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.read_only = kwargs.pop('read_only', False)
         super(PrefiltersForm, self).__init__(*args, **kwargs)
+        if self.read_only:
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
 
 class PostfiltersForm(forms .ModelForm):
     class Meta:
@@ -181,7 +185,13 @@ class PostfiltersForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.read_only = kwargs.pop('read_only', False)
         super(PostfiltersForm, self).__init__(*args, **kwargs)
+        if self.read_only:
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
+
+
 
 class UIElementsClassificationForm(forms .ModelForm):
     # Add a 'IGNORE' default value with string ---

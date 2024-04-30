@@ -392,7 +392,11 @@ class PrefiltersListView(ListView):
 class PrefiltersDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
-        return render(request, "prefiltering/detail.html", {"prefilter": prefilter, "case_study_id": kwargs["case_study_id"]})
+        form = PrefiltersForm(read_only=True, instance=prefilter)
+        context = {"prefilter": prefilter, 
+                   "case_study_id": kwargs["case_study_id"],
+                   "form": form}
+        return render(request, "prefiltering/detail.html", context)
 
 def set_as_prefilters_active(request):
     prefilter_id = request.GET.get("prefilter_id")
@@ -475,7 +479,11 @@ class PostfiltersListView(ListView):
 class PostfiltersDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         postfilter = get_object_or_404(Postfilters, id=kwargs["postfilter_id"])
-        return render(request, "postfiltering/detail.html", {"postfilter": postfilter, "case_study_id": kwargs["case_study_id"]})
+        form = PostfiltersForm(read_only=True, instance=postfilter)
+        context = {"postfilter": postfilter, 
+                   "case_study_id": kwargs["case_study_id"],
+                   "form": form}
+        return render(request, "postfiltering/detail.html", context)
 
 def set_as_postfilters_active(request):
     postfilter_id = request.GET.get("postfilter_id")

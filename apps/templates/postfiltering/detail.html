@@ -41,34 +41,7 @@
             <h3 class="mb-0">{% blocktranslate %}Post-Filtering Configuration{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <!-- General information -->
-              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-id">{% blocktranslate %}Id{% endblocktranslate %}</label>
-                      <input type="text" id="input-id" class="form-control" disabled value="{{ postfilter.id }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-type">{% blocktranslate %}Type{% endblocktranslate %}</label>
-                      <input type="text" class="form-control" disabled value="{{ postfilter.type }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-configuration">{% blocktranslate %}Configurations{% endblocktranslate %}</label>
-                      <textarea id="input-configuration" class="form-control" disabled >{{ postfilter.configurations }}</textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
+            {% include "postfiltering/form.html" %}
           </div>
         </div>
       </div>
