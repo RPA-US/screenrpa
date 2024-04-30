@@ -322,7 +322,7 @@
                         <!-- Contenido del dropdown -->
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ report.id }}">
                           <a class="dropdown-item" href="/reporting/pdd/configuration/{{report.id}}">Configuration</a>
-                          <a class="dropdown-item" href="#">Download</a>
+                          <a class="dropdown-item" href="/reporting/pdd/download-reports/{{report.id}}/">Download</a>
                           <a class="dropdown-item" style="display: inline;" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this prefilter?{% endblocktranslate %}')" href="/reporting/pdd/delete/?report_id={{ report.id }}">
                             <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}
                           </a>

@@ -18,6 +18,15 @@ from apps.analyzer.models import CaseStudy, Execution # add this
 from .forms import ReportingForm
 from django.urls import reverse
 
+import os
+import zipfile
+from django.http import HttpResponse
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+
+
 # Create your views here.
 
 def pdd_define_style(document):
@@ -381,25 +390,25 @@ class ReportListView(ListView):
 #############################################################################################
 ## VERSIONES DE ALE
 
-class ReportGenerateView_ALE(DetailView):
-    def get(self, request, *args, **kwargs):
-        model = Execution
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"]) 
+# class ReportGenerateView_ALE(DetailView):
+#     def get(self, request, *args, **kwargs):
+#         model = Execution
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"]) 
 
-        pdd = PDD.objects.create(
-            execution=execution,
-            user=request.user  
-        )
-        report_path = os.path.join(execution.exp_folder_complete_path,'exec_'+str(execution.id)+'_reports', 'report.docx')
+#         pdd = PDD.objects.create(
+#             execution=execution,
+#             user=request.user  
+#         )
+#         report_path = os.path.join(execution.exp_folder_complete_path,'exec_'+str(execution.id)+'_reports', 'report.docx')
 
-        # Simulate report creation (you should replace this with your actual report generation logic)
-        with open(report_path, 'wb') as file:
-            file.write(b'PDF content or whatever content you generate')
+#         # Simulate report creation (you should replace this with your actual report generation logic)
+#         with open(report_path, 'wb') as file:
+#             file.write(b'PDF content or whatever content you generate')
 
-        pdd.file.name = report_path
-        pdd.save()
+#         pdd.file.name = report_path
+#         pdd.save()
 
-        return response
+#         return response
     
 
 #########################################################################
@@ -425,17 +434,22 @@ class ReportCreateView(CreateView):
         self.object.user = self.request.user
         self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
         saved = self.object.save()
-        self.report_generate()
+
+        self.report_generate(self.object)
+
         return HttpResponseRedirect(self.get_success_url())
     
-    def report_generate(self):
+    def report_generate(self, report):
         execution= self.get_context_data()['execution']
         scenarios_to_study= self.get_context_data()['execution'].scenarios_to_study
 
         for scenario in scenarios_to_study:
 
-            report_path = os.path.join(execution.exp_folder_complete_path, scenario+"_results", 'report.docx')
+            report_directory = os.path.join(execution.exp_folder_complete_path, scenario+"_results")
+            report_path = os.path.join(report_directory, f'report_{report.id}.docx')
 
+            # Ensure the directory exists
+            os.makedirs(report_directory, exist_ok=True)
             with open(report_path, 'wb') as file:
                 file.write(b'PDF content or whatever content you generate')
         
@@ -475,3 +489,36 @@ class ReportingConfigurationDetail(DetailView):
             "execution": report.execution,
             }
         return render(request, 'reporting/detail.html', context)
+    
+
+##################################################3
+
+def download_report_zip(request, report_id):
+    report = get_object_or_404(PDD, pk=report_id)
+    execution= report.execution
+
+    zip_filename = f"execution_{execution.id}_reports_{execution.id}.zip"
+
+    zip_path = os.path.join(settings.MEDIA_ROOT, zip_filename)
+
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        scenarios_to_study = execution.scenarios_to_study
+
+        for scenario in scenarios_to_study:
+
+            report_directory = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+            report_filename = f'report_{report.id}.docx'
+            report_path = os.path.join(report_directory, report_filename)
+            
+            new_filename = f'scenario_{scenario}_report_{report.id}.docx'
+
+            # Ensure the file exists before adding to ZIP
+            if os.path.exists(report_path):
+                zipf.write(report_path, arcname=new_filename)
+
+    with open(zip_path, 'rb') as f:
+        response = HttpResponse(f.read(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename={zip_filename}'
+
+    os.remove(zip_path)  # Clean up the generated zip file after serving it
+    return response

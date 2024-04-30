@@ -14,5 +14,5 @@ urlpatterns = [
 
     path('pdd/configuration/<int:report_id>', views.ReportingConfigurationDetail.as_view(), name='report_configuration_detail'),
 
-    
+     path('pdd/download-reports/<int:report_id>/', views.download_report_zip, name='download-reports'),
 ]

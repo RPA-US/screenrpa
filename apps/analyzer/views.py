@@ -544,7 +544,7 @@ def deleteExecution(request):
 class ExecutionDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
-        reports = PDD.objects.filter(execution=execution).order_by('-created_at')[:12] #lo que caben en 2 filas enteras
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
 
         context = {
             "reports": reports,
