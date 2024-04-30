@@ -425,8 +425,20 @@ class ReportCreateView(CreateView):
         self.object.user = self.request.user
         self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
         saved = self.object.save()
+        self.report_generate()
         return HttpResponseRedirect(self.get_success_url())
     
+    def report_generate(self):
+        execution= self.get_context_data()['execution']
+        scenarios_to_study= self.get_context_data()['execution'].scenarios_to_study
+
+        for scenario in scenarios_to_study:
+
+            report_path = os.path.join(execution.exp_folder_complete_path, scenario+"_results", 'report.docx')
+
+            with open(report_path, 'wb') as file:
+                file.write(b'PDF content or whatever content you generate')
+        
 #############################################################################################
 
 def deleteReport(request):
@@ -445,13 +457,13 @@ def deleteReport(request):
 
 #############################################################################################3
 
-def reportingConfigurationDetail(request):
+# def reportingConfigurationDetail(request):
     
-    report = get_object_or_404(PDD, pk=report_id)
+#     report = get_object_or_404(PDD, pk=report_id)
 
-    form = ReportingForm(read_only=True, instance=report)  # Todos los campos estarán desactivados
+#     form = ReportingForm(read_only=True, instance=report)  # Todos los campos estarán desactivados
 
-    return render(request, 'reporting/create.html', {'form': form})
+#     return render(request, 'reporting/create.html', {'form': form})
 
 
 class ReportingConfigurationDetail(DetailView):
