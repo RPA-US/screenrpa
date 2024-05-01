@@ -14,7 +14,7 @@ from django.urls import reverse
 import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, Execution
 from core.utils import read_ui_log_as_dataframe
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
@@ -143,10 +143,20 @@ class ProcessDiscoveryDetailView(DetailView):
         
         
         form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)  # Todos los campos estarán desactivados
-        context = {"form": form,
-            "process_discovery": process_discovery,
-             "case_study_id": kwargs["case_study_id"],
-            }
+
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"process_discovery": process_discovery, 
+                  "case_study": case_study,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+
+        context= {"process_discovery": process_discovery, 
+                  "execution": execution,
+                  "form": form,}
         return render(request, "processdiscovery/detail.html", context)
 
 
