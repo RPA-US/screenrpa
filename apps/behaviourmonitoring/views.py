@@ -55,6 +55,7 @@ class MonitoringDetailView(DetailView):
         monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
         form = MonitoringForm(read_only=True, instance=monitoring)
 
+        context={}
 
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
