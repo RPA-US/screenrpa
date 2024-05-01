@@ -6,7 +6,7 @@
 
 {% block content %}
 
-  {%if execution != None%}
+  {% if execution %}
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
@@ -27,8 +27,30 @@
       </div>
     </div>
   </div>
-  {% endif %}
-  {%if execution == None%}
+  {% else %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12">
+            <a href="/dd/decision-tree-training/list/{{case_study_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Decision Tree Training Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Decision Tree Training Configuration Deatils{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/dd/decision-tree-training/list/{{case_study_id}}">{% blocktranslate %}Decision Tree Traning Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}New decision tree training{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {% endif %}
   
   <!-- Page content -->

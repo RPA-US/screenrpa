@@ -228,7 +228,14 @@ class UIElementsDetectionDetailView(MultiFormsView):
 
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionDetailView, self).get_context_data(**kwargs)
-        context['case_study_id'] = self.kwargs.get('case_study_id')
+        
+
+        if 'case_study_id' in self.kwargs:
+            context['case_study'] = get_object_or_404(CaseStudy, id=self.kwargs['case_study_id'])
+
+        if 'execution_id' in self.kwargs:
+            context['execution'] = get_object_or_404(Execution, id=self.kwargs['execution_id'])
+
         return context
 
     def get_ui_elements_detection_initial(self):
