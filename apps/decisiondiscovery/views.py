@@ -10,7 +10,7 @@ from tqdm import tqdm
 from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
-from apps.analyzer.models import CaseStudy 
+from apps.analyzer.models import CaseStudy, Execution
 from core.settings import sep, DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
@@ -19,6 +19,7 @@ from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
 from .flattening import flat_dataset_row
 from .utils import find_path_in_decision_tree, parse_decision_tree
 from django.utils.translation import gettext_lazy as _
+
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -299,13 +300,27 @@ class DecisionTreeTrainingListView(ListView):
 class DecisionTreeTrainingDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
+        #execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+
         form = DecisionTreeTrainingForm(read_only=True, instance=decision_tree_training)
 
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"decision_tree_training": decision_tree_training, 
+                  "case_study_id": case_study,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+
         context= {"decision_tree_training": decision_tree_training, 
-                  "case_study_id": kwargs["case_study_id"],
+                  "execution": execution,
                   "form": form,}
 
         return render(request, "decision_tree_training/detail.html", context)
+
+
 
 def set_as_decision_tree_training_active(request):
     decision_tree_training_id = request.GET.get("decision_tree_training_id")
