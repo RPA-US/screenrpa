@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.core.exceptions import ValidationError
 from .models import Monitoring
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, Execution
 from .forms import MonitoringForm
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -54,8 +54,21 @@ class MonitoringDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
         form = MonitoringForm(read_only=True, instance=monitoring)
-        context = {"monitoring": monitoring,
-                   "form": form}
+
+
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"monitoring": monitoring, 
+                  "case_study": case_study,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+
+            context= {"monitoring": monitoring, 
+                        "execution": execution,
+                        "form": form,}
         
         return render(request, "monitoring/detail.html", context)
     
