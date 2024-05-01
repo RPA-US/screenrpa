@@ -321,9 +321,9 @@ class DecisionTreeTrainingDetailView(DetailView):
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
 
-        context= {"decision_tree_training": decision_tree_training, 
-                  "execution": execution,
-                  "form": form,}
+            context= {"decision_tree_training": decision_tree_training, 
+                        "execution": execution,
+                        "form": form,}
 
         return render(request, "decision_tree_training/detail.html", context)
 

@@ -102,11 +102,19 @@ class FeatureExtractionTechniqueDetailView(DetailView):
         feature_extraction_technique = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
         form = FeatureExtractionTechniqueForm(read_only=True, instance=feature_extraction_technique)
 
-        context = {
-            "feature_extraction_technique": feature_extraction_technique,
-            "case_study_id": kwargs["case_study_id"],
-            "form": form,
-        }
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"feature_extraction_technique": feature_extraction_technique, 
+                  "case_study": case_study,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+            context= {"feature_extraction_technique": feature_extraction_technique, 
+                    "execution": execution,
+                    "form": form,}
+        
 
         return render(request, "feature_extraction_technique/detail.html", context)
         
@@ -364,6 +372,7 @@ class PrefiltersCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super(PrefiltersCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
+        
         return context    
 
 
@@ -400,9 +409,20 @@ class PrefiltersDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
         form = PrefiltersForm(read_only=True, instance=prefilter)
-        context = {"prefilter": prefilter, 
-                   "case_study_id": kwargs["case_study_id"],
-                   "form": form}
+
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"prefilter": prefilter, 
+                  "case_study": case_study,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+            context= {"prefilter": prefilter, 
+                    "execution": execution,
+                    "form": form,}
+        
         return render(request, "prefiltering/detail.html", context)
 
 def set_as_prefilters_active(request):
@@ -487,9 +507,19 @@ class PostfiltersDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         postfilter = get_object_or_404(Postfilters, id=kwargs["postfilter_id"])
         form = PostfiltersForm(read_only=True, instance=postfilter)
-        context = {"postfilter": postfilter, 
-                   "case_study_id": kwargs["case_study_id"],
-                   "form": form}
+
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+            context= {"postfilter": postfilter, 
+                  "case_study": case_study,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+            context= {"postfilter": postfilter, 
+                        "execution": execution,
+                        "form": form,}
+        
         return render(request, "postfiltering/detail.html", context)
 
 def set_as_postfilters_active(request):

@@ -162,7 +162,7 @@
                       {% if execution.prefilters != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="/fe/prefiltering/detail/{{execution.case_study.id}}/{{execution.prefilters.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/fe/ex/prefiltering/detail/{{execution.id}}/{{execution.prefilters.id}}">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
@@ -205,7 +205,7 @@
                       {% if execution.postfilters != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="/fe/posfiltering/detail/{{execution.case_study.id}}/{{execution.postfilters.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/fe/ex/posfiltering/detail/{{execution.id}}/{{execution.postfilters.id}}">Configurations</a>
                           <a class="dropdown-item" href="#">Results</a>
                         </div>
                       {% endif %}
@@ -228,7 +228,7 @@
                       {% if execution.feature_extraction_technique != None %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="/fe/feature-extraction-technique/detail/{{execution.case_study.id}}/{{execution.feature_extraction_technique.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/fe/ex/feature-extraction-technique/detail/{{execution.id}}/{{execution.feature_extraction_technique.id}}">Configurations</a>
                           <a class="dropdown-item" href="/case-study/execution/featureExtraction_result/{{execution.id}}/">Results</a>
                         </div>
                       {% endif %}
