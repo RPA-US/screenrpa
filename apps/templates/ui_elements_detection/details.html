@@ -19,7 +19,7 @@
             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
               <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
               <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution.id}}">{% blocktranslate %}Execution {{ execution.id }}{% endblocktranslate %}</a></li>
-              <li class="breadcrumb-item"><a href="#">{% blocktranslate %}UI Element Detection Configuration Details{% endblocktranslate %}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}UI Element Detection Configuration Details{% endblocktranslate %}</a></li>
             </ol>
           </nav>
         </div>
@@ -42,7 +42,7 @@
                 <li class="breadcrumb-item"><a href="/case-study/list"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study.id}}">Case Study {{ case_study.id }}</a></li>
                 <li class="breadcrumb-item"><a href="/fe/ui-element-detection/list/{{ case_study.id }}">UI Elements Detection Configs</a></li>
-                <li class="breadcrumb-item"><a href="#">{{ forms.ui_elements_detection.title.value }} Details</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ forms.ui_elements_detection.title.value }} Details</a></li>
               </ol>
             </nav>
           </div>
