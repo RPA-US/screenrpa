@@ -465,6 +465,18 @@ def deleteReport(request):
 
     #if removed_report.executed != 0:
     #    raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
+
+    execution = removed_report.execution
+
+    scenarios_to_study = execution.scenarios_to_study
+
+
+    for scenario in scenarios_to_study:
+        report_directory = os.path.join(execution.exp_folder_complete_path, scenario+"_results")
+        report_path = os.path.join(report_directory, f'report_{report_id}.docx')
+        if os.path.exists(report_path):
+            os.remove(report_path)
+
     removed_report.delete()
 
     return HttpResponseRedirect(reverse("analyzer:execution_detail", kwargs={"execution_id": removed_report.execution.id}))
