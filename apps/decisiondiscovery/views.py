@@ -204,9 +204,16 @@ class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['case_study_id'] = self.kwargs.get('case_study_id')
+        #context['case_study_id'] = self.kwargs.get('case_study_id')
         # Set the form with read-only configurations and instance data
         context['form'] = self.form_class(initial=model_to_dict(self.object), read_only=True, instance=self.object)
+
+        if 'case_study_id' in self.kwargs:
+            context['case_study'] = get_object_or_404(CaseStudy, id=self.kwargs['case_study_id'])
+
+        if 'execution_id' in self.kwargs:
+            context['execution'] = get_object_or_404(Execution, id=self.kwargs['execution_id'])
+
         return context
 
     def get(self, request, *args, **kwargs):
@@ -308,7 +315,7 @@ class DecisionTreeTrainingDetailView(DetailView):
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
 
             context= {"decision_tree_training": decision_tree_training, 
-                  "case_study_id": case_study,
+                  "case_study": case_study,
                   "form": form,}
 
         elif 'execution_id' in kwargs:
