@@ -14,6 +14,8 @@ urlpatterns = [
     path('extract-training-dataset/inactive/', views.set_as_extracting_training_dataset_inactive, name='extract_training_dataset_set_as_inactive'),
     path('extract-training-dataset/delete/', views.delete_extracting_training_dataset, name='extract_training_dataset_delete'),
     path('extract-training-dataset/inactive/', views.set_as_extracting_training_dataset_inactive, name='extract_training_dataset_set_as_inactive'),
+
+    path('extract-training-dataset/result/<int:execution_id>/', views.ExtractTrainingDatasetResultDetailView.as_view(), name='extractTrainingDataset_result'),
     ##
     # Decision Tree Training
     path('decision-tree-training/list/<int:case_study_id>/', views.DecisionTreeTrainingListView.as_view(), name='decision_tree_training_list'),
@@ -27,4 +29,9 @@ urlpatterns = [
     # path('decision-tree-training/results/', views.decision_tree_feature_checker, name='dt_results'),
     # path('flat-dataset-row/', views.flat_dataset_row.as_view(), name='flat-dataset-row'),
     # path('plot-decision-tree/', views.plot_decision_tree.as_view(),name='plot-decision-tree'),
+    path('decision-tree-training/result/<int:execution_id>/', views.DecisionTreeResultDetailView.as_view(), name='decisionTree_result'),
 ]
+
+ 
+
+   
