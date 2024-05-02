@@ -556,42 +556,6 @@ class ExecutionDetailView(DetailView):
     
 
     
-class FeatureExtractionResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenario = request.GET.get('scenario')
-        download = request.GET.get('download')
-
-        if scenario == None:
-            #scenario = "1"
-            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-      
-        # TODO: Sujeto a cambios en la estructura de la carpeta
-        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/flattened_dataset.csv"
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset.csv")
-        # CSV Download
-        if path_to_csv_file and download=="True":
-            return ResultDownload(path_to_csv_file)  
-     
-        # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
-
-        # Include CSV data in the context for the template
-        context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
-            }
-
-        # Render the HTML template with the context including the CSV data
-        return render(request, "feature_extraction_technique/result.html", context)
-
-#########################################333
-    
-
-    
 class UIElementsDetectionResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
@@ -640,30 +604,6 @@ class UIElementsDetectionResultDetailView(DetailView):
 ############################################################
 
 
-class ProcessDiscoveryResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenario = request.GET.get('scenario')
-        download = request.GET.get('download')
-
-        if scenario == None:
-            #scenario = "1"
-            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-              
-        path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
-
-
-        with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
-            bpmn_content = file.read()
-
-        # Include CSV data in the context for the template
-        context = {
-            "execution": execution,
-            "prueba": bpmn_content,  # Png to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
-            }
-        return render(request, 'processdiscovery/result.html', context)
 
         
  

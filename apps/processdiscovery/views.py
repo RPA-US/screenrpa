@@ -198,3 +198,30 @@ def delete_process_discovery(request):
         raise Exception("This object doesn't belong to the authenticated user")
     process_discovery.delete()
     return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
+
+##########################################
+
+class ProcessDiscoveryResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+              
+        path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
+
+
+        with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
+            bpmn_content = file.read()
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "prueba": bpmn_content,  # Png to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario
+            }
+        return render(request, 'processdiscovery/result.html', context)
