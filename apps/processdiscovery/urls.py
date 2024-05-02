@@ -15,4 +15,5 @@ urlpatterns = [
     path('bpmn/new/<int:case_study_id>/', views.ProcessDiscoveryCreateView.as_view(), name='processdiscovery_create'),
 
     path('bpmn/result/<int:execution_id>/', views.ProcessDiscoveryResultDetailView.as_view(), name='processDiscovery_result'),
+    path('bpmn/result/download/<int:execution_id>/', views.ProcessDiscoveryDownload, name='processDiscovery_result_download'),
 ]

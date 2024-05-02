@@ -44,12 +44,12 @@
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     {% for scenario in scenarios %}
-                    <a class="dropdown-item" href="/case-study/execution/process_discovery_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                    <a class="dropdown-item" href="/pd/bpmn/result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
                     {% endfor %}
                   </div>
                 </div>
                 <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenario}}"> -->
-                <a href="/case-study/execution/process_discovery_result/{{execution.id}}/?download=True&scenario={{scenario}}">
+                <a href="/pd/bpmn/result/download/{{execution.id}}/?scenario={{scenario}}">
                   <button class="btn btn-success" style="float: right;" type="button">
                     <i class="ni ni-cloud-download-95"></i> 
                     {% blocktranslate %}Download{% endblocktranslate %}
