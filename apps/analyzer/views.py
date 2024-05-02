@@ -317,7 +317,7 @@ class CaseStudyDetailView(UpdateView):
         form = CaseStudyForm(request.POST, instance=case_study)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse("analyzer:casestudy_list", kwargs={"case_study_id": case_study.id}))
+            return HttpResponseRedirect(reverse("analyzer:casestudy_detail", kwargs={"case_study_id": case_study.id}))
         else:
             return render(request, "case_studies/detail.html", {"form": form})
 

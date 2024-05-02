@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-11 10:45+0000\n"
+"POT-Creation-Date: 2024-05-02 11:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,29 +101,37 @@ msgstr "Saltar"
 msgid "Configurations"
 msgstr "Configuraciones"
 
-#: apps/featureextraction/forms.py:247
+#: apps/featureextraction/forms.py:248
 msgid "Identifier"
 msgstr "Identificador "
 
-#: apps/featureextraction/forms.py:248
+#: apps/featureextraction/forms.py:249
 msgid "Feature extraction type"
 msgstr "Tipo de extracción de caracteristicas"
 
-#: apps/featureextraction/forms.py:249
+#: apps/featureextraction/forms.py:250
 msgid "Technique"
 msgstr "Nombre de la técnica"
 
-#: apps/featureextraction/forms.py:250
+#: apps/featureextraction/forms.py:251
+msgid "Decision Point Activity"
+msgstr "Actividad del Punto de Decisión"
+
+#: apps/featureextraction/forms.py:252
 msgid "Apply Filtering (Relevant Component Selection)"
 msgstr "Aplicar filtrado (Selección de components relevantes)"
 
-#: apps/featureextraction/forms.py:251
+#: apps/featureextraction/forms.py:253
 msgid "Condition for a UI Component to be relevant"
 msgstr "Condición para que un componente UI sea relevante"
 
-#: apps/featureextraction/models.py:36
+#: apps/featureextraction/models.py:37
 msgid "exp_folder_complete_path separators not coherent"
 msgstr "separador de exp_folder_complete_path no coherente"
+
+#: apps/featureextraction/models.py:219
+msgid "Only lowercase and uppercase letters"
+msgstr "Solo letras minúsculas y mayúsculas"
 
 #: apps/featureextraction/views.py:122 apps/featureextraction/views.py:317
 #: apps/featureextraction/views.py:401 apps/featureextraction/views.py:484
