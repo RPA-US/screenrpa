@@ -1,3 +1,5 @@
+import csv
+import json
 import os
 from art import tprint
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
@@ -613,3 +615,68 @@ def draw_ui_compos(request, execution_id):
         st = status.HTTP_404_NOT_FOUND
 
     return HttpResponse(response, status=st)
+
+
+##########################################################
+
+class FeatureExtractionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+        # TODO: Sujeto a cambios en la estructura de la carpeta
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/flattened_dataset.csv"
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset.csv")
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return ResultDownload(path_to_csv_file)  
+     
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution": execution,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario
+            }
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "feature_extraction_technique/result.html", context)
+
+
+#############################################33
+def read_csv_to_json(path_to_csv_file):
+    # Initialize a list to hold the CSV data converted into dictionaries
+    csv_data = []       
+    # Check if the path to the CSV file exists and read the data
+    try:
+        with open(path_to_csv_file, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                csv_data.append(row)
+    except FileNotFoundError:
+        print(f"File not found: {path_to_csv_file}")
+    # Convert csv_data to JSON
+    csv_data_json = json.dumps(csv_data)
+    return csv_data_json
+##########################################3
+def ResultDownload(path_to_csv_file):
+    with open(path_to_csv_file, 'r', newline='') as csvfile:
+        # Create an HTTP response with the content of the CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
+        writer = csv.writer(response)
+        reader = csv.reader(csvfile)
+        for row in reader:
+            writer.writerow(row)
+        return response
+    
+#############################################################

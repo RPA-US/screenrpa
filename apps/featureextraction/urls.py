@@ -43,6 +43,7 @@ urlpatterns = [
     path('feature-extraction-technique/new/<int:case_study_id>/', views.FeatureExtractionTechniqueCreateView.as_view(), name='fe_technique_create'),
     path('feature-extraction-technique/detail/<int:case_study_id>/<int:feature_extraction_technique_id>/', views.FeatureExtractionTechniqueDetailView.as_view(), name='fe_technique_detail'),
     path('ex/feature-extraction-technique/detail/<int:execution_id>/<int:feature_extraction_technique_id>/', views.FeatureExtractionTechniqueDetailView.as_view(), name='fe_technique_detail-execution'),
+    path('feature-extraction-technique/result/<int:execution_id>/', views.FeatureExtractionResultDetailView.as_view(), name='featureExtraction_result'),
 
 
     path('feature-extraction-technique/active/', views.set_as_feature_extraction_technique_active, name='fe_technique_set_as_active'),
