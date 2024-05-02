@@ -12,5 +12,5 @@ urlpatterns = [
     path('active/', views.set_as_active, name='monitoring_set_as_active'),
     path('inactive/', views.set_as_inactive, name='monitoring_set_as_inactive'),
     path('delete/', views.delete_monitoring, name='monitoring_delete'),
-    path('execution/monitoring_result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
+    path('result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
 ]
