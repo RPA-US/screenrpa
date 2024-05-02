@@ -148,14 +148,14 @@ class ProcessDiscoveryDetailView(DetailView):
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
 
             context= {"process_discovery": process_discovery, 
-                  "case_study": case_study,
+                  "case_study_id": case_study.id,
                   "form": form,}
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
 
         context= {"process_discovery": process_discovery, 
-                  "execution": execution,
+                  "execution_id": execution.id,
                   "form": form,}
         return render(request, "processdiscovery/detail.html", context)
 
@@ -219,7 +219,7 @@ class ProcessDiscoveryResultDetailView(DetailView):
 
         # Include CSV data in the context for the template
         context = {
-            "execution": execution,
+            "execution_id": execution.id,
             "prueba": bpmn_content,  # Png to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario

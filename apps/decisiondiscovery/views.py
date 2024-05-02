@@ -222,10 +222,10 @@ class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
         context['form'] = self.form_class(initial=model_to_dict(self.object), read_only=True, instance=self.object)
 
         if 'case_study_id' in self.kwargs:
-            context['case_study'] = get_object_or_404(CaseStudy, id=self.kwargs['case_study_id'])
+            context['case_study_id'] = self.kwargs['case_study_id']
 
         if 'execution_id' in self.kwargs:
-            context['execution'] = get_object_or_404(Execution, id=self.kwargs['execution_id'])
+            context['execution_id'] = self.kwargs['execution_id']
 
         return context
 
@@ -301,7 +301,7 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
 
         # Include CSV data in the context for the template
         context = {
-            "execution": execution,
+            "execution_id": execution.id,
             "csv_data": csv_data_json,  # Data to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario
@@ -320,7 +320,7 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
 
 #     # Include CSV data in the context for the template
 #     context = {
-#             "execution": execution,
+#             "execution_id": execution.id,
 #             "csv_data": csv_data_json,  # Data to be used in the HTML template
 #             "scenarios": execution.scenarios_to_study,
 #             "scenario": scenario
@@ -410,14 +410,14 @@ class DecisionTreeTrainingDetailView(DetailView):
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
 
             context= {"decision_tree_training": decision_tree_training, 
-                  "case_study": case_study,
+                  "case_study_id": case_study.id,
                   "form": form,}
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
 
             context= {"decision_tree_training": decision_tree_training, 
-                        "execution": execution,
+                        "execution_id": execution.id,
                         "form": form,}
 
         return render(request, "decision_tree_training/detail.html", context)
@@ -527,7 +527,7 @@ class DecisionTreeResultDetailView(DetailView):
 
         # Include CSV data in the context for the template
         context = {
-            "execution": execution,
+            "execution_id": execution.id,
             "tree_to_png": tree_image_base64,  # Png to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario,

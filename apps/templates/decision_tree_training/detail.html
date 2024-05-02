@@ -6,19 +6,19 @@
 
 {% block content %}
 
-  {% if execution %}
+  {% if execution_id %}
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/case-study/execution/detail/{{execution.id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>{% blocktranslate %}Go Back to Execution {{execution.id}}{% endblocktranslate %}</a>
+            <a href="/case-study/execution/detail/{{execution_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Execution {{execution_id}}{% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Decision Tree Training Configuration Details{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution.id}}">{% blocktranslate %}Execution {{ execution.id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution_id}}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Decision Tree Training Configuration Details{% endblocktranslate %}</a></li>
               </ol>
             </nav>
@@ -33,15 +33,15 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-12">
-            <a href="/dd/decision-tree-training/list/{{case_study.id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/dd/decision-tree-training/list/{{case_study_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Decision Tree Training Configurations{% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Decision Tree Training Configuration Deatils{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study.id}}">{% blocktranslate %}Case Study {{ case_study.id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="/dd/decision-tree-training/list/{{case_study.id}}">{% blocktranslate %}Decision Tree Traning Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/dd/decision-tree-training/list/{{case_study_id}}">{% blocktranslate %}Decision Tree Traning Configs{% endblocktranslate %}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}New decision tree training{% endblocktranslate %}</a></li>
               </ol>
             </nav>

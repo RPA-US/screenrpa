@@ -13,11 +13,11 @@
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
             <a href="/case-study/list/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Case Studies{% endblocktranslate %}</a>
-            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Case Study {{ case_study.id }} details{% endblocktranslate %}</h6>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Case Study {{ case_study_id }} details{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Case study {{ case_study.id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Case study {{ case_study_id }}{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
@@ -33,7 +33,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">{% blocktranslate %}Case study {{ case_study.id }} details{% endblocktranslate %}</h3>
+            <h3 class="mb-0">{% blocktranslate %}Case study {{ case_study_id }} details{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
             <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
@@ -109,56 +109,56 @@
                 <div class="card-body">
                   <div class="row icon-examples">
                     <div class="col-lg-3 col-md-6">
-                      <a href="/monitoring/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/monitoring/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/fe/prefiltering/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/fe/prefiltering/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/fe/ui-element-detection/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/fe/ui-element-detection/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-image"></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/fe/postfiltering/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/fe/postfiltering/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                         <i class="ni ni-zoom-split-in"></i> <span>Post-filtering</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/fe/feature-extraction-technique/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/fe/feature-extraction-technique/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/pd/bpmn/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/pd/bpmn/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-sound-wave"></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/dd/extract-training-dataset/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/dd/extract-training-dataset/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-settings"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
                         </div>
                       </a>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                      <a href="/dd/decision-tree-training/list/{{ case_study.id }}" type="button" class="btn-icon-clipboard">
+                      <a href="/dd/decision-tree-training/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                         <div>
                           <i class="ni ni-vector"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
                         </div>

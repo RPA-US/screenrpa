@@ -108,13 +108,13 @@ class FeatureExtractionTechniqueDetailView(DetailView):
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
 
             context= {"feature_extraction_technique": feature_extraction_technique, 
-                  "case_study": case_study,
+                  "case_study_id": case_study.id,
                   "form": form,}
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
             context= {"feature_extraction_technique": feature_extraction_technique, 
-                    "execution": execution,
+                    "execution_id": execution.id,
                     "form": form,}
         
 
@@ -241,11 +241,11 @@ class UIElementsDetectionDetailView(MultiFormsView):
         
 
         if 'case_study_id' in self.kwargs:
-            context['case_study'] = get_object_or_404(CaseStudy, id=self.kwargs['case_study_id'])
+            context['case_study_id'] = self.kwargs['case_study_id']
 
         if 'execution_id' in self.kwargs:
-            context['execution'] = get_object_or_404(Execution, id=self.kwargs['execution_id'])
-
+            #context['execution_id'] = self.kwargs['execution_id']
+            context['execution_id'] = self.kwargs['execution_id']
         return context
 
     def get_ui_elements_detection_initial(self):
@@ -416,13 +416,13 @@ class PrefiltersDetailView(DetailView):
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
 
             context= {"prefilter": prefilter, 
-                  "case_study": case_study,
+                  "case_study_id": case_study.id,
                   "form": form,}
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
             context= {"prefilter": prefilter, 
-                    "execution": execution,
+                    "execution_id": execution.id,
                     "form": form,}
         
         return render(request, "prefiltering/detail.html", context)
@@ -513,13 +513,13 @@ class PostfiltersDetailView(DetailView):
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             context= {"postfilter": postfilter, 
-                  "case_study": case_study,
+                  "case_study_id": case_study.id,
                   "form": form,}
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
             context= {"postfilter": postfilter, 
-                        "execution": execution,
+                        "execution_id": execution.id,
                         "form": form,}
         
         return render(request, "postfiltering/detail.html", context)
@@ -642,7 +642,7 @@ class FeatureExtractionResultDetailView(DetailView):
 
         # Include CSV data in the context for the template
         context = {
-            "execution": execution,
+            "execution_id": execution.id,
             "csv_data": csv_data_json,  # Data to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario

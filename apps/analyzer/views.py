@@ -325,7 +325,7 @@ class CaseStudyDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         context = {
-            "case_study": case_study, 
+            "case_study_id": case_study.id, 
             "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
             "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE")
             }
@@ -548,6 +548,7 @@ class ExecutionDetailView(DetailView):
 
         context = {
             "reports": reports,
+            "execution_id": execution.id, 
             "execution": execution, 
             }
         return render(request, "executions/detail.html", context)
@@ -592,7 +593,7 @@ class UIElementsDetectionResultDetailView(DetailView):
             )
 
         context = {
-            "execution": execution,
+            "execution_id": execution.id,
             "scenarios": execution.scenarios_to_study,
             "soms": soms
         }

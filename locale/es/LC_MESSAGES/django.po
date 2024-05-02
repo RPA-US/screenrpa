@@ -166,18 +166,18 @@ msgstr "Guardar"
 
 #: apps/templates/case_studies/detail.html:16
 #, python-format
-msgid "Case Study %(case_study.id)s details"
-msgstr "Detalles del caso de estudio %(case_study.id)s"
+msgid "Case Study %(case_study_id)s details"
+msgstr "Detalles del caso de estudio %(case_study_id)s"
 
 #: apps/templates/case_studies/detail.html:20
 #, python-format
-msgid "Case study %(case_study.id)s"
-msgstr "Caso de estudio %(case_study.id)s"
+msgid "Case study %(case_study_id)s"
+msgstr "Caso de estudio %(case_study_id)s"
 
 #: apps/templates/case_studies/detail.html:36
 #, python-format
-msgid "Case study %(case_study.id)s details"
-msgstr "Detalles del caso de estudio %(case_study.id)s"
+msgid "Case study %(case_study_id)s details"
+msgstr "Detalles del caso de estudio %(case_study_id)s"
 
 #: apps/templates/case_studies/detail.html:46
 #: apps/templates/case_studies/list.html:45
@@ -509,7 +509,7 @@ msgstr "Entrenamiento del árbol de decisiones"
 #: apps/templates/ui_elements_detection/create.html:20
 #: apps/templates/ui_elements_detection/list.html:19
 msgid "Case Study %(case_study_id)s"
-msgstr "Caso de estudio %(case_study.id)s"
+msgstr "Caso de estudio %(case_study_id)s"
 
 #: apps/templates/decision_tree_training/create.html:21
 msgid "Decision Tree Traning Configs"
@@ -1139,8 +1139,8 @@ msgstr "Detalles de la configuración de monitoreo de comportamiento"
 
 #: apps/templates/monitoring/detail.html:20
 #, python-format
-msgid "Case Study %(monitoring.case_study.id)s"
-msgstr "Caso de estudio %(monitoring.case_study.id)s"
+msgid "Case Study %(monitoring.case_study_id)s"
+msgstr "Caso de estudio %(monitoring.case_study_id)s"
 
 #: apps/templates/monitoring/detail.html:22
 #, python-format
