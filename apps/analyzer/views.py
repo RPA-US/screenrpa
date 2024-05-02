@@ -554,39 +554,7 @@ class ExecutionDetailView(DetailView):
 
 #################################################################### PHASE EXECUTIONS RESULTS ####################################################################
     
-class MonitoringResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenario = request.GET.get('scenario')
-        download = request.GET.get('download')
 
-        if scenario == None:
-            #scenario = "1"
-            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-            
-        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/log.csv"  
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario, "log.csv")
-        # CSV Download
-        if path_to_csv_file and download=="True":
-            return ResultDownload(path_to_csv_file)  
-
-        # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
-
-        # Include CSV data in the context for the template
-        context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
-            } 
-
-        # Render the HTML template with the context including the CSV data
-        return render(request, "monitoring/result.html", context)
-
-
-##########################################
     
 class FeatureExtractionResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
