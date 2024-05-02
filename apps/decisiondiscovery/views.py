@@ -514,18 +514,14 @@ class DecisionTreeResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
-        download = request.GET.get('download')
-
+        
         if scenario == None:
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
               
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
         
-        tree_image_base64 = tree_to_png_base64(path_to_tree_file, download) 
-
-        if download:
-            downloadPrueba(tree_image_base64)
+        tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
 
         tree_rules= extract_tree_rules(path_to_tree_file)
 
@@ -544,7 +540,7 @@ class DecisionTreeResultDetailView(DetailView):
 ####################################################################
 
 #    http://127.0.0.1:8000/es/case-study/execution/decision_tree_result/33/
-def tree_to_png_base64(path_to_tree_file, download):
+def tree_to_png_base64(path_to_tree_file):
     # Cargar los datos del árbol de decisión desde el archivo de registro (suponiendo que está en formato JSON)
     try:
         with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
@@ -573,8 +569,6 @@ def tree_to_png_base64(path_to_tree_file, download):
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
     png_image = graph.create_png()
 
-    if download:
-        downloadPrueba(png_image)
 
     # Codificar el contenido de la imagen en base64 y prepararlo para HTML
     image_base64 = base64.b64encode(png_image).decode('utf-8')
@@ -638,10 +632,30 @@ def extract_tree_rules(path_to_tree_file):
 
 ####################################################################
 
-def downloadPrueba(png_image):
-    # Preparar una respuesta HTTP para la descarga del archivo
-    response = HttpResponse(png_image, content_type='image/png')
-    response['Content-Disposition'] = 'attachment; filename="decision_tree.png"'
-    return response
+def DecisionTreeDownload(request, execution_id):
+
+    execution = get_object_or_404(Execution, pk=execution_id)
+    #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
+    scenario = request.GET.get('scenario')
+    
+    if scenario is None:
+        scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
+              
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+    
+    try:
+        # Asegúrate de que la ruta absoluta sea correcta
+        full_file_path = os.path.join('/screenrpa', path_to_tree_file)
+        with open(full_file_path, 'rb') as archivo:
+            response = HttpResponse(archivo.read(), content_type="application/octet-stream")
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
+            return response
+        
+    except FileNotFoundError:
+
+        print(f"File not found: {path_to_tree_file}")
+        return HttpResponse("Lo siento, el archivo no se encontró.", status=404)
+    
+
     
 ####################################################################

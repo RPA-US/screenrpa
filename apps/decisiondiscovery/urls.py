@@ -30,6 +30,7 @@ urlpatterns = [
     # path('flat-dataset-row/', views.flat_dataset_row.as_view(), name='flat-dataset-row'),
     # path('plot-decision-tree/', views.plot_decision_tree.as_view(),name='plot-decision-tree'),
     path('decision-tree-training/result/<int:execution_id>/', views.DecisionTreeResultDetailView.as_view(), name='decisionTree_result'),
+    path('decision-tree-training/result/download/<int:execution_id>/', views.DecisionTreeDownload, name='decisionTree_result_download'),
 ]
 
  
