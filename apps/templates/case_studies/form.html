@@ -39,7 +39,7 @@
     <div>
         <label class="form-control-label" for="type">{{ form.special_colnames.label }}<b class="text-red">*</b></label>
         {{ form.special_colnames.as_hidden }}
-        <div id="json-inputs" class="d-flex flex-column p-4">
+        <div id="json-inputs" class="d-flex flex-wrap p-4">
         </div>
         <div class="form-validation">{{ form.special_colnames.errors }}</div>
     </div>
@@ -114,14 +114,14 @@
 
     for (const key in data) {
         const div = document.createElement('div');
-        div.className = 'd-flex flex-row p-1';
+        div.className = 'd-flex w-50 flex-row p-1 justify-content-between';
 
         const required = document.createElement('b');
         required.className = 'text-red';
         required.textContent = '*';
 
         const label = document.createElement('label');
-        label.className = 'p-0 col-3 align-self-center';
+        label.className = 'p-0 align-self-center text-wrap w-50 text-truncate';
         label.textContent = key;
         label.appendChild(required);
 
