@@ -71,6 +71,9 @@ class CaseStudyForm(forms.ModelForm):
         }
 
     def clean_title(self):
+        # Apply only if title is changed
+        if self.instance.title == self.cleaned_data.get("title"):
+            return self.cleaned_data.get("title")
         title = self.cleaned_data.get("title")
         qs = CaseStudy.objects.filter(title=title)
         if qs.exists():

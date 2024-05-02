@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
-from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -308,13 +308,27 @@ def deleteCaseStudy(request):
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
-class CaseStudyDetailView(DetailView):
+class CaseStudyDetailView(UpdateView):
+    model = CaseStudy
+    form_class = CaseStudyForm
+
+    def post(self, request, *args, **kwargs):
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        form = CaseStudyForm(request.POST, instance=case_study)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list", kwargs={"case_study_id": case_study.id}))
+        else:
+            return render(request, "case_studies/detail.html", {"form": form})
+
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        form = CaseStudyForm(instance=case_study)
         context = {
-            "case_study": case_study, 
+            "form": form, 
             "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE")
+            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE"),
+            "case_study_id": case_study.id
             }
         return render(request, "case_studies/detail.html", context)
 

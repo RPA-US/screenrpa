@@ -63,7 +63,8 @@ def default_special_colnames():
         "NameApp": "FileName",
         "EventType": "ocel:type:event",
         "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY"
+        "CoorY": "ocel:click:coorY",
+        "Header": "header"
         }
     )
 
