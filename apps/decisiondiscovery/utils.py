@@ -46,7 +46,7 @@ def def_preprocessor(X):
     # Eliminar las columnas con todos los valores iguales o nulos
     X = X.drop(columns=columns_to_drop)
     
-    mapping_dict = {"enabled": ['NaN', 'enabled'], "checked": ['unchecked', 'checked', '']}
+    mapping_dict = {"enabled": ['NaN', 'enabled', 'disabled'], "checked": ['unchecked', 'checked', '']}
     mapping_list = []
     sta_columns = []
     # Identificar las columnas que contienen "sta_" en su nombre
@@ -177,7 +177,7 @@ def read_feature_column_name(column_name):
     
     # Definimos la expresión regular para buscar los componentes del identificador
     if "__" in column_name and contains_centroid:
-        pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
+        pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d*_?[a-zA-Z])"
         aux1 = 1
         aux2 = 1
     elif "__" in column_name and not contains_centroid:
@@ -192,7 +192,7 @@ def read_feature_column_name(column_name):
         centroid = None
         aux2 = 0
     else:
-        pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d+_[a-zA-Z])"
+        pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d*_?[a-zA-Z])"
         suffix = None
         aux1 = 0
         aux2 = 1

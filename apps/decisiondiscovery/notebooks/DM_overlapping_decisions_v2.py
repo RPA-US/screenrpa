@@ -22,7 +22,7 @@ import json
 # Parámetros
 
 columna_objetivo = 'variant'
-min_samples_split = 2
+min_samples_split = 1
 merge_ratio_e = 0.5
 
 def check_dict_structure(paths_dict, dict_key):
@@ -62,10 +62,10 @@ def extract_paths(tree, feature_names):
     recurse(0, [])
 
     # Imprime los caminos para cada clase
-    for label, paths_aux in paths['paths'].items():
-        print(f"Clase {label}:")
-        for path in paths_aux['rules']:
-            print(f"  - {path}")
+    # for label, paths_aux in paths['paths'].items():
+    #     print(f"Clase {label}:")
+    #     for path in paths_aux['rules']:
+    #         print(f"  - {path}")
             
     return paths
 
@@ -107,16 +107,16 @@ X = df.drop(columna_objetivo, axis=1)
 y = df[columna_objetivo]
 
 # Divide el dataset en conjuntos de entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
 
 # Entrenar el modelo de árbol de decisión
-tree = DecisionTreeClassifier(criterion='entropy')  # Usando entropía para simular C4.5
+tree = DecisionTreeClassifier()  # Usando entropía para simular C4.5
 tree.fit(X_train, y_train)
 
 # Evaluar el modelo
 y_pred = tree.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-print(f'Accuracy: {accuracy * 100:.2f}% \n')
+print(f'\n===================================\n Tree Accuracy: {accuracy * 100:.2f}% ')
 
 feature_names = X.columns.tolist()
 paths_dict = extract_paths(tree, feature_names)
@@ -128,6 +128,9 @@ if accuracy == 1.0:
     with open('full_tree.txt', 'w') as f:
         f.write(tree_text)
 else:
+    tree_text = export_text(tree, feature_names=list(X.columns))
+    with open('failed_tree.txt', 'w') as f:
+        f.write(tree_text)
     misclassified = y_test != y_pred
     misclassified_data = X_test[misclassified]
     misclassified_labels = y_test[misclassified]
@@ -194,28 +197,32 @@ else:
                 f.write(sub_tree_text)
             
 
-print(f"\n\nCERTAINITY:")
+print(f"\n\n===================================\nVariants with 100% certainty:\n===================================")
 print(f"  Classes whose guards have a 100% certainty: {certain_labels}")
 # Imprimir las rules asociadas a las clases que tienen una certeza del 100%
 for label in certain_labels:
-    print(f"  Clase {label}:")
+    print(f"  Class {label}:")
     for rule in paths_dict['paths'][label]['rules']:
         print(f"    - (certainity 100%) {rule} \n")
 
-print(f"UNCERTAINITY:")
-for confusion in paths_dict['metadata']['x_missclassified_as_y']:
-    print(f"  Overlapping rules: the class {confusion[0]} (ground_truth) is missclassified as the class {confusion[1]} (prediction)\n")
-    # Imprimir las rules de las claves en 'paths' en paths_dict que estan contenidas en confusion
-    for key in confusion:
 
-        if key in paths_dict['paths']:
-            print(f"  Clase {key}:")
-            for rule in paths_dict['paths'][key]['rules']:
-                    print(f"    - (precision 100%)  {rule}")
-                
-            if 'overlapped_rules' in paths_dict['paths'][key]:
-                for rule in paths_dict['paths'][key]['overlapped_rules']:
-                    print(f"    - (overlapped)      {rule}")
+print(f"\n\n===================================\nVariants with uncertainty:\n===================================")
+if 'metadata' in paths_dict:
+    # Comprueba que exista la clave 'x_missclassified_ñas_y' en paths_dict['metadata']
+    if 'x_missclassified_as_y' in paths_dict['metadata']:
+        for confusion in paths_dict['metadata']['x_missclassified_as_y']:
+            print(f"  Overlapping rules: the class {confusion[0]} (ground_truth) is missclassified as the class {confusion[1]} (prediction)\n")
+            # Imprimir las rules de las claves en 'paths' en paths_dict que estan contenidas en confusion
+            for key in confusion:
+
+                if key in paths_dict['paths']:
+                    print(f"  Class {key}:")
+                    for rule in paths_dict['paths'][key]['rules']:
+                            print(f"    - (precision 100%)  {rule}")
+                        
+                    if 'overlapped_rules' in paths_dict['paths'][key]:
+                        for rule in paths_dict['paths'][key]['overlapped_rules']:
+                            print(f"    - (overlapped)      {rule}")
     
     
     
@@ -225,4 +232,23 @@ with open('paths.json', 'w') as f:
     json.dump(paths_dict, f, indent=4)
 
 
+#%%
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Generar la matriz de confusión
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+print("y_test")
+print(y_test)
+print("y_pred")
+print(y_pred)
+
+# Visualizar la matriz de confusión
+sns.heatmap(conf_matrix, annot=True, fmt='g')
+plt.xlabel('Predicted labels')
+plt.ylabel('True labels')
+plt.title('Confusion Matrix')
+plt.show()
 # %%

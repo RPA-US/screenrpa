@@ -3,8 +3,9 @@ import json
 import os
 from numpyencoder import NumpyEncoder
 
-def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
-                          decision_point_activity, actions_columns):
+
+def flat_dataset_row(log, columns, target_label, path_dataset_saved, special_colnames, 
+                          decision_point_activity, variants_to_study, actions_columns):
     """
     This function convert the log into a dataset, that is, to flat all the existing events over the same case,
     resulting on a single row per case. For this flattening only those events relative to the activities previous
@@ -31,12 +32,20 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
     :returns: Dataset
     :rtype: DataFrame
     """
+    
+    case_column_name = special_colnames["Case"]
+    activity_column_name = special_colnames["Activity"] 
+    timestamp_column_name = special_colnames["Timestamp"]
+    variant_column_name = special_colnames["Variant"]
+    
     cases = log.loc[:, case_column_name].values.tolist()
 
     last_case = cases[0]
     before_DP = True
     log_dict = {}
     for index, c in enumerate(cases, start=0):
+        v = log.at[index, variant_column_name]
+        if v in variants_to_study:
             activity = log.at[index, activity_column_name]
 
             # Set the timestamp for the last event associated to the case
