@@ -255,13 +255,14 @@
       $('#navbar-search-main').removeClass('navbar-search-light').addClass('navbar-search-dark');
       $('#navbar-search').attr('placeholder', 'No search available').prop('disabled', true);
     }
-    // Empty searchbar value
-    $('#navbar-search').val('');
-    $('#navbar-search').on('keyup', function() {
-      var value = $(this).val().toLowerCase();
-      $('.list tr').filter(function() {
-        $(this).toggle($(this).text().toLowerCase().includes(value))
-      });
+    // Searchbar valiue set to s query param
+    $('#navbar-search').val(new URLSearchParams(window.location.search).get('s'));
+    $('#navbar-search-main').on('submit', function(e) {
+      e.preventDefault();
+      // Query the same url with search query parameter (?s=...)
+      url = window.location.href.split('?')[0];
+      query = $('#navbar-search').val();
+      window.location.href = url + '?s=' + query;
     });
   });
 </script>

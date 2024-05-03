@@ -282,6 +282,10 @@ class CaseStudyListView(ListView, LoginRequiredMixin):
     paginate_by = 50
 
     def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return CaseStudy.objects.filter(active=True, user=self.request.user, title__icontains=search).order_by("-created_at")
         return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
 
@@ -527,6 +531,10 @@ class ExecutionListView(ListView, LoginRequiredMixin):
     paginate_by = 50
 
     def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return Execution.objects.filter(user=self.request.user, case_study__title__icontains=search).order_by("-created_at")
         return Execution.objects.filter(user=self.request.user).order_by("-created_at")
         
 

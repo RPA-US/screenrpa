@@ -189,8 +189,13 @@ class ExtractTrainingDatasetListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
-        # Filtra los objetos por case_study_id
-        queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        # Filtra los objetos Extract Training Dataset por case_study_id
+        if search:
+            queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
     
@@ -285,8 +290,13 @@ class DecisionTreeTrainingListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
-        # Filtra los objetos DecisionTreeTraining por case_study_id
-        queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        # Filtra los objetos Decision Tree Training por case_study_id
+        if search:
+            queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
 
