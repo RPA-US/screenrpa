@@ -3,7 +3,7 @@ import io
 import os
 import pickle
 from tempfile import NamedTemporaryFile
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 import datetime
 import docx
@@ -660,3 +660,20 @@ def download_report_zip(request, report_id):
 
     os.remove(zip_path)  # Clean up the generated zip file after serving it
     return response
+
+
+##################################################
+def preview_pdf(request, report_id):
+    # Reutilizando la lógica existente para obtener la ruta del PDF
+    report = get_object_or_404(PDD, pk=report_id)
+    execution = report.execution
+    #pdf_path = os.path.join('/screenrpa',execution.exp_folder_complete_path, 'sc_0_size50_Balanced_results', 'calendario-academico.pdf')
+    pdf_path = '/screenrpa/media/unzipped/datos_inciiales_j49gvQs_1714120837/executions/exec_41/sc_0_size50_Balanced_results/calendario-academico.pdf'
+
+    return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+
+    # if os.path.exists(pdf_path):
+    #     # Renderizar una plantilla que contenga el iframe
+    #     return render(request, 'reporting/preview_pdf.html', {'pdf_path': pdf_path})
+    # else:
+    #     return HttpResponseNotFound("El documento PDF solicitado no fue encontrado.")
