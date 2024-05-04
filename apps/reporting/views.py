@@ -26,6 +26,9 @@ from django.utils.translation import gettext as _
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
+from docx import Document
+import os
+
 
 # Create your views here.
 
@@ -450,10 +453,49 @@ class ReportCreateView(CreateView):
 
             # Ensure the directory exists
             os.makedirs(report_directory, exist_ok=True)
-            with open(report_path, 'wb') as file:
-                file.write(b'PDF content or whatever content you generate')
+
+            report_define(report_directory, report_path, execution, scenarios_to_study, report)
+            # with open(report_path, 'wb') as file:
+            #     file.write(b'PDF content or whatever content you generate')
         
 #############################################################################################
+
+
+def report_define(report_directory, report_path, execution, scenarios_to_study, report):
+    template_path = "/screenrpa/media/unzipped/report_template.docx"
+    doc = Document(template_path)
+
+    ###############3
+    paragraph_dict = {}
+    for i, paragraph in enumerate(doc.paragraphs):
+        text = paragraph.text
+        if text.startswith('[') and text.endswith(']'): 
+            paragraph_dict[text] = i 
+
+    for key, value in paragraph_dict.items():
+        print(f"Texto del párrafo: {key}\nÍndice: {value}\n")
+
+    ############################
+    
+    purpose= doc.paragraphs[paragraph_dict['[PURPOSE]']]
+    purpose.text = report.purpose
+    #paragraph.style = doc.styles['Normal']
+
+    purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
+    purpose.text = report.objective
+
+    ############################
+    doc.save(report_path)
+
+
+
+
+
+
+
+
+
+#####################################################################
 
 def deleteReport(request):
     report_id = request.GET.get("report_id")
