@@ -1,4 +1,8 @@
+import base64
+import io
 import os
+import pickle
+from tempfile import NamedTemporaryFile
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 import datetime
@@ -11,6 +15,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
+import pandas as pd
+from sklearn.tree import export_graphviz
 from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
@@ -28,7 +34,7 @@ from django.shortcuts import get_object_or_404
 
 from docx import Document
 import os
-
+import pydotplus
 
 # Create your views here.
 
@@ -415,6 +421,34 @@ class ReportListView(ListView):
     
 
 #########################################################################
+
+
+def tree_to_png(path_to_tree_file):
+    # Cargar los datos del árbol de decisión
+    try:
+        with open('/screenrpa/' + path_to_tree_file, 'rb') as archivo:
+            loaded_data = pickle.load(archivo)
+        clasificador_loaded = loaded_data['classifier']
+        feature_names_loaded = loaded_data['feature_names']
+        class_names_loaded = [str(item) for item in loaded_data['class_names']]
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+    
+    dot_data = io.StringIO()
+    export_graphviz(clasificador_loaded, out_file=dot_data, filled=True, rounded=True,
+                    special_characters=True, feature_names=feature_names_loaded, class_names=class_names_loaded)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+    png_image = graph.create_png()
+
+    # Guardar la imagen en un archivo temporal
+    temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+    with open(temp_file.name, 'wb') as f:
+        f.write(png_image)
+    
+    return temp_file.name
+
+#############################################################################################
 class ReportCreateView(CreateView):
     model = PDD
     form_class = ReportingForm
@@ -454,14 +488,14 @@ class ReportCreateView(CreateView):
             # Ensure the directory exists
             os.makedirs(report_directory, exist_ok=True)
 
-            report_define(report_directory, report_path, execution, scenarios_to_study, report)
+            report_define(report_directory, report_path, execution, report, scenario)
             # with open(report_path, 'wb') as file:
             #     file.write(b'PDF content or whatever content you generate')
         
 #############################################################################################
 
 
-def report_define(report_directory, report_path, execution, scenarios_to_study, report):
+def report_define(report_directory, report_path, execution,  report, scenario):
     template_path = "/screenrpa/media/unzipped/report_template.docx"
     doc = Document(template_path)
 
@@ -484,15 +518,65 @@ def report_define(report_directory, report_path, execution, scenarios_to_study, 
     purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
     purpose.text = report.objective
 
+    title= doc.paragraphs[paragraph_dict['[TITLE]']]
+    title.text = execution.process_discovery.title
+
+    #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
     ############################
+
+    nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
+    #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
+
+    logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
+
+    df_logcsv = pd.read_csv(logcsv_directory)
+
+    unique_names = df_logcsv['NameApp'].unique()
+
+    for name in unique_names:
+        run = nameapps.add_run('\n• ' + name)
+        run.add_break()
+        row = df_logcsv[df_logcsv['NameApp'] == name].iloc[0]
+        screenshot_filename = row['Screenshot']
+        screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+        # Insertar la imagen si existe
+        if os.path.exists(screenshot_directory):
+        # Agregar la imagen debajo del nombre
+            nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
+        else:
+            print(f"Image not found for {name}: {screenshot_directory}")
+
+    ##########################3
+
+    original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
+
+    table = doc.add_table(rows=(df_logcsv.shape[0] + 1), cols=df_logcsv.shape[1])
+
+    # Insertar los nombres de las columnas
+    for j, col in enumerate(df_logcsv.columns):
+        table.cell(0, j).text = col
+
+    # Insertar los datos del DataFrame
+    for i in range(df_logcsv.shape[0]):
+        for j in range(df_logcsv.shape[1]):
+            table.cell(i + 1, j).text = str(df_logcsv.iloc[i, j])
+
+    tbl, p = table._tbl, original_log._p
+    p.addnext(tbl)
+    ###################33333
+    #meter el decision tree --> document.add_picture('image_path') : agrega una imagen al documento.
+
+    decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+    
+    run = decision_tree.add_run()
+    run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
+
+    #decision_tree.text = ''
+
+    ####################
     doc.save(report_path)
-
-
-
-
-
-
-
 
 
 #####################################################################
