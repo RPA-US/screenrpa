@@ -3,6 +3,7 @@ import io
 import os
 import pickle
 from tempfile import NamedTemporaryFile
+#from tkinter import Image
 from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 import datetime
@@ -510,7 +511,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     for key, value in paragraph_dict.items():
         print(f"Texto del párrafo: {key}\nÍndice: {value}\n")
 
-    ############################
+    ############################ INTRODUCION
     
     purpose= doc.paragraphs[paragraph_dict['[PURPOSE]']]
     purpose.text = report.purpose
@@ -519,69 +520,82 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
     purpose.text = report.objective
 
-    title= doc.paragraphs[paragraph_dict['[TITLE]']]
-    title.text = execution.process_discovery.title
+    #############################################PROCESS OVERVIEW
 
-    #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
-    ############################
+    if report.process_overview:
+        title= doc.paragraphs[paragraph_dict['[TITLE]']]
+        title.text = execution.process_discovery.title
 
-    nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
-    #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
+        #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
 
-    logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
+    ############################ APPLICATIONS USED
+    if report.applications_used:
+        nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
+        applications_used(nameapps, execution, scenario)
+        #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
+        
 
-    df_logcsv = pd.read_csv(logcsv_directory)
+    ##########################3 AS IS PROCESS MAP
 
-    unique_names = df_logcsv['NameApp'].unique()
+    #############################3
+    if report.input_data_description:
+        original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
+        df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
+        input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
 
-    for name in unique_names:
-        run = nameapps.add_run('\n• ' + name)
-        run.add_break()
-        row = df_logcsv[df_logcsv['NameApp'] == name].iloc[0]
-        screenshot_filename = row['Screenshot']
-        screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-        # Insertar la imagen si existe
-        if os.path.exists(screenshot_directory):
-        # Agregar la imagen debajo del nombre
-            nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
-        else:
-            print(f"Image not found for {name}: {screenshot_directory}")
-
-    ##########################3
-
-    original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
-
-    table = doc.add_table(rows=(df_logcsv.shape[0] + 1), cols=df_logcsv.shape[1])
-
-    # Insertar los nombres de las columnas
-    for j, col in enumerate(df_logcsv.columns):
-        table.cell(0, j).text = col
-
-    # Insertar los datos del DataFrame
-    for i in range(df_logcsv.shape[0]):
-        for j in range(df_logcsv.shape[1]):
-            table.cell(i + 1, j).text = str(df_logcsv.iloc[i, j])
-
-    tbl, p = table._tbl, original_log._p
-    p.addnext(tbl)
-    ###################33333
-    #meter el decision tree --> document.add_picture('image_path') : agrega una imagen al documento.
-
-    decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
-
-    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+    #############################3 DETAILS AS IS PROCESS
     
-    run = decision_tree.add_run()
-    run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
+    if report.detailed_as_is_process_actions:
 
-    #decision_tree.text = ''
-
-    ####################
+        decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+        run = decision_tree.add_run()
+        run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
+        #decision_tree.text = ''
+        #detailes_as_is_process_actions(doc, paragraph_dict, execution, scenario)
+        detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution)
+     
+    ###################
     doc.save(report_path)
-
 
     convert_docx_to_pdf(report_path, report_path.replace('.docx', '.pdf'))
 
+#################################################################################
+
+def applications_used(nameapps, execution, scenario):
+            logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
+            df_logcsv = pd.read_csv(logcsv_directory)
+            unique_names = df_logcsv['NameApp'].unique()
+
+            for name in unique_names:
+                run = nameapps.add_run('\n• ' + name)
+                run.add_break()
+                row = df_logcsv[df_logcsv['NameApp'] == name].iloc[0]
+                screenshot_filename = row['Screenshot']
+                screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                # Insertar la imagen si existe
+                if os.path.exists(screenshot_directory):
+                # Agregar la imagen debajo del nombre
+                    nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
+                else:
+                    print(f"Image not found for {name}: {screenshot_directory}")
+#############################################################################################
+def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
+        
+        table = doc.add_table(rows=(df_logcsv.shape[0] + 1), cols=df_logcsv.shape[1])
+
+        # Insertar los nombres de las columnas
+        for j, col in enumerate(df_logcsv.columns):
+            table.cell(0, j).text = col
+
+        # Insertar los datos del DataFrame
+        for i in range(df_logcsv.shape[0]):
+            for j in range(df_logcsv.shape[1]):
+                table.cell(i + 1, j).text = str(df_logcsv.iloc[i, j])
+
+        tbl, p = table._tbl, original_log._p
+        p.addnext(tbl)
+###################33333
 
 import subprocess
 import aspose.words as aw
@@ -600,8 +614,63 @@ def convert_docx_to_pdf(dx_path, pdf_path):
     #              doc_path])
     # return doc_path
 
+##################################################33
+from PIL import Image, ImageDraw
+
+def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
+    decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+
+    # Función para procesar cada grupo de 'Variant'
+    def process_variant_group(group):
+        # Ordenar las actividades según el número extraído
+        group = group.sort_values('ActivityNumber')
+        # Recorrer cada actividad y calcular la media de coordenadas o mostrar TextInput
+        for activity, activity_group in group.groupby('Activity'):
+            if activity_group['EventType'].iloc[0] == 1:
+                # Calcular medias de Coor_X y Coor_Y
+                mean_x = activity_group['Coor_X'].mean()
+                mean_y = activity_group['Coor_Y'].mean()
+                run= decision_tree.add_run(f'\nActividad {activity} tiene una media de Coor_X: {mean_x} y Coor_Y: {mean_y}\n')
+                
+                # Cargar la imagen correspondiente
+                screenshot_filename = activity_group['Screenshot'].iloc[0]
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                
+                with Image.open(path_to_image) as img:
+                    draw = ImageDraw.Draw(img)
+                    # Dibuja un cuadrado pequeño alrededor de las coordenadas medias
+                    box_size = 10  # Ajusta el tamaño del cuadrado según necesites
+                    left = mean_x - box_size / 2
+                    top = mean_y - box_size / 2
+                    right = mean_x + box_size / 2
+                    bottom = mean_y + box_size / 2
+                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                    # Convertir la imagen a un objeto de bytes para insertar en el docx
+                    image_stream = io.BytesIO()
+                    img.save(image_stream, 'PNG')
+                    image_stream.seek(0)
+                    
+                    run.add_picture(image_stream, width=Inches(4))
+            else:
+                # Mostrar valor de TextInput si existe, de lo contrario imprimir "No TextInput"
+                text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
+                decision_tree.add_run(f'\nActividad {activity} tiene TextInput: {text_input}\n')
+
+    ######################################  
+    # Cargar datos - reemplaza 'path_to_file.csv' por el path de tu archivo de datos
+    
+    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+
+    # Extraer el número de la actividad y convertirlo a entero para ordenar
+    df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
+    
+    # Aplicar la función a cada grupo de 'Variant'
+    df.groupby('Variant').apply(process_variant_group)
+
+    
 
 
+###################################################################
 #####################################################################
 
 def deleteReport(request):
