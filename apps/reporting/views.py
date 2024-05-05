@@ -622,20 +622,39 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
 
     # Función para procesar cada grupo de 'Variant'
     def process_variant_group(group):
+        variant = group['Variant'].iloc[0]
+        decision_tree.add_run(f'Variante {variant}\n').bold = True
         # Ordenar las actividades según el número extraído
         group = group.sort_values('ActivityNumber')
+        activity_dict = {}
         # Recorrer cada actividad y calcular la media de coordenadas o mostrar TextInput
-        for activity, activity_group in group.groupby('Activity'):
+        for (activity_number, activity), activity_group in group.groupby(['ActivityNumber', 'Activity']):
+            action_number = len(activity_dict.get(activity, [])) + 1
+            activity_dict.setdefault(activity, []).append(activity_number)
+
             if activity_group['EventType'].iloc[0] == 1:
                 # Calcular medias de Coor_X y Coor_Y
                 mean_x = activity_group['Coor_X'].mean()
                 mean_y = activity_group['Coor_Y'].mean()
-                run= decision_tree.add_run(f'\nActividad {activity} tiene una media de Coor_X: {mean_x} y Coor_Y: {mean_y}\n')
+                event_description=(f"El usuario clica en el punto {mean_x:.0f},{mean_y:.0f}")
                 
                 # Cargar la imagen correspondiente
                 screenshot_filename = activity_group['Screenshot'].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                image_filename = activity_group['Screenshot'].iloc[0] if 'Screenshot' in activity_group.columns else None
                 
+            else:
+                # Mostrar valor de TextInput si existe, de lo contrario imprimir "No TextInput"
+                text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
+                event_description=(f'El usuario escribe “{text_input}”')
+
+            # escritura en el docx
+            
+            decision_tree.add_run(f'Actividad {activity}\n').bold = True
+            decision_tree.add_run(f'Acción {action_number}\n')
+            decision_tree.add_run(event_description + '\n')
+
+            if image_filename:
                 with Image.open(path_to_image) as img:
                     draw = ImageDraw.Draw(img)
                     # Dibuja un cuadrado pequeño alrededor de las coordenadas medias
@@ -650,11 +669,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                     img.save(image_stream, 'PNG')
                     image_stream.seek(0)
                     
-                    run.add_picture(image_stream, width=Inches(4))
-            else:
-                # Mostrar valor de TextInput si existe, de lo contrario imprimir "No TextInput"
-                text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
-                decision_tree.add_run(f'\nActividad {activity} tiene TextInput: {text_input}\n')
+                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
 
     ######################################  
     # Cargar datos - reemplaza 'path_to_file.csv' por el path de tu archivo de datos
@@ -663,6 +678,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
 
     # Extraer el número de la actividad y convertirlo a entero para ordenar
     df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
+    df['Activity'] = df['Activity'].apply(lambda x: str(x.split('_')[1]))
     
     # Aplicar la función a cada grupo de 'Variant'
     df.groupby('Variant').apply(process_variant_group)
