@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 07:28+0000\n"
+"POT-Creation-Date: 2024-05-06 10:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,6 +30,7 @@ msgstr ""
 "lo esperado"
 
 #: apps/analyzer/collect_results.py:106
+#, fuzzy, python-format
 #| msgid "Condition %(expression) is not fulfilled"
 msgid "Condition %(expression) is not fulfilled"
 msgstr "La condición %(expression) no se cumple"
@@ -185,6 +186,7 @@ msgstr ""
 "%(DEFAULT_PHASES)s"
 
 #: apps/analyzer/views.py:408
+#, fuzzy, python-format
 #| msgid "Case study with id:%(id) is being generated ..."
 msgid "Case study with id:%(id) is being generated ..."
 msgstr "Se está generando el caso de estudio con ID:%(id) ..."
@@ -206,6 +208,7 @@ msgstr ""
 "inténtelo de nuevo en unos minutos"
 
 #: apps/analyzer/views.py:451
+#, fuzzy, python-format
 #| msgid "Case Study with id %(id) raised an exception: "
 msgid "Case Study with id %(id) raised an exception: "
 msgstr "El caso de estudio con ID %(id) generó una excepción: "
