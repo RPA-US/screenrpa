@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, Point
 
 
 def detect_duplicates(detected_shapes):
@@ -172,3 +172,43 @@ def json_inference_to_compos(anns, type="bbox", id_start=1):
             shape["id"] = i + id_start
 
     return res
+
+def merge_text_with_OCR(detections, img_index, text_detected_by_OCR):
+    # Store on global_y all the "y" coordinates and text boxes
+    # Each row is a different text box, much more friendly than the format returned by keras_ocr 
+    global_y = []
+    global_x = []
+    words = {}
+    words[img_index] = {}
+
+    if len(text_detected_by_OCR) > 0:
+        for j in range(0, len(text_detected_by_OCR[img_index])):
+            coordenada_y = []
+            coordenada_x = []
+
+            for i in range(0, len(text_detected_by_OCR[img_index][j][1])):
+                coordenada_y.append(text_detected_by_OCR[img_index][j][1][i][1])
+                coordenada_x.append(text_detected_by_OCR[img_index][j][1][i][0])
+
+            word = text_detected_by_OCR[img_index][j][0]
+            centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+            if word in words[img_index]:
+                words[img_index][word] += [centroid]
+            else:
+                words[img_index][word] = [centroid]
+
+            global_y.append(coordenada_y)
+            global_x.append(coordenada_x)
+            # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+            # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+
+    for i, compo in enumerate(detections["compos"]):
+        if compo["class"] == "Text":
+            for word in words[img_index]:
+                for centroid in words[img_index][word]:
+                    if Polygon(compo["points"]).contains(Point([centroid])):
+                        # Add word to the text box
+                        if compo["text"] == "":
+                            compo["text"] = word
+                        else:
+                            compo["text"] += " " + word

@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
-from core.settings import PRIVATE_STORAGE_ROOT, sep, DEFAULT_PHASES
+from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
@@ -122,7 +122,7 @@ class CaseStudy(models.Model):
             # Generate unique folder name based on the uploaded file's name and current time
             folder_name = f"{self.exp_file.name.split('.')[0]}_{str(int(time.time()))}"
             # folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
-            folder_path = PRIVATE_STORAGE_ROOT + sep + 'unzipped' + sep + folder_name
+            folder_path = os.path.join(PRIVATE_STORAGE_ROOT, 'unzipped', folder_name)
             # Create the unzipped folder
             os.makedirs(folder_path)
             # Unzip the uploaded file to the unzipped folder
@@ -161,9 +161,11 @@ class Execution(models.Model):
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
     created_at = models.DateTimeField(auto_now_add=True)
     executed = models.IntegerField(default=0, editable=True)
-    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
-    exp_folder_complete_path = models.CharField(max_length=255)
+
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True) # "Nano_Xt6Pt35_1706268943"
+    exp_folder_complete_path = models.CharField(max_length=255) # "/rim/media/unzipped/Nano_Xt6Pt35_1706268943/executions/exec_63"
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
@@ -225,7 +227,7 @@ class Execution(models.Model):
     def check_preloaded_file(self):            
         for ph in DEFAULT_PHASES:
             if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
-                preloaded_file_path = f"{PRIVATE_STORAGE_ROOT}{sep}{getattr(self, ph).preloaded_file.name}"
+                preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, getattr(self, ph).preloaded_file.name)
                 unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
                 print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
 

@@ -373,7 +373,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             comp_json["compos"].append({
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
-                text_classname: text[0] if is_text else None,
+                text_classname: text[0] if is_text else "",
                 "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
                 "centroid": [int((w-x)/2), int((h-y)/2)],
                 "xpath": [],
@@ -477,7 +477,7 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                 # np.save(screenshot_texts_npy, text_or_not_text)
 
             elif algorithm == "screen2som":
-                recortes, compos_json = screen2som_predict(os.path.join(param_img_root, image_names[img_index]), path_to_save_bordered_images)
+                recortes, compos_json = screen2som_predict(os.path.join(param_img_root, image_names[img_index]), img_index, path_to_save_bordered_images, text_detected_by_OCR)
                 screenshot_filename = os.path.basename(image_names[img_index])
                 
                 with open(os.path.join(path_to_save_components_json, screenshot_filename + '.json'), "w") as outfile:

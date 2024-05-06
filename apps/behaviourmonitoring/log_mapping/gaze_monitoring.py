@@ -6,8 +6,9 @@ import datetime
 import pandas as pd
 import numpy as np
 from dateutil import tz
+from apps.behaviourmonitoring.log_mapping.wegbgazer_log_processing import add_saccade_index, get_distance_threshold_by_resolution, get_minimum_fixation_gazepoints, int_index, preprocess_gaze_log
 from core.utils import read_ui_log_as_dataframe
-from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS
+from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS, INCH_PER_CENTIMETRES, DEVICE_FREQUENCY, FIXATION_MINIMUM_DURATION
 from apps.analyzer.utils import get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents, decode_webgazer_timezone
@@ -399,13 +400,17 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
         acum+=1
       
 
-  ub_log.to_csv(root_path + "ub_log_fixation.csv")
+  ub_log.to_csv(os.path.join(root_path , "ub_log_fixation.csv"))
 
 def monitoring(log_path, root_path, execution):
   
     special_colnames = execution.case_study.special_colnames
     monitoring_obj = execution.monitoring
     monitoring_type = monitoring_obj.type
+    monitoring_screen_inches = monitoring_obj.screen_inches
+    monitoring_observer_camera_distance = monitoring_obj.observer_camera_distance
+    monitoring_screen_width = monitoring_obj.screen_width
+    monitoring_screen_height = monitoring_obj.screen_height
     
     if os.path.exists(log_path):
       logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
@@ -413,35 +418,35 @@ def monitoring(log_path, root_path, execution):
     elif (getattr(monitoring_obj, 'format') is not None):
       log_filename = "log"
       # TODO: org:resource
-      log_path = format_mht_file(root_path + monitoring_obj.ui_log_filename, monitoring_obj.format, root_path, log_filename, 'User1')
+      log_path = format_mht_file(os.path.join(root_path, monitoring_obj.ui_log_filename), monitoring_obj.format, root_path, log_filename, 'User1')
   
   
     ui_log = read_ui_log_as_dataframe(log_path)
     sep = monitoring_obj.ui_log_separator
+
     eyetracking_log_filename = monitoring_obj.gaze_log_filename
     
-    if eyetracking_log_filename and os.path.exists(root_path + eyetracking_log_filename):
-        gazeanalysis_log = pd.read_csv(root_path + eyetracking_log_filename, sep=sep)
-    else:
-        logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
-        raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
-
     if monitoring_type == "imotions":
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
+          gazeanalysis_log = pd.read_csv(os.path.join(root_path , eyetracking_log_filename), sep=sep)
+      else:
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
+          raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
         # fixation.json to Dataframe checker
-        for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
-          if special_colnames[col_name] not in ui_log.columns:
-            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
-            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+      for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
+        if special_colnames[col_name] not in ui_log.columns:
+          logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+          raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
         #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
         gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         
         #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
         startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj.ui_log_filename, ui_log_format_pattern)#en steprecorder
+        startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
 
-        if os.path.exists(root_path + "fixation.json"):
-          fixation_p = json.load(open(root_path + "fixation.json"))
+        if os.path.exists(os.path.join(root_path ,"fixation.json")):
+          fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
           logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
           print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
         else:
@@ -449,34 +454,54 @@ def monitoring(log_path, root_path, execution):
         
         # Serializing json
         json_object = json.dumps(fixation_p, indent=4)
-        with open(root_path + "fixation.json", "w") as outfile:
+        with open(os.path.join(root_path , "fixation.json"), "w") as outfile:
             outfile.write(json_object)
         logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
         
         fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
         
         monitoring_obj.executed = 100
-        monitoring_obj.ub_log_path = root_path + "fixation.json"
+        monitoring_obj.ub_log_path = os.path.join(root_path,"fixation.json")
         # update monitoring_obj
         monitoring_obj.save()
     elif monitoring_type == "webgazer":
+      #### Preprocessing WebgazerLog Start ####
+      pixels_threshold_i_dt = get_distance_threshold_by_resolution(monitoring_screen_inches,INCH_PER_CENTIMETRES, monitoring_observer_camera_distance,monitoring_screen_width,monitoring_screen_height) #Capturing the distance threshold in pixels regarding to the screen resolution
+      minimum_fixation_gazepoints = get_minimum_fixation_gazepoints(DEVICE_FREQUENCY, FIXATION_MINIMUM_DURATION) #Capturing the minimum number of gazepoints to consider a fixation
+
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
+          preprocessed_webgazer_log = pd.read_csv(os.path.join(root_path , eyetracking_log_filename), sep=sep)
+      else:
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. NOT PREPROCESSED Eyetracking  webgazerlog  cannot be read: " + root_path + eyetracking_log_filename)
+          raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
+      preprocessed_webgazer_fixations_log_build = preprocess_gaze_log(preprocessed_webgazer_log, "Gaze X", "Gaze Y",minimum_fixation_gazepoints,pixels_threshold_i_dt)# First Preprocesing of the WebGazer Log. In this Log, we get the fixations (Timestamps, duration, start,end, x,y, etc.)
+      preprocessed_webgazer_fixations_saccade_log_build = add_saccade_index(preprocessed_webgazer_fixations_log_build)# Second Preprocesing of the WebGazer Log. In this Log, we get the saccades (Timestamps, duration, start,end, x,y, etc.)
+      preprocessed_webgazer_fixations_saccade_index_log_build = int_index(preprocessed_webgazer_fixations_saccade_log_build)#Last Preprocesing of the WebGazer Log. In this Log, we get the index of the fixations and saccades to finally get the gazeanalysis Log (Idem to imotions log)
+      preprocessed_webgazer_fixations_saccade_index_log_build.to_csv(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"))
+      ##### Preprocessing WebGazer Log End #####
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,"webgazer_gazeData_preprocessed.csv")):
+          gazeanalysis_log = pd.read_csv(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"), sep=sep)
+      else:
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. PREPROCESSED Eyetracking  webgazerlog cannot be read: " + root_path + "webgazer_gazeData_preprocessed.csv")
+          raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
         # fixation.json to Dataframe checker
-        for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
-          if special_colnames[col_name] not in ui_log.columns:
-            logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
-            raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+      # fixation.json to Dataframe checker        
+      for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
+        if special_colnames[col_name] not in ui_log.columns:
+          logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+          raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
         #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
         #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
         
         #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
         startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
-        startDateTime_ui_log = get_mht_log_start_datetime(root_path + monitoring_obj.ui_log_filename, ui_log_format_pattern)#en steprecorder
+        startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path , monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
 
         #native_slide_events = "native_slideevents.csv"
 
-        if os.path.exists(root_path + "fixation.json"):
-          fixation_p = json.load(open(root_path + "fixation.json"))
+        if os.path.exists(os.path.join(root_path ,"fixation.json")):
+          fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
           logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
           print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
         else:
@@ -484,14 +509,14 @@ def monitoring(log_path, root_path, execution):
         
         # Serializing json
         json_object = json.dumps(fixation_p, indent=4)
-        with open(root_path + "fixation.json", "w") as outfile:
+        with open(os.path.join(root_path ,"fixation.json"), "w") as outfile:
             outfile.write(json_object)
         logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
         
         fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
         
         monitoring_obj.executed = 100
-        monitoring_obj.ub_log_path = root_path + "fixation.json"
+        monitoring_obj.ub_log_path =os.path.join( root_path , "fixation.json")
         # update monitoring_obj
         monitoring_obj.save()
  
@@ -499,4 +524,4 @@ def monitoring(log_path, root_path, execution):
         logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
         raise Exception("You select a gaze analysis that is not available in the system")
         
-    return root_path + "fixation.json"
+    return os.path.join(root_path , "fixation.json")

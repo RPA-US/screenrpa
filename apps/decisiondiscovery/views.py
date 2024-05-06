@@ -142,7 +142,7 @@ def decision_tree_training(log_path, path, execution):
         raise Exception(_("Decision model chosen is not an option"))
     
     if feature_values:
-        fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, path)
+        fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, path+"_results")
     else:
         fe_checker = None
     return res, fe_checker, times, columns_len#, tree_levels

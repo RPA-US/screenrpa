@@ -30,6 +30,8 @@ def build_tree(tree: list, depth=1):
                     shape1["children"].append(shape2)
                     shape1["type"] = "node"
                     shape2["xpath"].append(shape1["id"])
+                    if shape2["class"] == "Text":
+                        shape1["text"] += shape2["text"] + " | "
             except ZeroDivisionError:
                 continue
         if len(shape1["children"]) > 0:

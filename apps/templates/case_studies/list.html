@@ -168,8 +168,41 @@
     {% include "includes/footer.html" %}
 
   </div>
-
+  
+<!-- Webgazer PopUp -->
+<div id="popup" style="display: none; position: fixed; top: 85%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background-color: #ffffff; border-radius: 0.25rem; width: 45%; height: 25%; align-items: center; justify-content: center; margin-bottom: 5%;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <strong><i class="fa fa-glasses" style="margin-right: 5px;"></i>Eye tracking feature</strong>
+      <button type="button" onclick="closePopup()" class="btn btn-danger"><i class="fas fa-times"></i></button>
+    </div>
+    <br>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <span>You can generate your own case study with the Eye Tracking Webgazer software by clicking the button below. &nbsp;
+      Remember, you must run the StepRecorders program on your machine while using Webgazer to generate your case study. </span>
+      <div>
+        <a class="btn btn-primary" target="_blank" href="/case-study/webgazer.html">Access to Webgazer</a>
+      </div>  
+  </div>
+</div>
+</div>
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+<script>
+  // Show the pop-up with a fade in transition when the document is ready
+  $(document).ready(function(){
+    // Check if the cookie 'popupClosed' exists and if it's not 'true'
+    if (document.cookie.replace(/(?:(?:^|.*;\s*)popupClosed\s*\=\s*([^;]*).*$)|^.*$/, "$1") !== "true") {
+      $("#popup").fadeIn(1500);
+    }
+  });
+  
+  // Function to close the pop-up
+  function closePopup() {
+    $("#popup").hide();
+    // Set a cookie 'popupClosed' to 'true' when the pop-up is closed
+    document.cookie = "popupClosed=true; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+  }
+  </script>
+  {% endblock javascripts %}

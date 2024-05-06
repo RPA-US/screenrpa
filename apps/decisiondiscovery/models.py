@@ -135,11 +135,5 @@ class DecisionTreeTraining(models.Model):
     def get_absolute_url(self):
         return reverse("decisiondiscovery:decision_tree_training_list", args=[str(self.case_study_id)])
     
-    def delete(self):
-        
-        # TODO: si existe relacion con experiment
-        
-        super.delete()
-    
     def __str__(self):
         return 'library: ' + self.library + ' - algs:' + str(self.configuration)

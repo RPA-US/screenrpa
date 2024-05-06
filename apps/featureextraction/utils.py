@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
-from apps.featureextraction.UIFEs.feature_extraction_techniques import *
+from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
 from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
 from core.settings import SINGLE_FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
 from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification
@@ -229,7 +229,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         text = [word for word in words[img_index] if len([coord for coord in words[img_index][word] if x <= coord[0] <= w and y <= coord[1] <= h]) > 0]
         is_text = True if len(text)>0 else False
         c = {'id': compo.id, 'class': compo.category}
-        c[text_classname] = str(' '.join(text)) if is_text else None
+        c[text_classname] = str(' '.join(text)) if is_text else ""
         c["points"] = [(x, y), (w, y), (w, h), (x, h)]
         c["centroid"] = ((x + w) / 2, (y + h) / 2)
         c["xpath"] = []

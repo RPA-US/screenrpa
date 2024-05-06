@@ -36,7 +36,10 @@ class Monitoring(models.Model):
     gaze_log_filename = models.CharField(max_length=100, default='ET_RExtAPI-GazeAnalysis.csv')
     gaze_log_adjustment = models.FloatField(default=0)
     native_slide_events = models.CharField(max_length=100, default='Native_SlideEvents.csv')
-
+    screen_inches = models.FloatField(null =True, blank = True ,default=15.6)
+    observer_camera_distance = models.FloatField(null =True, blank = True ,default=50)
+    screen_width = models.IntegerField(null =True, blank = True ,default=1920)
+    screen_height = models.IntegerField(null =True, blank = True ,default=1080)
 
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
