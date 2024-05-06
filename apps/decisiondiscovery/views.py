@@ -519,7 +519,7 @@ class DecisionTreeResultDetailView(DetailView):
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
               
-        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
         
         tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
 
@@ -541,36 +541,36 @@ class DecisionTreeResultDetailView(DetailView):
 
 #    http://127.0.0.1:8000/es/case-study/execution/decision_tree_result/33/
 def tree_to_png_base64(path_to_tree_file):
-    # Cargar los datos del árbol de decisión desde el archivo de registro (suponiendo que está en formato JSON)
+    
     try:
         with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
             loaded_data = pickle.load(archivo)
-        # Obtener el clasificador y los nombres de las características del diccionario cargado
+        
         clasificador_loaded = loaded_data['classifier']
         feature_names_loaded = loaded_data['feature_names']
-        #class_names_loaded = loaded_data['class_names']
+        
         class_names_loaded = [str(item) for item in loaded_data['class_names']]
     except FileNotFoundError:
         print(f"File not found: {path_to_tree_file}")
         return None
     
 
-     # Crear StringIO para guardar la salida de Graphviz
+
     dot_data = io.StringIO()
 
-    # Exportar el modelo a formato Graphviz
+    
     export_graphviz(clasificador_loaded, out_file=dot_data,
                     filled=True, rounded=True,
                     special_characters=True,
                     feature_names=feature_names_loaded,
                     class_names=class_names_loaded)
 
-    # Usar pydotplus para crear una imagen desde el dot_data
+    
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
     png_image = graph.create_png()
 
 
-    # Codificar el contenido de la imagen en base64 y prepararlo para HTML
+    
     image_base64 = base64.b64encode(png_image).decode('utf-8')
 
     return f'data:image/png;base64,{image_base64}'
@@ -641,7 +641,7 @@ def DecisionTreeDownload(request, execution_id):
     if scenario is None:
         scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
               
-    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_ale.pkl")
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
     
     try:
         # Asegúrate de que la ruta absoluta sea correcta

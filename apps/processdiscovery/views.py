@@ -252,7 +252,7 @@ def ProcessDiscoveryDownload(request, execution_id):
     except FileNotFoundError:
 
         print(f"File not found: {path_to_bpmn_file}")
-        return HttpResponse("Lo siento, el archivo no se encontró.", status=404)
+        return HttpResponse("Sorry, the file was not found.", status=404)
     
 
     

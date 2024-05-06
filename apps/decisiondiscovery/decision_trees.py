@@ -223,13 +223,13 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     # from IPython.display import Image
     # Image(filename = 'tree.png')
 
-    #ALE
+    
     saved_data = {
         'classifier': tree_classifier,
         'feature_names': feature_names,
         'class_names': np.unique(y),
     }
-    with open(os.path.join(param_path, 'decision_tree_ale.pkl'), 'wb') as fid:
+    with open(os.path.join(param_path, 'decision_tree.pkl'), 'wb') as fid:
         pickle.dump(saved_data, fid)
 
     if PLOT_DECISION_TREES:
