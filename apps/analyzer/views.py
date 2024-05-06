@@ -137,7 +137,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             else:
                 path_scenario = os.path.join(execution.exp_folder_complete_path, scenario)
                 generate_case_study(execution, path_scenario, times)
-            execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
+            execution.executed = (execution.scenarios_to_study.index(scenario) + 1 / len(execution.scenarios_to_study)) * 100
             execution.save()
 
         # Serializing json
