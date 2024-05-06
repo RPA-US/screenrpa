@@ -491,6 +491,9 @@ def exp_file_download(request, case_study_id):
     zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
     with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
         for root, dirs, files in os.walk(unzipped_folder):
+            # Ignore executions folder
+            if "executions" in root:
+                continue
             for file in files:
                 file_path = os.path.join(root, file)
                 rel_path = os.path.relpath(file_path, unzipped_folder)
@@ -536,6 +539,32 @@ class ExecutionDetailView(DetailView):
             "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
             }
         return render(request, "executions/detail.html", context)
+
+@login_required(login_url="/login/")
+def exec_file_download(request, execution_id):
+    user = request.user
+    execution = Execution.objects.filter(user=user, id=execution_id)
+    if execution.exists():
+        # Build zip file from the execution folder in exp_folder_complete_path
+        unzipped_folder = execution[0].exp_folder_complete_path
+    else:
+        raise Exception(_("You don't have permissions to access this files"))
+    
+    # Create a temporary zip file containing the contents of the unzipped folder
+    zip_filename = os.path.basename(unzipped_folder) + ".zip"
+    zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
+    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
+        for root, dirs, files in os.walk(unzipped_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, unzipped_folder)
+                zip_ref.write(file_path, arcname=rel_path)
+    # Serve the zip file as a download response
+    response = FileResponse(open(zip_file_path, "rb"), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+    
+    return response
 
 #################################################################### PHASE EXECUTIONS RESULTS ####################################################################
     

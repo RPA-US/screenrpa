@@ -28,6 +28,7 @@ urlpatterns = [
     path('execution/list/', views.ExecutionListView.as_view(), name='execution_list'),
     path('execution/delete/', views.deleteExecution, name='execution_delete'),
     path('execution/detail/<int:execution_id>/', views.ExecutionDetailView.as_view(), name='execution_detail'),
+    path('execution/files/download/<int:execution_id>/', views.exec_file_download, name='results_download'),
     ##
     # Phases Executions results
     path('execution/monitoring_result/<int:execution_id>/', views.MonitoringResultDetailView.as_view(), name='monitoring_result'),
