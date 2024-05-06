@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-02 11:11+0000\n"
+"POT-Creation-Date: 2024-05-06 07:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,46 +133,46 @@ msgstr "separador de exp_folder_complete_path no coherente"
 msgid "Only lowercase and uppercase letters"
 msgstr "Solo letras minúsculas y mayúsculas"
 
-#: apps/featureextraction/views.py:122 apps/featureextraction/views.py:317
-#: apps/featureextraction/views.py:401 apps/featureextraction/views.py:484
+#: apps/featureextraction/views.py:127 apps/featureextraction/views.py:327
+#: apps/featureextraction/views.py:416 apps/featureextraction/views.py:504
 msgid "User must be authenticated."
 msgstr "El usuario ha de estar autenticado"
 
-#: apps/featureextraction/views.py:124 apps/featureextraction/views.py:319
-#: apps/featureextraction/views.py:403 apps/featureextraction/views.py:486
+#: apps/featureextraction/views.py:129 apps/featureextraction/views.py:329
+#: apps/featureextraction/views.py:418 apps/featureextraction/views.py:506
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr "El caso de estudio no pertenece al usuario"
 
-#: apps/featureextraction/views.py:126
+#: apps/featureextraction/views.py:131
 msgid "Feature Extraction Technique doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:128
+#: apps/featureextraction/views.py:133
 msgid ""
 "Feature Extraction Technique Tree Training doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:321
+#: apps/featureextraction/views.py:331
 msgid "Ui Element Detection doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:323
+#: apps/featureextraction/views.py:333
 msgid "Ui Element Detection doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:405
+#: apps/featureextraction/views.py:420
 msgid "Prefiltering doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:407
+#: apps/featureextraction/views.py:422
 msgid "Prefiltering doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:488
+#: apps/featureextraction/views.py:508
 msgid "Postfiltering doesn't belong to the authenticated user."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:490
+#: apps/featureextraction/views.py:510
 msgid "Postfiltering doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 

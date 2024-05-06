@@ -45,7 +45,7 @@
                   <th scope="col" class="sort" data-sort="title">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Foldername{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="status">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col" class="num_executions" data-sort="num_executions">{% blocktranslate %}Executions{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Progress{% endblocktranslate %}</th>
                   <th scope="col"></th>
                 </tr>
@@ -75,16 +75,7 @@
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
-                      {% if case_study.executed == 0 %}
-                      <i class="bg-danger"></i>
-                      <span class="status">{% blocktranslate %}not executed{% endblocktranslate %}</span>
-                      {% elif case_study.executed == 100 %}
-                      <i class="bg-success"></i>
-                      <span class="status">{% blocktranslate %}executed{% endblocktranslate %}</span>
-                      {% elif case_study.executed > 0 %}
-                      <i class="bg-warning"></i>
-                      <span class="status">{% blocktranslate %}pending{% endblocktranslate %}</span>
-                      {% endif %}
+                      {{ case_study.num_executions }}
                     </span>
                   </td>
                   <td>

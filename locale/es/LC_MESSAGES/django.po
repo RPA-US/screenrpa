@@ -783,11 +783,11 @@ msgstr "¿Estás seguro de que quieres eliminar este árbol de decisiones?"
 #: apps/templates/executions/detail.html:5
 #: apps/templates/executions/list.html:4 apps/templates/executions/list.html:13
 msgid "Executions"
-msgstr "Ejecutar"
+msgstr "Ejecuciones"
 
 #: apps/templates/executions/detail.html:15
 msgid "Go Back to Executions"
-msgstr "Volver a Casos de estudio"
+msgstr "Volver a Ejecuciones"
 
 #: apps/templates/executions/detail.html:16
 #: apps/templates/executions/detail.html:36
@@ -797,7 +797,7 @@ msgstr "Detalles de pre-filtrado %(prefilter.id)s"
 #: apps/templates/executions/detail.html:20
 #, python-format
 msgid "Execution %(execution.id)s"
-msgstr ""
+msgstr "Ejecución %(execution.id)s"
 
 #: apps/templates/executions/detail.html:47
 msgid "Nice Execution"
