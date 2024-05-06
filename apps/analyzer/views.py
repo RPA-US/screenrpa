@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
-from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -137,7 +137,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             else:
                 path_scenario = os.path.join(execution.exp_folder_complete_path, scenario)
                 generate_case_study(execution, path_scenario, times)
-            execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
+            execution.executed = (execution.scenarios_to_study.index(scenario) + 1 / len(execution.scenarios_to_study)) * 100
             execution.save()
 
         # Serializing json
@@ -282,6 +282,10 @@ class CaseStudyListView(ListView, LoginRequiredMixin):
     paginate_by = 50
 
     def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return CaseStudy.objects.filter(active=True, user=self.request.user, title__icontains=search).order_by("-created_at")
         return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
 
@@ -308,13 +312,27 @@ def deleteCaseStudy(request):
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
-class CaseStudyDetailView(DetailView):
+class CaseStudyDetailView(UpdateView):
+    model = CaseStudy
+    form_class = CaseStudyForm
+
+    def post(self, request, *args, **kwargs):
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        form = CaseStudyForm(request.POST, instance=case_study)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("analyzer:casestudy_detail", kwargs={"case_study_id": case_study.id}))
+        else:
+            return render(request, "case_studies/detail.html", {"form": form})
+
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        form = CaseStudyForm(instance=case_study)
         context = {
-            "case_study": case_study, 
+            "form": form, 
             "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE")
+            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE"),
+            "case_study_id": case_study.id
             }
         return render(request, "case_studies/detail.html", context)
 
@@ -513,6 +531,10 @@ class ExecutionListView(ListView, LoginRequiredMixin):
     paginate_by = 50
 
     def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return Execution.objects.filter(user=self.request.user, case_study__title__icontains=search).order_by("-created_at")
         return Execution.objects.filter(user=self.request.user).order_by("-created_at")
         
 

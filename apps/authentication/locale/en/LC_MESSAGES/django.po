@@ -1,0 +1,70 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: apps/authentication/forms.py:16 apps/authentication/forms.py:47
+#: apps/authentication/forms.py:77 apps/authentication/forms.py:89
+#: apps/authentication/forms.py:113
+msgid "Username"
+msgstr ""
+
+#: apps/authentication/forms.py:23 apps/authentication/forms.py:61
+#: apps/authentication/forms.py:79
+msgid "Password"
+msgstr ""
+
+#: apps/authentication/forms.py:33
+msgid "First Name"
+msgstr ""
+
+#: apps/authentication/forms.py:40 apps/authentication/forms.py:106
+msgid "Last Name"
+msgstr ""
+
+#: apps/authentication/forms.py:54 apps/authentication/forms.py:78
+#: apps/authentication/forms.py:90 apps/authentication/forms.py:120
+msgid "Email"
+msgstr ""
+
+#: apps/authentication/forms.py:68 apps/authentication/forms.py:80
+msgid "Password check"
+msgstr ""
+
+#: apps/authentication/forms.py:91 apps/authentication/forms.py:99
+msgid "First name"
+msgstr ""
+
+#: apps/authentication/forms.py:92
+msgid "Last name"
+msgstr ""
+
+#: apps/authentication/views.py:31
+msgid "Invalid credentials"
+msgstr ""
+
+#: apps/authentication/views.py:33
+msgid "Error validating the form"
+msgstr ""
+
+#: apps/authentication/views.py:54
+msgid "User created - please <a href=\"/login\">login</a>."
+msgstr ""
+
+#: apps/authentication/views.py:60
+msgid "Form is not valid"
+msgstr ""

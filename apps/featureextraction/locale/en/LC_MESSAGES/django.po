@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 07:28+0000\n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,31 +17,25 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 #: apps/featureextraction/SOM/CNN/CompDetCNN.py:25
 msgid "*** No model loaded ***"
-msgstr "*** No se cargó ningún modelo ***"
+msgstr ""
 
 #: apps/featureextraction/SOM/detection.py:583
 msgid ""
 "apps/featureextraction/SOM/detection.py Log already exists, it's not needed "
 "to execute format conversor"
 msgstr ""
-"apps/featureextraction/SOM/detection.py El registro ya existe, no es "
-"necesario ejecutar el conversor de formato"
 
 #: apps/featureextraction/SOM/detection.py:584
 msgid "Log already exists, it's not needed to execute format conversor"
 msgstr ""
-"El registro ya existe, no es necesario ejecutar el conversor de formato"
 
 #: apps/featureextraction/SOM/detection.py:586
 msgid ""
 "apps/featureextraction/SOM/detection.py Format conversor executed! Type: "
 "%(format), Filename: %(filename)"
 msgstr ""
-"¡Se ejecutó el conversor de formato en apps/featureextraction/SOM/detection."
-"py! Tipo: %(format), Nombre de archivo: %(filename)"
 
 #: apps/featureextraction/SOM/detection.py:603
 msgid ""
@@ -49,33 +43,28 @@ msgid ""
 "\n"
 "Reading images OCR info from file..."
 msgstr ""
-"\n"
-"\n"
-"Leyendo información OCR de las imágenes desde el archivo..."
 
 #: apps/featureextraction/SOM/detection.py:640
 msgid "Enter path to images numpy arrays location: "
-msgstr "Ingrese la ruta a la ubicación de los arrays numpy de imágenes: "
+msgstr ""
 
 #: apps/featureextraction/SOM/detection.py:641
 msgid "Enter numpy array file name: "
-msgstr "Ingrese el nombre del archivo de array numpy: "
+msgstr ""
 
 #: apps/featureextraction/SOM/detection.py:644
 msgid "Length: "
-msgstr "Longitud: "
+msgstr ""
 
 #: apps/featureextraction/SOM/detection.py:646
 msgid ""
 "\n"
 "Component: "
 msgstr ""
-"\n"
-"Componente: "
 
 #: apps/featureextraction/SOM/detection.py:650
 msgid "Empty component"
-msgstr "Componente vacío"
+msgstr ""
 
 #: apps/featureextraction/SOM/detection.py:653
 msgid ""
@@ -85,105 +74,93 @@ msgstr ""
 
 #: apps/featureextraction/SOM/sam.py:189
 msgid "You selected a type of sam's checkpoint that does not exists"
-msgstr "Ha seleccionado un tipo de punto de control de SAM que no existe"
+msgstr ""
 
 #: apps/featureextraction/forms.py:26 apps/featureextraction/forms.py:101
 #: apps/featureextraction/forms.py:151 apps/featureextraction/forms.py:210
 msgid "Type"
-msgstr "Tipo"
+msgstr ""
 
 #: apps/featureextraction/forms.py:27 apps/featureextraction/forms.py:102
 #: apps/featureextraction/forms.py:152 apps/featureextraction/forms.py:211
 msgid "Skip"
-msgstr "Saltar"
+msgstr ""
 
 #: apps/featureextraction/forms.py:103 apps/featureextraction/forms.py:153
 msgid "Configurations"
-msgstr "Configuraciones"
+msgstr ""
 
 #: apps/featureextraction/forms.py:248
 msgid "Identifier"
-msgstr "Identificador "
+msgstr ""
 
 #: apps/featureextraction/forms.py:249
 msgid "Feature extraction type"
-msgstr "Tipo de extracción de caracteristicas"
+msgstr ""
 
 #: apps/featureextraction/forms.py:250
 msgid "Technique"
-msgstr "Nombre de la técnica"
+msgstr ""
 
 #: apps/featureextraction/forms.py:251
 msgid "Decision Point Activity"
-msgstr "Actividad del Punto de Decisión"
+msgstr ""
 
 #: apps/featureextraction/forms.py:252
 msgid "Apply Filtering (Relevant Component Selection)"
-msgstr "Aplicar filtrado (Selección de components relevantes)"
+msgstr ""
 
 #: apps/featureextraction/forms.py:253
 msgid "Condition for a UI Component to be relevant"
-msgstr "Condición para que un componente UI sea relevante"
+msgstr ""
 
 #: apps/featureextraction/models.py:37
 msgid "exp_folder_complete_path separators not coherent"
-msgstr "separador de exp_folder_complete_path no coherente"
+msgstr ""
 
 #: apps/featureextraction/models.py:219
 msgid "Only lowercase and uppercase letters"
-msgstr "Solo letras minúsculas y mayúsculas"
+msgstr ""
 
 #: apps/featureextraction/views.py:127 apps/featureextraction/views.py:327
 #: apps/featureextraction/views.py:416 apps/featureextraction/views.py:504
 msgid "User must be authenticated."
-msgstr "El usuario ha de estar autenticado"
+msgstr ""
 
 #: apps/featureextraction/views.py:129 apps/featureextraction/views.py:329
 #: apps/featureextraction/views.py:418 apps/featureextraction/views.py:506
 msgid "Case Study doesn't belong to the authenticated user."
-msgstr "El caso de estudio no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:131
 msgid "Feature Extraction Technique doesn't belong to the authenticated user."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:133
 msgid ""
 "Feature Extraction Technique Tree Training doesn't belong to the Case Study."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:331
 msgid "Ui Element Detection doesn't belong to the authenticated user."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:333
 msgid "Ui Element Detection doesn't belong to the Case Study."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:420
 msgid "Prefiltering doesn't belong to the authenticated user."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:422
 msgid "Prefiltering doesn't belong to the Case Study."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:508
 msgid "Postfiltering doesn't belong to the authenticated user."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/featureextraction/views.py:510
 msgid "Postfiltering doesn't belong to the Case Study."
-msgstr "La configuracion no pertenece al usuario"
-
-#~ msgid "You select a type of filter that doesnt exists"
-#~ msgstr "Ha seleccionado un tipo de filtro que no existe"
-
-#~ msgid "You select a type of prefilter that doesnt exists"
-#~ msgstr "Ha seleccionado un tipo de pre-filtro que no existe"
-
-#~ msgid "Model"
-#~ msgstr "Modelo"
-
-#~ msgid "Model properties"
-#~ msgstr "Propiedades del modelo"
+msgstr ""

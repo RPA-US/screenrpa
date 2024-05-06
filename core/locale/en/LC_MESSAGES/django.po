@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-02 11:11+0000\n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,47 +17,46 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 #: core/settings.py:42
 msgid "monitoring"
-msgstr "monitoreo"
+msgstr ""
 
 #: core/settings.py:43
 msgid "preselection"
-msgstr "preselección"
+msgstr ""
 
 #: core/settings.py:44
 msgid "detection"
-msgstr "detección"
+msgstr ""
 
 #: core/settings.py:45
 msgid "classification"
-msgstr "clasificación"
+msgstr ""
 
 #: core/settings.py:46
 msgid "selection"
-msgstr "selección"
+msgstr ""
 
 #: core/settings.py:47
 msgid "feature extraction"
-msgstr "extracción de características"
+msgstr ""
 
 #: core/settings.py:48
 msgid "flattening"
-msgstr "aplanamiento"
+msgstr ""
 
 #: core/settings.py:49
 msgid "aggreate feature extraction"
-msgstr "extracción agregada de características"
+msgstr ""
 
 #: core/settings.py:50
 msgid "decision model discovery"
-msgstr "descubrimiento de modelo de decisión"
+msgstr ""
 
 #: core/settings.py:197
 msgid "English"
-msgstr "Inglés"
+msgstr ""
 
 #: core/settings.py:198
 msgid "Spanish"
-msgstr "Español"
+msgstr ""

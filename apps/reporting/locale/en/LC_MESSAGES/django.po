@@ -1,0 +1,195 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: apps/reporting/views.py:65 apps/reporting/views.py:82
+msgid "Process Definition Document"
+msgstr ""
+
+#: apps/reporting/views.py:66
+msgid "This is a first version of your RPA Process Definition Document."
+msgstr ""
+
+#: apps/reporting/views.py:67
+msgid "PDDs"
+msgstr ""
+
+#: apps/reporting/views.py:83
+msgid "Version 1.0"
+msgstr ""
+
+#: apps/reporting/views.py:91
+msgid "Table of Contents"
+msgstr ""
+
+#: apps/reporting/views.py:111
+msgid "Right-click to update field."
+msgstr ""
+
+#: apps/reporting/views.py:141
+msgid "1. Introduction"
+msgstr ""
+
+#: apps/reporting/views.py:149
+msgid "This document outlines the process definition for..."
+msgstr ""
+
+#: apps/reporting/views.py:161
+msgid "This process consists of the following steps:"
+msgstr ""
+
+#: apps/reporting/views.py:165
+msgid "Step 1: ..."
+msgstr ""
+
+#: apps/reporting/views.py:166
+msgid ""
+"\n"
+"Step 2: ..."
+msgstr ""
+
+#: apps/reporting/views.py:167
+msgid ""
+"\n"
+"Step 3: ..."
+msgstr ""
+
+#: apps/reporting/views.py:179
+msgid "The following roles and responsibilities are involved in this process:"
+msgstr ""
+
+#: apps/reporting/views.py:193
+msgid "Role"
+msgstr ""
+
+#: apps/reporting/views.py:194
+msgid "Responsibilities"
+msgstr ""
+
+#: apps/reporting/views.py:198
+msgid "Manager"
+msgstr ""
+
+#: apps/reporting/views.py:199
+msgid "Approves final output of the process"
+msgstr ""
+
+#: apps/reporting/views.py:201
+msgid "Analyst"
+msgstr ""
+
+#: apps/reporting/views.py:202
+msgid "Conducts analysis for the process"
+msgstr ""
+
+#: apps/reporting/views.py:204
+msgid "Developer"
+msgstr ""
+
+#: apps/reporting/views.py:205
+msgid "Implements changes to the process"
+msgstr ""
+
+#: apps/reporting/views.py:209
+msgid "4. Process Flow"
+msgstr ""
+
+#: apps/reporting/views.py:217
+msgid "The process flow for this process is as follows:"
+msgstr ""
+
+#: apps/reporting/views.py:222
+msgid "5. Process Metrics"
+msgstr ""
+
+#: apps/reporting/views.py:230
+msgid "The following metrics are tracked for this process:"
+msgstr ""
+
+#: apps/reporting/views.py:235
+msgid "Metric 1: ..."
+msgstr ""
+
+#: apps/reporting/views.py:236
+msgid ""
+"\n"
+"Metric 2: ..."
+msgstr ""
+
+#: apps/reporting/views.py:237
+msgid ""
+"\n"
+"Metric 3: ..."
+msgstr ""
+
+#: apps/reporting/views.py:241
+msgid "6. Process Improvement"
+msgstr ""
+
+#: apps/reporting/views.py:249
+msgid ""
+"The following improvement opportunities have been identified for this "
+"process:"
+msgstr ""
+
+#: apps/reporting/views.py:255 apps/reporting/views.py:262
+#: apps/reporting/views.py:269
+msgid "Opportunity 1: ..."
+msgstr ""
+
+#: apps/reporting/views.py:256 apps/reporting/views.py:263
+#: apps/reporting/views.py:270
+msgid "Opportunity 2: ..."
+msgstr ""
+
+#: apps/reporting/views.py:257 apps/reporting/views.py:264
+#: apps/reporting/views.py:271
+msgid "Opportunity 3: ..."
+msgstr ""
+
+#: apps/reporting/views.py:284
+msgid "The following terms are used throughout this document:"
+msgstr ""
+
+#: apps/reporting/views.py:299
+msgid "Term"
+msgstr ""
+
+#: apps/reporting/views.py:300
+msgid "Definition"
+msgstr ""
+
+#: apps/reporting/views.py:304
+msgid "Process"
+msgstr ""
+
+#: apps/reporting/views.py:305
+msgid "A set of activities that transform inputs into outputs"
+msgstr ""
+
+#: apps/reporting/views.py:307
+msgid "Metric"
+msgstr ""
+
+#: apps/reporting/views.py:308
+msgid "A quantifiable measure used to track the performance of a process"
+msgstr ""
+
+#: apps/reporting/views.py:345
+msgid "File does not exist"
+msgstr ""

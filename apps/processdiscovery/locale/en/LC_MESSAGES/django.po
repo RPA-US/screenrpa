@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 07:28+0000\n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,47 +17,46 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 #: apps/processdiscovery/forms.py:25
 msgid "Type"
-msgstr "Tipo"
+msgstr ""
 
 #: apps/processdiscovery/forms.py:26
 msgid "Configurations"
-msgstr "Configuraciones"
+msgstr ""
 
 #: apps/processdiscovery/views.py:57
 msgid "Dendrogram"
-msgstr "Dendrograma"
+msgstr ""
 
 #: apps/processdiscovery/views.py:58
 msgid "Screenshots"
-msgstr "Capturas de pantalla"
+msgstr ""
 
 #: apps/processdiscovery/views.py:59
 msgid "Distance"
-msgstr "Distancia"
+msgstr ""
 
 #: apps/processdiscovery/views.py:67
 msgid "Threshold: "
-msgstr "Umbral: "
+msgstr ""
 
 #: apps/processdiscovery/views.py:77
 msgid "You selected a process discovery type that does not exist"
-msgstr "Ha seleccionado un tipo de descubrimiento de procesos que no existe"
+msgstr ""
 
 #: apps/processdiscovery/views.py:113 apps/processdiscovery/views.py:167
 msgid "User must be authenticated."
-msgstr "El usuario debe estar autenticado."
+msgstr ""
 
 #: apps/processdiscovery/views.py:169
 msgid "Case Study doesn't belong to the authenticated user."
-msgstr "El usuario debe estar autenticado."
+msgstr ""
 
 #: apps/processdiscovery/views.py:171
 msgid "Monitoring doesn't belong to the authenticated user."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""
 
 #: apps/processdiscovery/views.py:173
 msgid "Monitoring doesn't belong to the Case Study."
-msgstr "La configuracion no pertenece al usuario"
+msgstr ""

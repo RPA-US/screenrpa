@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 07:28+0000\n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,105 +17,76 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 #: apps/decisiondiscovery/forms.py:26
 msgid "Title"
-msgstr "Título "
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:27
 msgid "Decision Point To Study"
-msgstr "Punto de Decisión a Estudiar "
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:28 apps/decisiondiscovery/forms.py:30
 #: apps/decisiondiscovery/forms.py:97
 msgid "Columns to drop before decision point"
-msgstr "Columnas a eliminar antes del punto de decisión "
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:29
 msgid "Additional Configurations (JSON)"
-msgstr "Configuración adiccional (JSON)"
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:31
 msgid "Target label"
-msgstr "Clase objetivo"
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:52
 msgid "Variant"
-msgstr "Variante"
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:94
 msgid "Library"
-msgstr "Librería"
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:95
 msgid "Configuration"
-msgstr "Configuración"
+msgstr ""
 
 #: apps/decisiondiscovery/forms.py:96
 msgid "One hot columns"
-msgstr "Columnas one hot"
+msgstr ""
 
 #: apps/decisiondiscovery/utils.py:211
 msgid "The identifier does not follow the pattern"
-msgstr "El identificador no sigue el patrón"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:142
 msgid "Decision model chosen is not an option"
-msgstr "El modelo de decisión elegido no es una opción"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:171 apps/decisiondiscovery/views.py:238
 #: apps/decisiondiscovery/views.py:272 apps/decisiondiscovery/views.py:326
 msgid "User must be authenticated."
-msgstr "El usuario debe estar autenticado."
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:240 apps/decisiondiscovery/views.py:328
 msgid "Case Study doesn't belong to the authenticated user."
-msgstr "Este objeto no pertenece al usuario autenticado"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:242
 msgid "Extracting_training_dataset doesn't belong to the authenticated user."
-msgstr "Este objeto no pertenece al usuario autenticado"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:244
 msgid "Extracting_training_dataset doesn't belong to the Case Study."
-msgstr "Esta configuracion no pertenece al caso de estudio"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:330
 msgid "Decision Tree Training doesn't belong to the authenticated user."
-msgstr "Este objeto no pertenece al usuario autenticado"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:332
 msgid "Decision Tree Training doesn't belong to the Case Study."
-msgstr "Esta configuracion no pertenece al caso de estudio"
+msgstr ""
 
 #: apps/decisiondiscovery/views.py:343
 msgid "This object doesn't belong to the authenticated user"
-msgstr "Este objeto no pertenece al usuario autenticado"
-
-#~ msgid "Grid Search Best Params:\n"
-#~ msgstr "Mejores parámetros de búsqueda en cuadrícula:\n"
-
-#~ msgid "Fold %(i):"
-#~ msgstr "Iteración %(i):"
-
-#~ msgid "  Train: index=%(train_index)"
-#~ msgstr "  Entrenamiento: índice=%(train_index)"
-
-#~ msgid "  Test:  index=%(test_index)"
-#~ msgstr "  Prueba:  índice=%(test_index)"
-
-#~ msgid "Decision Model Option Not Valid"
-#~ msgstr "Opción de modelo de decisión no válida"
-
-#~ msgid "  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) "
-#~ msgstr "  K-Fold Estratificado:  precisión=%(acc) puntaje_f1=%(f1) "
-
-#~ msgid ""
-#~ "To be able to apply decision tree training, a extract training dataset "
-#~ "has to exist"
-#~ msgstr ""
-#~ "Para poder aplicar el entrenamiento del árbol de decisiones, tiene que "
-#~ "existir un conjunto de datos de entrenamiento extraído"
-
-#~ msgid "Columns to drop"
-#~ msgstr "Columnas a eliminar"
+msgstr ""
