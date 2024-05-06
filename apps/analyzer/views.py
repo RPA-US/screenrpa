@@ -634,8 +634,39 @@ class FeatureExtractionResultDetailView(DetailView):
         # Render the HTML template with the context including the CSV data
         return render(request, "feature_extraction_technique/result.html", context)
 
-#########################################333
+#########################################
+
     
+class ProcessDiscoveryResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found 
+        # Render the HTML template with the context including the CSV data
+        return render(request, "processdiscovery/result.html")
+    
+# class ProcessDiscoveryResultDetailView(DetailView):
+#     def get(self, request, *args, **kwargs):
+#         # Get the Execution object or raise a 404 error if not found
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+#         scenarioNumber = request.GET.get('scenario')
+#         download = request.GET.get('download')
+
+#         if scenarioNumber == None:
+#             #scenarioNumber = "1"
+#             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+#         path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" 
+
+#         # CSV Download
+#         if path_to_csv_file and download=="True":
+#             return MonitoringResultDownload2(path_to_csv_file) 
+
+#         # CSV Reading and Conversion to JSON
+#         csv_data_json = read_csv_to_json(path_to_csv_file)
+
+#         # Include CSV data in the context for the template
+#         context = {
+ 
+#########################################
 
 class ExtractTrainingDatasetResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
@@ -682,6 +713,9 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
 #             "csv_data": csv_data_json,  # Data to be used in the HTML template
 #             "scenarios": execution.scenarios_to_study,
 #             "scenarioNumber": scenarioNumber
+#             }  
+#         # Render the HTML template with the context including the CSV data
+#         return render(request, "processdiscovery/result.html", context)
 #         }
 #     return context
 
@@ -712,6 +746,7 @@ def MonitoringResultDownload2(path_to_csv_file):
             writer.writerow(row)
         return response
     
+
 #############################################################
     
 class UIElementsDetectionResultDetailView(DetailView):
@@ -759,10 +794,4 @@ class UIElementsDetectionResultDetailView(DetailView):
         return render(request, "ui_elements_detection/results.html", context)
 
 
-############################################################
-
-class mostrar_diagrama(DetailView):
-    def get(self, request, *args, **kwargs):
-        return render(request, 'processdiscovery/result.html')
-    #/screenrpa/apps/templates/
 
