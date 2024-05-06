@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: apps/processdiscovery/forms.py:25
+msgid "Type"
+msgstr ""
+
+#: apps/processdiscovery/forms.py:26
+msgid "Configurations"
+msgstr ""
+
+#: apps/processdiscovery/views.py:57
+msgid "Dendrogram"
+msgstr ""
+
+#: apps/processdiscovery/views.py:58
+msgid "Screenshots"
+msgstr ""
+
+#: apps/processdiscovery/views.py:59
+msgid "Distance"
+msgstr ""
+
+#: apps/processdiscovery/views.py:67
+msgid "Threshold: "
+msgstr ""
+
+#: apps/processdiscovery/views.py:77
+msgid "You selected a process discovery type that does not exist"
+msgstr ""
+
+#: apps/processdiscovery/views.py:113 apps/processdiscovery/views.py:167
+msgid "User must be authenticated."
+msgstr ""
+
+#: apps/processdiscovery/views.py:169
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr ""
+
+#: apps/processdiscovery/views.py:171
+msgid "Monitoring doesn't belong to the authenticated user."
+msgstr ""
+
+#: apps/processdiscovery/views.py:173
+msgid "Monitoring doesn't belong to the Case Study."
+msgstr ""

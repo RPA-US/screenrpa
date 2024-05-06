@@ -1,0 +1,195 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: apps/analyzer/collect_results.py:53
+msgid "Warning: GUI component appears more than twice"
+msgstr ""
+
+#: apps/analyzer/collect_results.py:66
+msgid "GUI component quantity difference greater than the expected"
+msgstr ""
+
+#: apps/analyzer/collect_results.py:106
+#, python-format
+msgid "Condition %(expression) is not fulfilled"
+msgstr ""
+
+#: apps/analyzer/collect_results.py:147 apps/analyzer/collect_results.py:258
+msgid "Experiment results that have been processed"
+msgstr ""
+
+#: apps/analyzer/collect_results.py:310
+msgid "DECISION TREE results collection fail! :("
+msgstr ""
+
+#: apps/analyzer/forms.py:32
+msgid "Title"
+msgstr ""
+
+#: apps/analyzer/forms.py:33
+msgid "Description"
+msgstr ""
+
+#: apps/analyzer/forms.py:34
+msgid "Log file (zip)"
+msgstr ""
+
+#: apps/analyzer/forms.py:35
+msgid "Scenarios to study"
+msgstr ""
+
+#: apps/analyzer/forms.py:36
+msgid "Map Log Columns to process Info"
+msgstr ""
+
+#: apps/analyzer/forms.py:43
+msgid "Nice experiment title!"
+msgstr ""
+
+#: apps/analyzer/forms.py:49
+msgid "Short experiment description..."
+msgstr ""
+
+#: apps/analyzer/forms.py:80
+msgid "Title is taken"
+msgstr ""
+
+#: apps/analyzer/models.py:83
+msgid "exp_folder_complete_path separators not coherent"
+msgstr ""
+
+#: apps/analyzer/models.py:89
+msgid "This is a nice experiment..."
+msgstr ""
+
+#: apps/analyzer/models.py:106
+msgid "Case study"
+msgstr ""
+
+#: apps/analyzer/models.py:107
+msgid "Case studies"
+msgstr ""
+
+#: apps/analyzer/models.py:143
+msgid "The title of the case study already exists"
+msgstr ""
+
+#: apps/analyzer/utils.py:45
+msgid ""
+"analyzer/utils/store_screenshots. line 49. MIME Html format not contains "
+"Content-Location header in screenshots"
+msgstr ""
+
+#: apps/analyzer/utils.py:46
+msgid "MIME Html format not contains Content-Location header in screenshots"
+msgstr ""
+
+#: apps/analyzer/utils.py:184
+msgid ""
+"analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt "
+"exists"
+msgstr ""
+
+#: apps/analyzer/utils.py:185
+msgid "You select a format mht file that doesnt exists"
+msgstr ""
+
+#: apps/analyzer/utils.py:214
+msgid ""
+"analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the "
+"format:'Step 1: (datetime)'"
+msgstr ""
+
+#: apps/analyzer/utils.py:215
+msgid "The MHT file doesnt have '(datetime)' after 'Step 1:'"
+msgstr ""
+
+#: apps/analyzer/utils.py:224
+msgid "The MHT file doesnt have a valid datetime format"
+msgstr ""
+
+#: apps/analyzer/views.py:131
+msgid "Scenarios that have been processed: "
+msgstr ""
+
+#: apps/analyzer/views.py:273
+msgid "User must be authenticated."
+msgstr ""
+
+#: apps/analyzer/views.py:296 apps/analyzer/views.py:309
+#: apps/analyzer/views.py:546
+msgid "This case study doesn't belong to the authenticated user"
+msgstr ""
+
+#: apps/analyzer/views.py:311 apps/analyzer/views.py:548
+msgid "This case study cannot be deleted because it has already been excecuted"
+msgstr ""
+
+#: apps/analyzer/views.py:361
+#, python-format
+msgid ""
+"phases_to_execute must be of type dict!!!!! and must be composed by phases "
+"contained in %(DEFAULT_PHASES)s"
+msgstr ""
+
+#: apps/analyzer/views.py:367
+msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
+msgstr ""
+
+#: apps/analyzer/views.py:374
+msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
+msgstr ""
+
+#: apps/analyzer/views.py:382 apps/analyzer/views.py:388
+msgid "The following file or directory does not exists: %(path)"
+msgstr ""
+
+#: apps/analyzer/views.py:395
+#, python-format
+msgid ""
+"phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
+msgstr ""
+
+#: apps/analyzer/views.py:408
+#, python-format
+msgid "Case study with id:%(id) is being generated ..."
+msgstr ""
+
+#: apps/analyzer/views.py:411
+msgid "Some of the attributes are invalid: "
+msgstr ""
+
+#: apps/analyzer/views.py:430
+msgid "Case Study with id %(id) not found"
+msgstr ""
+
+#: apps/analyzer/views.py:448
+msgid ""
+"The processing of this case study has not yet finished, please try again in "
+"a few minutes"
+msgstr ""
+
+#: apps/analyzer/views.py:451
+#, python-format
+msgid "Case Study with id %(id) raised an exception: "
+msgstr ""
+
+#: apps/analyzer/views.py:505
+msgid "You don't have permissions to access this files"
+msgstr ""
