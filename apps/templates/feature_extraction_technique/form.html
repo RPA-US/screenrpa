@@ -86,7 +86,7 @@
 {% block javascripts %}
   <script>
 
-    if (!document.getElementById('form').readOnly) {
+    //if (!document.getElementById('form').readOnly) {
 
 
     document.addEventListener('DOMContentLoaded', () => { 
@@ -143,7 +143,9 @@
 
     
     document.getElementById('id_type').addEventListener('change', function() {
+      
       var select = document.getElementById('id_technique_name');
+      
       var type = this.value;
 
       // Limpiar las opciones existentes
@@ -174,14 +176,14 @@
           }
       }
   });
-}
+//}
 
   
   </script>
 
 <script>
 
-if (!document.getElementById('form').readOnly) {
+//if (!document.getElementById('form').readOnly) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const title = document.getElementById('id_title');
@@ -217,6 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('id_preloaded').readOnly = false;
   }
 })  
-}
+//}
 </script>
 {% endblock javascripts %}
