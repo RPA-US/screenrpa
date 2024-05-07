@@ -34,10 +34,10 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 
 import pydotplus
-import pypandoc
+#import pypandoc
 from PIL import Image, ImageDraw
 #import subprocess
-#import aspose.words as aw
+import aspose.words as aw
 
 
 # Create your views here.
@@ -500,7 +500,7 @@ class ReportCreateView(CreateView):
 
 
 def report_define(report_directory, report_path, execution,  report, scenario):
-    template_path = "/screenrpa/media/unzipped/report_template.docx"
+    template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
     doc = Document(template_path)
 
     ###############3
@@ -601,17 +601,16 @@ def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
         p.addnext(tbl)
 ###################33333
 
-
-# def convert_docx_to_pdf(dx_path, pdf_path):
-    
-#     doc = aw.Document(dx_path)
-#     doc.save(pdf_path)
-
-
 def convert_docx_to_pdf(dx_path, pdf_path):
-    extra_args = ['--pdf-engine-opt', '-dPDFSETTINGS=/prepress']
-    #pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
-    pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
+    
+    doc = aw.Document(dx_path)
+    doc.save(pdf_path)
+
+
+# def convert_docx_to_pdf2(dx_path, pdf_path):
+#     extra_args = ['--pdf-engine-opt', '-dPDFSETTINGS=/prepress']
+#     #pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
+#     pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
 ##################################################33
 
 
