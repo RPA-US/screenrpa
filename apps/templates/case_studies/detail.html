@@ -87,7 +87,7 @@
                     {% endif %}
                   </div>
                   <div class="col-lg-3 col-md-6">
-                    {% if 'Postfiltering' in case_study.available_phases %}
+                    {% if 'Postfilters' in case_study.available_phases %}
                     <a href="/fe/postfiltering/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                     {% else %}
                     <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
@@ -96,6 +96,11 @@
                       <i class="ni ni-zoom-split-in"></i> <span>Post-filtering</span>
                       </div>
                     </a>
+                    {% if not 'Postfilters' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Log Processing needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
                   <div class="col-lg-3 col-md-6">
                     {% if 'FeatureExtractionTechnique' in case_study.available_phases %}
