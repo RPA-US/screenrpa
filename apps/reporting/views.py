@@ -393,8 +393,13 @@ class ReportListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
         # Filtra los objetos por case_study_id
-        queryset = PDD.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        if search:
+            queryset = PDD.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, case_study__title__icontains=search).order_by('-created_at')
+        else:
+            queryset = PDD.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
         
         return queryset
 

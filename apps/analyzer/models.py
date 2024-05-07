@@ -63,7 +63,8 @@ def default_special_colnames():
         "NameApp": "FileName",
         "EventType": "ocel:type:event",
         "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY"
+        "CoorY": "ocel:click:coorY",
+        "Header": "header"
         }
     )
 
@@ -97,6 +98,10 @@ class CaseStudy(models.Model):
     phases_to_execute = JSONField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
+    @property
+    def num_executions(self):
+        return Execution.objects.filter(case_study=self).count()
+    
     class Meta:
         verbose_name = _("Case study")
         verbose_name_plural = _("Case studies")

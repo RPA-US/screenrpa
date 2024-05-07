@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-11 10:45+0000\n"
+"POT-Creation-Date: 2024-05-06 07:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,32 +63,32 @@ msgstr "El identificador no sigue el patrón"
 msgid "Decision model chosen is not an option"
 msgstr "El modelo de decisión elegido no es una opción"
 
-#: apps/decisiondiscovery/views.py:171 apps/decisiondiscovery/views.py:233
-#: apps/decisiondiscovery/views.py:267 apps/decisiondiscovery/views.py:316
+#: apps/decisiondiscovery/views.py:171 apps/decisiondiscovery/views.py:238
+#: apps/decisiondiscovery/views.py:272 apps/decisiondiscovery/views.py:326
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
 
-#: apps/decisiondiscovery/views.py:235 apps/decisiondiscovery/views.py:318
+#: apps/decisiondiscovery/views.py:240 apps/decisiondiscovery/views.py:328
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr "Este objeto no pertenece al usuario autenticado"
 
-#: apps/decisiondiscovery/views.py:237
+#: apps/decisiondiscovery/views.py:242
 msgid "Extracting_training_dataset doesn't belong to the authenticated user."
 msgstr "Este objeto no pertenece al usuario autenticado"
 
-#: apps/decisiondiscovery/views.py:239
+#: apps/decisiondiscovery/views.py:244
 msgid "Extracting_training_dataset doesn't belong to the Case Study."
 msgstr "Esta configuracion no pertenece al caso de estudio"
 
-#: apps/decisiondiscovery/views.py:320
+#: apps/decisiondiscovery/views.py:330
 msgid "Decision Tree Training doesn't belong to the authenticated user."
 msgstr "Este objeto no pertenece al usuario autenticado"
 
-#: apps/decisiondiscovery/views.py:322
+#: apps/decisiondiscovery/views.py:332
 msgid "Decision Tree Training doesn't belong to the Case Study."
 msgstr "Esta configuracion no pertenece al caso de estudio"
 
-#: apps/decisiondiscovery/views.py:333
+#: apps/decisiondiscovery/views.py:343
 msgid "This object doesn't belong to the authenticated user"
 msgstr "Este objeto no pertenece al usuario autenticado"
 

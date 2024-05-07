@@ -94,8 +94,13 @@ class FeatureExtractionTechniqueListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
         # Filtra los objetos por case_study_id
-        queryset = FeatureExtractionTechnique.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        if search:
+            queryset = FeatureExtractionTechnique.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = FeatureExtractionTechnique.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
 
@@ -223,8 +228,13 @@ class UIElementsDetectionListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
         # Filtra los objetos por case_study_id
-        queryset = UIElementsDetection.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        if search:
+            queryset = UIElementsDetection.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = UIElementsDetection.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
 
@@ -401,8 +411,13 @@ class PrefiltersListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
         # Filtra los objetos por case_study_id
-        queryset = Prefilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        if search:
+            queryset = Prefilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = Prefilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
 
@@ -500,8 +515,13 @@ class PostfiltersListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
         # Filtra los objetos por case_study_id
-        queryset = Postfilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        if search:
+            queryset = Postfilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = Postfilters.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
     

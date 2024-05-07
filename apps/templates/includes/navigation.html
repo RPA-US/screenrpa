@@ -9,7 +9,7 @@
             <div class="input-group-prepend">
               <span class="input-group-text"><i class="fas fa-search"></i></span>
             </div>
-            <input class="form-control" placeholder="Search" type="text">
+            <input id="navbar-search" class="form-control" placeholder="Search" type="text">
           </div>
         </div>
         <button type="button" class="close" data-action="search-close" data-target="#navbar-search-main" aria-label="Close">
@@ -242,3 +242,28 @@
     </div>
   </div>
 </nav>
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+ <script src="/static/assets/vendor/jquery/dist/jquery.min.js"></script>
+ <script>
+  // navbar-search functionality
+  $(document).ready(function() {
+    // Disable if no element with id list
+    if ($('.list').length == 0) {
+      // replace nabvar-search-light class with navbar-search-dark
+      $('#navbar-search-main').removeClass('navbar-search-light').addClass('navbar-search-dark');
+      $('#navbar-search').attr('placeholder', 'No search available').prop('disabled', true);
+    }
+    // Searchbar valiue set to s query param
+    $('#navbar-search').val(new URLSearchParams(window.location.search).get('s'));
+    $('#navbar-search-main').on('submit', function(e) {
+      e.preventDefault();
+      // Query the same url with search query parameter (?s=...)
+      url = window.location.href.split('?')[0];
+      query = $('#navbar-search').val();
+      window.location.href = url + '?s=' + query;
+    });
+  });
+</script>
+{% endblock javascripts %}
