@@ -301,6 +301,22 @@ class ProcessDiscoveryCreateView(CreateView):
     form_class = ProcessDiscoveryForm
     template_name = "processdiscovery/create.html"
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+
     def get_form_kwargs(self):
         kwargs = super(ProcessDiscoveryCreateView, self).get_form_kwargs()
         case_study_id = self.kwargs.get('case_study_id')
@@ -333,6 +349,14 @@ class ProcessDiscoveryListView(ListView):
     template_name = "processdiscovery/list.html"
     paginate_by = 50
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(ProcessDiscoveryListView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -354,10 +378,15 @@ class ProcessDiscoveryListView(ListView):
     
 
 class ProcessDiscoveryDetailView(DetailView):
+    # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-        process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
-        process_discovery_form = ProcessDiscoveryForm(instance=process_discovery)
-        return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"], 'process_discovery_form': process_discovery_form})
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
+            process_discovery_form = ProcessDiscoveryForm(instance=process_discovery)
+            return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"], 'process_discovery_form': process_discovery_form})
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
 def set_as_process_discovery_active(request):
     process_discovery_id = request.GET.get("process_discovery_id")

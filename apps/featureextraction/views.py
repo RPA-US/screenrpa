@@ -63,6 +63,21 @@ class FeatureExtractionTechniqueCreateView(CreateView):
     model = FeatureExtractionTechnique
     form_class = FeatureExtractionTechniqueForm
     template_name = "feature_extraction_technique/create.html"
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'FeatureExtractionTechnique' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'FeatureExtractionTechnique' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
     def get_context_data(self, **kwargs):
         context = super(FeatureExtractionTechniqueCreateView, self).get_context_data(**kwargs)
@@ -82,6 +97,14 @@ class FeatureExtractionTechniqueListView(ListView):
     model = FeatureExtractionTechnique
     template_name = "feature_extraction_technique/list.html"
     paginate_by = 50
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'FeatureExtractionTechnique' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
     def get_context_data(self, **kwargs):
         context = super(FeatureExtractionTechniqueListView, self).get_context_data(**kwargs)
@@ -103,9 +126,14 @@ class FeatureExtractionTechniqueListView(ListView):
         return queryset
 
 class FeatureExtractionTechniqueDetailView(DetailView):
+    # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-        feature_extraction_technique = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
-        return render(request, "feature_extraction_technique/detail.html", {"feature_extraction_technique": feature_extraction_technique, "case_study_id": kwargs["case_study_id"]})
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'FeatureExtractionTechnique' in case_study.available_phases:
+            feature_extraction_technique = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
+            return render(request, "feature_extraction_technique/detail.html", {"feature_extraction_technique": feature_extraction_technique, "case_study_id": kwargs["case_study_id"]})
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
 def set_as_feature_extraction_technique_active(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
@@ -154,6 +182,22 @@ class UIElementsDetectionCreateView(MultiFormsView):
     template_name = "ui_elements_detection/create.html"
     # Current url is /new/<id>/ so we need to redirect to /list/<id>
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'UIElementsDetection' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'UIElementsDetection' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -196,6 +240,14 @@ class UIElementsDetectionListView(ListView):
     template_name = "ui_elements_detection/list.html"
     paginate_by = 50
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'UIElementsDetection' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionListView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -222,6 +274,14 @@ class UIElementsDetectionDetailView(MultiFormsView):
     }
     template_name = "ui_elements_detection/details.html"
     # Current url is /new/<id>/ so we need to redirect to /list/<id>
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'UIElementsDetection' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
     def get_context_data(self, **kwargs):
         context = super(UIElementsDetectionDetailView, self).get_context_data(**kwargs)
@@ -350,6 +410,21 @@ class PrefiltersCreateView(CreateView):
     model = Prefilters
     form_class = PrefiltersForm
     template_name = "prefiltering/create.html"
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Prefilters' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Prefilters' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
     def get_context_data(self, **kwargs):
         context = super(PrefiltersCreateView, self).get_context_data(**kwargs)
@@ -370,6 +445,14 @@ class PrefiltersListView(ListView):
     model = Prefilters
     template_name = "prefiltering/list.html"
     paginate_by = 50
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Prefilters' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
     def get_context_data(self, **kwargs):
         context = super(PrefiltersListView, self).get_context_data(**kwargs)
@@ -392,9 +475,14 @@ class PrefiltersListView(ListView):
 
     
 class PrefiltersDetailView(DetailView):
+    # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-        prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
-        return render(request, "prefiltering/detail.html", {"prefilter": prefilter, "case_study_id": kwargs["case_study_id"]})
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Prefilters' in case_study.available_phases:
+            prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
+            return render(request, "prefiltering/detail.html", {"prefilter": prefilter, "case_study_id": kwargs["case_study_id"]})
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
 def set_as_prefilters_active(request):
     prefilter_id = request.GET.get("prefilter_id")
@@ -440,6 +528,21 @@ class PostfiltersCreateView(CreateView):
     model = Postfilters
     form_class = PostfiltersForm
     template_name = "postfiltering/create.html"
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Postfilters' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Postfilters' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
     def get_context_data(self, **kwargs):
         context = super(PostfiltersCreateView, self).get_context_data(**kwargs)
@@ -459,6 +562,14 @@ class PostfiltersListView(ListView):
     model = Postfilters
     template_name = "postfiltering/list.html"
     paginate_by = 50
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Postfilters' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
     def get_context_data(self, **kwargs):
         context = super(PostfiltersListView, self).get_context_data(**kwargs)
@@ -480,9 +591,14 @@ class PostfiltersListView(ListView):
         return queryset
     
 class PostfiltersDetailView(DetailView):
+    # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-        postfilter = get_object_or_404(Postfilters, id=kwargs["postfilter_id"])
-        return render(request, "postfiltering/detail.html", {"postfilter": postfilter, "case_study_id": kwargs["case_study_id"]})
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Postfilters' in case_study.available_phases:
+            postfilter = get_object_or_404(Postfilters, id=kwargs["postfilter_id"])
+            return render(request, "postfiltering/detail.html", {"postfilter": postfilter, "case_study_id": kwargs["case_study_id"]})
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
 def set_as_postfilters_active(request):
     postfilter_id = request.GET.get("postfilter_id")
