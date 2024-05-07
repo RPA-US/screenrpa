@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"POT-Creation-Date: 2024-05-07 10:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/analyzer/collect_results.py:53
 msgid "Warning: GUI component appears more than twice"
 msgstr ""
@@ -78,15 +79,15 @@ msgstr ""
 msgid "This is a nice experiment..."
 msgstr ""
 
-#: apps/analyzer/models.py:106
+#: apps/analyzer/models.py:127
 msgid "Case study"
 msgstr ""
 
-#: apps/analyzer/models.py:107
+#: apps/analyzer/models.py:128
 msgid "Case studies"
 msgstr ""
 
-#: apps/analyzer/models.py:143
+#: apps/analyzer/models.py:164
 msgid "The title of the case study already exists"
 msgstr ""
 
@@ -133,63 +134,63 @@ msgid "User must be authenticated."
 msgstr ""
 
 #: apps/analyzer/views.py:296 apps/analyzer/views.py:309
-#: apps/analyzer/views.py:546
+#: apps/analyzer/views.py:550
 msgid "This case study doesn't belong to the authenticated user"
 msgstr ""
 
-#: apps/analyzer/views.py:311 apps/analyzer/views.py:548
+#: apps/analyzer/views.py:311 apps/analyzer/views.py:552
 msgid "This case study cannot be deleted because it has already been excecuted"
 msgstr ""
 
-#: apps/analyzer/views.py:361
+#: apps/analyzer/views.py:362
 #, python-format
 msgid ""
 "phases_to_execute must be of type dict!!!!! and must be composed by phases "
 "contained in %(DEFAULT_PHASES)s"
 msgstr ""
 
-#: apps/analyzer/views.py:367
+#: apps/analyzer/views.py:368
 msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 
-#: apps/analyzer/views.py:374
+#: apps/analyzer/views.py:375
 msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 
-#: apps/analyzer/views.py:382 apps/analyzer/views.py:388
+#: apps/analyzer/views.py:383 apps/analyzer/views.py:389
 msgid "The following file or directory does not exists: %(path)"
 msgstr ""
 
-#: apps/analyzer/views.py:395
+#: apps/analyzer/views.py:396
 #, python-format
 msgid ""
 "phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
 msgstr ""
 
-#: apps/analyzer/views.py:408
+#: apps/analyzer/views.py:409
 #, python-format
 msgid "Case study with id:%(id) is being generated ..."
 msgstr ""
 
-#: apps/analyzer/views.py:411
+#: apps/analyzer/views.py:412
 msgid "Some of the attributes are invalid: "
 msgstr ""
 
-#: apps/analyzer/views.py:430
+#: apps/analyzer/views.py:431
 msgid "Case Study with id %(id) not found"
 msgstr ""
 
-#: apps/analyzer/views.py:448
+#: apps/analyzer/views.py:449
 msgid ""
 "The processing of this case study has not yet finished, please try again in "
 "a few minutes"
 msgstr ""
 
-#: apps/analyzer/views.py:451
+#: apps/analyzer/views.py:452
 #, python-format
 msgid "Case Study with id %(id) raised an exception: "
 msgstr ""
 
-#: apps/analyzer/views.py:505
+#: apps/analyzer/views.py:506 apps/analyzer/views.py:574
 msgid "You don't have permissions to access this files"
 msgstr ""

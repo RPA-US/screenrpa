@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"POT-Creation-Date: 2024-05-07 10:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/decisiondiscovery/forms.py:26
 msgid "Title"
 msgstr ""
@@ -62,31 +63,31 @@ msgstr ""
 msgid "Decision model chosen is not an option"
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:171 apps/decisiondiscovery/views.py:238
-#: apps/decisiondiscovery/views.py:272 apps/decisiondiscovery/views.py:326
+#: apps/decisiondiscovery/views.py:186 apps/decisiondiscovery/views.py:269
+#: apps/decisiondiscovery/views.py:318 apps/decisiondiscovery/views.py:385
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:240 apps/decisiondiscovery/views.py:328
+#: apps/decisiondiscovery/views.py:271 apps/decisiondiscovery/views.py:387
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:242
+#: apps/decisiondiscovery/views.py:273
 msgid "Extracting_training_dataset doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:244
+#: apps/decisiondiscovery/views.py:275
 msgid "Extracting_training_dataset doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:330
+#: apps/decisiondiscovery/views.py:389
 msgid "Decision Tree Training doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:332
+#: apps/decisiondiscovery/views.py:391
 msgid "Decision Tree Training doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:343
+#: apps/decisiondiscovery/views.py:402
 msgid "This object doesn't belong to the authenticated user"
 msgstr ""
