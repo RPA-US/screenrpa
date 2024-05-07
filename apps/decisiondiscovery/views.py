@@ -83,8 +83,9 @@ def extract_training_dataset(log_path, root_path, execution):
     for c in process_columns:
         if c in columns:
             columns.remove(c)
-            
-    variants_to_study = execution.extract_training_dataset.variants_to_study
+    
+    # Get the list of variants to study casting all values of the list to int
+    variants_to_study = [int(variant) for variant in execution.extract_training_dataset.variants_to_study]
     
     # To filter log dataframe rows to those ones whose variant is cointained in variants_to_study
     filtered_log = log[log[special_colnames["Variant"]].isin(variants_to_study)]

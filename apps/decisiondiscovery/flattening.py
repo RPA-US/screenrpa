@@ -38,12 +38,14 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, special_col
     timestamp_column_name = special_colnames["Timestamp"]
     variant_column_name = special_colnames["Variant"]
     
-    cases = log.loc[:, case_column_name].values.tolist()
-
-    last_case = cases[0]
+    cases = log.loc[:, case_column_name]
+    # TODO: me pilla el segundo elemento, no el primero
+    last_case = cases.iloc[0]
     before_DP = True
     log_dict = {}
-    for index, c in enumerate(cases, start=0):
+    
+    # From cases (as a Series) loop the indexes and the case
+    for index, c in cases.items():
         v = log.at[index, variant_column_name]
         if v in variants_to_study:
             activity = log.at[index, activity_column_name]
