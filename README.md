@@ -198,6 +198,8 @@ $ yarn
 $ gulp scss
 ```
 
+Remember to refresh (CTRL + F5) the app to see applied styles.
+
 The generated file is saved in `static/assets/css` directory.
 
 <br /> 
