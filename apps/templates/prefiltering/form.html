@@ -54,16 +54,19 @@
         </div>
       </div>
     </div>
+    {% if not form.read_only %}
     <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
       <i class="fas fa-save"></i> 
       {% blocktranslate %}Save{% endblocktranslate %}
     </button>
+    {% endif %}
   </form>
 
   <!-- Specific JS goes HERE --> 
 {% block javascripts %}
 
 <script>
+if (!document.getElementById('form').readOnly) {
   document.addEventListener('DOMContentLoaded', () => {
     const title = document.getElementById('id_title');
     const type = document.getElementById('id_type');
@@ -92,6 +95,7 @@
       document.getElementById('id_preloaded').readOnly = false;
     }
   })  
+}
 </script>
 
 

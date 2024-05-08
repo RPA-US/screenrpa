@@ -16,15 +16,15 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12">
-            <a href="/case-study/execution/detail/{{ execution.id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/case-study/execution/detail/{{ execution_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to UI Elements Detection Details {% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}UI Elements Detection Results{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/list">{% blocktranslate %}Execution{% endblocktranslate %} {{ execution.id }}</a></li>
-                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}/">{% blocktranslate %}Execution Details{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="#">{% blocktranslate %} Detections {% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/list">{% blocktranslate %}Execution{% endblocktranslate %} {{ execution_id }}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}/">{% blocktranslate %}Execution Details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %} Detections {% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>

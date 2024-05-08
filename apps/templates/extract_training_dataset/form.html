@@ -62,13 +62,17 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
-    <i class="fas fa-save"></i> 
-    {% blocktranslate %}Save{% endblocktranslate %}
-    </button>
+    {% if not form.read_only %}
+       <hr class="my-4" />
+       <button id="mainSubmitButton" class="btn btn-success" type="submit" value="submit" style="float: right;">
+           <i class="fas fa-save"></i>
+           {% blocktranslate %}Generate{% endblocktranslate %}
+       </button>
+       {% endif %}
 </form>
 
 {% block javascripts %}
+
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage
 # from sklearn.cluster import AgglomerativeClustering
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, CreateView, DetailView
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404
@@ -13,7 +13,7 @@ from django.urls import reverse
 import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, Execution
 from core.utils import read_ui_log_as_dataframe
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
@@ -356,8 +356,27 @@ class ProcessDiscoveryListView(ListView):
 class ProcessDiscoveryDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
-        process_discovery_form = ProcessDiscoveryForm(instance=process_discovery)
-        return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"], 'process_discovery_form': process_discovery_form})
+        
+        
+        form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)  # Todos los campos estarán desactivados
+
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"process_discovery": process_discovery, 
+                      "case_study_id": case_study.id,
+                      "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+
+            context= {"process_discovery": process_discovery, 
+                      "execution_id": execution.id,
+                      "form": form,}
+        
+        return render(request, "processdiscovery/detail.html", context)
+
+
 
 def set_as_process_discovery_active(request):
     process_discovery_id = request.GET.get("process_discovery_id")
@@ -396,3 +415,62 @@ def delete_process_discovery(request):
         raise Exception("This object doesn't belong to the authenticated user")
     process_discovery.delete()
     return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
+
+##########################################
+
+class ProcessDiscoveryResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        
+
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+              
+        path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
+
+
+        with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
+            bpmn_content = file.read()
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution_id": execution.id,
+            "prueba": bpmn_content,  # Png to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario
+            }
+        return render(request, 'processdiscovery/result.html', context)
+    
+
+
+####################################################################
+
+def ProcessDiscoveryDownload(request, execution_id):
+
+    execution = get_object_or_404(Execution, pk=execution_id)
+    #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
+    scenario = request.GET.get('scenario')
+    
+    if scenario is None:
+        scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
+              
+    path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
+    
+    try:
+        # Asegúrate de que la ruta absoluta sea correcta
+        full_file_path = os.path.join('/screenrpa', path_to_bpmn_file)
+        with open(full_file_path, 'rb') as archivo:
+            response = HttpResponse(archivo.read(), content_type="application/octet-stream")
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
+            return response
+        
+    except FileNotFoundError:
+
+        print(f"File not found: {path_to_bpmn_file}")
+        return HttpResponse("Sorry, the file was not found.", status=404)
+    
+
+    
+####################################################################

@@ -11,14 +11,14 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/case-study/execution/detail/{{ execution.id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/case-study/execution/detail/{{ execution_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Extract Training Dataset Results Details{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
-                <li value="{{execution.id}}" class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution.id }}">{% blocktranslate %}Execution {{ execution.id}} {% endblocktranslate %}</a> </li>
-                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Extract Training Dataset result{% endblocktranslate %}</a></li>
+                <li value="{{execution_id}}" class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}">{% blocktranslate %}Execution {{ execution_id}} {% endblocktranslate %}</a> </li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Extract Training Dataset result{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>         
@@ -52,16 +52,16 @@
               <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
                 <div class="dropdown">
                   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{scenarioNumber}}
+                    {{scenario}}
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     {% for scenario in scenarios %}
-                    <a class="dropdown-item" href="/case-study/execution/monitoring_result/{{execution.id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                    <a class="dropdown-item" href="/dd/extract-training-dataset/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
                     {% endfor %}
                   </div>
                 </div>
-                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution.id}}/?scenario={{scenarioNumber}}"> -->
-                <a href="/case-study/execution/monitoring_result/{{execution.id}}/?download=True&scenario={{scenarioNumber}}">
+                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
+                <a href="/dd/extract-training-dataset/result/{{execution_id}}/?download=True&scenario={{scenario}}">
                   <button class="btn btn-success" style="float: right;" type="button">
                     <i class="ni ni-cloud-download-95"></i> 
                     {% blocktranslate %}Download{% endblocktranslate %}

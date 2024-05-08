@@ -264,3 +264,6 @@ class Execution(models.Model):
                     os.path.join('../../', scenario),
                     os.path.join(self.exp_folder_complete_path, scenario)
                     )
+        
+        
+       
