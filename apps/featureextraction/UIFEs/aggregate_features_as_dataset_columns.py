@@ -231,7 +231,7 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
                 
-            if activity == decision_point:
+            if decision_point in activity:
                 aux_case = case
                 before_DP = False
 
