@@ -2,10 +2,11 @@
 {% load extras %}
 {% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
-{% if execution_id %}
+
+  {% if execution_id %}
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
@@ -13,12 +14,12 @@
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
             <a href="/case-study/execution/detail/{{execution_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Execution {{execution_id}}{% endblocktranslate %}</a>
-            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Extract Training Dataset Configuration Details{% endblocktranslate %}</h6>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Decision Tree Training Configuration Details{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution_id}}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Extract Training Dataset Configuration Details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Decision Tree Training Configuration Details{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
@@ -27,31 +28,31 @@
     </div>
   </div>
   {% else %}
+
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/dd/extract-training-dataset/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>{% blocktranslate %}Go Back to Extract Training Dataset Configurations{% endblocktranslate %}</a>
-            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Extract Training Dataset Configuration{% endblocktranslate %}</h6>
+            <a href="/dd/decision-tree-training/list/{{case_study_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Decision Tree Training Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Decision Tree Training Configuration Deatils{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="/dd/extract-training-dataset/list/{{ case_study_id }}/">{% blocktranslate %}Extract Training Dataset Configs{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Extract Training Dataset Details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/dd/decision-tree-training/list/{{case_study_id}}">{% blocktranslate %}Decision Tree Traning Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}New decision tree training{% endblocktranslate %}</a></li>
               </ol>
             </nav>
-          </div>
-          <div class="col-12 text-right">
-            <a href="/dd/extract-training-dataset/new/{{ case_study_id }}/" class="btn btn btn-light"><i class="fas fa-broom"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
     </div>
   </div>
+
   {% endif %}
+  
   <!-- Page content -->
   <div class="container-fluid mt--6">
     <div class="row">
@@ -59,10 +60,10 @@
         <div class="card">
           <!-- Card header -->
           <!-- <div class="card-header border-0">
-            <h3 class="mb-0">{% blocktranslate %}Create a new Extract Training Dataset Configuration{% endblocktranslate %}</h3>
+            <h3 class="mb-0">{% blocktranslate %}Create a Decision Tree Training Configuration Deatils{% endblocktranslate %}</h3>
           </div> -->
           <div class="card-body">
-            {% include "extract_training_dataset/form.html" %}
+            {% include "decision_tree_training/form.html" %}
           </div>
         </div>
       </div>

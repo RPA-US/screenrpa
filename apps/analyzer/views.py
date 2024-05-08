@@ -34,6 +34,7 @@ from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy, Execution   
 from apps.behaviourmonitoring.models import Monitoring
+from apps.reporting.models import PDD
 from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
@@ -46,6 +47,18 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+# Result Treeimport json
+import matplotlib.pyplot as plt
+from sklearn import tree
+import io
+import pickle
+import base64
+import pickle
+import base64
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
+from sklearn.tree import _tree
 
 #============================================================================================================================
 #============================================================================================================================
@@ -553,13 +566,16 @@ def deleteExecution(request):
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
+
 class ExecutionDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
+
         context = {
+            "reports": reports,
+            "execution_id": execution.id, 
             "execution": execution, 
-            "single_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
             }
         return render(request, "executions/detail.html", context)
 
@@ -591,186 +607,7 @@ def exec_file_download(request, execution_id):
 
 #################################################################### PHASE EXECUTIONS RESULTS ####################################################################
     
-class MonitoringResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenarioNumber = request.GET.get('scenario')
-        download = request.GET.get('download')
 
-        if scenarioNumber == None:
-            #scenarioNumber = "1"
-            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
-            
-        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv"  
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
-        # CSV Download
-        if path_to_csv_file and download=="True":
-            return MonitoringResultDownload2(path_to_csv_file)  
-
-        # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
-
-        # Include CSV data in the context for the template
-        context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenarioNumber": scenarioNumber
-            } 
-
-        # Render the HTML template with the context including the CSV data
-        return render(request, "monitoring/result.html", context)
-
-
-##########################################
-    
-class FeatureExtractionResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenarioNumber = request.GET.get('scenario')
-        download = request.GET.get('download')
-
-        if scenarioNumber == None:
-            #scenarioNumber = "1"
-            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
-      
-        # TODO: Sujeto a cambios en la estructura de la carpeta
-        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #enriched_log.csv
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
-        # CSV Download
-        if path_to_csv_file and download=="True":
-            return MonitoringResultDownload2(path_to_csv_file)  
-     
-        # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
-
-        # Include CSV data in the context for the template
-        context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenarioNumber": scenarioNumber
-            }
-
-        # Render the HTML template with the context including the CSV data
-        return render(request, "feature_extraction_technique/result.html", context)
-
-#########################################
-
-    
-class ProcessDiscoveryResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found 
-        # Render the HTML template with the context including the CSV data
-        return render(request, "processdiscovery/result.html")
-    
-# class ProcessDiscoveryResultDetailView(DetailView):
-#     def get(self, request, *args, **kwargs):
-#         # Get the Execution object or raise a 404 error if not found
-#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-#         scenarioNumber = request.GET.get('scenario')
-#         download = request.GET.get('download')
-
-#         if scenarioNumber == None:
-#             #scenarioNumber = "1"
-#             scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
-      
-#         path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" 
-
-#         # CSV Download
-#         if path_to_csv_file and download=="True":
-#             return MonitoringResultDownload2(path_to_csv_file) 
-
-#         # CSV Reading and Conversion to JSON
-#         csv_data_json = read_csv_to_json(path_to_csv_file)
-
-#         # Include CSV data in the context for the template
-#         context = {
- 
-#########################################
-
-class ExtractTrainingDatasetResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found
-        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenarioNumber = request.GET.get('scenario')
-        download = request.GET.get('download')
-
-        if scenarioNumber == None:
-            #scenarioNumber = "1"
-            scenarioNumber = execution.scenarios_to_study[0] # by default, the first one that was indicated
-      
-        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenarioNumber +"/log.csv" #flattened_log.csv
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenarioNumber, "log.csv")
-        # CSV Download
-        if path_to_csv_file and download=="True":
-            return MonitoringResultDownload2(path_to_csv_file) 
-
-        # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
-
-        # Include CSV data in the context for the template
-        context = {
-            "execution": execution,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
-            "scenarios": execution.scenarios_to_study,
-            "scenarioNumber": scenarioNumber
-            }  
-
-        # Render the HTML template with the context including the CSV data
-        return render(request, "extract_training_dataset/result.html", context)
-
-##############################################33
-    
-
-# def LogicPhasesResultDetailView(execution, scenarioNumber,path_to_csv_file):
-   
-#     # CSV Reading and Conversion to JSON
-#     csv_data_json = read_csv_to_json(path_to_csv_file)
-
-#     # Include CSV data in the context for the template
-#     context = {
-#             "execution": execution,
-#             "csv_data": csv_data_json,  # Data to be used in the HTML template
-#             "scenarios": execution.scenarios_to_study,
-#             "scenarioNumber": scenarioNumber
-#             }  
-#         # Render the HTML template with the context including the CSV data
-#         return render(request, "processdiscovery/result.html", context)
-#         }
-#     return context
-
-#############################################33
-def read_csv_to_json(path_to_csv_file):
-    # Initialize a list to hold the CSV data converted into dictionaries
-    csv_data = []       
-    # Check if the path to the CSV file exists and read the data
-    try:
-        with open(path_to_csv_file, 'r', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                csv_data.append(row)
-    except FileNotFoundError:
-        print(f"File not found: {path_to_csv_file}")
-    # Convert csv_data to JSON
-    csv_data_json = json.dumps(csv_data)
-    return csv_data_json
-##########################################3
-def MonitoringResultDownload2(path_to_csv_file):
-    with open(path_to_csv_file, 'r', newline='') as csvfile:
-        # Create an HTTP response with the content of the CSV
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
-        writer = csv.writer(response)
-        reader = csv.reader(csvfile)
-        for row in reader:
-            writer.writerow(row)
-        return response
-    
-
-#############################################################
     
 class UIElementsDetectionResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
@@ -808,7 +645,7 @@ class UIElementsDetectionResultDetailView(DetailView):
             )
 
         context = {
-            "execution": execution,
+            "execution_id": execution.id,
             "scenarios": execution.scenarios_to_study,
             "soms": soms
         }
@@ -817,4 +654,11 @@ class UIElementsDetectionResultDetailView(DetailView):
         return render(request, "ui_elements_detection/results.html", context)
 
 
+############################################################
+
+
+
+        
+ 
+    
 

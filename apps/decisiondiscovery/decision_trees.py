@@ -15,6 +15,7 @@ from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 from django.utils.translation import gettext_lazy as _
+import pickle
 
 # def chefboost_decision_tree(df, param_path, algorithms, target_label):
 #     """
@@ -221,7 +222,16 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     # # Display in jupyter notebook
     # from IPython.display import Image
     # Image(filename = 'tree.png')
+
     
+    saved_data = {
+        'classifier': tree_classifier,
+        'feature_names': feature_names,
+        'class_names': np.unique(y),
+    }
+    with open(os.path.join(param_path, 'decision_tree.pkl'), 'wb') as fid:
+        pickle.dump(saved_data, fid)
+
     if PLOT_DECISION_TREES:
         target = list(df[target_label].unique())
         target_casted = [str(t) for t in target]

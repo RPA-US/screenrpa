@@ -1,5 +1,10 @@
+import base64
+import io
 import os
-from django.http import HttpResponse, HttpResponseRedirect
+import pickle
+from tempfile import NamedTemporaryFile
+#from tkinter import Image
+from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 import datetime
 import docx
@@ -11,10 +16,28 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
+import pandas as pd
+from sklearn.tree import export_graphviz
 from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
-    
+from apps.analyzer.models import CaseStudy, Execution # add this
+from .forms import ReportingForm
+from django.urls import reverse
+
+import os
+import zipfile
+from django.http import HttpResponse
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+
+import pydotplus
+#import pypandoc
+from PIL import Image, ImageDraw
+#import subprocess
+import aspose.words as aw
 
 
 # Create your views here.
@@ -316,6 +339,7 @@ def ui_screen_trace_back_reporting(case_study_id):
 # TODO:
 class ReportGenerateView(DetailView):
     def get(self, request, *args, **kwargs):
+        print("se ejecuta")
         cs = get_object_or_404(PDD, id=kwargs["case_study_id"], active=True)
         
         document = ui_screen_trace_back_reporting(cs.id)
@@ -378,3 +402,395 @@ class ReportListView(ListView):
             queryset = PDD.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
         
         return queryset
+
+#############################################################################################
+#############################################################################################
+#############################################################################################
+## VERSIONES DE ALE
+
+# class ReportGenerateView_ALE(DetailView):
+#     def get(self, request, *args, **kwargs):
+#         model = Execution
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"]) 
+
+#         pdd = PDD.objects.create(
+#             execution=execution,
+#             user=request.user  
+#         )
+#         report_path = os.path.join(execution.exp_folder_complete_path,'exec_'+str(execution.id)+'_reports', 'report.docx')
+
+#         # Simulate report creation (you should replace this with your actual report generation logic)
+#         with open(report_path, 'wb') as file:
+#             file.write(b'PDF content or whatever content you generate')
+
+#         pdd.file.name = report_path
+#         pdd.save()
+
+#         return response
+    
+
+#########################################################################
+
+
+def tree_to_png(path_to_tree_file):
+    # Load the decision tree data
+    try:
+        with open('/screenrpa/' + path_to_tree_file, 'rb') as file:
+            loaded_data = pickle.load(file)
+        loaded_classifier = loaded_data['classifier']
+        loaded_feature_names = loaded_data['feature_names']
+        loaded_class_names = [str(item) for item in loaded_data['class_names']]
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+    
+    dot_data = io.StringIO()
+    export_graphviz(loaded_classifier, out_file=dot_data, filled=True, rounded=True,
+                    special_characters=True, feature_names=loaded_feature_names, class_names=loaded_class_names)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+    png_image = graph.create_png()
+
+    # Save the image to a temporary file
+    temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+    with open(temp_file.name, 'wb') as file:
+        file.write(png_image)
+    
+    return temp_file.name
+
+#############################################################################################
+class ReportCreateView(CreateView):
+    model = PDD
+    form_class = ReportingForm
+    template_name = "reporting/create.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportCreateView, self).get_context_data(**kwargs)
+        
+        execution_id = self.kwargs.get('execution_id')
+        execution = Execution.objects.get(pk=execution_id)
+        context['execution'] = execution
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at')
+        context['reports'] = reports
+        return context 
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError(_("User must be authenticated."))
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
+        saved = self.object.save()
+
+        self.report_generate(self.object)
+
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def report_generate(self, report):
+        execution= self.get_context_data()['execution']
+        scenarios_to_study= self.get_context_data()['execution'].scenarios_to_study
+
+        for scenario in scenarios_to_study:
+
+            report_directory = os.path.join(execution.exp_folder_complete_path, scenario+"_results")
+            report_path = os.path.join(report_directory, f'report_{report.id}.docx')
+
+            # Ensure the directory exists
+            os.makedirs(report_directory, exist_ok=True)
+
+            report_define(report_directory, report_path, execution, report, scenario)
+            # with open(report_path, 'wb') as file:
+            #     file.write(b'PDF content or whatever content you generate')
+        
+#############################################################################################
+
+
+def report_define(report_directory, report_path, execution,  report, scenario):
+    template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
+    doc = Document(template_path)
+
+    ###############3
+    paragraph_dict = {}
+    for i, paragraph in enumerate(doc.paragraphs):
+        text = paragraph.text
+        if text.startswith('[') and text.endswith(']'): 
+            paragraph_dict[text] = i 
+
+    for key, value in paragraph_dict.items():
+        print(f"Texto del párrafo: {key}\nÍndice: {value}\n")
+
+    ############################ INTRODUCION
+    
+    purpose= doc.paragraphs[paragraph_dict['[PURPOSE]']]
+    purpose.text = report.purpose
+    #paragraph.style = doc.styles['Normal']
+
+    purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
+    purpose.text = report.objective
+
+    #############################################PROCESS OVERVIEW
+
+    if report.process_overview:
+        title= doc.paragraphs[paragraph_dict['[TITLE]']]
+        title.text = execution.process_discovery.title
+
+        #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
+
+    ############################ APPLICATIONS USED
+    if report.applications_used:
+        nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
+        applications_used(nameapps, execution, scenario)
+        #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
+        
+
+    ##########################3 AS IS PROCESS MAP
+
+    #############################3
+    if report.input_data_description:
+        original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
+        df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
+        input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
+
+    #############################3 DETAILS AS IS PROCESS
+    
+    if report.detailed_as_is_process_actions:
+
+        decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+        run = decision_tree.add_run()
+        run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
+        run.add_break()
+        #decision_tree.text = ''
+        #detailes_as_is_process_actions(doc, paragraph_dict, execution, scenario)
+
+        detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution)
+     
+    ###################
+    doc.save(report_path)
+
+    convert_docx_to_pdf(report_path, report_path.replace('.docx', '.pdf'))
+
+#################################################################################
+
+def applications_used(nameapps, execution, scenario):
+            logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
+            df_logcsv = pd.read_csv(logcsv_directory)
+            unique_names = df_logcsv['NameApp'].unique()
+
+            for name in unique_names:
+                run = nameapps.add_run('\n• ' + name)
+                run.add_break()
+                row = df_logcsv[df_logcsv['NameApp'] == name].iloc[0]
+                screenshot_filename = row['Screenshot']
+                screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                
+                if os.path.exists(screenshot_directory):
+                
+                    nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
+                else:
+                    print(f"Image not found for {name}: {screenshot_directory}")
+#############################################################################################
+def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
+        
+        table = doc.add_table(rows=(df_logcsv.shape[0] + 1), cols=df_logcsv.shape[1])
+
+        # Insertar los nombres de las columnas
+        for j, col in enumerate(df_logcsv.columns):
+            table.cell(0, j).text = col
+
+        # Insertar los datos del DataFrame
+        for i in range(df_logcsv.shape[0]):
+            for j in range(df_logcsv.shape[1]):
+                table.cell(i + 1, j).text = str(df_logcsv.iloc[i, j])
+
+        tbl, p = table._tbl, original_log._p
+        p.addnext(tbl)
+###################33333
+
+def convert_docx_to_pdf(dx_path, pdf_path):
+    
+    doc = aw.Document(dx_path)
+    doc.save(pdf_path)
+
+
+# def convert_docx_to_pdf2(dx_path, pdf_path):
+#     extra_args = ['--pdf-engine-opt', '-dPDFSETTINGS=/prepress']
+#     #pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
+#     pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
+##################################################33
+
+
+def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
+    decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+
+    def find_decision_point():
+        print("find_decision_point")
+        
+    # Function to process each 'Variant' group
+    def process_variant_group(group):
+        variant = group['Variant'].iloc[0]
+        decision_tree.add_run().add_break()
+        decision_tree.add_run(f'Variant {variant}\n').bold = True
+        decision_tree.add_run().add_break()
+        # Sort activities based on extracted number
+        group = group.sort_values('ActivityNumber')
+        activity_dict = {}
+        # Iterate over each activity and calculate coordinate mean or display TextInput
+        for (activity_number, activity), activity_group in group.groupby(['ActivityNumber', 'Activity']):
+            action_number = len(activity_dict.get(activity, [])) + 1
+            if action_number == 1:
+                activity_dict = {}
+            activity_dict.setdefault(activity, []).append(activity_number)
+
+            if activity_group['EventType'].iloc[0] == 1:
+                # Calculate mean of Coor_X and Coor_Y
+                mean_x = activity_group['Coor_X'].mean()
+                mean_y = activity_group['Coor_Y'].mean()
+                event_description=(f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
+                
+                # Load corresponding image
+                screenshot_filename = activity_group['Screenshot'].iloc[0]
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                image_filename = activity_group['Screenshot'].iloc[0] if 'Screenshot' in activity_group.columns else None
+                
+            else:
+                # Display TextInput value if exists, otherwise print "No TextInput"
+                text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
+                event_description=(f'The user writes "{text_input}"')
+
+            # Write to docx
+            decision_tree.add_run().add_break()
+            if action_number == 1:
+                decision_tree.add_run(f'Activity {activity}\n').bold = True
+            decision_tree.add_run().add_break()
+            decision_tree.add_run(f'Action {action_number}\n')
+            decision_tree.add_run().add_break()
+            decision_tree.add_run(event_description + '\n')
+            decision_tree.add_run().add_break()
+
+            if image_filename:
+                with Image.open(path_to_image) as img:
+                    draw = ImageDraw.Draw(img)
+                    # Draw a small square around the mean coordinates
+                    box_size = 10  # Adjust the square size as needed
+                    left = mean_x - box_size / 2
+                    top = mean_y - box_size / 2
+                    right = mean_x + box_size / 2
+                    bottom = mean_y + box_size / 2
+                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                    # Convert the image to a byte object to insert into docx
+                    image_stream = io.BytesIO()
+                    img.save(image_stream, 'PNG')
+                    image_stream.seek(0)
+                    
+                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
+                decision_tree.add_run().add_break()
+
+    ######################################  
+    # Load data - replace 'path_to_file.csv' with your data file path
+    
+    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+
+    # Extract activity number and convert to integer for sorting
+    df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
+    df['Activity'] = df['Activity'].apply(lambda x: str(x.split('_')[1]))
+    
+    # Apply the function to each 'Variant' group
+    df.groupby('Variant').apply(process_variant_group)
+
+    
+
+
+###################################################################
+#####################################################################
+
+def deleteReport(request):
+    report_id = request.GET.get("report_id")
+
+    removed_report = PDD.objects.get(id=report_id)
+    if request.user.id != removed_report.user.id:
+        raise Exception(_("This case study doesn't belong to the authenticated user"))
+    
+    #if removed_report.executed != 0:
+    #    raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
+
+    execution = removed_report.execution
+
+    scenarios_to_study = execution.scenarios_to_study
+
+
+    for scenario in scenarios_to_study:
+        report_directory = os.path.join(execution.exp_folder_complete_path, scenario+"_results")
+        report_path = os.path.join(report_directory, f'report_{report_id}.docx')
+        if os.path.exists(report_path):
+            os.remove(report_path)
+        report_path_pdf = os.path.join(report_directory, f'report_{report_id}.pdf')
+        if os.path.exists(report_path_pdf):
+            os.remove(report_path_pdf)
+
+    removed_report.delete()
+
+    return HttpResponseRedirect(reverse("analyzer:execution_detail", kwargs={"execution_id": removed_report.execution.id}))
+
+#############################################################################################3
+
+
+
+class ReportingConfigurationDetail(DetailView):
+    def get(self, request, *args, **kwargs):
+        report = get_object_or_404(PDD, id=kwargs["report_id"])
+        
+        form = ReportingForm(read_only=True, instance=report)  
+        context = {"form": form,
+            "execution": report.execution,
+            }
+        return render(request, 'reporting/detail.html', context)
+    
+
+##################################################3
+
+def download_report_zip(request, report_id):
+    report = get_object_or_404(PDD, pk=report_id)
+    execution= report.execution
+
+    zip_filename = f"execution_{execution.id}_reports_{report.id}.zip"
+
+    zip_path = os.path.join(settings.MEDIA_ROOT, zip_filename)
+
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        scenarios_to_study = execution.scenarios_to_study
+
+        for scenario in scenarios_to_study:
+
+            report_directory = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+            report_filename = f'report_{report.id}.docx'
+            report_path = os.path.join(report_directory, report_filename)
+            
+            new_filename = f'scenario_{scenario}_report_{report.id}.docx'
+
+            # Ensure the file exists before adding to ZIP
+            if os.path.exists(report_path):
+                zipf.write(report_path, arcname=new_filename)
+
+    with open(zip_path, 'rb') as f:
+        response = HttpResponse(f.read(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename={zip_filename}'
+
+    os.remove(zip_path)  # Clean up the generated zip file after serving it
+    return response
+
+
+##################################################
+def preview_pdf(request, report_id):
+    
+    report = get_object_or_404(PDD, pk=report_id)
+    execution = report.execution
+    pdf_path = os.path.join('/screenrpa',execution.exp_folder_complete_path, execution.scenarios_to_study[0]+'_results', f'report_{report.id}.pdf')
+    #pdf_path = '/screenrpa/media/unzipped/datos_inciiales_j49gvQs_1714120837/executions/exec_41/sc_0_size50_Balanced_results/calendario-academico.pdf'
+
+    return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+
+    # if os.path.exists(pdf_path):
+    #     # Renderizar una plantilla que contenga el iframe
+    #     return render(request, 'reporting/preview_pdf.html', {'pdf_path': pdf_path})
+    # else:
+    #     return HttpResponseNotFound("El documento PDF solicitado no fue encontrado.")

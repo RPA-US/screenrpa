@@ -64,11 +64,24 @@ class ProcessDiscoveryForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # Pop the 'read_only' and 'case_study' from kwargs before passing to the superclass constructor
+        read_only = kwargs.pop('read_only', False)
         case_study_instance = kwargs.pop('case_study', None)
+        
+        # Call the superclass constructor with the remaining arguments
         super(ProcessDiscoveryForm, self).__init__(*args, **kwargs)
-        special_colnames = case_study_instance.special_colnames
-        text_column_choices = [(value, key) for key, value in special_colnames.items()]
-        self.fields['text_column'] = forms.ChoiceField(
-            choices=text_column_choices,
-            widget=forms.Select(attrs={'class': 'form-control'}),
-            label=_("Text Column"))
+        
+        # Handle the 'read_only' functionality
+        if read_only:   
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
+                
+        
+        # Handle the 'case_study' functionality
+        if case_study_instance is not None:
+            special_colnames = case_study_instance.special_colnames
+            text_column_choices = [(value, key) for key, value in special_colnames.items()]
+            self.fields['text_column'] = forms.ChoiceField(
+                choices=text_column_choices,
+                widget=forms.Select(attrs={'class': 'form-control'}),
+                label=_("Text Column"))

@@ -2,10 +2,9 @@
 {% load extras %}
 {% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
-
 {% if execution_id %}
 <div class="header bg-primary pb-6">
   <div class="container-fluid">
@@ -14,12 +13,12 @@
         <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
           <a href="/case-study/execution/detail/{{execution_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
           </i>{% blocktranslate %}Go Back to Execution {{execution_id}}{% endblocktranslate %}</a>
-          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Pre-Filtering Configuration Details{% endblocktranslate %}</h6>
+          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Process Discovery Configuration Details{% endblocktranslate %}</h6>
           <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
               <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
               <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution_id}}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
-              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Pre-Filtering Configuration Details{% endblocktranslate %}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Process Discovery Configuration Details{% endblocktranslate %}</a></li>
             </ol>
           </nav>
         </div>
@@ -28,25 +27,26 @@
   </div>
 </div>
 {% else %}
+
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/fe/prefiltering/list/{{ prefilter.case_study_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>{% blocktranslate %}Go Back{% endblocktranslate %}</a>
-            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Pre-Filtering Configuration Details{% endblocktranslate %}</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+            <a href="/dd/decision-tree-training/list/{{case_study_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Process Discovery Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Process Discovery Configuration Details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="/fe/prefiltering/list/{{ case_study_id }}/">{% blocktranslate %}Pre-Filtering {{ prefiltering.case_study_id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Pre-Filtering {{ prefilter.id }} details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/dd/decision-tree-training/list/{{case_study_id}}">{% blocktranslate %}Decision Tree Traning Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}New Process Discovery{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
           <div class="col-12 text-right">
-            <a href="#" class="btn btn btn-info"><i class="fas fa-broom"></i>{% blocktranslate %}Edit fields{% endblocktranslate %}</a>
+            <a href="/dd/decision-tree-training/new/{{ case_study_id }}/" class="btn btn btn-light"><i class="fas fa-broom"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
@@ -59,11 +59,11 @@
       <div class="col">
         <div class="card">
           <!-- Card header -->
-          <div class="card-header border-0">
-            <h3 class="mb-0">{% blocktranslate %}Pre-Filtering Configuration{% endblocktranslate %}</h3>
-          </div>
+          <!-- <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Create a Process Discovery Configuration Deatils{% endblocktranslate %}</h3>
+          </div> -->
           <div class="card-body">
-            {% include "prefiltering/form.html" %}
+            {% include "processdiscovery/form.html" %}
           </div>
         </div>
       </div>
@@ -77,6 +77,7 @@
 
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
+
 <script>
   // Espera a que el contenido de form.html se cargue completamente
   document.addEventListener("DOMContentLoaded", function() {

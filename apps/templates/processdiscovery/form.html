@@ -139,9 +139,9 @@
       {{form.preloaded}}
       <label class="form-control-label" for="id_preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
     </div>
-    <div class="form-group" id="id_preloaded">
+    <div class="form-group" id="preloaded_file">
       {{form.preloaded_file}}
-      <label class="form-control-label" for="id_preloaded">
+      <label class="form-control-label" for="preloaded_file">
         {% if form.preloaded == True %}
           {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
         {% endif %}
@@ -165,12 +165,17 @@
   </div>
 
   <!-- Submit Button -->
-  <div class="text-right">
-    <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
-      <i class="fas fa-save"></i> 
-      {% blocktranslate %}Save{% endblocktranslate %}
-      </button>
-  </div>
+  
+
+  {% if form.read_only == None %}
+  <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+    <i class="fas fa-save"></i> 
+    {% blocktranslate %}Save{% endblocktranslate %}
+    </button>
+
+  {% endif %}
+
+ 
   
 </form>
 
@@ -184,6 +189,8 @@
 {% block javascripts %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+
+    console.log("eSTE ES EL READONLY: ",form.read_only);
     const title = document.getElementById('id_title');
     const type = document.getElementById('id_type');
     //const skip = document.getElementById('id_skip');
@@ -207,7 +214,7 @@
     // Inicializar los campos al cargar la página
     toggleFields(preloaded.checked);
   
-    document.getElementById('form').onsubmit = function() {
+    document.getElementById('processDiscoveryForm').onsubmit = function() {
       document.getElementById('id_preloaded').readOnly = false;
     }
   })
@@ -216,4 +223,3 @@
 
 <script src="{% static 'assets/js/processdiscovery/weights_fields.js' %}" defer></script>
 {% endblock javascripts %}
-
