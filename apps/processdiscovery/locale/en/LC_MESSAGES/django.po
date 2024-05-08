@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"POT-Creation-Date: 2024-05-07 10:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,46 +17,83 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: apps/processdiscovery/forms.py:25
+
+#: apps/processdiscovery/forms.py:33
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
-#: apps/processdiscovery/forms.py:26
+#: apps/processdiscovery/forms.py:34
 msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/processdiscovery/forms.py:35
+msgid "Preload Execution Results"
+msgstr "Precargar Resultados de Ejecución"
+
+#: apps/processdiscovery/forms.py:36
+msgid "Title"
 msgstr ""
 
-#: apps/processdiscovery/views.py:57
-msgid "Dendrogram"
+#: apps/processdiscovery/forms.py:37
+msgid "Model Type"
 msgstr ""
 
-#: apps/processdiscovery/views.py:58
-msgid "Screenshots"
+#: apps/processdiscovery/forms.py:38
+msgid "Text Weight"
 msgstr ""
 
-#: apps/processdiscovery/views.py:59
-msgid "Distance"
+#: apps/processdiscovery/forms.py:39
+msgid "Image Weight"
 msgstr ""
 
-#: apps/processdiscovery/views.py:67
-msgid "Threshold: "
+#: apps/processdiscovery/forms.py:40
+msgid "Clustering Type"
 msgstr ""
 
-#: apps/processdiscovery/views.py:77
+#: apps/processdiscovery/forms.py:41
+msgid "Labeling"
+msgstr ""
+
+#: apps/processdiscovery/forms.py:42
+msgid "Use PCA"
+msgstr ""
+
+#: apps/processdiscovery/forms.py:43
+msgid "N Components"
+msgstr ""
+
+#: apps/processdiscovery/forms.py:44
+msgid "Show Dendrogram"
+msgstr ""
+
+#: apps/processdiscovery/forms.py:45
+msgid "Remove Loops"
+msgstr ""
+
+#: apps/processdiscovery/forms.py:46 apps/processdiscovery/forms.py:74
+msgid "Text Column"
+msgstr ""
+
+#: apps/processdiscovery/views.py:249
 msgid "You selected a process discovery type that does not exist"
 msgstr ""
 
-#: apps/processdiscovery/views.py:113 apps/processdiscovery/views.py:167
+#: apps/processdiscovery/views.py:328
+msgid "CaseStudy with the given ID does not exist."
+msgstr ""
+
+#: apps/processdiscovery/views.py:338 apps/processdiscovery/views.py:408
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/processdiscovery/views.py:169
+#: apps/processdiscovery/views.py:410
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/processdiscovery/views.py:171
+#: apps/processdiscovery/views.py:412
 msgid "Monitoring doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/processdiscovery/views.py:173
+#: apps/processdiscovery/views.py:414
 msgid "Monitoring doesn't belong to the Case Study."
 msgstr ""

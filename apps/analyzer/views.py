@@ -343,6 +343,7 @@ class CaseStudyDetailView(UpdateView):
         form = CaseStudyForm(instance=case_study)
         context = {
             "form": form, 
+            "case_study": case_study,
             "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
             "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE"),
             "case_study_id": case_study.id

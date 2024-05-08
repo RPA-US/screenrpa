@@ -11050,7 +11050,7 @@ a.btn-icon-only {
   font-weight: 400;
   line-height: 1.25;
   color: #32325d;
-  background-color: #f6f9fc;
+  background-color: #ebf0ff;
   border-radius: 0.375rem;
   border: 0;
   text-align: left;
@@ -11063,7 +11063,7 @@ a.btn-icon-only {
   width: 100%;
   margin: .5rem 0; }
   .btn-icon-clipboard:hover {
-    background-color: #fff;
+    background-color: #d9dbff;
     box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(0, 0, 0, 0.1) 0 4px 16px; }
   .btn-icon-clipboard > div {
     align-items: center;
@@ -11082,6 +11082,16 @@ a.btn-icon-only {
     white-space: nowrap;
     text-overflow: ellipsis;
     vertical-align: middle; }
+
+.btn-icon-clipboard-disabled {
+  background-color: #f6f9fc;
+  color: #adb5bd !important;
+  cursor: not-allowed !important; }
+  .btn-icon-clipboard-disabled:hover {
+    background-color: #f6f9fc;
+    box-shadow: none; }
+  .btn-icon-clipboard-disabled i {
+    color: #adb5bd !important; }
 
 .card {
   margin-bottom: 30px;
@@ -12560,7 +12570,7 @@ textarea[resize="horizontal"] {
   .navbar-vertical .navbar-brand-img,
   .navbar-vertical .navbar-brand > img {
     max-width: 100%;
-    max-height: 5em; }
+    max-height: 2rem; }
   @media (min-width: 768px) {
     .navbar-vertical .navbar-collapse {
       margin-left: -1rem;
