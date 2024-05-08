@@ -41,30 +41,30 @@ def unzip_file_here(zip_file_path, dest_folder_path):
 
 def default_special_colnames():
     return dict(
-        # {
-        # "Case": "Case",
-        # "Activity": "Activity",
-        # "Screenshot": "Screenshot", 
-        # "Variant": "Variant",
-        # "Timestamp": "Timestamp",
-        # "eyetracking_recording_timestamp": "Recording timestamp",
-        # "eyetracking_gaze_point_x": "Gaze point X",
-        # "eyetracking_gaze_point_y": "Gaze point Y" 
-        # }
+        {
+        "Case": "Case",
+        "Activity": "Activity",
+        "Screenshot": "Screenshot", 
+        "Variant": "Variant",
+        "Timestamp": "Timestamp",
+        "eyetracking_recording_timestamp": "Recording timestamp",
+        "eyetracking_gaze_point_x": "Gaze point X",
+        "eyetracking_gaze_point_y": "Gaze point Y" 
+        }
 
 
         #  Estructura válida actualmente   
-        {
-        "Case": "ocel:eid",
-        "Activity": "ocel:activity",
-        "Screenshot": "ocel:screenshot:name", 
-        "Variant": "ocel:variant",
-        "Timestamp": "ocel:timestamp",
-        "NameApp": "FileName",
-        "EventType": "ocel:type:event",
-        "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY"
-        }
+        # {
+        # "Case": "ocel:eid",
+        # "Activity": "ocel:activity",
+        # "Screenshot": "ocel:screenshot:name", 
+        # "Variant": "ocel:variant",
+        # "Timestamp": "ocel:timestamp",
+        # "NameApp": "FileName",
+        # "EventType": "ocel:type:event",
+        # "CoorX": "ocel:click:coorX",
+        # "CoorY": "ocel:click:coorY"
+        # }
     )
 
 def get_exp_foldername(exp_folder_complete_path):
