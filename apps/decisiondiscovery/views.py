@@ -16,6 +16,7 @@ from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
+from .overlapping_rules import overlapping_rules
 from .flattening import flat_dataset_row
 from .utils import find_path_in_decision_tree, parse_decision_tree
 from django.utils.translation import gettext_lazy as _
@@ -146,7 +147,10 @@ def decision_tree_training(log_path, path, execution):
         # for alg in algorithms:
             # rules_info = open(path+alg+'-rules.json')
             # rules_info_json = json.load(rules_info)
-            # tree_levels[alg] = len(rules_info_json.keys())            
+            # tree_levels[alg] = len(rules_info_json.keys())
+    elif implementation == 'overlapping':
+        res, times = overlapping_rules(flattened_dataset, path+"_results", configuration, one_hot_columns, target_label, k_fold_cross_validation)
+        
     else:
         raise Exception(_("Decision model chosen is not an option"))
     

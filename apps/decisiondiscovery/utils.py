@@ -1,15 +1,17 @@
 import re
 import math
-import pandas as pd
 import numpy as np
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
+from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler, OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder #LabelEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from django.shortcuts import get_object_or_404
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from apps.chefboost import Chefboost as chef
 from .models import ExtractTrainingDataset, DecisionTreeTraining
-from django.utils.translation import gettext_lazy as _
 
 ###########################################################################################################################
 # case study get phases data  ###########################################################################################
@@ -29,6 +31,77 @@ def case_study_has_decision_tree_training(case_study):
 
 
 ###########################################################################################################################
+
+def best_model_grid_search(X_train, y_train, tree_classifier, k_fold_cross_validation):
+    # Define the hyperparameter grid for tuning
+    param_grid = {
+        'criterion': ['gini', 'entropy'],
+        'splitter': ['best', 'random'],
+        'max_depth': [None, 5, 10, 15],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 5]
+    }
+
+    # Perform GridSearchCV to find the best hyperparameters
+    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, cv=k_fold_cross_validation)
+    grid_search.fit(X_train, y_train)
+
+    # Get the best hyperparameters and train the final model
+    best_tree_classifier = grid_search.best_estimator_
+    print("Grid Search Best Params:\n", grid_search.best_params_)
+    
+    best_tree_classifier.fit(X_train, y_train)
+    
+    return best_tree_classifier, grid_search.best_params_
+
+def cross_validation(X, y, config, target_label, library, model, k_fold_cross_validation):
+    # Cross-validation: accurracy + f1 score
+    accuracies = {}
+    
+    skf = StratifiedKFold(n_splits=k_fold_cross_validation)
+    # skf.get_n_splits(X, y)
+
+    for i, (train_index, test_index) in enumerate(skf.split(X, y)):
+        print("Fold {}:".format(i))
+        print("Train: index={}".format(train_index))
+        print("Test:  index={}".format(test_index))
+        X_train_fold, X_test_fold = X.iloc[train_index], X.iloc[test_index]
+        y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
+        
+        if library == "chefboost":
+            current_iteration_model, acc = chef.fit(X_train_fold+X_test_fold, config, target_label)
+        elif library == "sklearn":
+            current_iteration_model = model.fit(X_train_fold, y_train_fold)
+        else:
+            raise Exception("Decision Model Option Not Valid")
+
+        metrics_acc = []
+        metrics_precision = []
+        metrics_recall = []
+        metrics_f1 = []
+        
+        if library == "chefboost":
+            y_pred = []
+            for _, X_test_instance in X_test_fold.iterrows():
+                y_pred.append(chef.predict(current_iteration_model, X_test_instance))
+        elif library == "sklearn":
+            y_pred = current_iteration_model.predict(X_test_fold)
+        else:
+            raise Exception("Decision Model Option Not Valid")
+            
+        metrics_acc.append(accuracy_score(y_test_fold, y_pred))
+        metrics_precision.append(precision_score(y_test_fold, y_pred, average='weighted'))
+        metrics_recall.append(recall_score(y_test_fold, y_pred, average='weighted'))
+        metrics_f1.append(f1_score(y_test_fold, y_pred, average='weighted'))
+
+    accuracies['accuracy'] = np.mean(metrics_acc)
+    accuracies['precision'] = np.mean(metrics_precision)
+    accuracies['recall'] = np.mean(metrics_recall)
+    accuracies['f1_score'] = np.mean(metrics_f1)
+    print("Stratified K-Fold:  accuracy={} f1_score={}".format(accuracies['accuracy'], accuracies['f1_score']))
+    return accuracies
+
+
 
 def preprocess_data(data):
   columns_to_drop = list(filter(lambda x:"TextInput" in x, data.columns))
