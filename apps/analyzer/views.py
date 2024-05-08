@@ -276,7 +276,8 @@ def case_study_generator(data):
 #============================================================================================================================
 #============================================================================================================================
 
-class CaseStudyCreateView(CreateView):
+class CaseStudyCreateView(LoginRequiredMixin, CreateView):
+    login_url = "/login/"
     model = CaseStudy
     form_class = CaseStudyForm
     template_name = "case_studies/create.html"
@@ -290,6 +291,7 @@ class CaseStudyCreateView(CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 class CaseStudyListView(ListView, LoginRequiredMixin):
+    login_url = "/login/"
     model = CaseStudy
     template_name = "case_studies/list.html"
     paginate_by = 50
@@ -302,11 +304,13 @@ class CaseStudyListView(ListView, LoginRequiredMixin):
         return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
 
+@login_required(login_url="/login/")
 def executeCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        raise Exception(_("This case study doesn't belong to the authenticated user"))
+        # 403 Forbidden
+        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
     elif ACTIVE_CELERY:
         celery_task_process_case_study.delay(request.user.id, case_study_id)
     else:
@@ -315,22 +319,27 @@ def executeCaseStudy(request):
     # Return a response immediately, without waiting for the execution to finish
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
+@login_required(login_url="/login/")
 def deleteCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        raise Exception(_("This case study doesn't belong to the authenticated user"))
+        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
     if cs.executed != 0:
-        raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
+        return HttpResponse(status=422, content=_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
-class CaseStudyDetailView(UpdateView):
+class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
+    login_url = "/login/"
     model = CaseStudy
     form_class = CaseStudyForm
 
     def post(self, request, *args, **kwargs):
+        user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        if user.id != case_study.user.id:
+            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(request.POST, instance=case_study)
         if form.is_valid():
             form.save()
@@ -339,7 +348,10 @@ class CaseStudyDetailView(UpdateView):
             return render(request, "case_studies/detail.html", {"form": form})
 
     def get(self, request, *args, **kwargs):
+        user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        if user.id != case_study.user.id:
+            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(instance=case_study)
         context = {
             "form": form, 
@@ -349,7 +361,8 @@ class CaseStudyDetailView(UpdateView):
             }
         return render(request, "case_studies/detail.html", context)
 
-class CaseStudyView(generics.ListCreateAPIView):
+class CaseStudyView(LoginRequiredMixin, generics.ListCreateAPIView):
+    login_url = "/login/"
     # permission_classes = [IsAuthenticatedUser]
     serializer_class = CaseStudySerializer
 
@@ -409,9 +422,7 @@ class CaseStudyView(generics.ListCreateAPIView):
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
-
                 
-
                 if execute_case_study:
                     # init_case_study_task.delay(request.data)
                     transaction_works, case_study = case_study_generator(case_study_serialized.data)
@@ -434,7 +445,10 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
     def get(self, request, case_study_id, *args, **kwargs):
         st = status.HTTP_200_OK
         try:
-            case_study = CaseStudy.objects.get(id=case_study_id)
+            user = request.user
+            case_study = get_object_or_404(CaseStudy, id=case_study_id, active=True)
+            if case_study.user.id != user.id:
+                return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
             serializer = CaseStudySerializer(instance=case_study)
             response = serializer.data
             return Response(response, status=st)
@@ -542,6 +556,7 @@ def exp_file_download(request, case_study_id):
 # Executions
 # ============================================================================================================================
 class ExecutionListView(ListView, LoginRequiredMixin):
+    login_url = "/login/"
     model = Execution
     template_name = "executions/list.html"
     paginate_by = 50
@@ -552,23 +567,27 @@ class ExecutionListView(ListView, LoginRequiredMixin):
         if search:
             return Execution.objects.filter(user=self.request.user, case_study__title__icontains=search).order_by("-created_at")
         return Execution.objects.filter(user=self.request.user).order_by("-created_at")
-        
-
   
+@login_required
 def deleteExecution(request):
     execution_id = request.GET.get("id")
     cs = Execution.objects.get(id=execution_id)
     if request.user.id != cs.user.id:
-        raise Exception(_("This case study doesn't belong to the authenticated user"))
+        return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
     if cs.executed != 0:
-        raise Exception(_("This case study cannot be deleted because it has already been excecuted"))
+        return HttpResponse(status=422, content=_("This execution cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
+class ExecutionDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+    model = Execution
 
-class ExecutionDetailView(DetailView):
     def get(self, request, *args, **kwargs):
+        user = request.user
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+        if user.id != execution.user.id:
+            return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
         reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
 
         context = {
@@ -603,61 +622,3 @@ def exec_file_download(request, execution_id):
     response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     
     return response
-
-#################################################################### PHASE EXECUTIONS RESULTS ####################################################################
-    
-
-    
-class UIElementsDetectionResultDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
-        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-        scenario: str = request.GET.get('scenario')
-        download = request.GET.get('download')
-
-        if scenario == None:
-            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
-
-        # Create dictionary with images and their corresponding UI elements
-        soms = dict()
-
-        classes = execution.ui_elements_classification.model.classes
-        colors = []
-        for i in range(len(classes)):
-            colors.append("#%06x" % random.randint(0, 0xFFFFFF))
-        soms["classes"] = {k: v for k, v in zip(classes, colors)} 
-
-        soms["soms"] = []
-
-        for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
-            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
-                compos = json.load(f)
-            # path is something like: asdsa/.../.../image.PNG.json
-            img_name = compo_json.split("/")[-1].split(".json")[0]
-            img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
-
-            soms["soms"].append(
-                {
-                    "img": img_name,
-                    "img_path": img_path,
-                    "som": compos
-                }
-            )
-
-        context = {
-            "execution_id": execution.id,
-            "scenarios": execution.scenarios_to_study,
-            "soms": soms
-        }
-
-        #return HttpResponse(json.dumps(context), content_type="application/json")
-        return render(request, "ui_elements_detection/results.html", context)
-
-
-############################################################
-
-
-
-        
- 
-    
-
