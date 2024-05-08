@@ -101,7 +101,7 @@ class ExtractTrainingDataset(models.Model):
     decision_point_activity = models.CharField(max_length=255)
     # Añadir un campo de selección múltiple
     variants_to_study = ArrayField(
-        models.CharField(max_length=10, blank=True),
+        models.IntegerField(blank=True),
         blank=True,
         null=True
     )
