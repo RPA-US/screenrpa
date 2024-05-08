@@ -364,15 +364,16 @@ class ProcessDiscoveryDetailView(DetailView):
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
 
             context= {"process_discovery": process_discovery, 
-                  "case_study_id": case_study.id,
-                  "form": form,}
+                      "case_study_id": case_study.id,
+                      "form": form,}
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
 
-        context= {"process_discovery": process_discovery, 
-                  "execution_id": execution.id,
-                  "form": form,}
+            context= {"process_discovery": process_discovery, 
+                      "execution_id": execution.id,
+                      "form": form,}
+        
         return render(request, "processdiscovery/detail.html", context)
 
 

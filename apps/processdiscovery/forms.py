@@ -72,9 +72,10 @@ class ProcessDiscoveryForm(forms.ModelForm):
         super(ProcessDiscoveryForm, self).__init__(*args, **kwargs)
         
         # Handle the 'read_only' functionality
-        if read_only:
+        if read_only:   
             for field_name in self.fields:
                 self.fields[field_name].disabled = True
+                
         
         # Handle the 'case_study' functionality
         if case_study_instance is not None:
