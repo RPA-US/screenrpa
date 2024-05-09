@@ -395,7 +395,7 @@ class ProcessDiscoveryDetailView(DetailView):
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            if 'ProcessDiscovery' in execution.case_study.available_phases:
+            if execution.process_discovery:
             
                 context= {"process_discovery": process_discovery, 
                             "execution_id": execution.id,

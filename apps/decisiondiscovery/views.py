@@ -256,7 +256,7 @@ class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
             
         elif 'execution_id' in self.kwargs:
             execution = Execution.objects.get(pk=kwargs["execution_id"])
-            if 'ExtractTrainingDataset' in execution.case_study.available_phases:
+            if execution.extract_training_dataset:
                 return super().get(request, *args, **kwargs)
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
@@ -494,7 +494,7 @@ class DecisionTreeTrainingDetailView(DetailView):
          
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            if 'DecisionTreeTraining' in execution.case_study.available_phases:
+            if execution.decision_tree_training:
                 context= {"decision_tree_training": decision_tree_training, 
                             "execution_id": execution.id,
                             "form": form,}

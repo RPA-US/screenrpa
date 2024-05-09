@@ -147,7 +147,7 @@ class FeatureExtractionTechniqueDetailView(DetailView):
          
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            if 'FeatureExtractionTechnique' in execution.case_study.available_phases:
+            if execution.feature_extraction_technique:
                 context= {"feature_extraction_technique": feature_extraction, 
                             "execution_id": execution.id,
                             "form": form,}
@@ -379,7 +379,7 @@ class UIElementsDetectionDetailView(MultiFormsView):
             
         elif 'execution_id' in self.kwargs:
             execution = Execution.objects.get(pk=kwargs["execution_id"])
-            if 'UIElementsDetection' in execution.case_study.available_phases:
+            if execution.ui_elements_detection:
                 return super().get(request, *args, **kwargs)
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
@@ -602,7 +602,7 @@ class PrefiltersDetailView(DetailView):
          
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            if 'Prefilters' in execution.case_study.available_phases:
+            if execution.prefilters:
                 context= {"prefilter": prefilter, 
                             "execution_id": execution.id,
                             "form": form,}
@@ -739,7 +739,7 @@ class PostfiltersDetailView(DetailView):
          
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            if 'Postfilters' in execution.case_study.available_phases:
+            if execution.postfilters:
                 context= {"postfilter": postfilter, 
                             "execution_id": execution.id,
                             "form": form,}
