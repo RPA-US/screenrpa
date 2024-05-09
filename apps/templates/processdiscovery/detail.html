@@ -79,11 +79,26 @@
 {% block javascripts %}
 
 <script>
-  // Espera a que el contenido de form.html se cargue completamente
-  document.addEventListener("DOMContentLoaded", function() {
-      // Oculta el botón del formulario
-      var preload = document.getElementById("preloaded_file");
-      preload.style.display = "none";
-  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    var preload = document.getElementById("preloaded_file");
+    preload.style.display = "none";
+
+    var boton = document.getElementById('id_button');
+    boton.style.display = 'none';
+
+    var switchElement = document.getElementById('{{ form.remove_loops.id_for_label }}');
+    switchElement.disabled = true;
+
+    var switchElement2 = document.getElementById('{{ form.use_pca.id_for_label }}');
+    switchElement2.disabled = true;
+
+    var switchElement3 = document.getElementById('{{ form.show_dendrogram.id_for_label }}');
+    switchElement3.disabled = true;
+
+
+   
+});
 </script>
 {% endblock javascripts %}

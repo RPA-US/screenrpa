@@ -245,11 +245,22 @@ class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
 
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
-        if 'ExtractTrainingDataset' in case_study.available_phases:
-            return super().get(request, *args, **kwargs)
-        else:
-            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+        
+        if 'case_study_id' in self.kwargs:
+            #context['case_study_id'] = self.kwargs['case_study_id']
+            case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+            if 'ExtractTrainingDataset' in case_study.available_phases:
+                return super().get(request, *args, **kwargs)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+            
+        elif 'execution_id' in self.kwargs:
+            execution = Execution.objects.get(pk=kwargs["execution_id"])
+            if execution.extract_training_dataset:
+                return super().get(request, *args, **kwargs)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
+    
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -465,31 +476,32 @@ class DecisionTreeTrainingListView(ListView):
 
 class DecisionTreeTrainingDetailView(DetailView):
     # Check if the the phase can be interacted with (included in case study available phases)
+    
     def get(self, request, *args, **kwargs):
-        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
-        if 'DecisionTreeTraining' in case_study.available_phases:
-            decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
-            return render(request, "decision_tree_training/detail.html", {"decision_tree_training": decision_tree_training, "case_study_id": kwargs["case_study_id"]})
-        else:
-            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
-          
-        decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
-        #execution = get_object_or_404(Execution, id=kwargs["execution_id"])
-        form = DecisionTreeTrainingForm(read_only=True, instance=decision_tree_training)
 
+        decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
+        form = DecisionTreeTrainingForm(read_only=True, instance=decision_tree_training)
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
-            context= {"decision_tree_training": decision_tree_training, 
-                  "case_study_id": case_study.id,
-                  "form": form,}
-
+            if 'DecisionTreeTraining' in case_study.available_phases:
+                context= {"decision_tree_training": decision_tree_training, 
+                    "case_study_id": case_study.id,
+                    "form": form,}
+        
+                return render(request, "prefiltering/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+         
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            context= {"decision_tree_training": decision_tree_training, 
-                        "execution_id": execution.id,
-                        "form": form,}
-
-        return render(request, "decision_tree_training/detail.html", context)
+            if execution.decision_tree_training:
+                context= {"decision_tree_training": decision_tree_training, 
+                            "execution_id": execution.id,
+                            "form": form,}
+            
+                return render(request, "prefiltering/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
 
 def set_as_decision_tree_training_active(request):
     decision_tree_training_id = request.GET.get("decision_tree_training_id")

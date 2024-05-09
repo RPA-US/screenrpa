@@ -380,30 +380,36 @@ class ProcessDiscoveryListView(ListView):
 class ProcessDiscoveryDetailView(DetailView):
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
-        if 'ProcessDiscovery' in case_study.available_phases:
-            process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
-            process_discovery_form = ProcessDiscoveryForm(instance=process_discovery)
-            return render(request, "processdiscovery/detail.html", {"process_discovery": process_discovery, "case_study_id": kwargs["case_study_id"], 'process_discovery_form': process_discovery_form})
-        else:
-            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
-        form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)  # Todos los campos estarán desactivados
+        process_discovery_form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)
 
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
-            context= {"process_discovery": process_discovery, 
-                      "case_study_id": case_study.id,
-                      "form": form,}
+            if 'ProcessDiscovery' in case_study.available_phases: 
+                context= {"process_discovery": process_discovery, 
+                            "case_study_id": case_study.id,
+                            "form": process_discovery_form,}
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-            context= {"process_discovery": process_discovery, 
-                      "execution_id": execution.id,
-                      "form": form,}
+            if execution.process_discovery:
+            
+                context= {"process_discovery": process_discovery, 
+                            "execution_id": execution.id,
+                            "form": process_discovery_form,}
+                    
+                return render(request, "processdiscovery/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
         
-        return render(request, "processdiscovery/detail.html", context)
+
+        
+        
+
+    
 
 def set_as_process_discovery_active(request):
     process_discovery_id = request.GET.get("process_discovery_id")
