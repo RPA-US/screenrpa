@@ -10,9 +10,9 @@ volumes:
 services:
   db:
     image: postgres
-    container_name: ${DOCKERNAME}screenrpa-db-dev
+    container_name: ${DOCKERNAME}screenrpa-db-prod
     restart: always
-    env_file: ./docker/.env
+    env_file: ./.env
     hostname: db
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -22,10 +22,10 @@ services:
       - db_network
 
   screen-rpa:
-    container_name: ${DOCKERNAME}screenrpa-nvidia-dev
+    container_name: ${DOCKERNAME}screenrpa-nvidia-prod
     restart: unless-stopped
     env_file: ./.env
-    command: tail -F anything
+    command: bash -c "source ./venv/bin/activate && python manage.py migrate && gunicorn core.wsgi:application"
     build:
       context: ../.
       dockerfile: ./docker/nvidia.Dockerfile
@@ -48,7 +48,7 @@ services:
       - web_network
 
   nginx:
-    container_name: screnrpa-nginx-dev
+    container_name: screenrpa-nginx-prod
     restart: always
     image: "nginx:latest"
     ports:
