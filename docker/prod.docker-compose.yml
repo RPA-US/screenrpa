@@ -4,40 +4,44 @@ version: '3.7'
 volumes:
   db_data:
     name: ${DOCKERNAME}db_data
-  rim_data:
-    name: ${DOCKERNAME}rim_data
+  screenrpa_data:
+    name: ${DOCKERNAME}screenrpa_data
 
 services:
   db:
     image: postgres
-    container_name: ${DOCKERNAME}db
+    container_name: ${DOCKERNAME}screenrpa-db-prod
     restart: always
     env_file: ./docker/.env
     hostname: db
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - db_network
 
   screen-rpa:
-    container_name: ${DOCKERNAME}rim
+    container_name: ${DOCKERNAME}screenrpa-prod
     restart: unless-stopped
-    env_file: ./docker/.env
-    command: tail -F anything
+    env_file: ./.env
+    command: bash -c "source ./venv/bin/activate && python manage.py migrate && gunicorn core.wsgi:application"
     build:
-      context: .
-      dockerfile: ./docker/prod.Dockerfile
+      context: ../.
+      dockerfile: ./docker/Dockerfile
       args:
         branch: ${BRANCH_DOCKER}
         target: dev
+    ports:
+      - "8000:8000"
     volumes:
-      - rim_data:/rim
+      - screenrpa_data:/screenrpa
     networks:
       - db_network
       - web_network
 
   nginx:
-    container_name: nginx
+    container_name: screenrpa-nginx-prod
     restart: always
     image: "nginx:latest"
     ports:
