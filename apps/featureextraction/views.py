@@ -3,6 +3,7 @@ import json
 import os
 from art import tprint
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from apps.utils import MultiFormsView
@@ -214,7 +215,8 @@ class UIElementsDetectionCreateView(MultiFormsView):
         ui_elem_det_obj.ui_elements_classification = self.object
         ui_elem_det_obj.save()
 
-class UIElementsDetectionListView(ListView):
+class UIElementsDetectionListView(LoginRequiredMixin, ListView):
+    login_url = "/login/"
     model = UIElementsDetection
     template_name = "ui_elements_detection/list.html"
     paginate_by = 50
@@ -237,6 +239,13 @@ class UIElementsDetectionListView(ListView):
             queryset = UIElementsDetection.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"])
+        if case_study.user != user:
+            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        return self.super().get(request, *args, **kwargs)
 
 class UIElementsDetectionDetailView(MultiFormsView):
     form_classes = {
@@ -701,9 +710,14 @@ def ResultDownload(path_to_csv_file):
     
 #################################################################### PHASE EXECUTIONS RESULTS ####################################################################
     
-class UIElementsDetectionResultDetailView(DetailView):
+class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+
     def get(self, request, *args, **kwargs):
+        user = reques.user
         execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            return HttpResponse(status=403, content=_("Execution doesn't belong to the authenticated user."))
         scenario: str = request.GET.get('scenario')
         download = request.GET.get('download')
 
