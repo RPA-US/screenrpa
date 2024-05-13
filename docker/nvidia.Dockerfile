@@ -44,6 +44,7 @@ RUN apt-get update && apt-get install -y graphviz
 
 # Install latex dependencies for pandoc
 # Make django migrations
+COPY ./docker/.env ./core/.env
 RUN ./venv/bin/python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting
 
 # Internationalization

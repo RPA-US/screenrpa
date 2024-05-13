@@ -12,7 +12,7 @@ services:
     image: postgres
     container_name: ${DOCKERNAME}screenrpa-db-dev
     restart: always
-    env_file: ./docker/.env
+    env_file: ./.env
     hostname: db
     volumes:
       - db_data:/var/lib/postgresql/data
