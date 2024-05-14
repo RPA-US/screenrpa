@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
 from scipy.cluster.hierarchy import dendrogram, linkage
 # from sklearn.cluster import AgglomerativeClustering
 from django.http import HttpResponse, HttpResponseRedirect
@@ -15,6 +16,7 @@ from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
 from core.utils import read_ui_log_as_dataframe
+from apps.processdiscovery.utils import Process, DecisionPoint, Branch, Rule
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
 from django.utils.translation import gettext_lazy as _
@@ -209,7 +211,6 @@ def scene_level(log_path, scenario_path, execution):
         plt.savefig(dendrogram_path)
         plt.close() 
         print(f"Dendrogram saved in: {dendrogram_path}")
-
     
     '''
     Special parameters for the execution of the process discovery
@@ -276,7 +277,52 @@ def process_level(folder_path, df, execution):
         with open(dot_path, 'w') as f:
             f.write(dot.source)
         bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
+        
+        # TODO: Export to JSON using the custom format
+        # Get the decision points in the model (diverging exclusive gateways)
+        nodes = bpmn_model.get_nodes()
+        node_start = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.StartEvent, nodes))[0]
+        node_end = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, nodes))[0]
 
+        def explore_branch(node_start, visited) -> tuple[Branch, pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway|pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, set]:
+            branch_start = node_start
+            cn = branch_start # Current node
+            dps: list[DecisionPoint] = []
+
+            while cn != node_end:
+                next_node = cn.get_out_arcs()[0].target
+                if next_node in visited:
+                    raise Exception("error: end node not reached. current bpmn_bfs does not support loops. state:" + cn.name + " " + cn.id + " " + type(cn))
+                if type(next_node) == pm4py.objects.bpmn.obj.BPMN.Task or type(next_node) == pm4py.objects.bpmn.obj.BPMN.StartEvent:
+                    visited.add(cn)
+                    cn = next_node
+                elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.DIVERGING:
+                    visited.add(cn)
+                    branches: list[Branch] = []
+                    rules: list[Rule] = []
+                    for arc in next_node.get_out_arcs():
+                        branch, converge_gateway, visited = explore_branch(arc.target, visited)
+                        branches.append(branch)
+                        rule = Rule([], arc.target.name)
+                        rules.append(rule)
+                    dps.append(DecisionPoint(next_node.id, cn.name, branches, rules))
+                    if type(converge_gateway) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
+                        return Branch(branch_start.name, dps), next_node, visited
+                    else:
+                        cn = converge_gateway.get_out_arcs()[0].target
+                elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING or type(next_node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
+                    return Branch(branch_start.name, dps), next_node, visited
+            
+            return Branch(branch_start.name, dps), None, visited
+
+        def bpmn_bfs(node_start, node_end) -> Process:
+            return Process(explore_branch(node_start, set())[0].decision_points)
+
+        try:
+            process = bpmn_bfs(node_start, node_end)
+            json.dump(process.to_json(), open(os.path.join(folder_path, 'traceability.json'), 'w'))
+        except Exception as e:
+            print(e)
 
     petri_net_process(df, special_colnames)
     try:

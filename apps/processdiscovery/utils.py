@@ -16,10 +16,16 @@ class Branch:
   def __init__(self, label: str, decision_points: Optional[list['DecisionPoint']] = []):
     self.label = label
     if not decision_points is None:
-      ids: list[str] = decision_points.map(lambda dp: dp.id)
+      ids: list[str] = list(map(lambda dp: dp.id, decision_points))
       if len(ids) != len(set(ids)):
         raise ValueError("Decision points must have unique ids")
       self.decision_points = decision_points
+    
+  def to_json(self) -> dict:
+    return {
+      'label': self.label,
+      'decision_points': list(map(lambda dp: dp.to_json(), self.decision_points))
+    }
   
   @staticmethod
   def from_json(json: dict) -> 'Branch':
@@ -34,7 +40,7 @@ class BranchDecoder(JSONDecoder):
 
   def dict_to_object(self, d: dict) -> Branch:
     # decode decision points into a list of DecisionPoint objects
-    decision_points = d['decision_points'].map(lambda dp: DecisionPointDecoder().decode(dp))
+    decision_points = list(map(lambda dp: DecisionPointDecoder().decode(dp), d['decision_points']))
     return Branch(d['label'], decision_points)
 
 ## RULE
@@ -43,10 +49,10 @@ class Rule:
   """
   A rule is a condition that is evaluated in a decision point. It has a condition in the form of logic operations and a target branch
   """
-  def __init__(self, condition: str, target: str):
+  def __init__(self, condition: list[str], target: str):
     self.condition = condition
     self.target = target
-  
+    
   @staticmethod
   def from_json(json: dict) -> 'Rule':
     return RuleDecoder().decode(json)
@@ -59,7 +65,7 @@ class RuleDecoder(JSONDecoder):
     JSONDecoder.__init__(self, object_hook=self.dict_to_object)
 
   def dict_to_object(self, d: dict) -> Rule:
-    return Rule(d['condition'], d['target'])
+    return Rule(d[d.keys()[0]], d.keys()[0])
 
 ## DECISION POINT
 
@@ -69,12 +75,22 @@ class DecisionPoint:
   """
   def __init__(self, id: str, prevAct: str, branches: list[Branch], rules: Optional[list[Rule]] = []):
     self.rules = rules
-    labels = branches.map(lambda b: b.label)
+    labels = list(map(lambda b: b.label, branches))
     if len(labels) != len(set(labels)):
       raise ValueError("Branches must have unique labels")
     self.branches = branches
     self.prevAct = prevAct
     self.id = id
+  
+  def to_json(self) -> dict:
+    return {
+      'id': self.id,
+      'prevAct': self.prevAct,
+      'branches': list(map(lambda b: b.to_json(), self.branches)),
+      'rules': {
+        self.rules[i].target: self.rules[i].condition for i in range(len(self.rules)) 
+      }
+    }
 
   @staticmethod
   def from_json(json: dict) -> 'DecisionPoint':
@@ -89,9 +105,9 @@ class DecisionPointDecoder(JSONDecoder):
 
   def dict_to_object(self, d: dict) -> DecisionPoint:
     # decode branches into a list of Branch objects
-    branches = d['branches'].map(lambda b: BranchDecoder().decode(b))
+    branches = list(map(lambda b: BranchDecoder().decode(b), d['branches']))
     # decode rules into a list of Rule objects
-    rules = d['rules'].map(lambda r: RuleDecoder().decode(r))
+    rules = [RuleDecoder().decode({k: v}) for k, v in d['rules'].items()]
     return DecisionPoint(d['id'], d['prevAct'], branches, rules)
 
 ## PROCESS
@@ -101,10 +117,15 @@ class Process:
   A processes represented as a sequence of decision points. This is the root of the process
   """
   def __init__(self, decision_points: list[DecisionPoint]):
-    ids = decision_points.map(lambda dp: dp.id)
+    ids = list(map(lambda dp: dp.id, decision_points))
     if len(ids) != len(set(ids)):
       raise ValueError("Decision points must have unique ids")
     self.decision_points = decision_points 
+  
+  def to_json(self) -> dict:
+    return {
+      'decision_points': list(map(lambda dp: dp.to_json(), self.decision_points))
+    }
 
   @staticmethod
   def from_json(json: dict) -> 'Process':
@@ -121,7 +142,7 @@ class ProcessDecoder(JSONDecoder):
 
   def dict_to_object(self, d: dict) -> Process:
     # decode decision points into a list of DecisionPoint objects
-    decision_points = d['decision_points'].map(lambda dp: DecisionPointDecoder().decode(dp))
+    decision_points = list(map(lambda dp: DecisionPointDecoder().decode(dp), d['decision_points']))
     return Process(decision_points)
 
 ###########################################################################################################################
