@@ -29,7 +29,7 @@ class Branch:
   
   @staticmethod
   def from_json(json: dict) -> 'Branch':
-    return BranchDecoder().decode(json)
+    return BranchDecoder().dict_to_object(json)
 
 class BranchDecoder(JSONDecoder):
   """
@@ -40,7 +40,7 @@ class BranchDecoder(JSONDecoder):
 
   def dict_to_object(self, d: dict) -> Branch:
     # decode decision points into a list of DecisionPoint objects
-    decision_points = list(map(lambda dp: DecisionPointDecoder().decode(dp), d['decision_points']))
+    decision_points = list(map(lambda dp: DecisionPointDecoder().dict_to_object(dp), d['decision_points']))
     return Branch(d['label'], decision_points)
 
 ## RULE
@@ -55,7 +55,7 @@ class Rule:
     
   @staticmethod
   def from_json(json: dict) -> 'Rule':
-    return RuleDecoder().decode(json)
+    return RuleDecoder().dict_to_object(json)
 
 class RuleDecoder(JSONDecoder):
   """
@@ -65,7 +65,7 @@ class RuleDecoder(JSONDecoder):
     JSONDecoder.__init__(self, object_hook=self.dict_to_object)
 
   def dict_to_object(self, d: dict) -> Rule:
-    return Rule(d[d.keys()[0]], d.keys()[0])
+    return Rule(d[list(d.keys())[0]], list(d.keys())[0])
 
 ## DECISION POINT
 
@@ -94,7 +94,7 @@ class DecisionPoint:
 
   @staticmethod
   def from_json(json: dict) -> 'DecisionPoint':
-    return DecisionPointDecoder().decode(json)
+    return DecisionPointDecoder().dict_to_object(json)
 
 class DecisionPointDecoder(JSONDecoder):
   """
@@ -105,9 +105,9 @@ class DecisionPointDecoder(JSONDecoder):
 
   def dict_to_object(self, d: dict) -> DecisionPoint:
     # decode branches into a list of Branch objects
-    branches = list(map(lambda b: BranchDecoder().decode(b), d['branches']))
+    branches = list(map(lambda b: BranchDecoder().dict_to_object(b), d['branches']))
     # decode rules into a list of Rule objects
-    rules = [RuleDecoder().decode({k: v}) for k, v in d['rules'].items()]
+    rules = [RuleDecoder().dict_to_object({k: v}) for k, v in d['rules'].items()]
     return DecisionPoint(d['id'], d['prevAct'], branches, rules)
 
 ## PROCESS
@@ -129,9 +129,7 @@ class Process:
 
   @staticmethod
   def from_json(json: dict) -> 'Process':
-    return ProcessDecoder().decode(json)
-  
-  # TODO: To Json
+    return ProcessDecoder().dict_to_object(json)
 
 class ProcessDecoder(JSONDecoder):
   """
@@ -142,7 +140,7 @@ class ProcessDecoder(JSONDecoder):
 
   def dict_to_object(self, d: dict) -> Process:
     # decode decision points into a list of DecisionPoint objects
-    decision_points = list(map(lambda dp: DecisionPointDecoder().decode(dp), d['decision_points']))
+    decision_points = list(map(lambda dp: DecisionPointDecoder().dict_to_object(dp), d['decision_points']))
     return Process(decision_points)
 
 ###########################################################################################################################

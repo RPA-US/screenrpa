@@ -278,7 +278,6 @@ def process_level(folder_path, df, execution):
             f.write(dot.source)
         bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
         
-        # TODO: Export to JSON using the custom format
         # Get the decision points in the model (diverging exclusive gateways)
         nodes = bpmn_model.get_nodes()
         node_start = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.StartEvent, nodes))[0]
