@@ -13,8 +13,9 @@ class Branch:
   """
   A branch is an activity or series of activities and decision points that are reached when the condition of a rule is satisfied
   """
-  def __init__(self, label: str, decision_points: Optional[list['DecisionPoint']] = []):
+  def __init__(self, label: str, id:str, decision_points: Optional[list['DecisionPoint']] = []):
     self.label = label
+    self.id = id
     if not decision_points is None:
       ids: list[str] = list(map(lambda dp: dp.id, decision_points))
       if len(ids) != len(set(ids)):
@@ -24,6 +25,7 @@ class Branch:
   def to_json(self) -> dict:
     return {
       'label': self.label,
+      'id': self.id,
       'decision_points': list(map(lambda dp: dp.to_json(), self.decision_points))
     }
   
