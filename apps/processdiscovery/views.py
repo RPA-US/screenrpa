@@ -320,16 +320,16 @@ def process_level(folder_path, df, execution):
 
                     # If the gateway at the end of the branch is a NormalEndEvent, the function return because the BPMN discovery has finished
                     if type(converge_gateway) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
-                        return Branch(branch_start.name, dps), next_node, visited
+                        return Branch(branch_start.name, branch_start.id, dps), next_node, visited
                     else:
                         cn = converge_gateway.get_out_arcs()[0].target
 
                 # If the next node is a converging ExclusiveGateway or a NormalEndEvent, the branch is finished
                 elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING or type(next_node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
-                    return Branch(branch_start.name, dps), next_node, visited
+                    return Branch(branch_start.name, branch_start.id, dps), next_node, visited
 
             # Return at the end of the BPMN
-            return Branch(branch_start.name, dps), None, visited
+            return Branch(branch_start.name, branch_start.id, dps), None, visited
 
         def bpmn_bfs(node_start, node_end) -> Process:
             return Process(explore_branch(node_start, set())[0].decision_points)
