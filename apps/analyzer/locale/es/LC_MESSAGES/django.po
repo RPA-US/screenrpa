@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-08 10:43+0000\n"
+"POT-Creation-Date: 2024-05-07 10:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,75 +43,59 @@ msgstr "Resultados del experimento que han sido procesados"
 msgid "DECISION TREE results collection fail! :("
 msgstr "¡Fallo en la recolección de resultados del ÁRBOL DE DECISIÓN! :("
 
-#: apps/analyzer/forms.py:34
+#: apps/analyzer/forms.py:32
 msgid "Title"
 msgstr "Título"
 
-#: apps/analyzer/forms.py:35
+#: apps/analyzer/forms.py:33
 msgid "Description"
 msgstr "Descripción"
 
-#: apps/analyzer/forms.py:36
-msgid "Experiment file"
-msgstr "Archivo del experimento"
+#: apps/analyzer/forms.py:34
+msgid "Log file (zip)"
+msgstr ""
 
-#: apps/analyzer/forms.py:37
+#: apps/analyzer/forms.py:35
 msgid "Scenarios to study"
 msgstr "Escenarios a estudiar"
 
-#: apps/analyzer/forms.py:38
-msgid "Special colnames"
-msgstr "Nombres de columna especiales"
+#: apps/analyzer/forms.py:36
+msgid "Map Log Columns to process Info"
+msgstr "Relaciona Columnas del Log a la información del Proceso"
 
-#: apps/analyzer/forms.py:39
-msgid "GUI class success regex"
-msgstr "Expresión regular de éxito de la clase de la interfaz gráfica"
-
-#: apps/analyzer/forms.py:40
-msgid "Target label"
-msgstr "Etiqueta objetivo"
-
-#: apps/analyzer/forms.py:47
+#: apps/analyzer/forms.py:43
 msgid "Nice experiment title!"
 msgstr "Un buen título para el experimento"
 
-#: apps/analyzer/forms.py:53
+#: apps/analyzer/forms.py:49
 msgid "Short experiment description..."
 msgstr "Descripción breve del experimento..."
 
-#: apps/analyzer/forms.py:79
-msgid "Variant"
-msgstr "Variante"
-
-#: apps/analyzer/forms.py:93
+#: apps/analyzer/forms.py:80
 msgid "Title is taken"
 msgstr "El título ya ha sido utilizado"
 
-#: apps/analyzer/models.py:51
+#: apps/analyzer/models.py:83
 msgid "exp_folder_complete_path separators not coherent"
 msgstr "Los separadores de exp_folder_complete_path no son coherentes"
 
-#: apps/analyzer/models.py:57
+#: apps/analyzer/models.py:89
 msgid "This is a nice experiment..."
 msgstr "Este es un buen experimento..."
 
-#: apps/analyzer/models.py:67
-msgid "CheckBox_4_D or ImageView_4_D or TextView_4_D"
-msgstr "CheckBox_4_D o ImageView_4_D o TextView_4_D"
-
-#: apps/analyzer/models.py:82
+#: apps/analyzer/models.py:127
 msgid "Case study"
 msgstr "Caso de estudio"
 
-#: apps/analyzer/models.py:83
+#: apps/analyzer/models.py:128
 msgid "Case studies"
 msgstr "Casos de estudio"
 
-#: apps/analyzer/models.py:119
+#: apps/analyzer/models.py:164
 msgid "The title of the case study already exists"
 msgstr "El título del caso de estudio ya existe"
 
-#: apps/analyzer/utils.py:44
+#: apps/analyzer/utils.py:45
 msgid ""
 "analyzer/utils/store_screenshots. line 49. MIME Html format not contains "
 "Content-Location header in screenshots"
@@ -119,13 +103,13 @@ msgstr ""
 "El formato MIME Html no contiene encabezado Content-Location en las capturas "
 "de pantalla"
 
-#: apps/analyzer/utils.py:45
+#: apps/analyzer/utils.py:46
 msgid "MIME Html format not contains Content-Location header in screenshots"
 msgstr ""
 "El formato MIME Html no contiene encabezado Content-Location en las capturas "
 "de pantalla"
 
-#: apps/analyzer/utils.py:183
+#: apps/analyzer/utils.py:184
 msgid ""
 "analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt "
 "exists"
@@ -133,11 +117,11 @@ msgstr ""
 "analyzer/utils/format_mht_file. line 187. Se seleccionó un formato de "
 "archivo MHT que no existe"
 
-#: apps/analyzer/utils.py:184
+#: apps/analyzer/utils.py:185
 msgid "You select a format mht file that doesnt exists"
 msgstr "Has seleccionado un archivo MHT que no existe"
 
-#: apps/analyzer/utils.py:213
+#: apps/analyzer/utils.py:214
 msgid ""
 "analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the "
 "format:'Step 1: (datetime)'"
@@ -145,35 +129,32 @@ msgstr ""
 "analyzer/utils/format_mht_file. line 211. El archivo MHT no sigue el "
 "formato: 'Paso 1: (datetime)'"
 
-#: apps/analyzer/utils.py:214
+#: apps/analyzer/utils.py:215
 msgid "The MHT file doesnt have '(datetime)' after 'Step 1:'"
 msgstr "El archivo MHT no tiene '(datetime)' después de 'Paso 1:'"
 
-#: apps/analyzer/utils.py:223
+#: apps/analyzer/utils.py:224
 msgid "The MHT file doesnt have a valid datetime format"
 msgstr "El archivo MHT no tiene un formato de fecha y hora válido"
 
-#: apps/analyzer/views.py:124
+#: apps/analyzer/views.py:131
 msgid "Scenarios that have been processed: "
 msgstr "Escenarios que han sido procesados: "
 
-#: apps/analyzer/views.py:266
+#: apps/analyzer/views.py:273
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
 
-#: apps/analyzer/views.py:285 apps/analyzer/views.py:298
-#: apps/analyzer/views.py:516
+#: apps/analyzer/views.py:296 apps/analyzer/views.py:309
+#: apps/analyzer/views.py:550
 msgid "This case study doesn't belong to the authenticated user"
 msgstr "Este caso de estudio no pertenece al usuario autenticado"
 
-#: apps/analyzer/views.py:300 apps/analyzer/views.py:518
-#, fuzzy
-#| msgid ""
-#| "This case study cannot be deleted because it has already been executed"
+#: apps/analyzer/views.py:311 apps/analyzer/views.py:552
 msgid "This case study cannot be deleted because it has already been excecuted"
 msgstr "Este caso de estudio no se puede eliminar porque ya ha sido ejecutado"
 
-#: apps/analyzer/views.py:336
+#: apps/analyzer/views.py:362
 #, python-format
 msgid ""
 "phases_to_execute must be of type dict!!!!! and must be composed by phases "
@@ -182,21 +163,21 @@ msgstr ""
 "¡phases_to_execute debe ser de tipo dict y debe estar compuesto por fases "
 "contenidas en %(DEFAULT_PHASES)s!"
 
-#: apps/analyzer/views.py:342
+#: apps/analyzer/views.py:368
 msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 "El algoritmo de detección de elementos debe ser uno de ['legacy', 'uied']"
 
-#: apps/analyzer/views.py:349
+#: apps/analyzer/views.py:375
 msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 "El algoritmo de clasificación de elementos debe ser uno de ['legacy', 'uied']"
 
-#: apps/analyzer/views.py:357 apps/analyzer/views.py:363
+#: apps/analyzer/views.py:383 apps/analyzer/views.py:389
 msgid "The following file or directory does not exists: %(path)"
 msgstr "El siguiente archivo o directorio no existe: %(path)"
 
-#: apps/analyzer/views.py:370
+#: apps/analyzer/views.py:396
 #, python-format
 msgid ""
 "phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
@@ -204,21 +185,21 @@ msgstr ""
 "phases_to_execute debe estar compuesto por fases contenidas en "
 "%(DEFAULT_PHASES)s"
 
-#: apps/analyzer/views.py:383
+#: apps/analyzer/views.py:409
 #, fuzzy, python-format
 #| msgid "Case study with id:%(id) is being generated ..."
 msgid "Case study with id:%(id) is being generated ..."
 msgstr "Se está generando el caso de estudio con ID:%(id) ..."
 
-#: apps/analyzer/views.py:386
+#: apps/analyzer/views.py:412
 msgid "Some of the attributes are invalid: "
 msgstr "Algunos de los atributos no son válidos: "
 
-#: apps/analyzer/views.py:405
+#: apps/analyzer/views.py:431
 msgid "Case Study with id %(id) not found"
 msgstr "Caso de estudio con ID %(id) no encontrado"
 
-#: apps/analyzer/views.py:423
+#: apps/analyzer/views.py:449
 msgid ""
 "The processing of this case study has not yet finished, please try again in "
 "a few minutes"
@@ -226,15 +207,40 @@ msgstr ""
 "El procesamiento de este caso de estudio aún no ha finalizado, por favor "
 "inténtelo de nuevo en unos minutos"
 
-#: apps/analyzer/views.py:426
+#: apps/analyzer/views.py:452
 #, fuzzy, python-format
 #| msgid "Case Study with id %(id) raised an exception: "
 msgid "Case Study with id %(id) raised an exception: "
 msgstr "El caso de estudio con ID %(id) generó una excepción: "
 
-#: apps/analyzer/views.py:480
+#: apps/analyzer/views.py:506 apps/analyzer/views.py:574
 msgid "You don't have permissions to access this files"
 msgstr "No tienes permisos para acceder a estos archivos"
+
+#~ msgid ""
+#~ "Indicate the special column names (e.g. case_id, activity, timestamp, "
+#~ "etc.) of your logs."
+#~ msgstr ""
+#~ "Indica los nombres de las columnas especiales (e.j case_id, activity, "
+#~ "timestamp, etc.) de tus logs."
+
+#~ msgid "Experiment file"
+#~ msgstr "Archivo del experimento"
+
+#~ msgid "Special colnames"
+#~ msgstr "Nombres de columna especiales"
+
+#~ msgid "GUI class success regex"
+#~ msgstr "Expresión regular de éxito de la clase de la interfaz gráfica"
+
+#~ msgid "Target label"
+#~ msgstr "Etiqueta objetivo"
+
+#~ msgid "Variant"
+#~ msgstr "Variante"
+
+#~ msgid "CheckBox_4_D or ImageView_4_D or TextView_4_D"
+#~ msgstr "CheckBox_4_D o ImageView_4_D o TextView_4_D"
 
 #~ msgid ""
 #~ "There's no phase to execute or the specified phase doesn't corresponds to "

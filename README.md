@@ -162,6 +162,12 @@ To recompile SCSS files, follow this setup:
 **Step #1** - Install tools
 
 - [NodeJS](https://nodejs.org/en/) 12.x or higher
+To install node in this environment
+    - `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash` (install NVM (Node Version Manager))
+Close and reopen the terminal
+    - `nvm --version` (to check nvm is installed ok)
+    - `nvm install 12` (Version 12 is full compatible)
+    - `node -v` (to check node is installed ok)
 - [Gulp](https://gulpjs.com/) - globally 
     - `npm install -g gulp-cli`
 - [Yarn](https://yarnpkg.com/) (optional) 
@@ -192,6 +198,8 @@ $ yarn
 $ gulp scss
 ```
 
+Remember to refresh (CTRL + F5) the app to see applied styles.
+
 The generated file is saved in `static/assets/css` directory.
 
 <br /> 
@@ -218,7 +226,7 @@ Copy the .env.sample in the docker folder and replace the values for those you d
 
 > Build the container for the app in Docker
 
-There are two images for this application, one for development for systems with nvidia GPUs and one for production, without an nvidia GPU.
+There are four images for this application, two for development  and production for systems with nvidia GPUs and two for development and production for those without an nvidia GPU.
 
 ```bash
 $ sudo docker-compose -f ./docker/<docker-compose-file> up

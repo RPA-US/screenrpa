@@ -6,20 +6,43 @@
 
 {% block content %}
 
+{% if execution_id %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="/case-study/execution/detail/{{execution_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+          </i>{% blocktranslate %}Go Back to Execution {{execution_id}}{% endblocktranslate %}</a>
+          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}UI Elements Detection Details{% endblocktranslate %}</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution_id}}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}UI Element Detection Configuration Details{% endblocktranslate %}</a></li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-12">
-            <a href="/fe/ui-element-detection/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/fe/ui-element-detection/list/{{ case_study_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>Go Back to UI Elements Detection Configurations</a>
             <h6 class="h2 text-white d-inline-block mb-0">UI Elements Detection Details</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/list"><i class="fas fa-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/case-study/detail/{{case_study_id}}">Case Study {{ case_study_id }}</a></li>
-                <li class="breadcrumb-item"><a href="/fe/ui-element-detection/list/{{ case_study_id }}/">UI Elements Detection Configs</a></li>
-                <li class="breadcrumb-item"><a href="#">{{ forms.ui_elements_detection.title.value }} Details</a></li>
+                <li class="breadcrumb-item"><a href="/fe/ui-element-detection/list/{{ case_study_id }}">UI Elements Detection Configs</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ forms.ui_elements_detection.title.value }} Details</a></li>
               </ol>
             </nav>
           </div>
@@ -27,7 +50,9 @@
       </div>
     </div>
   </div>
-  
+{% endif %}
+
+
   <!-- Page content -->
   <div class="container-fluid mt--6">
     <div class="row">
@@ -38,7 +63,62 @@
             <h3 class="mb-0">{{ forms.ui_elements_detection.title.value }} Details</h3>
           </div>
           <div class="card-body">
-            {% include "ui_elements_detection/form.html" %}
+            <form id="form" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
+              <div class="pl-lg-2">
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="title">{% blocktranslate %}Title{% endblocktranslate %}</label>
+                    <input type="text" id="title" class="form-control" disabled value="{{ forms.ui_elements_detection.title.value }}">
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="type">{% blocktranslate %}Detection Technique{% endblocktranslate %}</label>
+                    <input type="text" id="type" class="form-control" disabled value="{{ forms.ui_elements_detection.type.value }}">
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="model">{% blocktranslate %}Classification Model{% endblocktranslate %}</label>
+                    <input type="text" id="model" class="form-control" disabled value="{{ forms.ui_elements_classification.model.value }}">
+                  </div>
+                </div>
+              </div>
+              <hr>
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+                  <input type="text" id="preloaded" class="form-control" disabled value="{{ forms.ui_elements_detection.preloaded.value }}">
+                </div>
+                <div class="form-group">
+                  <label class="form-control-label" for="preloaded_file">
+                    {% if forms.ui_elements_detection.preloaded %}
+                      {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %} 
+                    {% endif %}
+                  </label>
+                  <input type="text" id="preloaded_file" class="form-control" disabled value="{{ forms.ui_elements_detection.preloaded_file.value }}">
+                </div>
+              </div>
+              <hr>
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
+              <div class="pl-lg-2">
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="ocr">{% blocktranslate %}Apply OCR{% endblocktranslate %}</label>
+                    <input type="text" id="ocr" class="form-control" disabled value="{{ forms.ui_elements_detection.ocr.value }}">
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="configurations">{% blocktranslate %}Additional Configurations{% endblocktranslate %}</label>
+                    <input type="text" id="configurations" class="form-control" disabled value="{{ forms.ui_elements_detection.configurations.value }}">
+                  </div>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

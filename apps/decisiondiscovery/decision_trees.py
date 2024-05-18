@@ -12,6 +12,7 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 from .utils import def_preprocessor
 from apps.chefboost import Chefboost as chef
 from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
+import pickle
 
 # def chefboost_decision_tree(df, param_path, algorithms, target_label):
 #     """
@@ -218,7 +219,16 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     # # Display in jupyter notebook
     # from IPython.display import Image
     # Image(filename = 'tree.png')
+
     
+    saved_data = {
+        'classifier': tree_classifier,
+        'feature_names': feature_names,
+        'class_names': np.unique(y),
+    }
+    with open(os.path.join(param_path, 'decision_tree.pkl'), 'wb') as fid:
+        pickle.dump(saved_data, fid)
+
     if PLOT_DECISION_TREES:
         target = list(df[target_label].unique())
         target_casted = [str(t) for t in target]

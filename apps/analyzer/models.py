@@ -54,17 +54,18 @@ def default_special_colnames():
 
 
         #  Estructura válida actualmente   
-        # {
-        # "Case": "ocel:eid",
-        # "Activity": "ocel:activity",
-        # "Screenshot": "ocel:screenshot:name", 
-        # "Variant": "ocel:variant",
-        # "Timestamp": "ocel:timestamp",
-        # "NameApp": "FileName",
-        # "EventType": "ocel:type:event",
-        # "CoorX": "ocel:click:coorX",
-        # "CoorY": "ocel:click:coorY"
-        # }
+        {
+        "Case": "ocel:eid",
+        "Activity": "ocel:activity",
+        "Screenshot": "ocel:screenshot:name", 
+        "Variant": "ocel:variant",
+        "Timestamp": "ocel:timestamp",
+        "NameApp": "FileName",
+        "EventType": "ocel:type:event",
+        "CoorX": "ocel:click:coorX",
+        "CoorY": "ocel:click:coorY",
+        "Header": "header"
+        }
     )
 
 def get_exp_foldername(exp_folder_complete_path):
@@ -97,6 +98,31 @@ class CaseStudy(models.Model):
     phases_to_execute = JSONField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
 
+    @property
+    def num_executions(self):
+        return Execution.objects.filter(case_study=self).count()
+    
+    @property
+    def available_phases(self):
+        """
+        Returns the phases that can be configured based on the current active configurations
+        """
+        available_phases = ['Monitoring']
+        # If there exists a log.csv in the unzipped folder or there exists a monitoring configutation, phases can be configured
+        exists_log_csvs_paths = [os.path.exists(os.path.join(self.exp_folder_complete_path, scenario, 'log.csv')) for scenario in self.scenarios_to_study]
+        if all(exists_log_csvs_paths) or Monitoring.objects.filter(case_study=self, active=True).exists():
+            available_phases.append('Prefilters')
+            available_phases.append('UIElementsDetection')
+            available_phases.append('Postfilters')
+            if UIElementsDetection.objects.filter(case_study=self, active=True).exists():
+                available_phases.append("FeatureExtractionTechnique")
+            available_phases.append("ProcessDiscovery")
+            available_phases.append('ExtractTrainingDataset')
+            if ExtractTrainingDataset.objects.filter(case_study=self, active=True).exists():
+                available_phases.append("DecisionTreeTraining")
+
+        return available_phases
+    
     class Meta:
         verbose_name = _("Case study")
         verbose_name_plural = _("Case studies")
@@ -161,9 +187,11 @@ class Execution(models.Model):
     case_study = models.ForeignKey(CaseStudy, on_delete=models.CASCADE, related_name='executions')
     created_at = models.DateTimeField(auto_now_add=True)
     executed = models.IntegerField(default=0, editable=True)
-    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
-    exp_folder_complete_path = models.CharField(max_length=255)
+
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True) # "Nano_Xt6Pt35_1706268943"
+    exp_folder_complete_path = models.CharField(max_length=255) # "/rim/media/unzipped/Nano_Xt6Pt35_1706268943/executions/exec_63"
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
     prefilters = models.ForeignKey(Prefilters, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
@@ -257,4 +285,6 @@ class Execution(models.Model):
                     os.path.join('../../', scenario),
                     os.path.join(self.exp_folder_complete_path, scenario)
                     )
+        
+        
        

@@ -5,6 +5,28 @@
 {% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
+{% if execution_id %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="/case-study/execution/detail/{{execution_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+          </i>{% blocktranslate %}Go Back to Execution {{execution_id}}{% endblocktranslate %}</a>
+          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Post-Filtering Configuration Details{% endblocktranslate %}</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution_id}}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Post-Filtering Configuration Details{% endblocktranslate %}</a></li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
 
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
@@ -17,9 +39,9 @@
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study.id }}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
                 <li class="breadcrumb-item"><a href="/fe/postfiltering/list/{{ case_study_id }}/">{% blocktranslate %}Post-Filtering {{ postfiltering.case_study_id }}{% endblocktranslate %}</a></li>
-                <li class="breadcrumb-item"><a href="#">{% blocktranslate %}Post-Filtering {{ postfilter.id }} details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Post-Filtering {{ postfilter.id }} details{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
@@ -30,6 +52,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
   
   <!-- Page content -->
   <div class="container-fluid mt--6">
@@ -41,34 +64,7 @@
             <h3 class="mb-0">{% blocktranslate %}Post-Filtering Configuration{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <!-- General information -->
-              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-id">{% blocktranslate %}Id{% endblocktranslate %}</label>
-                      <input type="text" id="input-id" class="form-control" disabled value="{{ postfilter.id }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-type">{% blocktranslate %}Type{% endblocktranslate %}</label>
-                      <input type="text" class="form-control" disabled value="{{ postfilter.type }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-configuration">{% blocktranslate %}Configurations{% endblocktranslate %}</label>
-                      <textarea id="input-configuration" class="form-control" disabled >{{ postfilter.configurations }}</textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
+            {% include "postfiltering/form.html" %}
           </div>
         </div>
       </div>
@@ -81,4 +77,13 @@
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+<script>
+  // Espera a que el contenido de form.html se cargue completamente
+  document.addEventListener("DOMContentLoaded", function() {
+      // Oculta el botón del formulario
+      var preload = document.getElementById("preloaded_file");
+      preload.style.display = "none";
+  });
+</script>
+{% endblock javascripts %}

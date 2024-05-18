@@ -5,10 +5,18 @@ from private_storage.fields import PrivateFileField
 from django.urls import reverse
 
 def default_process_discovery():
-    return dict({'draw_dendogram': True, 'similarity_th': 0.2})
+    return dict({"model_type": "",
+                 "model_weights": "",
+                 "clustering_type": "",
+                 "labeling": "automatic",
+                 "use_pca": False,
+                 "n_components": 2,
+                 "show_dendrogram": False,
+                 "remove_loops": False,
+                 "text_column": "",
+                 })
 
 
-# Create your models here.
 class ProcessDiscovery(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     title = models.CharField(max_length=255)
@@ -22,7 +30,19 @@ class ProcessDiscovery(models.Model):
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    
+
+    # New fields
+    model_type = models.CharField(max_length=10, choices=[('vgg', 'VGG'), ('clip', 'Clip')], default='vgg')
+    text_weight = models.FloatField(default=0.5)
+    image_weight = models.FloatField(default=0.5)
+    clustering_type = models.CharField(max_length=20, choices=[('agglomerative', 'Agglomerative'), ('divisive', 'Divisive')], default='agglomerative')
+    labeling = models.CharField(max_length=10, choices=[('automatic', 'Automatic'), ('manual', 'Manual')], default='automatic')
+    use_pca = models.BooleanField(default=False)
+    n_components = models.FloatField(default=0.95)
+    show_dendrogram = models.BooleanField(default=False) 
+    remove_loops = models.BooleanField(default=False)
+    text_column = models.CharField(max_length=255, default="header")
+
     def get_absolute_url(self):
         return reverse("processdiscovery:processdiscovery_list", args=[str(self.case_study_id)])
     

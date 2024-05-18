@@ -327,3 +327,7 @@ AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "ag
 MODELS_CLASSES_FILEPATH =           CORE_DIR + sep + "configuration" + sep + "models_classes.json"
 STATUS_VALUES_ID =                  CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
 CDLR =                              CORE_DIR + sep + "configuration" + sep + "cdlr.json"
+
+#to visualize pdf files in the browser
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

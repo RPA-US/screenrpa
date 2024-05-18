@@ -1,6 +1,8 @@
+import csv
+import json
 import os
 from django.forms.models import model_to_dict
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
@@ -10,7 +12,7 @@ from tqdm import tqdm
 from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
-from apps.analyzer.models import CaseStudy 
+from apps.analyzer.models import CaseStudy, Execution
 from core.settings import sep, DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
@@ -20,6 +22,18 @@ from .overlapping_rules import overlapping_rules
 from .flattening import flat_dataset_row
 from .utils import find_path_in_decision_tree, parse_decision_tree
 from django.utils.translation import gettext_lazy as _
+# Result Treeimport json
+import matplotlib.pyplot as plt
+from sklearn import tree
+import io
+import pickle
+import base64
+import pickle
+import base64
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
+from sklearn.tree import _tree
 
 # def clean_dataset(df):
 #     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -174,6 +188,21 @@ class ExtractTrainingDatasetCreateView(CreateView):
     form_class = ExtractTrainingDatasetForm
     template_name = "extract_training_dataset/create.html"
     
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ExtractTrainingDataset' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ExtractTrainingDataset' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(ExtractTrainingDatasetCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -193,6 +222,14 @@ class ExtractTrainingDatasetListView(ListView):
     template_name = "extract_training_dataset/list.html"
     paginate_by = 50
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ExtractTrainingDataset' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(ExtractTrainingDatasetListView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -202,8 +239,13 @@ class ExtractTrainingDatasetListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
-        # Filtra los objetos por case_study_id
-        queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        # Filtra los objetos Extract Training Dataset por case_study_id
+        if search:
+            queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = ExtractTrainingDataset.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
     
@@ -212,14 +254,45 @@ class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
     model = ExtractTrainingDataset
     form_class = ExtractTrainingDatasetForm
     template_name = "extract_training_dataset/details.html"
-
     pk_url_kwarg = "extract_training_dataset_id"
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        
+        if 'case_study_id' in self.kwargs:
+            #context['case_study_id'] = self.kwargs['case_study_id']
+            case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+            if 'ExtractTrainingDataset' in case_study.available_phases:
+                return super().get(request, *args, **kwargs)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+            
+        elif 'execution_id' in self.kwargs:
+            execution = Execution.objects.get(pk=kwargs["execution_id"])
+            if execution.extract_training_dataset:
+                return super().get(request, *args, **kwargs)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
+    
     
     def get_context_data(self, **kwargs):
-        context = super(ExtractTrainingDatasetDetailView, self).get_context_data(**kwargs)
-        context['case_study_id'] = self.kwargs.get('case_study_id')
-        context['form'] = ExtractTrainingDatasetForm(initial=model_to_dict(self.object))
+        context = super().get_context_data(**kwargs)
+        #context['case_study_id'] = self.kwargs.get('case_study_id')
+        # Set the form with read-only configurations and instance data
+        context['form'] = self.form_class(initial=model_to_dict(self.object), read_only=True, instance=self.object)
+
+        if 'case_study_id' in self.kwargs:
+            context['case_study_id'] = self.kwargs['case_study_id']
+
+        if 'execution_id' in self.kwargs:
+            context['execution_id'] = self.kwargs['execution_id']
+
         return context
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()  # Ensure the object is fetched
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)
 
     # def get_object(self, *args, **kwargs):
     #     extract_training_dataset = get_object_or_404(ExtractTrainingDataset, id=kwargs["extract_training_dataset_id"])
@@ -264,12 +337,109 @@ def delete_extracting_training_dataset(request):
     extracting_training_dataset.delete()
     return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
 
+##############################################33
+
+class ExtractTrainingDatasetResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+      
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/preprocessed_df.csv"
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "preprocessed_df.csv")
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return ResultDownload(path_to_csv_file) 
+
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution_id": execution.id,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario
+            }  
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "extract_training_dataset/result.html", context)
+
+##############################################33
+    
+
+# def LogicPhasesResultDetailView(execution, scenario,path_to_csv_file):
+   
+#     # CSV Reading and Conversion to JSON
+#     csv_data_json = read_csv_to_json(path_to_csv_file)
+
+#     # Include CSV data in the context for the template
+#     context = {
+#             "execution_id": execution.id,
+#             "csv_data": csv_data_json,  # Data to be used in the HTML template
+#             "scenarios": execution.scenarios_to_study,
+#             "scenario": scenario
+#         }
+#     return context
+
+#############################################33
+def read_csv_to_json(path_to_csv_file):
+    # Initialize a list to hold the CSV data converted into dictionaries
+    csv_data = []       
+    # Check if the path to the CSV file exists and read the data
+    try:
+        with open(path_to_csv_file, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                csv_data.append(row)
+    except FileNotFoundError:
+        print(f"File not found: {path_to_csv_file}")
+    # Convert csv_data to JSON
+    csv_data_json = json.dumps(csv_data)
+    return csv_data_json
+##########################################3
+def ResultDownload(path_to_csv_file):
+    with open(path_to_csv_file, 'r', newline='') as csvfile:
+        # Create an HTTP response with the content of the CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
+        writer = csv.writer(response)
+        reader = csv.reader(csvfile)
+        for row in reader:
+            writer.writerow(row)
+        return response
+    
+#############################################################
+
+######################################################
+#####################################################3
+
     
 class DecisionTreeTrainingCreateView(CreateView):
     model = DecisionTreeTraining
     form_class = DecisionTreeTrainingForm
     template_name = "decision_tree_training/create.html"
     
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'DecisionTreeTraining' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'DecisionTreeTraining' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(DecisionTreeTrainingCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -289,6 +459,14 @@ class DecisionTreeTrainingListView(ListView):
     template_name = "decision_tree_training/list.html"
     paginate_by = 50
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'DecisionTreeTraining' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(DecisionTreeTrainingListView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -298,16 +476,45 @@ class DecisionTreeTrainingListView(ListView):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
-        # Filtra los objetos DecisionTreeTraining por case_study_id
-        queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        # Filtra los objetos Decision Tree Training por case_study_id
+        if search:
+            queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = DecisionTreeTraining.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
         return queryset
 
 
 class DecisionTreeTrainingDetailView(DetailView):
+    # Check if the the phase can be interacted with (included in case study available phases)
+    
     def get(self, request, *args, **kwargs):
+
         decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
-        return render(request, "decision_tree_training/detail.html", {"decision_tree_training": decision_tree_training, "case_study_id": kwargs["case_study_id"]})
+        form = DecisionTreeTrainingForm(read_only=True, instance=decision_tree_training)
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+            if 'DecisionTreeTraining' in case_study.available_phases:
+                context= {"decision_tree_training": decision_tree_training, 
+                    "case_study_id": case_study.id,
+                    "form": form,}
+        
+                return render(request, "prefiltering/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+         
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+            if execution.decision_tree_training:
+                context= {"decision_tree_training": decision_tree_training, 
+                            "execution_id": execution.id,
+                            "form": form,}
+            
+                return render(request, "prefiltering/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
 
 def set_as_decision_tree_training_active(request):
     decision_tree_training_id = request.GET.get("decision_tree_training_id")
@@ -392,3 +599,155 @@ def decision_tree_feature_checker(feature_values, centroid_threshold, path):
     # print(path_exists)
     # print((len(features_in_tree) / len(feature_values))*100)
     return metadata
+
+
+
+class DecisionTreeResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+              
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+        
+        tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
+
+        tree_rules= extract_tree_rules(path_to_tree_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution_id": execution.id,
+            "tree_to_png": tree_image_base64,  # Png to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
+            "tree_rules": tree_rules,
+            }
+        return render(request, 'decision_tree_training/result.html', context)
+    #/screenrpa/apps/templates/
+
+
+####################################################################
+
+#    http://127.0.0.1:8000/es/case-study/execution/decision_tree_result/33/
+def tree_to_png_base64(path_to_tree_file):
+    
+    try:
+        with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
+            loaded_data = pickle.load(archivo)
+        
+        clasificador_loaded = loaded_data['classifier']
+        feature_names_loaded = loaded_data['feature_names']
+        
+        class_names_loaded = [str(item) for item in loaded_data['class_names']]
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+    
+
+
+    dot_data = io.StringIO()
+
+    
+    export_graphviz(clasificador_loaded, out_file=dot_data,
+                    filled=True, rounded=True,
+                    special_characters=True,
+                    feature_names=feature_names_loaded,
+                    class_names=class_names_loaded)
+
+    
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+    png_image = graph.create_png()
+
+
+    
+    image_base64 = base64.b64encode(png_image).decode('utf-8')
+
+    return f'data:image/png;base64,{image_base64}'
+
+####################################################################
+
+def extract_tree_rules(path_to_tree_file):
+    try:
+        with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
+            loaded_data = pickle.load(archivo)
+        # Obtener el clasificador y los nombres de las características del diccionario cargado
+        tree = loaded_data['classifier']
+        feature_names = loaded_data['feature_names']
+        classes = loaded_data['class_names']
+
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+    
+    """
+    Función que recorre las ramas de un árbol de decisión y extrae las reglas
+    obtenidas para clasificar cada una de las variables objetivo
+    
+    Parametros:
+    - tree: El modelo árbol de decisión.
+    - feature_names: Lista de los atributos del dataset.
+    - classes: Clases posibles de la variable objetivo, ordenada ascendentemente
+    """
+    # accede al objeto interno tree_ del árbol de decisión
+    tree_ = tree.tree_
+    feature_name = [
+        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+        for i in tree_.feature
+    ]
+
+    # Crear un diccionario para almacenar las reglas de cada clase
+    rules_per_class = {cls: [] for cls in classes}
+
+    def recurse(node, parent_rule):
+        if tree_.feature[node] != _tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            left_rule = parent_rule + [f"{name} <= {threshold:.2f}"]
+            right_rule = parent_rule + [f"{name} > {threshold:.2f}"]
+
+            recurse(tree_.children_left[node], left_rule)
+            recurse(tree_.children_right[node], right_rule)
+        else:
+            rule = " & ".join(parent_rule)
+            target = classes[tree_.value[node].argmax()]
+            # Agregar la regla a la lista correspondiente de su clase en el diccionario
+            rules_per_class[target].append(rule)
+
+    recurse(0, [])
+
+    # Convertir el diccionario en una lista de reglas por clase
+    return rules_per_class
+
+
+####################################################################
+
+def DecisionTreeDownload(request, execution_id):
+
+    execution = get_object_or_404(Execution, pk=execution_id)
+    #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
+    scenario = request.GET.get('scenario')
+    
+    if scenario is None:
+        scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
+              
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+    
+    try:
+        # Asegúrate de que la ruta absoluta sea correcta
+        full_file_path = os.path.join('/screenrpa', path_to_tree_file)
+        with open(full_file_path, 'rb') as archivo:
+            response = HttpResponse(archivo.read(), content_type="application/octet-stream")
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
+            return response
+        
+    except FileNotFoundError:
+
+        print(f"File not found: {path_to_tree_file}")
+        return HttpResponse("Lo siento, el archivo no se encontró.", status=404)
+    
+
+    
+####################################################################

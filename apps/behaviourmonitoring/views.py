@@ -1,10 +1,13 @@
-from django.http import HttpResponseRedirect
+import csv
+import json
+import os
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.core.exceptions import ValidationError
 from .models import Monitoring
-from apps.analyzer.models import CaseStudy
+from apps.analyzer.models import CaseStudy, Execution
 from .forms import MonitoringForm
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -45,15 +48,38 @@ class MonitoringListView(ListView, LoginRequiredMixin):
         # Obtiene el ID del Experiment pasado como parámetro en la URL
         case_study_id = self.kwargs.get('case_study_id')
 
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
         # Filtra los objetos Monitoring por case_study_id
-        queryset = Monitoring.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+        if search:
+            queryset = Monitoring.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = Monitoring.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
     
         return queryset
 
 class MonitoringDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
-        return render(request, "monitoring/detail.html", {"monitoring": monitoring})
+        form = MonitoringForm(read_only=True, instance=monitoring)
+
+        context={}
+
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+
+            context= {"monitoring": monitoring, 
+                  "case_study_id": case_study.id,
+                  "form": form,}
+
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+
+            context= {"monitoring": monitoring, 
+                        "execution_id": execution.id,
+                        "form": form,}
+        
+        return render(request, "monitoring/detail.html", context)
     
 
 def set_as_active(request):
@@ -105,3 +131,65 @@ def delete_monitoring(request):
     monitoring.delete()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
 
+###########################################################
+
+class MonitoringResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        # Get the Execution object or raise a 404 error if not found
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            #scenario = "1"
+            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+            
+        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/log.csv"  
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario, "log.csv")
+        # CSV Download
+        if path_to_csv_file and download=="True":
+            return ResultDownload(path_to_csv_file)  
+
+        # CSV Reading and Conversion to JSON
+        csv_data_json = read_csv_to_json(path_to_csv_file)
+
+        # Include CSV data in the context for the template
+        context = {
+            "execution_id": execution.id,
+            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario
+            } 
+
+        # Render the HTML template with the context including the CSV data
+        return render(request, "monitoring/result.html", context)
+
+
+#############################################33
+def read_csv_to_json(path_to_csv_file):
+    # Initialize a list to hold the CSV data converted into dictionaries
+    csv_data = []       
+    # Check if the path to the CSV file exists and read the data
+    try:
+        with open(path_to_csv_file, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                csv_data.append(row)
+    except FileNotFoundError:
+        print(f"File not found: {path_to_csv_file}")
+    # Convert csv_data to JSON
+    csv_data_json = json.dumps(csv_data)
+    return csv_data_json
+##########################################3
+def ResultDownload(path_to_csv_file):
+    with open(path_to_csv_file, 'r', newline='') as csvfile:
+        # Create an HTTP response with the content of the CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'inline; filename="{}"'.format(os.path.basename(path_to_csv_file))
+        writer = csv.writer(response)
+        reader = csv.reader(csvfile)
+        for row in reader:
+            writer.writerow(row)
+        return response
+    
+#############################################################

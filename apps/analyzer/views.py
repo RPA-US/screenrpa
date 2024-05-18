@@ -1,5 +1,7 @@
+import csv
 import os
 import json
+import random
 import time
 import threading
 from tqdm import tqdm
@@ -11,7 +13,7 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
-from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
@@ -32,6 +34,7 @@ from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
 from apps.analyzer.models import CaseStudy, Execution   
 from apps.behaviourmonitoring.models import Monitoring
+from apps.reporting.models import PDD
 from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
@@ -44,6 +47,18 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+# Result Treeimport json
+import matplotlib.pyplot as plt
+from sklearn import tree
+import io
+import pickle
+import base64
+import pickle
+import base64
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
+from sklearn.tree import _tree
 
 #============================================================================================================================
 #============================================================================================================================
@@ -135,7 +150,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             else:
                 path_scenario = os.path.join(execution.exp_folder_complete_path, scenario)
                 generate_case_study(execution, path_scenario, times)
-            execution.executed = (execution.scenarios_to_study.index(scenario) / len(execution.scenarios_to_study)) * 100
+            execution.executed = (execution.scenarios_to_study.index(scenario) + 1 / len(execution.scenarios_to_study)) * 100
             execution.save()
 
         # Serializing json
@@ -280,6 +295,10 @@ class CaseStudyListView(ListView, LoginRequiredMixin):
     paginate_by = 50
 
     def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return CaseStudy.objects.filter(active=True, user=self.request.user, title__icontains=search).order_by("-created_at")
         return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
 
@@ -306,13 +325,28 @@ def deleteCaseStudy(request):
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
-class CaseStudyDetailView(DetailView):
+class CaseStudyDetailView(UpdateView):
+    model = CaseStudy
+    form_class = CaseStudyForm
+
+    def post(self, request, *args, **kwargs):
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        form = CaseStudyForm(request.POST, instance=case_study)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("analyzer:casestudy_detail", kwargs={"case_study_id": case_study.id}))
+        else:
+            return render(request, "case_studies/detail.html", {"form": form})
+
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        form = CaseStudyForm(instance=case_study)
         context = {
-            "case_study": case_study, 
+            "form": form, 
+            "case_study": case_study,
             "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE")
+            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE"),
+            "case_study_id": case_study.id
             }
         return render(request, "case_studies/detail.html", context)
 
@@ -489,6 +523,9 @@ def exp_file_download(request, case_study_id):
     zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
     with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
         for root, dirs, files in os.walk(unzipped_folder):
+            # Ignore executions folder
+            if "executions" in root:
+                continue
             for file in files:
                 file_path = os.path.join(root, file)
                 rel_path = os.path.relpath(file_path, unzipped_folder)
@@ -511,6 +548,10 @@ class ExecutionListView(ListView, LoginRequiredMixin):
     paginate_by = 50
 
     def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return Execution.objects.filter(user=self.request.user, case_study__title__icontains=search).order_by("-created_at")
         return Execution.objects.filter(user=self.request.user).order_by("-created_at")
         
 
@@ -525,12 +566,99 @@ def deleteExecution(request):
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
+
 class ExecutionDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
+
         context = {
+            "reports": reports,
+            "execution_id": execution.id, 
             "execution": execution, 
-            "single_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(execution=execution, type="AGGREGATE")
             }
         return render(request, "executions/detail.html", context)
+
+@login_required(login_url="/login/")
+def exec_file_download(request, execution_id):
+    user = request.user
+    execution = Execution.objects.filter(user=user, id=execution_id)
+    if execution.exists():
+        # Build zip file from the execution folder in exp_folder_complete_path
+        unzipped_folder = execution[0].exp_folder_complete_path
+    else:
+        raise Exception(_("You don't have permissions to access this files"))
+    
+    # Create a temporary zip file containing the contents of the unzipped folder
+    zip_filename = os.path.basename(unzipped_folder) + ".zip"
+    zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
+    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
+        for root, dirs, files in os.walk(unzipped_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, unzipped_folder)
+                zip_ref.write(file_path, arcname=rel_path)
+    # Serve the zip file as a download response
+    response = FileResponse(open(zip_file_path, "rb"), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+    
+    return response
+
+#################################################################### PHASE EXECUTIONS RESULTS ####################################################################
+    
+
+    
+class UIElementsDetectionResultDetailView(DetailView):
+    def get(self, request, *args, **kwargs):
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        scenario: str = request.GET.get('scenario')
+        download = request.GET.get('download')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        # Create dictionary with images and their corresponding UI elements
+        soms = dict()
+
+        classes = execution.ui_elements_classification.model.classes
+        colors = []
+        for i in range(len(classes)):
+            colors.append("#%06x" % random.randint(0, 0xFFFFFF))
+        soms["classes"] = {k: v for k, v in zip(classes, colors)} 
+
+        soms["soms"] = []
+
+        for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
+            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
+                compos = json.load(f)
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_name = compo_json.split("/")[-1].split(".json")[0]
+            img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
+
+            soms["soms"].append(
+                {
+                    "img": img_name,
+                    "img_path": img_path,
+                    "som": compos
+                }
+            )
+
+        context = {
+            "execution_id": execution.id,
+            "scenarios": execution.scenarios_to_study,
+            "soms": soms
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "ui_elements_detection/results.html", context)
+
+
+############################################################
+
+
+
+        
+ 
+    
+

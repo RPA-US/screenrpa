@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 09:07+0000\n"
+"POT-Creation-Date: 2024-05-07 10:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,34 +18,91 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/processdiscovery/forms.py:22
+#: apps/processdiscovery/forms.py:33
 msgid "Type"
 msgstr "Tipo"
 
-#: apps/processdiscovery/forms.py:23
+#: apps/processdiscovery/forms.py:34
 msgid "Configurations"
 msgstr "Configuraciones"
 
-#: apps/processdiscovery/views.py:57
-msgid "Dendrogram"
-msgstr "Dendrograma"
+#: apps/processdiscovery/forms.py:35
+msgid "Preload Execution Results"
+msgstr "Precargar Resultados de Ejecución"
 
-#: apps/processdiscovery/views.py:58
-msgid "Screenshots"
-msgstr "Capturas de pantalla"
+#: apps/processdiscovery/forms.py:36
+msgid "Title"
+msgstr "Título"
 
-#: apps/processdiscovery/views.py:59
-msgid "Distance"
-msgstr "Distancia"
+#: apps/processdiscovery/forms.py:37
+msgid "Model Type"
+msgstr "Tipo de Modelo"
 
-#: apps/processdiscovery/views.py:67
-msgid "Threshold: "
-msgstr "Umbral: "
+#: apps/processdiscovery/forms.py:38
+msgid "Text Weight"
+msgstr "Peso del Texto"
 
-#: apps/processdiscovery/views.py:77
+#: apps/processdiscovery/forms.py:39
+msgid "Image Weight"
+msgstr "Anchura de la imágen"
+
+#: apps/processdiscovery/forms.py:40
+msgid "Clustering Type"
+msgstr "Tipo de Clustering"
+
+#: apps/processdiscovery/forms.py:41
+msgid "Labeling"
+msgstr "Anotación"
+
+#: apps/processdiscovery/forms.py:42
+msgid "Use PCA"
+msgstr "Usar PCA"
+
+#: apps/processdiscovery/forms.py:43
+msgid "N Components"
+msgstr "Número de Componentes"
+
+#: apps/processdiscovery/forms.py:44
+msgid "Show Dendrogram"
+msgstr "MostrarDendrograma"
+
+#: apps/processdiscovery/forms.py:45
+msgid "Remove Loops"
+msgstr "Eliminar Bucles"
+
+#: apps/processdiscovery/forms.py:46 apps/processdiscovery/forms.py:74
+msgid "Text Column"
+msgstr "Columna de Texto"
+
+#: apps/processdiscovery/views.py:249
 msgid "You selected a process discovery type that does not exist"
 msgstr "Ha seleccionado un tipo de descubrimiento de procesos que no existe"
 
-#: apps/processdiscovery/views.py:109
+#: apps/processdiscovery/views.py:328
+msgid "CaseStudy with the given ID does not exist."
+msgstr "El Caso de Estudio no existe"
+
+#: apps/processdiscovery/views.py:338 apps/processdiscovery/views.py:408
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
+
+#: apps/processdiscovery/views.py:410
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr "El usuario debe estar autenticado."
+
+#: apps/processdiscovery/views.py:412
+msgid "Monitoring doesn't belong to the authenticated user."
+msgstr "La configuracion no pertenece al usuario"
+
+#: apps/processdiscovery/views.py:414
+msgid "Monitoring doesn't belong to the Case Study."
+msgstr "La configuracion no pertenece al usuario"
+
+#~ msgid "Screenshots"
+#~ msgstr "Capturas de pantalla"
+
+#~ msgid "Distance"
+#~ msgstr "Distancia"
+
+#~ msgid "Threshold: "
+#~ msgstr "Umbral: "
