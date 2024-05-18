@@ -49,21 +49,11 @@ def default_special_colnames():
         "Timestamp": "Timestamp",
         "eyetracking_recording_timestamp": "Recording timestamp",
         "eyetracking_gaze_point_x": "Gaze point X",
-        "eyetracking_gaze_point_y": "Gaze point Y" 
-        }
-
-
-        #  Estructura válida actualmente   
-        {
-        "Case": "ocel:eid",
-        "Activity": "ocel:activity",
-        "Screenshot": "ocel:screenshot:name", 
-        "Variant": "ocel:variant",
-        "Timestamp": "ocel:timestamp",
-        "NameApp": "FileName",
-        "EventType": "ocel:type:event",
-        "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY",
+        "eyetracking_gaze_point_y": "Gaze point Y",
+        "NameApp": "NameApp",
+        "EventType": "MorKeyb",
+        "CoorX": "CoorX",
+        "CoorY": "CoorY",
         "Header": "header"
         }
     )
