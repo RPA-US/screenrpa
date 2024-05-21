@@ -334,9 +334,43 @@ def process_level(folder_path, df, execution):
         def bpmn_bfs(node_start, node_end) -> Process:
             return Process(explore_branch(node_start, set())[0].decision_points)
 
+        def add_trace_to_log(process, df) -> None:
+            # Navigate the log and add to each row info about the branches taken on each decision point
+            # The path is reset after each process_id change
+            # This is done by updating the id of the branch after reaching a "prevAct" on the decision points
+            current_process_id = 1
+            current_dp = None # Use to track what dp a branch will belong to
+            current_branches = {}
+
+            # First we make columns for each of the decision points, with the id of the decision point as the column name
+            dps = process.get_non_empty_dp_flattened()
+            branches = process.get_all_branches_flattened()
+            for dp in dps:
+                df[dp.id] = None
+
+            for index, row in df.iterrows():
+                if row['process_id'] != current_process_id:
+                    current_process_id = row['process_id']
+                    current_branches = {}
+                else:
+                    act_label = row['activity_label']
+                    if current_dp is not None:
+                        if any(branch.label == act_label for branch in branches):
+                            branch_id = (list(filter(lambda branch: branch.label == act_label, branches))[0].id)
+                            current_branches[current_dp] = branch_id
+                    for dp in dps:
+                        if dp.prevAct == act_label:
+                            current_dp = dp.id
+                    for passed_dp in current_branches.keys():
+                        df.at[index, passed_dp] = current_branches[passed_dp]
+            
+            # Save log to csv
+            df.to_csv(os.path.join(folder_path, 'ui_log_process_discovery.csv'), index=False)
+
         try:
             process = bpmn_bfs(node_start, node_end)
             json.dump(process.to_json(), open(os.path.join(folder_path, 'traceability.json'), 'w'))
+            add_trace_to_log(process, df)
         except Exception as e:
             print(e)
 
