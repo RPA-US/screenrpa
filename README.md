@@ -198,6 +198,8 @@ $ yarn
 $ gulp scss
 ```
 
+Remember to refresh (CTRL + F5) the app to see applied styles.
+
 The generated file is saved in `static/assets/css` directory.
 
 <br /> 
@@ -224,7 +226,7 @@ Copy the .env.sample in the docker folder and replace the values for those you d
 
 > Build the container for the app in Docker
 
-There are two images for this application, one for development for systems with nvidia GPUs and one for production, without an nvidia GPU.
+There are four images for this application, two for development  and production for systems with nvidia GPUs and two for development and production for those without an nvidia GPU.
 
 ```bash
 $ sudo docker-compose -f ./docker/<docker-compose-file> up

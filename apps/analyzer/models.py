@@ -102,6 +102,27 @@ class CaseStudy(models.Model):
     def num_executions(self):
         return Execution.objects.filter(case_study=self).count()
     
+    @property
+    def available_phases(self):
+        """
+        Returns the phases that can be configured based on the current active configurations
+        """
+        available_phases = ['Monitoring']
+        # If there exists a log.csv in the unzipped folder or there exists a monitoring configutation, phases can be configured
+        exists_log_csvs_paths = [os.path.exists(os.path.join(self.exp_folder_complete_path, scenario, 'log.csv')) for scenario in self.scenarios_to_study]
+        if all(exists_log_csvs_paths) or Monitoring.objects.filter(case_study=self, active=True).exists():
+            available_phases.append('Prefilters')
+            available_phases.append('UIElementsDetection')
+            available_phases.append('Postfilters')
+            if UIElementsDetection.objects.filter(case_study=self, active=True).exists():
+                available_phases.append("FeatureExtractionTechnique")
+            available_phases.append("ProcessDiscovery")
+            available_phases.append('ExtractTrainingDataset')
+            if ExtractTrainingDataset.objects.filter(case_study=self, active=True).exists():
+                available_phases.append("DecisionTreeTraining")
+
+        return available_phases
+    
     class Meta:
         verbose_name = _("Case study")
         verbose_name_plural = _("Case studies")

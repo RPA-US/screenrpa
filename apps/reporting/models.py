@@ -13,7 +13,7 @@ class PDD(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     objective = models.CharField(max_length=255, null=True, blank=True)
     purpose = models.CharField(max_length=255, null=True, blank=True)
-    process_overview = models.BooleanField(editable=True)
+    process_overview = models.BooleanField(editable=True, default=True)
     applications_used = models.BooleanField(default=False)
     as_is_process_map = models.BooleanField(default=False)
     detailed_as_is_process_actions = models.BooleanField(default=False)

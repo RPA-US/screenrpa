@@ -22,25 +22,18 @@ services:
       - db_network
 
   screen-rpa:
-    container_name: ${DOCKERNAME}screenrpa-nvidia-dev
+    container_name: ${DOCKERNAME}screenrpa-dev
     restart: unless-stopped
     env_file: ./.env
     command: tail -F anything
     build:
       context: ../.
-      dockerfile: ./docker/nvidia.Dockerfile
+      dockerfile: ./docker/Dockerfile
       args:
         branch: ${BRANCH_DOCKER}
         target: dev
     ports:
       - "8000:8000"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     volumes:
       - screenrpa_data:/screenrpa
     networks:
@@ -48,7 +41,7 @@ services:
       - web_network
 
   nginx:
-    container_name: screnrpa-nginx-dev
+    container_name: screenrpa-nginx-dev
     restart: always
     image: "nginx:latest"
     ports:

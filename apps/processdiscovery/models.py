@@ -41,7 +41,7 @@ class ProcessDiscovery(models.Model):
     n_components = models.FloatField(default=0.95)
     show_dendrogram = models.BooleanField(default=False) 
     remove_loops = models.BooleanField(default=False)
-    text_column = models.CharField(max_length=255)
+    text_column = models.CharField(max_length=255, default="header")
 
     def get_absolute_url(self):
         return reverse("processdiscovery:processdiscovery_list", args=[str(self.case_study_id)])

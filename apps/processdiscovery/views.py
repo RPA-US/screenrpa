@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
 from scipy.cluster.hierarchy import dendrogram, linkage
 # from sklearn.cluster import AgglomerativeClustering
 from django.http import HttpResponse, HttpResponseRedirect
@@ -15,6 +16,7 @@ from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
 from core.utils import read_ui_log_as_dataframe
+from apps.processdiscovery.utils import Process, DecisionPoint, Branch, Rule
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
 from django.utils.translation import gettext_lazy as _
@@ -209,7 +211,6 @@ def scene_level(log_path, scenario_path, execution):
         plt.savefig(dendrogram_path)
         plt.close() 
         print(f"Dendrogram saved in: {dendrogram_path}")
-
     
     '''
     Special parameters for the execution of the process discovery
@@ -276,7 +277,68 @@ def process_level(folder_path, df, execution):
         with open(dot_path, 'w') as f:
             f.write(dot.source)
         bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
+        
+        # Get the decision points in the model (diverging exclusive gateways)
+        nodes = bpmn_model.get_nodes()
+        node_start = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.StartEvent, nodes))[0]
+        node_end = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, nodes))[0]
 
+        def explore_branch(node_start, visited) -> tuple[Branch, pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway|pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, set]:
+            branch_start = node_start
+            cn = branch_start # Current node
+            dps: list[DecisionPoint] = []
+
+            # The loop continues until the current node (cn) is the end node
+            while cn != node_end:
+                # The next node is the target of the first outgoing arc from the current node
+                next_node = cn.get_out_arcs()[0].target
+
+                # If the next node has already been visited, an exception is raised
+                # This is because the current implementation does not support loops in the BPMN model
+                if next_node in visited:
+                    raise Exception("error: end node not reached. current bpmn_bfs does not support loops. state:" + cn.name + " " + cn.id + " " + type(cn))
+
+                # If the next node is a Task or a StartEvent, it is added to the visited set and becomes the current node
+                if type(next_node) == pm4py.objects.bpmn.obj.BPMN.Task or type(next_node) == pm4py.objects.bpmn.obj.BPMN.StartEvent:
+                    visited.add(cn)
+                    cn = next_node
+
+                # If the next node is a diverging ExclusiveGateway, it is added to the visited set
+                # Then, for each outgoing arc from the gateway, the function recursively explores the branch
+                # A Rule is created for each branch and added to the rules list
+                # A DecisionPoint is created and added to the dps list
+                elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.DIVERGING:
+                    visited.add(cn)
+                    branches: list[Branch] = []
+                    rules: list[Rule] = []
+                    for arc in next_node.get_out_arcs():
+                        branch, converge_gateway, visited = explore_branch(arc.target, visited)
+                        branches.append(branch)
+                        rule = Rule([], arc.target.name)
+                        rules.append(rule)
+                    dps.append(DecisionPoint(next_node.id, cn.name, branches, rules))
+
+                    # If the gateway at the end of the branch is a NormalEndEvent, the function return because the BPMN discovery has finished
+                    if type(converge_gateway) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
+                        return Branch(branch_start.name, branch_start.id, dps), next_node, visited
+                    else:
+                        cn = converge_gateway.get_out_arcs()[0].target
+
+                # If the next node is a converging ExclusiveGateway or a NormalEndEvent, the branch is finished
+                elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING or type(next_node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
+                    return Branch(branch_start.name, branch_start.id, dps), next_node, visited
+
+            # Return at the end of the BPMN
+            return Branch(branch_start.name, branch_start.id, dps), None, visited
+
+        def bpmn_bfs(node_start, node_end) -> Process:
+            return Process(explore_branch(node_start, set())[0].decision_points)
+
+        try:
+            process = bpmn_bfs(node_start, node_end)
+            json.dump(process.to_json(), open(os.path.join(folder_path, 'traceability.json'), 'w'))
+        except Exception as e:
+            print(e)
 
     petri_net_process(df, special_colnames)
     try:
@@ -300,6 +362,22 @@ class ProcessDiscoveryCreateView(CreateView):
     model = ProcessDiscovery
     form_class = ProcessDiscoveryForm
     template_name = "processdiscovery/create.html"
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
 
     def get_form_kwargs(self):
         kwargs = super(ProcessDiscoveryCreateView, self).get_form_kwargs()
@@ -333,6 +411,14 @@ class ProcessDiscoveryListView(ListView):
     template_name = "processdiscovery/list.html"
     paginate_by = 50
 
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'ProcessDiscovery' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
     def get_context_data(self, **kwargs):
         context = super(ProcessDiscoveryListView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
@@ -354,29 +440,38 @@ class ProcessDiscoveryListView(ListView):
     
 
 class ProcessDiscoveryDetailView(DetailView):
+    # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
+
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
-        
-        
-        form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)  # Todos los campos estarán desactivados
+        process_discovery_form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)
 
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
-
-            context= {"process_discovery": process_discovery, 
-                      "case_study_id": case_study.id,
-                      "form": form,}
+            if 'ProcessDiscovery' in case_study.available_phases: 
+                context= {"process_discovery": process_discovery, 
+                            "case_study_id": case_study.id,
+                            "form": process_discovery_form,}
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
-
-            context= {"process_discovery": process_discovery, 
-                      "execution_id": execution.id,
-                      "form": form,}
+            if execution.process_discovery:
+            
+                context= {"process_discovery": process_discovery, 
+                            "execution_id": execution.id,
+                            "form": process_discovery_form,}
+                    
+                return render(request, "processdiscovery/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
         
-        return render(request, "processdiscovery/detail.html", context)
 
+        
+        
 
+    
 
 def set_as_process_discovery_active(request):
     process_discovery_id = request.GET.get("process_discovery_id")

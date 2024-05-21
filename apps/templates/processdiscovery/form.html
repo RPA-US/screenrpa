@@ -167,13 +167,13 @@
   <!-- Submit Button -->
   
 
-  {% if form.read_only == None %}
-  <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
+  
+  <button class="btn btn-success" style="float: right;" type="submit" value="submit" id="id_button" >
     <i class="fas fa-save"></i> 
     {% blocktranslate %}Save{% endblocktranslate %}
     </button>
 
-  {% endif %}
+  
 
  
   
@@ -190,7 +190,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
 
-    console.log("eSTE ES EL READONLY: ",form.read_only);
+    
     const title = document.getElementById('id_title');
     const type = document.getElementById('id_type');
     //const skip = document.getElementById('id_skip');
