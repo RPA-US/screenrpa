@@ -1,7 +1,7 @@
 import csv
 import json
 import os
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
@@ -11,6 +11,7 @@ from apps.analyzer.models import CaseStudy, Execution
 from .forms import MonitoringForm
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
     
@@ -19,6 +20,10 @@ class MonitoringCreateView(CreateView, LoginRequiredMixin):
     form_class = MonitoringForm
     template_name = "monitoring/create.html"
     login_url = '/login/'
+
+    def get(self, request, *args, **kwargs):
+        case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+        return super().get(request, *args, **kwargs) 
     
     def get_context_data(self, **kwargs):
         context = super(MonitoringCreateView, self).get_context_data(**kwargs)
@@ -35,9 +40,13 @@ class MonitoringCreateView(CreateView, LoginRequiredMixin):
         return HttpResponseRedirect(self.get_success_url())
 
 class MonitoringListView(ListView, LoginRequiredMixin):
+    login_url = '/login/'
     model = Monitoring
     template_name = "monitoring/list.html"
     paginate_by = 50
+
+    def get(self, request: HttpRequest, *args: csv.Any, **kwargs: csv.Any) -> HttpResponse:
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(MonitoringListView, self).get_context_data(**kwargs)
@@ -58,9 +67,15 @@ class MonitoringListView(ListView, LoginRequiredMixin):
     
         return queryset
 
-class MonitoringDetailView(DetailView):
+class MonitoringDetailView(DetailView, LoginRequiredMixin):
+    login_url = '/login/'
     def get(self, request, *args, **kwargs):
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"])
         monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
+        
+        if not case_study.user == request.user:
+            return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
+
         form = MonitoringForm(read_only=True, instance=monitoring)
 
         context={}
@@ -82,6 +97,7 @@ class MonitoringDetailView(DetailView):
         return render(request, "monitoring/detail.html", context)
     
 
+@login_required(login_url='/login/')
 def set_as_active(request):
     monitoring_id = request.GET.get("monitoring_id")
     case_study_id = request.GET.get("case_study_id")
@@ -105,6 +121,7 @@ def set_as_active(request):
     monitoring.save()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
 
+@login_required(login_url='/login/')
 def set_as_inactive(request):
     monitoring_id = request.GET.get("monitoring_id")
     case_study_id = request.GET.get("case_study_id")
@@ -122,9 +139,14 @@ def set_as_inactive(request):
     monitoring.save()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
     
+@login_required(login_url='/login/')
 def delete_monitoring(request):
     monitoring_id = request.GET.get("monitoring_id")
     case_study_id = request.GET.get("case_study_id")
+    if not CaseStudy.objects.get(pk=case_study_id):
+        return HttpResponse(status=404, content="Case Study not found")
+    elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
+        return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
     monitoring = Monitoring.objects.get(id=monitoring_id)
     if request.user.id != monitoring.user.id:
         raise Exception(_("This object doesn't belong to the authenticated user"))
@@ -133,10 +155,13 @@ def delete_monitoring(request):
 
 ###########################################################
 
-class MonitoringResultDetailView(DetailView):
+class MonitoringResultDetailView(DetailView, LoginRequiredMixin):
+    login_url = '/login/'
     def get(self, request, *args, **kwargs):
         # Get the Execution object or raise a 404 error if not found
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if not execution.case_study.user == request.user:
+            return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
         scenario = request.GET.get('scenario')
         download = request.GET.get('download')
 
