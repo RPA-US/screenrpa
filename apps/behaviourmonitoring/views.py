@@ -45,7 +45,10 @@ class MonitoringListView(ListView, LoginRequiredMixin):
     template_name = "monitoring/list.html"
     paginate_by = 50
 
-    def get(self, request: HttpRequest, *args: csv.Any, **kwargs: csv.Any) -> HttpResponse:
+    def get(self, request, *args, **kwargs) -> HttpResponse:
+        case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+        if case_study.user != request.user:
+            return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
