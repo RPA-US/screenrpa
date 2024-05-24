@@ -113,9 +113,9 @@ class CaseStudy(models.Model):
         if all(exists_log_csvs_paths) or Monitoring.objects.filter(case_study=self, active=True).exists():
             available_phases.append('Prefilters')
             available_phases.append('UIElementsDetection')
-            available_phases.append('Postfilters')
             if UIElementsDetection.objects.filter(case_study=self, active=True).exists():
                 available_phases.append("FeatureExtractionTechnique")
+                available_phases.append('Postfilters')
             available_phases.append("ProcessDiscovery")
             available_phases.append('ExtractTrainingDataset')
             if ExtractTrainingDataset.objects.filter(case_study=self, active=True).exists():

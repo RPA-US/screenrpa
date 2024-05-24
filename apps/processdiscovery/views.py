@@ -8,6 +8,8 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 # from sklearn.cluster import AgglomerativeClustering
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, CreateView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -392,7 +394,8 @@ def process_discovery(log_path, scenario_path, execution):
     process_level(folder_path, ui_log, execution)
         
     
-class ProcessDiscoveryCreateView(CreateView):
+class ProcessDiscoveryCreateView(CreateView, LoginRequiredMixin):
+    login_url = '/login/'
     model = ProcessDiscovery
     form_class = ProcessDiscoveryForm
     template_name = "processdiscovery/create.html"
@@ -400,6 +403,11 @@ class ProcessDiscoveryCreateView(CreateView):
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
         case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if not case_study:
+            return HttpResponse(status=404, content="Case Study not found.")
+        elif case_study.user != request.user:
+            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+
         if 'ProcessDiscovery' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
         else:
@@ -407,6 +415,11 @@ class ProcessDiscoveryCreateView(CreateView):
     
     def post(self, request, *args, **kwargs):
         case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if not case_study:
+            return HttpResponse(status=404, content="Case Study not found.")
+        elif case_study.user != request.user:
+            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+
         if 'ProcessDiscovery' in case_study.available_phases:
             return super().post(request, *args, **kwargs)
         else:
@@ -440,7 +453,8 @@ class ProcessDiscoveryCreateView(CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class ProcessDiscoveryListView(ListView):
+class ProcessDiscoveryListView(ListView, LoginRequiredMixin):
+    login_url = '/login/'
     model = ProcessDiscovery
     template_name = "processdiscovery/list.html"
     paginate_by = 50
@@ -448,6 +462,11 @@ class ProcessDiscoveryListView(ListView):
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
         case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if not case_study:
+            return HttpResponse(status=404, content="Case Study not found.")
+        elif case_study.user != request.user:
+            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+
         if 'ProcessDiscovery' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
         else:
@@ -473,11 +492,14 @@ class ProcessDiscoveryListView(ListView):
         return queryset
     
 
-class ProcessDiscoveryDetailView(DetailView):
+class ProcessDiscoveryDetailView(DetailView, LoginRequiredMixin):
+    login_url = '/login/'
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
-
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
+        if process_discovery.case_study.user != request.user:
+            return HttpResponse(status=403, content="Process Discovery doesn't belong to the authenticated user.")
+
         process_discovery_form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)
 
         if 'case_study_id' in kwargs:
@@ -492,7 +514,6 @@ class ProcessDiscoveryDetailView(DetailView):
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
             if execution.process_discovery:
-            
                 context= {"process_discovery": process_discovery, 
                             "execution_id": execution.id,
                             "form": process_discovery_form,}
@@ -500,16 +521,20 @@ class ProcessDiscoveryDetailView(DetailView):
                 return render(request, "processdiscovery/detail.html", context)
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
-        
 
-        
-        
 
-    
-
+@login_required(login_url='/login/')
 def set_as_process_discovery_active(request):
     process_discovery_id = request.GET.get("process_discovery_id")
     case_study_id = request.GET.get("case_study_id")
+    if not CaseStudy.objects.get(pk=case_study_id):
+        return HttpResponse(status=404, content="Case Study not found.")
+    elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
+        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+    elif not ProcessDiscovery.objects.get(pk=process_discovery_id):
+        return HttpResponse(status=404, content="Process Discovery not found.")
+    elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study.id == case_study_id:
+        return HttpResponse(status=403, content="Process Discovery doesn't belong to the Case Study.")
     process_discovery_list = ProcessDiscovery.objects.filter(case_study_id=case_study_id)
     for m in process_discovery_list:
         m.active = False
@@ -519,6 +544,7 @@ def set_as_process_discovery_active(request):
     process_discovery.save()
     return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
 
+@login_required(login_url='/login/')
 def set_as_process_discovery_inactive(request):
     process_discovery_id = request.GET.get("process_discovery_id")
     case_study_id = request.GET.get("case_study_id")
@@ -536,9 +562,18 @@ def set_as_process_discovery_inactive(request):
     process_discovery.save()
     return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
     
+@login_required(login_url='/login/')
 def delete_process_discovery(request):
     process_discovery_id = request.GET.get("process_discovery_id")
     case_study_id = request.GET.get("case_study_id")
+    if not CaseStudy.objects.get(pk=case_study_id):
+        return HttpResponse(status=404, content="Case Study not found.")
+    elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
+        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+    elif not ProcessDiscovery.objects.get(pk=process_discovery_id):
+        return HttpResponse(status=404, content="Process Discovery not found.")
+    elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study.id == case_study_id:
+        return HttpResponse(status=403, content="Process Discovery doesn't belong to the Case Study.")
     process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
     if request.user.id != process_discovery.user.id:
         raise Exception("This object doesn't belong to the authenticated user")
@@ -547,11 +582,16 @@ def delete_process_discovery(request):
 
 ##########################################
 
-class ProcessDiscoveryResultDetailView(DetailView):
+class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
+    login_url = '/login/'
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
-        
+
+        if not execution:
+            return HttpResponse(status=404, content="Execution not found.")
+        elif not execution.case_study.user == request.user:
+            return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
 
         if scenario == None:
             #scenario = "1"
