@@ -457,6 +457,28 @@ def tree_to_png(path_to_tree_file):
     
     return temp_file.name
 
+from graphviz import Source
+from tempfile import NamedTemporaryFile
+
+def dot_to_png(dot_path):
+    # Cargar el contenido del archivo .dot
+    with open(dot_path, 'r') as file:
+        dot_content = file.read()
+    try:
+        graph = Source(dot_content)
+        graph.format = 'png'
+        
+        # Guardar la imagen a un archivo temporal
+        temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+        graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
+        
+        return graph_path 
+    
+    except Exception as e:
+
+        print(f"Error al procesar el gráfico: {e}")
+        return None
+
 #############################################################################################
 class ReportCreateView(CreateView):
     model = PDD
@@ -545,12 +567,15 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         
 
     ##########################3 AS IS PROCESS MAP
+    if report.as_is_process_map:
+        bpmn= doc.paragraphs[paragraph_dict['[.BPMN]']]
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+        run = bpmn.add_run()
+        run.add_picture(dot_to_png(path_to_tree_file), width=Inches(6))
+        run.add_break()
 
-    #############################3
-    if report.input_data_description:
-        original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
-        df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
-        input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
+    
+    
 
     #############################3 DETAILS AS IS PROCESS
     
@@ -566,7 +591,15 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 
         detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution)
      
-    ###################
+    
+    #############################3
+    if report.input_data_description:
+        original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
+        df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
+        input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
+
+
+
     doc.save(report_path)
 
     convert_docx_to_pdf(report_path, report_path.replace('.docx', '.pdf'))
