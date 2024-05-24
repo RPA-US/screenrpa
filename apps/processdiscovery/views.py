@@ -533,7 +533,7 @@ def set_as_process_discovery_active(request):
         return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
     elif not ProcessDiscovery.objects.get(pk=process_discovery_id):
         return HttpResponse(status=404, content="Process Discovery not found.")
-    elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study.id == CaseStudy.objects.get(pk=case_study_id):
+    elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study == CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=403, content="Process Discovery doesn't belong to the Case Study.")
     process_discovery_list = ProcessDiscovery.objects.filter(case_study_id=case_study_id)
     for m in process_discovery_list:
@@ -572,7 +572,7 @@ def delete_process_discovery(request):
         return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
     elif not ProcessDiscovery.objects.get(pk=process_discovery_id):
         return HttpResponse(status=404, content="Process Discovery not found.")
-    elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study.id == CaseStudy.objects.get(pk=case_study_id):
+    elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study == CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=403, content="Process Discovery doesn't belong to the Case Study.")
     process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
     if request.user.id != process_discovery.user.id:
