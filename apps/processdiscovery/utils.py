@@ -133,6 +133,46 @@ class Process:
   def from_json(json: dict) -> 'Process':
     return ProcessDecoder().dict_to_object(json)
 
+  def get_all_branches_flattened(self) -> list[Branch]:
+    """
+    Get all branches in the process recursively
+    """
+
+    def recursive_search(dp: DecisionPoint):
+      branches = []
+      for branch in dp.branches:
+        branches.append(branch)
+        for b in branch.decision_points:
+          branches += recursive_search(b)
+      return branches
+    
+    branches = []
+    for dp in self.decision_points:
+      branches += recursive_search(dp)
+    return branches
+  
+  def get_non_empty_dp_flattened(self) -> list[DecisionPoint]:
+    """
+    Get all decision points in the process that are not empty
+    """
+
+    def recursive_search(branch: Branch):
+      dps = []
+      for dp in branch.decision_points:
+        if dp.branches:
+          dps.append(dp)
+          for b in dp.branches:
+            dps += recursive_search(b)
+      return dps
+
+    dps = []
+    for dp in self.decision_points:
+      if dp.branches:
+        dps.append(dp)
+      for b in dp.branches:
+        dps += recursive_search(b)
+    return dps
+
 class ProcessDecoder(JSONDecoder):
   """
   A JSON decoder for Process objects
