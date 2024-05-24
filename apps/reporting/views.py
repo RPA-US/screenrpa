@@ -535,7 +535,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 
         #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
         short_descrption= doc.paragraphs[paragraph_dict['[SHORT DESCRIPTION]']]
-        short_descrption.text = execution.process_discovery.title
+        short_descrption.text = execution.process_discovery.description
 
     ############################ AS IS PROCESS DESCRPTION: APPLICATIONS USED
     if report.applications_used:
