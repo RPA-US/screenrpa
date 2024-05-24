@@ -38,7 +38,9 @@ import pydotplus
 from PIL import Image, ImageDraw
 #import subprocess
 import aspose.words as aw
-
+##################################
+from graphviz import Source
+from tempfile import NamedTemporaryFile
 
 # Create your views here.
 
@@ -457,9 +459,8 @@ def tree_to_png(path_to_tree_file):
     
     return temp_file.name
 
-from graphviz import Source
-from tempfile import NamedTemporaryFile
 
+#########################################
 def dot_to_png(dot_path):
     # Cargar el contenido del archivo .dot
     with open(dot_path, 'r') as file:
