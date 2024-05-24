@@ -290,7 +290,7 @@ class CaseStudyCreateView(LoginRequiredMixin, CreateView):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class CaseStudyListView(ListView, LoginRequiredMixin):
+class CaseStudyListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = CaseStudy
     template_name = "case_studies/list.html"
