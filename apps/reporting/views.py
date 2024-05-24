@@ -527,15 +527,17 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
     purpose.text = report.objective
 
-    #############################################PROCESS OVERVIEW
+    ############################################# AS IS PROCESS DESCRPTION: PROCESS OVERVIEW
 
     if report.process_overview:
         title= doc.paragraphs[paragraph_dict['[TITLE]']]
         title.text = execution.process_discovery.title
 
         #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
+        short_descrption= doc.paragraphs[paragraph_dict['[SHORT DESCRIPTION]']]
+        short_descrption.text = execution.process_discovery.title
 
-    ############################ APPLICATIONS USED
+    ############################ AS IS PROCESS DESCRPTION: APPLICATIONS USED
     if report.applications_used:
         nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
         applications_used(nameapps, execution, scenario)
