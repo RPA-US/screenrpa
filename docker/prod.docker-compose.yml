@@ -25,7 +25,7 @@ services:
     container_name: ${DOCKERNAME}screenrpa-prod
     restart: unless-stopped
     env_file: ./.env
-    command: bash -c "source ./venv/bin/activate && python manage.py migrate && gunicorn core.wsgi:application"
+    command: bash -c "source ./venv/bin/activate && python manage.py migrate && gunicorn -c gunicorn-cfg.py core.wsgi"
     build:
       context: ../.
       dockerfile: ./docker/Dockerfile
