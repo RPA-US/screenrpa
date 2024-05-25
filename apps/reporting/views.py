@@ -576,12 +576,10 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         run.add_break()
 
     
-    
-
-    #############################3 DETAILS AS IS PROCESS
+    #############################3 DETAILS AS IS PROCESS ACTIONS
     
     if report.detailed_as_is_process_actions:
-
+        #meter diagrama de decision tree
         decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
         run = decision_tree.add_run()
@@ -593,7 +591,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution)
      
     
-    #############################3
+    #############################3 INPUT DATA DESCRPTION
     if report.input_data_description:
         original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
         df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
@@ -654,84 +652,116 @@ def convert_docx_to_pdf(dx_path, pdf_path):
 #     pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
 ##################################################33
 
-
 def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
+    
+    def variant_column(df):
+        sequence_to_variant = {}
+        next_variant_number = 1
+        # Función para generar el mapeo de variantes y asignar valores a la columna Variant2
+        def assign_variant(trace):
+            nonlocal next_variant_number  # Declarar next_variant_number como global
+            cadena = ""
+            for e in trace['activity_label'].tolist():
+                cadena = cadena + str(e)
+            if cadena not in sequence_to_variant:
+                sequence_to_variant[cadena] = next_variant_number
+                next_variant_number += 1
+            trace['Variant2'] = sequence_to_variant[cadena]
+            return trace
+
+        # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
+        df=df.groupby('trace_id').apply(assign_variant).reset_index(drop=True)
+        return df
+###############
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+    #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
+    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
+    df2= variant_column(df)
+    print(df2[['Variant', 'Variant2']])
 
-    def find_decision_point():
-        print("find_decision_point")
+
+
+
+
+
+
+# def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
+#     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+
+#     def find_decision_point():
+#         print("find_decision_point")
         
-    # Function to process each 'Variant' group
-    def process_variant_group(group):
-        variant = group['Variant'].iloc[0]
-        decision_tree.add_run().add_break()
-        decision_tree.add_run(f'Variant {variant}\n').bold = True
-        decision_tree.add_run().add_break()
-        # Sort activities based on extracted number
-        group = group.sort_values('ActivityNumber')
-        activity_dict = {}
-        # Iterate over each activity and calculate coordinate mean or display TextInput
-        for (activity_number, activity), activity_group in group.groupby(['ActivityNumber', 'Activity']):
-            action_number = len(activity_dict.get(activity, [])) + 1
-            if action_number == 1:
-                activity_dict = {}
-            activity_dict.setdefault(activity, []).append(activity_number)
+#     # Function to process each 'Variant' group
+#     def process_variant_group(group):
+#         variant = group['Variant'].iloc[0]
+#         decision_tree.add_run().add_break()
+#         decision_tree.add_run(f'Variant {variant}\n').bold = True
+#         decision_tree.add_run().add_break()
+#         # Sort activities based on extracted number
+#         group = group.sort_values('ActivityNumber')
+#         activity_dict = {}
+#         # Iterate over each activity and calculate coordinate mean or display TextInput
+#         for (activity_number, activity), activity_group in group.groupby(['ActivityNumber', 'Activity']):
+#             action_number = len(activity_dict.get(activity, [])) + 1
+#             if action_number == 1:
+#                 activity_dict = {}
+#             activity_dict.setdefault(activity, []).append(activity_number)
 
-            if activity_group['EventType'].iloc[0] == 1:
-                # Calculate mean of Coor_X and Coor_Y
-                mean_x = activity_group['Coor_X'].mean()
-                mean_y = activity_group['Coor_Y'].mean()
-                event_description=(f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
+#             if activity_group['EventType'].iloc[0] == 1:
+#                 # Calculate mean of Coor_X and Coor_Y
+#                 mean_x = activity_group['Coor_X'].mean()
+#                 mean_y = activity_group['Coor_Y'].mean()
+#                 event_description=(f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
                 
-                # Load corresponding image
-                screenshot_filename = activity_group['Screenshot'].iloc[0]
-                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                image_filename = activity_group['Screenshot'].iloc[0] if 'Screenshot' in activity_group.columns else None
+#                 # Load corresponding image
+#                 screenshot_filename = activity_group['Screenshot'].iloc[0]
+#                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+#                 image_filename = activity_group['Screenshot'].iloc[0] if 'Screenshot' in activity_group.columns else None
                 
-            else:
-                # Display TextInput value if exists, otherwise print "No TextInput"
-                text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
-                event_description=(f'The user writes "{text_input}"')
+#             else:
+#                 # Display TextInput value if exists, otherwise print "No TextInput"
+#                 text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
+#                 event_description=(f'The user writes "{text_input}"')
 
-            # Write to docx
-            decision_tree.add_run().add_break()
-            if action_number == 1:
-                decision_tree.add_run(f'Activity {activity}\n').bold = True
-            decision_tree.add_run().add_break()
-            decision_tree.add_run(f'Action {action_number}\n')
-            decision_tree.add_run().add_break()
-            decision_tree.add_run(event_description + '\n')
-            decision_tree.add_run().add_break()
+#             # Write to docx
+#             decision_tree.add_run().add_break()
+#             if action_number == 1:
+#                 decision_tree.add_run(f'Activity {activity}\n').bold = True
+#             decision_tree.add_run().add_break()
+#             decision_tree.add_run(f'Action {action_number}\n')
+#             decision_tree.add_run().add_break()
+#             decision_tree.add_run(event_description + '\n')
+#             decision_tree.add_run().add_break()
 
-            if image_filename:
-                with Image.open(path_to_image) as img:
-                    draw = ImageDraw.Draw(img)
-                    # Draw a small square around the mean coordinates
-                    box_size = 10  # Adjust the square size as needed
-                    left = mean_x - box_size / 2
-                    top = mean_y - box_size / 2
-                    right = mean_x + box_size / 2
-                    bottom = mean_y + box_size / 2
-                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
-                    # Convert the image to a byte object to insert into docx
-                    image_stream = io.BytesIO()
-                    img.save(image_stream, 'PNG')
-                    image_stream.seek(0)
+#             if image_filename:
+#                 with Image.open(path_to_image) as img:
+#                     draw = ImageDraw.Draw(img)
+#                     # Draw a small square around the mean coordinates
+#                     box_size = 10  # Adjust the square size as needed
+#                     left = mean_x - box_size / 2
+#                     top = mean_y - box_size / 2
+#                     right = mean_x + box_size / 2
+#                     bottom = mean_y + box_size / 2
+#                     draw.rectangle([left, top, right, bottom], outline="red", width=2)
+#                     # Convert the image to a byte object to insert into docx
+#                     image_stream = io.BytesIO()
+#                     img.save(image_stream, 'PNG')
+#                     image_stream.seek(0)
                     
-                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
-                decision_tree.add_run().add_break()
+#                     decision_tree.add_run().add_picture(image_stream, width=Inches(4))
+#                 decision_tree.add_run().add_break()
 
-    ######################################  
-    # Load data - replace 'path_to_file.csv' with your data file path
+#     ######################################  
+#     # Load data - replace 'path_to_file.csv' with your data file path
     
-    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+#     df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
 
-    # Extract activity number and convert to integer for sorting
-    df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
-    df['Activity'] = df['Activity'].apply(lambda x: str(x.split('_')[1]))
+#     # Extract activity number and convert to integer for sorting
+#     df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
+#     df['Activity'] = df['Activity'].apply(lambda x: str(x.split('_')[1]))
     
-    # Apply the function to each 'Variant' group
-    df.groupby('Variant').apply(process_variant_group)
+#     # Apply the function to each 'Variant' group
+#     df.groupby('Variant').apply(process_variant_group)
 
     
 
