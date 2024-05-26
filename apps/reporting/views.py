@@ -3,6 +3,7 @@ import io
 import json
 import os
 import pickle
+import re
 from tempfile import NamedTemporaryFile
 #from tkinter import Image
 from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
@@ -40,7 +41,7 @@ from PIL import Image, ImageDraw
 #import subprocess
 import aspose.words as aw
 ##################################
-from graphviz import Source
+from graphviz import Source, Digraph
 from tempfile import NamedTemporaryFile
 from apps.processdiscovery.utils import Process
 
@@ -675,6 +676,49 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
         df=df.groupby('trace_id').apply(assign_variant).reset_index(drop=True)
         return df
+    
+    
+    import pygraphviz as pgv        
+        
+    def cambiar_color_nodos_y_caminos(labels, path_to_dot_file):
+        # Cargar el contenido del archivo .dot
+        with open(path_to_dot_file, 'r') as file:
+            dot_content = file.read()
+        # Crear un grafo desde el contenido del archivo .dot
+        grafo = pgv.AGraph(string=dot_content)
+        
+        # Crear un conjunto de nodos que necesitamos colorear
+        nodos_a_colorear = set()
+        labels = [str(elemento) for elemento in labels]
+        # Recorrer todos los nodos del grafo y colorear los nodos correspondientes
+        for nodo in grafo.nodes():
+            if nodo.attr['label'] in labels:
+                nodo.attr['fillcolor'] = "yellow"
+                nodo.attr['style'] = 'filled'
+                nodos_a_colorear.add(nodo.name)
+            else:
+                nodo.attr['style'] = 'filled'
+                
+
+        # Recorrer todas las aristas del grafo y colorear las que conectan nodos en la lista
+        for edge in grafo.edges():
+            if edge[0] in nodos_a_colorear and edge[1] in nodos_a_colorear:
+                edge.attr['color'] = "blue"
+                edge.attr['penwidth'] = 2.0
+
+        # Configurar atributos globales del grafo
+        grafo.graph_attr.update(bgcolor='white', rankdir='LR')
+        grafo.graph_attr['overlap'] = 'false'
+        grafo.format = 'png'
+
+        # Guardar la imagen a un archivo temporal
+        temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+        grafo.draw(temp_file.name, prog='dot', format='png')
+        graph_path = temp_file.name
+
+        return graph_path
+
+        
 
     def lectura_traceability(json_path):
         # Leer el contenido del fichero JSON
@@ -724,7 +768,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         extract_ids(decision_points)
         return ids
 ############################################################3
-    def process_variant_group(group, traceability):
+    def process_variant_group(group, traceability, path_to_dot_file):
         #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
         
@@ -745,6 +789,14 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
 
         #actividades
         activities = group['activity_label'].unique().tolist() #en funcion de si las activity label se pueden repetir
+
+
+        #meto diagrama resaltado
+        run = decision_tree.add_run()
+        run.add_picture(cambiar_color_nodos_y_caminos(activities, path_to_dot_file), width=Inches(6))
+        run.add_break()
+
+        
         
         for i, activity in enumerate(activities):
             #print(f"Actividad {activity}")
@@ -767,7 +819,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
     df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
     df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
-    df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability))
+    path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+    df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file))
     
 
     
