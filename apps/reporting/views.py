@@ -1,5 +1,6 @@
 import base64
 import io
+import json
 import os
 import pickle
 from tempfile import NamedTemporaryFile
@@ -41,6 +42,8 @@ import aspose.words as aw
 ##################################
 from graphviz import Source
 from tempfile import NamedTemporaryFile
+from apps.processdiscovery.utils import Process
+
 
 # Create your views here.
 
@@ -672,13 +675,69 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
         df=df.groupby('trace_id').apply(assign_variant).reset_index(drop=True)
         return df
+
+    def lectura_traceability(json_path):
+        # Leer el contenido del fichero JSON
+        with open(json_path, 'r') as file:
+            traceability = json.load(file)
+            return traceability
+        
+
+    def get_branch_condition(decision_point, branch_number):
+        branches = decision_point.get('branches', [])
+        rules = decision_point.get('rules', {})
+        
+        for branch in branches:
+            if branch['label'] == str(branch_number):
+                res= rules.get(str(branch_number))
+                break
+            else: 
+                res= "No se han encontrado las reglas asociadas a esta rama."
+        return res
+    
+        
+############################################################3
+    def process_variant_group(group, traceability):
+        prev_act = traceability['decision_points'][0]['prevAct']
+        decision_point = traceability['decision_points'][0]
+        #ir acumulando las id de los puntos de decision de cada variante
+        #lista_dp=[traceability['decision_points'][0]['id']]
+
+        #asi es como se llama la columna que alberga los id de las ramas group[traceability['decision_points'][0]['id']]
+        #lista_dp= lista_dp + group[traceability['decision_points'][0]['id']].unique().tolist()
+
+        #variantes
+        variant = group['Variant2'].iloc[0]
+        decision_tree.add_run().add_break()
+        decision_tree.add_run(f'#####Variant {variant}\n').bold = True
+        decision_tree.add_run().add_break()
+
+        #actividades
+        activities = group['activity_label'].unique().tolist() #en funcion de si las activity label se pueden repetir
+        i=0 #para saber la rama que se toma
+        for activity in activities:
+            #print(f"Actividad {activity}")
+            decision_tree.add_run().add_break()
+            decision_tree.add_run(f'Activity {activity}\n').bold = True
+            decision_tree.add_run().add_break()
+            if str(activity) == prev_act:
+                decision_point = traceability['decision_points'][0]
+                num_ramas = len(decision_point['branches'])
+                
+                decision_tree.add_run(f'En esta actividad hay un "decision point" con  {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {activities[i+1]} y se cumple que: {get_branch_condition(decision_point, activities[i+1])} \n')
+                decision_tree.add_run().add_break() 
+
+            i+=1
+    
 ###############
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
     #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
     df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
     df2= variant_column(df)
-    print(df2[['Variant', 'Variant2']])
+    traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
+    df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability))
 
+    
 
 
 
