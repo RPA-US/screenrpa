@@ -533,7 +533,7 @@ class ReportCreateView(CreateView):
 def report_define(report_directory, report_path, execution,  report, scenario):
     template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
     doc = Document(template_path)
-
+    colnames=execution.case_study.special_colnames
     ###############3
     paragraph_dict = {}
     for i, paragraph in enumerate(doc.paragraphs):
@@ -566,7 +566,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     ############################ AS IS PROCESS DESCRPTION: APPLICATIONS USED
     if report.applications_used:
         nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
-        applications_used(nameapps, execution, scenario)
+        applications_used(nameapps, execution, scenario, colnames)
         #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
         
 
@@ -608,16 +608,16 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 
 #################################################################################
 
-def applications_used(nameapps, execution, scenario):
+def applications_used(nameapps, execution, scenario, colnames):
             logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
             df_logcsv = pd.read_csv(logcsv_directory)
-            unique_names = df_logcsv['NameApp'].unique()
+            unique_names = df_logcsv[colnames['NameApp']].unique()
 
             for name in unique_names:
                 run = nameapps.add_run('\n• ' + name)
                 run.add_break()
-                row = df_logcsv[df_logcsv['NameApp'] == name].iloc[0]
-                screenshot_filename = row['Screenshot']
+                row = df_logcsv[df_logcsv[colnames['NameApp']] == name].iloc[0]
+                screenshot_filename = row[colnames['Screenshot']]
                 screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
                 
                 if os.path.exists(screenshot_directory):
@@ -695,18 +695,49 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                 res= "No se han encontrado las reglas asociadas a esta rama."
         return res
     
+## devuelve un diccionario cuyas claves son las prev act delos punto de decisiones que hay en una varianye y 
+# de valor los json del punto de dceision
+
+    def get_decision_points_for_branches(data, branch_ids):
+        result = {}
+
+        def search_decision_points(decision_points, branch_ids):
+            for dp in decision_points:
+                for branch in dp['branches']:
+                    if branch['id'] in branch_ids:
+                        result[dp['prevAct']] = dp
+                    search_decision_points(branch.get('decision_points', []), branch_ids)
+
+        search_decision_points(data['decision_points'], branch_ids)
+        return result
+    
+#extrae una lista con todos los id de todos los puntos de decision de una variante  
+    def extract_decision_point_ids(decision_points):
+        ids = []
+    
+        def extract_ids(dp_list):
+            for dp in dp_list:
+                ids.append(dp['id'])
+                for branch in dp['branches']:
+                    extract_ids(branch['decision_points'])
         
+        extract_ids(decision_points)
+        return ids
 ############################################################3
     def process_variant_group(group, traceability):
-        prev_act = traceability['decision_points'][0]['prevAct']
+        #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
+        
+        #print(decision_point)
+        first_dp_id= decision_point['id']
         #ir acumulando las id de los puntos de decision de cada variante
-        #lista_dp=[traceability['decision_points'][0]['id']]
-
-        #asi es como se llama la columna que alberga los id de las ramas group[traceability['decision_points'][0]['id']]
-        #lista_dp= lista_dp + group[traceability['decision_points'][0]['id']].unique().tolist()
-
-        #variantes
+        columnas_id_ramas=[]
+        for pd in extract_decision_point_ids(traceability['decision_points']):
+            columnas_id_ramas= columnas_id_ramas + group[pd].unique().tolist()
+            variant_decision_points = get_decision_points_for_branches(traceability, columnas_id_ramas)
+        #añadir el primer punto de decision al diccionario
+        variant_decision_points[decision_point['prevAct']]= decision_point
+        
         variant = group['Variant2'].iloc[0]
         decision_tree.add_run().add_break()
         decision_tree.add_run(f'#####Variant {variant}\n').bold = True
@@ -714,28 +745,30 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
 
         #actividades
         activities = group['activity_label'].unique().tolist() #en funcion de si las activity label se pueden repetir
-        i=0 #para saber la rama que se toma
-        for activity in activities:
+        
+        for i, activity in enumerate(activities):
             #print(f"Actividad {activity}")
             decision_tree.add_run().add_break()
             decision_tree.add_run(f'Activity {activity}\n').bold = True
             decision_tree.add_run().add_break()
-            if str(activity) == prev_act:
-                decision_point = traceability['decision_points'][0]
+            if str(activity) in variant_decision_points:
+                decision_point = variant_decision_points[str(activity)]
                 num_ramas = len(decision_point['branches'])
+                next_activity = activities[i+1] if i+1 < len(activities) else None
+                condition = get_branch_condition(decision_point, next_activity) if next_activity else "N/A"
                 
-                decision_tree.add_run(f'En esta actividad hay un "decision point" con  {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {activities[i+1]} y se cumple que: {get_branch_condition(decision_point, activities[i+1])} \n')
+                decision_tree.add_run(f'En esta actividad hay un "decision point" con {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {next_activity} y se cumple que: {condition} \n')
                 decision_tree.add_run().add_break() 
-
-            i+=1
     
 ###############
+    
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
     #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
     df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
     df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
     df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability))
+    
 
     
 
