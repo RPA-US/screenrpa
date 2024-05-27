@@ -20,7 +20,6 @@ def default_process_discovery():
 class ProcessDiscovery(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     title = models.CharField(max_length=255)
-    description =  models.CharField(max_length=255, null=True, blank=True)
     preloaded_file = PrivateFileField("File", null=True, blank=True)
     freeze = models.BooleanField(default=False, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)

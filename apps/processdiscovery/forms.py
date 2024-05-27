@@ -18,7 +18,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "preloaded_file",
             "preloaded",
             "title",
-            "description",
             "model_type",
             "text_weight",
             "image_weight",
@@ -35,7 +34,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "configurations": _("Configurations"),
             "preloaded_file":_("Preload Execution Results"),
             "title": _("Title"),
-            "description": _("Description"),
             "model_type": _("Model Type"),
             "text_weight": _("Text Weight"),
             "image_weight": _("Image Weight"),
@@ -50,7 +48,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
         }
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Process discovery Technique"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "placeholder": "Description"}),
             "preloaded_file": forms.FileInput(attrs={'accept': '.zip'}),
             "preloaded": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),
             "type": forms.TextInput(attrs={"class": "form-control", "placeholder": "imotions"}),
