@@ -696,11 +696,31 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                 nodo.attr['fillcolor'] = "yellow"
                 nodo.attr['style'] = 'filled'
                 nodos_a_colorear.add(nodo.name)
+            elif nodo.attr['label'] == "":
+                nodo.attr['label'] = " "
+                nodo.attr['fillcolor'] = nodo.attr['fillcolor']
+                nodo.attr['style'] = nodo.attr['style']
             else:
                 nodo.attr['style'] = 'filled'
                 
 
         # Recorrer todas las aristas del grafo y colorear las que conectan nodos en la lista
+        # Identificar y colorear los nodos de tipo "diamond" entre los nodos etiquetados
+        for edge in grafo.edges():
+            if edge[0] in nodos_a_colorear and edge[1] not in nodos_a_colorear:
+                nodo_destino = grafo.get_node(edge[1])
+                if nodo_destino.attr['shape'] == 'diamond':
+                    nodo_destino.attr['fillcolor'] = "yellow"
+                    nodo_destino.attr['style'] = 'filled'
+                    nodos_a_colorear.add(nodo_destino.name)
+            elif edge[1] in nodos_a_colorear and edge[0] not in nodos_a_colorear:
+                nodo_origen = grafo.get_node(edge[0])
+                if nodo_origen.attr['shape'] == 'diamond':
+                    nodo_origen.attr['fillcolor'] = "yellow"
+                    nodo_origen.attr['style'] = 'filled'
+                    nodos_a_colorear.add(nodo_origen.name)
+
+        # Colorear las aristas conectadas entre los nodos coloreados
         for edge in grafo.edges():
             if edge[0] in nodos_a_colorear and edge[1] in nodos_a_colorear:
                 edge.attr['color'] = "blue"
