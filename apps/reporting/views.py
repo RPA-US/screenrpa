@@ -810,7 +810,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                     # Calcular la media de Coor_X y Coor_Y
                     mean_x = action['Coor_X'].mean()
                     mean_y = action['Coor_Y'].mean()
-                    event_description = (f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
+                    event_description = f"The user clicks at point ({mean_x}, {mean_y})"
 
                     # Cargar la imagen correspondiente
                     screenshot_filename = action['Screenshot'].iloc[0]
