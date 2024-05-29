@@ -783,6 +783,79 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         
         extract_ids(decision_points)
         return ids
+    #def explicabilidad_decisions(decision_points, variant_decision_points):
+
+
+    def explicabilidad_actions(decision_tree, activity,group):
+        decision_tree.add_run().add_break()
+        decision_tree.add_run(f'Activity {activity}\n').bold = True
+        decision_tree.add_run().add_break()
+
+        ############################ EXPLICABILIDAD DE LAS ACTIVIDADES Y ACCIONES
+        # Filtrar por actividad
+        activity_group = group[group['activity_label'] == activity]
+
+        # Agrupar por trace_id dentro de activity_group
+        activity_actions_group = activity_group.groupby('trace_id')
+        
+        # Verificar si todos los grupos tienen una fila
+        all_single_action = all(len(actions) == 1 for _, actions in activity_actions_group)
+        # Iterar sobre cada grupo y determinar el número de acciones
+        for activity_label, action in activity_group.groupby('activity_label'):
+            event_description = None
+            image_filename = None
+            if all_single_action: # ACTIVIDAD CON UNA ACCION
+
+                if action['MorKeyb'].iloc[0] == 1:
+                    # Calcular la media de Coor_X y Coor_Y
+                    mean_x = action['Coor_X'].mean()
+                    mean_y = action['Coor_Y'].mean()
+                    event_description = (f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
+
+                    # Cargar la imagen correspondiente
+                    screenshot_filename = action['Screenshot'].iloc[0]
+                    path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                    image_filename = action['Screenshot'].iloc[0] if 'Screenshot' in action.columns else None
+                else:
+                        # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
+                    text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
+                    event_description = f'The user writes "{text_input}"'
+                    
+
+            else: #ACTIVIDADES CON MAS DE UNA ACCION 
+
+                decision_tree.add_run(f'Activity {activity} con mas de una accion\n')
+                
+  
+            decision_tree.add_run().add_break()
+            if event_description:
+                decision_tree.add_run(event_description + '\n')
+            decision_tree.add_run().add_break()
+
+            if image_filename:
+                with Image.open(path_to_image) as img:
+                    draw = ImageDraw.Draw(img)
+                    # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
+                    box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
+                    left = mean_x - box_size / 2
+                    top = mean_y - box_size / 2
+                    right = mean_x + box_size / 2
+                    bottom = mean_y + box_size / 2
+                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                    # Convertir la imagen a un objeto byte para insertar en docx
+                    image_stream = io.BytesIO()
+                    img.save(image_stream, 'PNG')
+                    image_stream.seek(0)
+                        
+                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
+                decision_tree.add_run().add_break()                
+
+
+            
+            
+            
+                
+
 ############################################################3
     def process_variant_group(group, traceability, path_to_dot_file):
         #prev_act = traceability['decision_points'][0]['prevAct']
@@ -814,74 +887,21 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
 
 
         for i, activity in enumerate(activities):
-            decision_tree.add_run().add_break()
-            decision_tree.add_run(f'Activity {activity}\n').bold = True
-            decision_tree.add_run().add_break()
 
-            # Filtrar por actividad
-            activity_group = group[group['activity_label'] == activity]
+            #EXPLICAR ACTIVIDADES Y ACCIONES
+            explicabilidad_actions(decision_tree, activity,group)
+            
+            ############################
 
-            # Agrupar por trace_id dentro de activity_group
-            activity_actions_group = activity_group.groupby('trace_id')
-
-            # Iterar sobre cada grupo y determinar el número de acciones
-            for trace_id, actions in activity_actions_group:
-                action_count = len(actions)
-                if action_count > 1:
-                    decision_tree.add_run(f'Activity {activity} con trace_id {trace_id} tiene {action_count} acciones\n')
-                    event_description = None
-                    image_filename = None
-                else:
-                    decision_tree.add_run(f'Activity {activity} con trace_id {trace_id} tiene 1 acción\n')
-
-                    if actions['MorKeyb'].iloc[0] == 1:
-                        # Calcular la media de Coor_X y Coor_Y
-                        mean_x = actions['Coor_X'].mean()
-                        mean_y = actions['Coor_Y'].mean()
-                        event_description = f"The user clicks at point {mean_x:.0f},{mean_y:.0f}"
-
-                        # Cargar la imagen correspondiente
-                        screenshot_filename = actions['Screenshot'].iloc[0]
-                        path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                        image_filename = actions['Screenshot'].iloc[0] if 'Screenshot' in actions.columns else None
-                    else:
-                        # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
-                        text_input = actions['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in actions.columns and not pd.isnull(actions['TextInput'].iloc[0]) else "No TextInput"
-                        event_description = f'The user writes "{text_input}"'
-
-                decision_tree.add_run().add_break()
-                if event_description:
-                    decision_tree.add_run(event_description + '\n')
-                decision_tree.add_run().add_break()
-
-                if image_filename:
-                    with Image.open(path_to_image) as img:
-                        draw = ImageDraw.Draw(img)
-                        # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
-                        box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
-                        left = mean_x - box_size / 2
-                        top = mean_y - box_size / 2
-                        right = mean_x + box_size / 2
-                        bottom = mean_y + box_size / 2
-                        draw.rectangle([left, top, right, bottom], outline="red", width=2)
-                        # Convertir la imagen a un objeto byte para insertar en docx
-                        image_stream = io.BytesIO()
-                        img.save(image_stream, 'PNG')
-                        image_stream.seek(0)
+            #EXPLICABILIDAD DE LAS DECISIONES
+            if str(activity) in variant_decision_points:
+                decision_point = variant_decision_points[str(activity)]
+                num_ramas = len(decision_point['branches'])
+                next_activity = activities[i+1] if i+1 < len(activities) else None
+                condition = get_branch_condition(decision_point, next_activity) if next_activity else "N/A"
                         
-                        decision_tree.add_run().add_picture(image_stream, width=Inches(4))
-                    decision_tree.add_run().add_break()
-                    ############################
-
-                    #EXPLICABILIDAD DE LAS DECISIONES
-                    if str(activity) in variant_decision_points:
-                        decision_point = variant_decision_points[str(activity)]
-                        num_ramas = len(decision_point['branches'])
-                        next_activity = activities[i+1] if i+1 < len(activities) else None
-                        condition = get_branch_condition(decision_point, next_activity) if next_activity else "N/A"
-                        
-                        decision_tree.add_run(f'En esta actividad hay un "decision point" con {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {next_activity} y se cumple que: {condition} \n')
-                        decision_tree.add_run().add_break() 
+                decision_tree.add_run(f'En esta actividad hay un "decision point" con {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {next_activity} y se cumple que: {condition} \n')
+                decision_tree.add_run().add_break() 
     
 ###############
     
