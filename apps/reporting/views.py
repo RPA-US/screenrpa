@@ -672,7 +672,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             return trace
 
         # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
-        df=df.groupby('trace_id').apply(assign_variant).reset_index(drop=True)
+        df=df.groupby(colnames['Case']).apply(assign_variant).reset_index(drop=True)
         return df
     
     
@@ -801,7 +801,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             decision_tree.add_run(f'Acción {k}')
             decision_tree.add_run().add_break()
             
-            if action['MorKeyb'].iloc[0] == 1: #colnames['EventType']
+            if action[colnames['EventType']].iloc[0] == 1: #colnames['EventType']
                 # Calcular la media de Coor_X y Coor_Y
                 mean_x = action[colnames['CoorX']].mean()
                 mean_y = action[colnames['CoorY']].mean()
@@ -849,7 +849,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         activity_group = group[group['activity_label'] == activity]
 
         # Agrupar por trace_id dentro de activity_group
-        activity_actions_group = activity_group.groupby('trace_id')
+        activity_actions_group = activity_group.groupby(colnames['Case'])
         
         # Verificar si todos los grupos tienen una fila
         all_single_action = all(len(actions) == 1 for _, actions in activity_actions_group)
