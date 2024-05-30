@@ -1,5 +1,8 @@
+import base64
 import os
+from tempfile import NamedTemporaryFile
 import cv2
+from graphviz import Source
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -34,7 +37,7 @@ from keras.applications.vgg16 import VGG16
 from PIL import Image
 import tensorflow as tf
 from tqdm import tqdm
-
+import pygraphviz as pgv 
 
 def scene_level(log_path, scenario_path, execution):
     """
@@ -582,36 +585,248 @@ def delete_process_discovery(request):
 
 ##########################################
 
+# class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
+#     login_url = '/login/'
+#     def get(self, request, *args, **kwargs):
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+#         scenario = request.GET.get('scenario')
+
+#         if not execution:
+#             return HttpResponse(status=404, content="Execution not found.")
+#         elif not execution.case_study.user == request.user:
+#             return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
+
+#         if scenario == None:
+#             #scenario = "1"
+#             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+              
+#         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
+
+
+#         with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
+#             bpmn_content = file.read()
+
+#         # Include CSV data in the context for the template
+#         context = {
+#             "execution_id": execution.id,
+#             "prueba": bpmn_content,  # Png to be used in the HTML template
+#             "scenarios": execution.scenarios_to_study,
+#             "scenario": scenario
+#             }
+#         return render(request, 'processdiscovery/result.html', context)
+    
+# def dot_to_png(dot_path):
+# # Cargar el contenido del archivo .dot
+#     with open(dot_path, 'r') as file:
+#         dot_content = file.read()
+#     try:
+#         graph = Source(dot_content)
+#         graph.format = 'png'
+        
+#         # Guardar la imagen a un archivo temporal
+#         temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+#         graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
+        
+#         return graph_path 
+    
+#     except Exception as e:
+
+#         print(f"Error al procesar el gráfico: {e}")
+#         return None
+def dot_to_png_base64(dot_path):
+    try:
+        # Cargar el contenido del archivo .dot
+        with open(dot_path, 'r') as file:
+            dot_content = file.read()
+        
+        # Crear el gráfico a partir del contenido DOT
+        graph = Source(dot_content)
+        graph.format = 'png'
+        
+        # Guardar la imagen a un archivo temporal
+        with NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
+        
+        # Leer la imagen generada en formato binario
+        with open(graph_path, 'rb') as image_file:
+            png_image = image_file.read()
+        
+        # Convertir la imagen a base64
+        image_base64 = base64.b64encode(png_image).decode('utf-8')
+        
+        return f'data:image/png;base64,{image_base64}'
+    
+    except Exception as e:
+        print(f"Error al procesar el gráfico: {e}")
+        return None
+    
+def variant_column(df, colnames):
+    sequence_to_variant = {}
+    next_variant_number = 1
+    # Función para generar el mapeo de variantes y asignar valores a la columna Variant2
+    def assign_variant(trace):
+        nonlocal next_variant_number  # Declarar next_variant_number como global
+        cadena = ""
+        for e in trace['activity_label'].tolist():
+            cadena = cadena + str(e)
+        if cadena not in sequence_to_variant:
+            sequence_to_variant[cadena] = next_variant_number
+            next_variant_number += 1
+        trace['Variant2'] = sequence_to_variant[cadena]
+        return trace
+
+    # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
+    df=df.groupby(colnames['Case']).apply(assign_variant).reset_index(drop=True)
+    return df
+    
+    
+           
+        
+def cambiar_color_nodos_y_caminos(labels, path_to_dot_file):
+    # Cargar el contenido del archivo .dot
+    with open(path_to_dot_file, 'r') as file:
+        dot_content = file.read()
+    # Crear un grafo desde el contenido del archivo .dot
+    grafo = pgv.AGraph(string=dot_content)
+    
+    # Crear un conjunto de nodos que necesitamos colorear
+    nodos_a_colorear = set()
+    labels = [str(elemento) for elemento in labels]
+    # Recorrer todos los nodos del grafo y colorear los nodos correspondientes
+    for nodo in grafo.nodes():
+        if nodo.attr['label'] in labels:
+            nodo.attr['fillcolor'] = "yellow"
+            nodo.attr['style'] = 'filled'
+            nodos_a_colorear.add(nodo.name)
+        elif nodo.attr['label'] == "":
+            nodo.attr['label'] = " "
+            nodo.attr['fillcolor'] = nodo.attr['fillcolor']
+            nodo.attr['style'] = nodo.attr['style']
+        else:
+            nodo.attr['style'] = 'filled'
+            
+
+    # Recorrer todas las aristas del grafo y colorear las que conectan nodos en la lista
+    # Identificar y colorear los nodos de tipo "diamond" entre los nodos etiquetados
+    for edge in grafo.edges():
+        if edge[0] in nodos_a_colorear and edge[1] not in nodos_a_colorear:
+            nodo_destino = grafo.get_node(edge[1])
+            if nodo_destino.attr['shape'] == 'diamond':
+                nodo_destino.attr['fillcolor'] = "yellow"
+                nodo_destino.attr['style'] = 'filled'
+                nodos_a_colorear.add(nodo_destino.name)
+        elif edge[1] in nodos_a_colorear and edge[0] not in nodos_a_colorear:
+            nodo_origen = grafo.get_node(edge[0])
+            if nodo_origen.attr['shape'] == 'diamond':
+                nodo_origen.attr['fillcolor'] = "yellow"
+                nodo_origen.attr['style'] = 'filled'
+                nodos_a_colorear.add(nodo_origen.name)
+
+    # Colorear las aristas conectadas entre los nodos coloreados
+    for edge in grafo.edges():
+        if edge[0] in nodos_a_colorear and edge[1] in nodos_a_colorear:
+            edge.attr['color'] = "blue"
+            edge.attr['penwidth'] = 2.0
+
+    # Configurar atributos globales del grafo
+    grafo.graph_attr.update(bgcolor='white', rankdir='LR')
+    grafo.graph_attr['overlap'] = 'false'
+    grafo.format = 'png'
+
+    # Guardar la imagen a un archivo temporal
+    temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+    grafo.draw(temp_file.name, prog='dot', format='png')
+    # Convertir la imagen a base64
+    with open(temp_file.name, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+    return encoded_image
+    
+# class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
+#     login_url = '/login/'
+
+#     def get(self, request, *args, **kwargs):
+#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+#         scenario = request.GET.get('scenario')
+#         selected_variant = request.GET.get('variant')
+
+#         if not execution:
+#             return HttpResponse(status=404, content="Execution not found.")
+#         elif not execution.case_study.user == request.user:
+#             return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
+
+#         if scenario == None:
+#             #scenario = "1"
+#             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+              
+#         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+
+#         df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+#         df = variant_column(df, execution.case_study.special_colnames)
+#         variants = df['Variant2'].unique().tolist()
+
+#         group = df.groupby('Variant2')
+#         activities = group['activity_label'].unique().tolist()
+
+#         if selected_variant:
+#             variant_image_path = cambiar_color_nodos_y_caminos(activities, path_to_bpmn_file)
+#             variant_image_base64 = dot_to_png_base64(variant_image_path)
+#         else:
+#             selected_variant = variants[0]
+
+#         # Include CSV data in the context for the template
+#         context = {
+#             "execution_id": execution.id,
+#             "bpmn_to_png": dot_to_png_base64(path_to_bpmn_file),  # Png to be used in the HTML template
+#             "scenarios": execution.scenarios_to_study,
+#             "scenario": scenario,
+#             "variants" :variants,
+#             "selected_variant": selected_variant,
+#             "variant_image": variant_image_base64,
+#             }
+#         return render(request, 'processdiscovery/result.html', context)
+
 class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
     login_url = '/login/'
+
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
+        selected_variant = request.GET.get('variant')
 
         if not execution:
             return HttpResponse(status=404, content="Execution not found.")
         elif not execution.case_study.user == request.user:
             return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
 
-        if scenario == None:
-            #scenario = "1"
-            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
+        if scenario is None:
+            scenario = execution.scenarios_to_study[0]  # por defecto, el primer escenario indicado
               
-        path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
+        path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "bpmn.dot")
 
+        df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario + '_results', 'pd_log.csv'))
+        df = variant_column(df, execution.case_study.special_colnames)
+        variants = df['Variant2'].unique().tolist()
 
-        with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
-            bpmn_content = file.read()
+        variant_image_base64 = None
+        if selected_variant:
+            labels_for_variant = df[df['Variant2'] == int(selected_variant)]['activity_label'].unique().tolist()
+            variant_image_base64 = cambiar_color_nodos_y_caminos(labels_for_variant, path_to_bpmn_file)
+            #variant_image_base64 = dot_to_png_base64(variant_image_path)
+        else:
+            selected_variant = None
+            variant_image_base64=dot_to_png_base64(path_to_bpmn_file)
 
-        # Include CSV data in the context for the template
+        # Incluir los datos CSV en el contexto para la plantilla
         context = {
             "execution_id": execution.id,
-            "prueba": bpmn_content,  # Png to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
-            }
-        return render(request, 'processdiscovery/result.html', context)
-    
+            "scenario": scenario,
+            "variants": variants,
+            "selected_variant": selected_variant,
+            "variant_image": variant_image_base64
+        }
+        return render(request, 'processdiscovery/result.html', context)  
 
 
 ####################################################################
@@ -625,7 +840,7 @@ def ProcessDiscoveryDownload(request, execution_id):
     if scenario is None:
         scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
               
-    path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
+    path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
     
     try:
         # Asegúrate de que la ruta absoluta sea correcta
