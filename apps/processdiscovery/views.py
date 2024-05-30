@@ -585,54 +585,7 @@ def delete_process_discovery(request):
 
 ##########################################
 
-# class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
-#     login_url = '/login/'
-#     def get(self, request, *args, **kwargs):
-#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-#         scenario = request.GET.get('scenario')
 
-#         if not execution:
-#             return HttpResponse(status=404, content="Execution not found.")
-#         elif not execution.case_study.user == request.user:
-#             return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
-
-#         if scenario == None:
-#             #scenario = "1"
-#             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-              
-#         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
-
-
-#         with open('/screenrpa/'+path_to_bpmn_file, 'r', encoding='utf-8') as file:
-#             bpmn_content = file.read()
-
-#         # Include CSV data in the context for the template
-#         context = {
-#             "execution_id": execution.id,
-#             "prueba": bpmn_content,  # Png to be used in the HTML template
-#             "scenarios": execution.scenarios_to_study,
-#             "scenario": scenario
-#             }
-#         return render(request, 'processdiscovery/result.html', context)
-    
-# def dot_to_png(dot_path):
-# # Cargar el contenido del archivo .dot
-#     with open(dot_path, 'r') as file:
-#         dot_content = file.read()
-#     try:
-#         graph = Source(dot_content)
-#         graph.format = 'png'
-        
-#         # Guardar la imagen a un archivo temporal
-#         temp_file = NamedTemporaryFile(delete=False, suffix='.png')
-#         graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
-        
-#         return graph_path 
-    
-#     except Exception as e:
-
-#         print(f"Error al procesar el gráfico: {e}")
-#         return None
 def dot_to_png_base64(dot_path):
     try:
         # Cargar el contenido del archivo .dot
@@ -731,60 +684,16 @@ def cambiar_color_nodos_y_caminos(labels, path_to_dot_file):
     # Configurar atributos globales del grafo
     grafo.graph_attr.update(bgcolor='white', rankdir='LR')
     grafo.graph_attr['overlap'] = 'false'
-    grafo.format = 'png'
+    grafo.format = 'dot'
 
     # Guardar la imagen a un archivo temporal
-    temp_file = NamedTemporaryFile(delete=False, suffix='.png')
-    grafo.draw(temp_file.name, prog='dot', format='png')
-    # Convertir la imagen a base64
-    with open(temp_file.name, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+    temp_file = NamedTemporaryFile(delete=False, suffix='.dot')
+    grafo.write(temp_file.name)
+    modified_dot_path = temp_file.name
 
-    return encoded_image
+    return modified_dot_path
     
-# class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
-#     login_url = '/login/'
 
-#     def get(self, request, *args, **kwargs):
-#         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
-#         scenario = request.GET.get('scenario')
-#         selected_variant = request.GET.get('variant')
-
-#         if not execution:
-#             return HttpResponse(status=404, content="Execution not found.")
-#         elif not execution.case_study.user == request.user:
-#             return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
-
-#         if scenario == None:
-#             #scenario = "1"
-#             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-              
-#         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
-
-#         df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
-#         df = variant_column(df, execution.case_study.special_colnames)
-#         variants = df['Variant2'].unique().tolist()
-
-#         group = df.groupby('Variant2')
-#         activities = group['activity_label'].unique().tolist()
-
-#         if selected_variant:
-#             variant_image_path = cambiar_color_nodos_y_caminos(activities, path_to_bpmn_file)
-#             variant_image_base64 = dot_to_png_base64(variant_image_path)
-#         else:
-#             selected_variant = variants[0]
-
-#         # Include CSV data in the context for the template
-#         context = {
-#             "execution_id": execution.id,
-#             "bpmn_to_png": dot_to_png_base64(path_to_bpmn_file),  # Png to be used in the HTML template
-#             "scenarios": execution.scenarios_to_study,
-#             "scenario": scenario,
-#             "variants" :variants,
-#             "selected_variant": selected_variant,
-#             "variant_image": variant_image_base64,
-#             }
-#         return render(request, 'processdiscovery/result.html', context)
 
 class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
     login_url = '/login/'
@@ -811,8 +720,8 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
         variant_image_base64 = None
         if selected_variant:
             labels_for_variant = df[df['Variant2'] == int(selected_variant)]['activity_label'].unique().tolist()
-            variant_image_base64 = cambiar_color_nodos_y_caminos(labels_for_variant, path_to_bpmn_file)
-            #variant_image_base64 = dot_to_png_base64(variant_image_path)
+            modified_dot_path  = cambiar_color_nodos_y_caminos(labels_for_variant, path_to_bpmn_file)
+            variant_image_base64 = dot_to_png_base64(modified_dot_path)
         else:
             selected_variant = None
             variant_image_base64=dot_to_png_base64(path_to_bpmn_file)

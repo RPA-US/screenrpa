@@ -33,7 +33,7 @@
           <div class="card">
             <!-- Display the bpmn image -->
             <div class="card-body">
-              <img src="data:image/png;base64,{{ variant_image }}" alt="Grafo del Proceso">
+              <img src="{{ variant_image }}" alt="Grafo del Proceso">
           </div>
           <div class="card-footer py-4">
             <nav aria-label="...">
@@ -52,18 +52,18 @@
 
                 <div class="dropdown">
                   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {% if selected_variant %}
-                      Variante {{ selected_variant }}
-                    {% else %}
-                      Seleccionar Variante
-                    {% endif %}
+                      {% if selected_variant %}
+                          Variante {{ selected_variant }}
+                      {% else %}
+                          Seleccionar Variante
+                      {% endif %}
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    {% for variant in variants %}
-                    <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?variant={{ variant }}">Variante {{ variant }}</a>
-                    {% endfor %}
+                      {% for variant in variants %}
+                          <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?variant={{ variant }}">Variante {{ variant }}</a>
+                      {% endfor %}
                   </div>
-                </div>
+              </div>
 
                 
                 <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
