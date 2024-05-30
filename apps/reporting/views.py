@@ -786,7 +786,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
     #def explicabilidad_decisions(decision_points, variant_decision_points):
 
 
-    def explicabilidad_actions(decision_tree, activity,group):
+    def explicabilidad_actions2(decision_tree, activity,group):
         decision_tree.add_run().add_break()
         decision_tree.add_run(f'Activity {activity}\n').bold = True
         decision_tree.add_run().add_break()
@@ -804,8 +804,13 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         for activity_label, action in activity_group.groupby('activity_label'):
             event_description = None
             image_filename = None
+
             if all_single_action: # ACTIVIDAD CON UNA ACCION
 
+                decision_tree.add_run().add_break()
+                decision_tree.add_run(f'Acción 1')
+                decision_tree.add_run().add_break()
+                    
                 if action['MorKeyb'].iloc[0] == 1:
                     # Calcular la media de Coor_X y Coor_Y
                     mean_x = action['Coor_X'].mean()
@@ -823,10 +828,10 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                     
 
             else: #ACTIVIDADES CON MAS DE UNA ACCION 
-
+                #for activity_label, action in activity_group.groupby('activity_label'):
                 decision_tree.add_run(f'Activity {activity} con mas de una accion\n')
                 
-  
+            ############################################
             decision_tree.add_run().add_break()
             if event_description:
                 decision_tree.add_run(event_description + '\n')
@@ -848,7 +853,109 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                     image_stream.seek(0)
                         
                     decision_tree.add_run().add_picture(image_stream, width=Inches(4))
-                decision_tree.add_run().add_break()                
+                decision_tree.add_run().add_break()       
+
+
+    def explicabilidad_actions(decision_tree, activity,group):
+
+        def pintar_imagen(k, action_dict):
+            event_description = None
+            image_filename = None
+
+            action = pd.DataFrame(action_dict[k])
+            #action= action_dict[k]
+
+            decision_tree.add_run().add_break()
+            decision_tree.add_run(f'Acción {k}')
+            decision_tree.add_run().add_break()
+                
+            if action['MorKeyb'].iloc[0] == 1:
+                # Calcular la media de Coor_X y Coor_Y
+                mean_x = action['Coor_X'].mean()
+                mean_y = action['Coor_Y'].mean()
+                event_description = f"The user clicks at point ({mean_x}, {mean_y})"
+
+                # Cargar la imagen correspondiente
+                screenshot_filename = action['Screenshot'].iloc[0]
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                image_filename = action['Screenshot'].iloc[0] if 'Screenshot' in action.columns else None
+            else:
+                    # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
+                text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
+                event_description = f'The user writes "{text_input}"'
+            
+            decision_tree.add_run().add_break()
+            if event_description:
+                decision_tree.add_run(event_description + '\n')
+            decision_tree.add_run().add_break()
+
+            if image_filename:
+                with Image.open(path_to_image) as img:
+                    draw = ImageDraw.Draw(img)
+                    # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
+                    box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
+                    left = mean_x - box_size / 2
+                    top = mean_y - box_size / 2
+                    right = mean_x + box_size / 2
+                    bottom = mean_y + box_size / 2
+                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                    # Convertir la imagen a un objeto byte para insertar en docx
+                    image_stream = io.BytesIO()
+                    img.save(image_stream, 'PNG')
+                    image_stream.seek(0)
+                        
+                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
+                decision_tree.add_run().add_break()
+        #####################################
+
+        decision_tree.add_run().add_break()
+        decision_tree.add_run(f'Activity {activity}\n').bold = True
+        decision_tree.add_run().add_break()
+
+        ############################ EXPLICABILIDAD DE LAS ACTIVIDADES Y ACCIONES
+        # Filtrar por actividad
+        activity_group = group[group['activity_label'] == activity]
+
+        # Agrupar por trace_id dentro de activity_group
+        activity_actions_group = activity_group.groupby('trace_id')
+        
+        # Verificar si todos los grupos tienen una fila
+        all_single_action = all(len(actions) == 1 for _, actions in activity_actions_group)
+        # Iterar sobre cada grupo y determinar el número de acciones
+
+        
+
+        if all_single_action: # ACTIVIDAD CON UNA ACCION
+            action_dict = {}
+            for i, (activity_label, action) in enumerate(activity_group.groupby('activity_label'), start=1):
+                action_dict[i] = action
+
+            for k in sorted(action_dict.keys()):
+                pintar_imagen(k, action_dict)    
+                
+             
+        else: #ACTIVIDADES CON MAS DE UNA ACCION 
+            action_dict = {}  # Crear el diccionario vacío    
+            for i, (activity_label, action_group) in enumerate(activity_actions_group):
+                #crear un diccionario, cuyos claves sean el indice de accion (accion 1, 2, 3) y los valores sea el grupo de filas de la accion
+                            
+                for j, (index, action) in enumerate(action_group.iterrows(), start=1):
+                    #relleno el diccionario
+                    
+                    if j not in action_dict:
+                        action_dict[j] = []
+                    # Relleno el diccionario
+                    action_dict[j].append(action)
+                    #action_dict[j] = action_dict[j].append(action[1])
+
+            #recorrer las claves del diccionario
+            for k in sorted(action_dict.keys()):
+                pintar_imagen(k, action_dict)
+                    
+
+                
+            ############################################
+          
 
 
             
@@ -899,7 +1006,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                 num_ramas = len(decision_point['branches'])
                 next_activity = activities[i+1] if i+1 < len(activities) else None
                 condition = get_branch_condition(decision_point, next_activity) if next_activity else "N/A"
-                        
+
+                decision_tree.add_run().add_break()      
                 decision_tree.add_run(f'En esta actividad hay un "decision point" con {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {next_activity} y se cumple que: {condition} \n')
                 decision_tree.add_run().add_break() 
     
@@ -908,7 +1016,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
     #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
     #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
-    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log-2acciones.csv'), delimiter=';')
+    #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
     df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
