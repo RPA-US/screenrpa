@@ -45,6 +45,8 @@ from graphviz import Source, Digraph
 from tempfile import NamedTemporaryFile
 from apps.processdiscovery.utils import Process
 
+import pygraphviz as pgv 
+
 
 # Create your views here.
 
@@ -588,7 +590,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         #decision_tree.text = ''
         #detailes_as_is_process_actions(doc, paragraph_dict, execution, scenario)
 
-        detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution)
+        detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames)
      
     
     #############################3 INPUT DATA DESCRPTION
@@ -606,22 +608,22 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 #################################################################################
 
 def applications_used(nameapps, execution, scenario, colnames):
-            logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
-            df_logcsv = pd.read_csv(logcsv_directory)
-            unique_names = df_logcsv[colnames['NameApp']].unique()
+    logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
+    df_logcsv = pd.read_csv(logcsv_directory)
+    unique_names = df_logcsv[colnames['NameApp']].unique()
 
-            for name in unique_names:
-                run = nameapps.add_run('\n• ' + name)
-                run.add_break()
-                row = df_logcsv[df_logcsv[colnames['NameApp']] == name].iloc[0]
-                screenshot_filename = row[colnames['Screenshot']]
-                screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                
-                if os.path.exists(screenshot_directory):
-                
-                    nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
-                else:
-                    print(f"Image not found for {name}: {screenshot_directory}")
+    for name in unique_names:
+        run = nameapps.add_run('\n• ' + name)
+        run.add_break()
+        row = df_logcsv[df_logcsv[colnames['NameApp']] == name].iloc[0]
+        screenshot_filename = row[colnames['Screenshot']]
+        screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+        
+        if os.path.exists(screenshot_directory):
+        
+            nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
+        else:
+            print(f"Image not found for {name}: {screenshot_directory}")
 #############################################################################################
 def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
         
@@ -652,7 +654,7 @@ def convert_docx_to_pdf(dx_path, pdf_path):
 #     pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
 ##################################################33
 
-def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
+def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames):
     
     def variant_column(df):
         sequence_to_variant = {}
@@ -674,7 +676,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         return df
     
     
-    import pygraphviz as pgv        
+           
         
     def cambiar_color_nodos_y_caminos(labels, path_to_dot_file):
         # Cargar el contenido del archivo .dot
@@ -786,77 +788,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
     #def explicabilidad_decisions(decision_points, variant_decision_points):
 
 
-    def explicabilidad_actions2(decision_tree, activity,group):
-        decision_tree.add_run().add_break()
-        decision_tree.add_run(f'Activity {activity}\n').bold = True
-        decision_tree.add_run().add_break()
-
-        ############################ EXPLICABILIDAD DE LAS ACTIVIDADES Y ACCIONES
-        # Filtrar por actividad
-        activity_group = group[group['activity_label'] == activity]
-
-        # Agrupar por trace_id dentro de activity_group
-        activity_actions_group = activity_group.groupby('trace_id')
-        
-        # Verificar si todos los grupos tienen una fila
-        all_single_action = all(len(actions) == 1 for _, actions in activity_actions_group)
-        # Iterar sobre cada grupo y determinar el número de acciones
-        for activity_label, action in activity_group.groupby('activity_label'):
-            event_description = None
-            image_filename = None
-
-            if all_single_action: # ACTIVIDAD CON UNA ACCION
-
-                decision_tree.add_run().add_break()
-                decision_tree.add_run(f'Acción 1')
-                decision_tree.add_run().add_break()
-                    
-                if action['MorKeyb'].iloc[0] == 1:
-                    # Calcular la media de Coor_X y Coor_Y
-                    mean_x = action['Coor_X'].mean()
-                    mean_y = action['Coor_Y'].mean()
-                    event_description = f"The user clicks at point ({mean_x}, {mean_y})"
-
-                    # Cargar la imagen correspondiente
-                    screenshot_filename = action['Screenshot'].iloc[0]
-                    path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                    image_filename = action['Screenshot'].iloc[0] if 'Screenshot' in action.columns else None
-                else:
-                        # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
-                    text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
-                    event_description = f'The user writes "{text_input}"'
-                    
-
-            else: #ACTIVIDADES CON MAS DE UNA ACCION 
-                #for activity_label, action in activity_group.groupby('activity_label'):
-                decision_tree.add_run(f'Activity {activity} con mas de una accion\n')
-                
-            ############################################
-            decision_tree.add_run().add_break()
-            if event_description:
-                decision_tree.add_run(event_description + '\n')
-            decision_tree.add_run().add_break()
-
-            if image_filename:
-                with Image.open(path_to_image) as img:
-                    draw = ImageDraw.Draw(img)
-                    # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
-                    box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
-                    left = mean_x - box_size / 2
-                    top = mean_y - box_size / 2
-                    right = mean_x + box_size / 2
-                    bottom = mean_y + box_size / 2
-                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
-                    # Convertir la imagen a un objeto byte para insertar en docx
-                    image_stream = io.BytesIO()
-                    img.save(image_stream, 'PNG')
-                    image_stream.seek(0)
-                        
-                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
-                decision_tree.add_run().add_break()       
-
-
-    def explicabilidad_actions(decision_tree, activity,group):
+    def explicabilidad_actions(decision_tree, activity,group, colnames):
 
         def pintar_imagen(k, action_dict):
             event_description = None
@@ -868,17 +800,17 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
             decision_tree.add_run().add_break()
             decision_tree.add_run(f'Acción {k}')
             decision_tree.add_run().add_break()
-                
-            if action['MorKeyb'].iloc[0] == 1:
+            
+            if action['MorKeyb'].iloc[0] == 1: #colnames['EventType']
                 # Calcular la media de Coor_X y Coor_Y
-                mean_x = action['Coor_X'].mean()
-                mean_y = action['Coor_Y'].mean()
+                mean_x = action[colnames['CoorX']].mean()
+                mean_y = action[colnames['CoorY']].mean()
                 event_description = f"The user clicks at point ({mean_x}, {mean_y})"
 
                 # Cargar la imagen correspondiente
-                screenshot_filename = action['Screenshot'].iloc[0]
+                screenshot_filename = action[colnames['Screenshot']].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                image_filename = action['Screenshot'].iloc[0] if 'Screenshot' in action.columns else None
+                image_filename = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
             else:
                     # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
                 text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
@@ -956,15 +888,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
                 
             ############################################
           
-
-
-            
-            
-            
-                
-
 ############################################################3
-    def process_variant_group(group, traceability, path_to_dot_file):
+    def process_variant_group(group, traceability, path_to_dot_file, colnames):
         #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
         
@@ -996,7 +921,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
         for i, activity in enumerate(activities):
 
             #EXPLICAR ACTIVIDADES Y ACCIONES
-            explicabilidad_actions(decision_tree, activity,group)
+            explicabilidad_actions(decision_tree, activity,group, colnames)
             
             ############################
 
@@ -1016,99 +941,12 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
     #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
     #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
-    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log-2acciones.csv'), delimiter=';')
-    #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+    #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log-2acciones.csv'), delimiter=';')
+    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
     df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
-    df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file))
-    
-
-    
-
-
-
-
-
-
-# def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
-#     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
-
-#     def find_decision_point():
-#         print("find_decision_point")
-        
-#     # Function to process each 'Variant' group
-#     def process_variant_group(group):
-#         variant = group['Variant'].iloc[0]
-#         decision_tree.add_run().add_break()
-#         decision_tree.add_run(f'Variant {variant}\n').bold = True
-#         decision_tree.add_run().add_break()
-#         # Sort activities based on extracted number
-#         group = group.sort_values('ActivityNumber')
-#         activity_dict = {}
-#         # Iterate over each activity and calculate coordinate mean or display TextInput
-#         for (activity_number, activity), activity_group in group.groupby(['ActivityNumber', 'Activity']):
-#             action_number = len(activity_dict.get(activity, [])) + 1
-#             if action_number == 1:
-#                 activity_dict = {}
-#             activity_dict.setdefault(activity, []).append(activity_number)
-
-#             if activity_group['EventType'].iloc[0] == 1:
-#                 # Calculate mean of Coor_X and Coor_Y
-#                 mean_x = activity_group['Coor_X'].mean()
-#                 mean_y = activity_group['Coor_Y'].mean()
-#                 event_description=(f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
-                
-#                 # Load corresponding image
-#                 screenshot_filename = activity_group['Screenshot'].iloc[0]
-#                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-#                 image_filename = activity_group['Screenshot'].iloc[0] if 'Screenshot' in activity_group.columns else None
-                
-#             else:
-#                 # Display TextInput value if exists, otherwise print "No TextInput"
-#                 text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
-#                 event_description=(f'The user writes "{text_input}"')
-
-#             # Write to docx
-#             decision_tree.add_run().add_break()
-#             if action_number == 1:
-#                 decision_tree.add_run(f'Activity {activity}\n').bold = True
-#             decision_tree.add_run().add_break()
-#             decision_tree.add_run(f'Action {action_number}\n')
-#             decision_tree.add_run().add_break()
-#             decision_tree.add_run(event_description + '\n')
-#             decision_tree.add_run().add_break()
-
-#             if image_filename:
-#                 with Image.open(path_to_image) as img:
-#                     draw = ImageDraw.Draw(img)
-#                     # Draw a small square around the mean coordinates
-#                     box_size = 10  # Adjust the square size as needed
-#                     left = mean_x - box_size / 2
-#                     top = mean_y - box_size / 2
-#                     right = mean_x + box_size / 2
-#                     bottom = mean_y + box_size / 2
-#                     draw.rectangle([left, top, right, bottom], outline="red", width=2)
-#                     # Convert the image to a byte object to insert into docx
-#                     image_stream = io.BytesIO()
-#                     img.save(image_stream, 'PNG')
-#                     image_stream.seek(0)
-                    
-#                     decision_tree.add_run().add_picture(image_stream, width=Inches(4))
-#                 decision_tree.add_run().add_break()
-
-#     ######################################  
-#     # Load data - replace 'path_to_file.csv' with your data file path
-    
-#     df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
-
-#     # Extract activity number and convert to integer for sorting
-#     df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
-#     df['Activity'] = df['Activity'].apply(lambda x: str(x.split('_')[1]))
-    
-#     # Apply the function to each 'Variant' group
-#     df.groupby('Variant').apply(process_variant_group)
-
+    df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
     
 
 
