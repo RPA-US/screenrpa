@@ -16,21 +16,17 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             )
         fields = (
             "title",
-            "decision_point_activity",
             "columns_to_drop_before_decision_point",
             "configurations",
             "preloaded_file",
-            "variants_to_study",
             "preloaded"
         )
         labels = {
             "title": _("Title"),
-            "decision_point_activity": _("Decision Point To Study"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "configurations": _("Additional Configurations (JSON)"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "target_label": _("Target label"),
-            "variants_to_study": _("Variants to study"),
             "preloaded_file":"Preload Execution Results"
         }
 
@@ -53,15 +49,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": _("Variant")
                     }
-            ),
-            "decision_point_activity": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "C"
-                    }
-            ),
-            "variants_to_study": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Let it empty to study all variants. If there is only one variant, just type its name. If there are more than one, separate them by comma. E.g. v1, v2, v3"}
             ),
             "columns_to_drop_before_decision_point": forms.TextInput(
                 attrs={

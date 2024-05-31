@@ -78,7 +78,6 @@ def extract_training_dataset(log_path, root_path, execution):
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
-    decision_point_activity = execution.extract_training_dataset.decision_point_activity
     target_label = execution.extract_training_dataset.target_label
     special_colnames = execution.case_study.special_colnames
     actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point
@@ -112,7 +111,7 @@ def extract_training_dataset(log_path, root_path, execution):
         
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
     flat_dataset_row(log, columns, target_label, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
-                     special_colnames["Timestamp"], decision_point_activity, actions_columns, execution.process_discovery)
+                     special_colnames["Timestamp"], actions_columns, execution.process_discovery)
 
 def decision_tree_training(log_path, path, execution):
     # "media/flattened_dataset.json",
