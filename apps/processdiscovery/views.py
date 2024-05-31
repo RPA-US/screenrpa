@@ -349,6 +349,8 @@ def process_level(folder_path, df, execution):
 
             # First we make columns for each of the decision points, with the id of the decision point as the column name
             dps = process.get_non_empty_dp_flattened()
+            execution.process_discovery.activities_before_dps = [dp['prevAct'] for dp in dps]
+            # execution.process_discovery.save()
             branches = process.get_all_branches_flattened()
             for dp in dps:
                 df[dp.id] = None
@@ -368,6 +370,7 @@ def process_level(folder_path, df, execution):
                             current_dp = dp.id
                     for passed_dp in current_branches.keys():
                         df.at[index, passed_dp] = current_branches[passed_dp]
+                        
             df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
             df.to_csv(os.path.join(folder_path, 'pd_log.csv'), index=False)
