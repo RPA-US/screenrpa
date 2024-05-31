@@ -29,6 +29,14 @@
 
 > UNZIP the sources or clone the private repository. After getting the code, open a terminal and navigate to the working directory, with product source code.
 
+The following software is needed to run this platform:
+- C++ Dev Tools from Visual Studio: ![visual_studio_c++_features](apps\static\assets\img\image.png) 
+
+- Graphviz: if you are in Linux, you can run this command _sudo apt-get install graphviz graphviz-dev_. If not, you can find your software in https://graphviz.org/download/.
+
+
+
+
 ```bash
 $ # Get the code
 $ git clone https://github.com/RPA-US/screenrpa.git
