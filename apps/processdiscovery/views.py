@@ -43,6 +43,7 @@ def scene_level(log_path, scenario_path, execution):
     """
     Feature extraction WorkFlow
     """
+    special_colnames= execution.case_study.special_colnames
 
     def load_model(model_type):
         if model_type == 'clip':
@@ -150,7 +151,7 @@ def scene_level(log_path, scenario_path, execution):
             features = apply_pca(features, n_components)
         
         _, labels = find_optimal_clusters(features, clustering_type)
-        df['activity_label'] = labels.astype(str)
+        df[special_colnames['Activity']] = labels.astype(str)
         
         return df
 
@@ -159,16 +160,16 @@ def scene_level(log_path, scenario_path, execution):
     Labeling WorkFlow
     '''
     def auto_labeling(df, remove_loops):
-        activity_inicial = df['activity_label'].iloc[0]
+        activity_inicial = df[special_colnames['Activity']].iloc[0]
         trace_id = 1
         trace_ids = [trace_id]
         for index, row in df.iterrows():
             if index != 0:
-                if row['activity_label'] == activity_inicial:
+                if row[special_colnames['Activity']] == activity_inicial:
                     trace_id += 1
                 trace_ids.append(trace_id)
         df['trace_id'] = trace_ids
-        if remove_loops: df = remove_duplicate_activities(df, 'activity_label')
+        if remove_loops: df = remove_duplicate_activities(df, special_colnames['Activity'])
         return df
 
     def manual_labeling(df):
@@ -221,7 +222,7 @@ def scene_level(log_path, scenario_path, execution):
     Special parameters for the execution of the process discovery
     '''
     # root_path = execution.exp_folder_complete_path
-    special_colnames = execution.case_study.special_colnames
+    
 
     '''
     Process Discovery Execution Parameters
@@ -252,7 +253,7 @@ def scene_level(log_path, scenario_path, execution):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
     
-    ui_log.to_csv(os.path.join(folder_path, 'pd_ui_log.csv'), index=False)
+    ui_log.to_csv(os.path.join(folder_path, 'pd_log.csv'), index=False)
     
     generate_dendrogram(ui_log, show_dendrogram=show_dendrogram)
 
@@ -263,7 +264,7 @@ def process_level(folder_path, df, execution):
     special_colnames = execution.case_study.special_colnames
 
     def petri_net_process(df, special_colnames):
-        formatted_df = pm4py.format_dataframe(df, case_id='trace_id', activity_key='activity_label', timestamp_key=special_colnames['Timestamp'])
+        formatted_df = pm4py.format_dataframe(df, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])
         event_log = pm4py.convert_to_event_log(formatted_df)
         process_tree = inductive_miner.apply(event_log)
         net, initial_marking, final_marking = pm4py.convert_to_petri_net(process_tree)
@@ -273,7 +274,7 @@ def process_level(folder_path, df, execution):
             f.write(dot.source)
 
     def bpmn_process(df, special_colnames):
-        formatted_df = pm4py.format_dataframe(df, case_id='trace_id', activity_key='activity_label', timestamp_key=special_colnames['Timestamp'])
+        formatted_df = pm4py.format_dataframe(df, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])
         event_log = pm4py.convert_to_event_log(formatted_df)
         bpmn_model = pm4py.discover_bpmn_inductive(event_log)
         dot = bpmn_visualizer.apply(bpmn_model)
@@ -353,11 +354,11 @@ def process_level(folder_path, df, execution):
                 df[dp.id] = None
 
             for index, row in df.iterrows():
-                if row['trace_id'] != current_trace_id:
-                    current_trace_id = row['trace_id']
+                if row[special_colnames['Case']] != current_trace_id:
+                    current_trace_id = row[special_colnames['Case']]
                     current_branches = {}
                 else:
-                    act_label = row['activity_label']
+                    act_label = row[special_colnames['Activity']]
                     if current_dp is not None:
                         if any(branch.label == act_label for branch in branches):
                             branch_id = (list(filter(lambda branch: branch.label == act_label, branches))[0].id)
@@ -615,16 +616,16 @@ def dot_to_png_base64(dot_path):
 def variant_column(df, colnames):
     sequence_to_variant = {}
     next_variant_number = 1
-    # Función para generar el mapeo de variantes y asignar valores a la columna Variant2
+    # Función para generar el mapeo de variantes y asignar valores a la columna auto_variant
     def assign_variant(trace):
         nonlocal next_variant_number  # Declarar next_variant_number como global
         cadena = ""
-        for e in trace['activity_label'].tolist():
+        for e in trace[colnames['Activity']].tolist():
             cadena = cadena + str(e)
         if cadena not in sequence_to_variant:
             sequence_to_variant[cadena] = next_variant_number
             next_variant_number += 1
-        trace['Variant2'] = sequence_to_variant[cadena]
+        trace['auto_variant'] = sequence_to_variant[cadena]
         return trace
 
     # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
@@ -714,11 +715,11 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
 
         df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario + '_results', 'pd_log.csv'))
         df = variant_column(df, execution.case_study.special_colnames)
-        variants = df['Variant2'].unique().tolist()
+        variants = df['auto_variant'].unique().tolist()
 
         variant_image_base64 = None
         if selected_variant:
-            labels_for_variant = df[df['Variant2'] == int(selected_variant)]['activity_label'].unique().tolist()
+            labels_for_variant = df[df['auto_variant'] == int(selected_variant)][execution.case_study.special_colnames['Activity']].unique().tolist()
             modified_dot_path  = cambiar_color_nodos_y_caminos(labels_for_variant, path_to_bpmn_file)
             variant_image_base64 = dot_to_png_base64(modified_dot_path)
         else:
