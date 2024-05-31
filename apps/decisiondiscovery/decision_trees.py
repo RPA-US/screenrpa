@@ -9,7 +9,7 @@ from typing import List
 import matplotlib.image as plt_img
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-from .utils import def_preprocessor
+from .utils import def_preprocessor, best_model_grid_search, cross_validation
 from apps.chefboost import Chefboost as chef
 from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 import pickle

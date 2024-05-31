@@ -26,7 +26,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "configurations": _("Additional Configurations (JSON)"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
-            "target_label": _("Target label"),
             "preloaded_file":"Preload Execution Results"
         }
 
@@ -43,12 +42,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             ),
             "preloaded": forms.CheckboxInput(
                 attrs={"class": "primary-checkbox"}
-            ),
-            "target_label": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": _("Variant")
-                    }
             ),
             "columns_to_drop_before_decision_point": forms.TextInput(
                 attrs={

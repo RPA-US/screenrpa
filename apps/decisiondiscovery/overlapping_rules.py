@@ -92,7 +92,7 @@ def get_decision_path(tree, X_sample):
         paths.append(" and ".join(path))
     return paths
 
-def overlapping_rules(df, param_path, configuration, one_hot_columns, target_label, k_fold_cross_validation):
+def overlapping_rules(df, param_path, configuration, one_hot_columns, k_fold_cross_validation):
     times = {}
     accuracies = {}
     

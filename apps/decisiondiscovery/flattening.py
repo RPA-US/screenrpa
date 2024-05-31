@@ -3,7 +3,7 @@ import json
 import os
 from numpyencoder import NumpyEncoder
 
-def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
+def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
                           actions_columns, process_discovery):
     """
     This function convert the log into a dataset, that is, to flat all the existing events over the same case,
@@ -33,7 +33,7 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
                     last_case = c
                     log_dict[c] = {
                             "Timestamp_start": log.at[index, timestamp_column_name],
-                            target_label: log.at[index, target_label]
+                            "Variant": log.at[index, "Variant"]
                         }
                 if str(act) == str(activity):
                     for h in columns:

@@ -92,7 +92,6 @@ class ExtractTrainingDataset(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     preloaded_file = PrivateFileField("File", null=True, blank=True)
     freeze = models.BooleanField(default=False, editable=True)
-    target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
