@@ -155,7 +155,8 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
     :rtype: DataFrame
     """
     
-    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    #path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    path_results = path_scenario + "_results"
     ui_elements_crops_npy_root = os.path.join(path_results, 'components_npy')
     metadata_json_root = os.path.join(path_results, 'components_json')
     model = execution.ui_elements_classification.model.path # specific extractors
