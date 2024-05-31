@@ -54,13 +54,13 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
                             "Timestamp_start": log.at[index, timestamp_column_name],
                             target_label: log.at[index, target_label]
                         }
-                if act == activity:
+                if str(act) == str(activity):
                     for h in columns:
-                        log_dict[c][h+"_"+activity] = log.at[index, h]
+                        log_dict[c][h+"_"+str(activity)] = log.at[index, h]
                 else:
                     for h in columns:
                         if h not in actions_columns:
-                            log_dict[c][h+"_"+activity] = log.at[index, h]
+                            log_dict[c][h+"_"+str(activity)] = log.at[index, h]
                     before_DP = False
     
         log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
