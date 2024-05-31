@@ -368,7 +368,7 @@ def process_level(folder_path, df, execution):
                             current_dp = dp.id
                     for passed_dp in current_branches.keys():
                         df.at[index, passed_dp] = current_branches[passed_dp]
-            
+            df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
             df.to_csv(os.path.join(folder_path, 'pd_log.csv'), index=False)
 
@@ -714,7 +714,7 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "bpmn.dot")
 
         df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario + '_results', 'pd_log.csv'))
-        df = variant_column(df, execution.case_study.special_colnames)
+        
         variants = df['auto_variant'].unique().tolist()
 
         variant_image_base64 = None

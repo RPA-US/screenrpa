@@ -84,9 +84,10 @@ def extract_training_dataset(log_path, root_path, execution):
     
     
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
-    print(log_path+"\n")
+    aux= os.path.join(root_path + "_results", "pd_log.csv")
+    print(aux+"\n")
 
-    log = read_ui_log_as_dataframe(log_path)
+    log = read_ui_log_as_dataframe(aux)
     process_columns = [special_colnames["Case"], 
                        special_colnames["Activity"], 
                        special_colnames["Variant"],
