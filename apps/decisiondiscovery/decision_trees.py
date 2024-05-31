@@ -1,20 +1,17 @@
-from typing import List
 import os
 import time
 import shutil
 import graphviz
-import pandas as pd
-import matplotlib.image as plt_img
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from apps.chefboost import Chefboost as chef
-from .utils import preprocess_data, create_and_fit_pipeline, def_preprocessor
-from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+import pandas as pd
 from django.utils.translation import gettext_lazy as _
+from typing import List
+import matplotlib.image as plt_img
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
+from .utils import def_preprocessor
+from apps.chefboost import Chefboost as chef
+from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 import pickle
 
 # def chefboost_decision_tree(df, param_path, algorithms, target_label):
@@ -244,72 +241,3 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     accuracies["selected_params"] = best_params
 
     return accuracies, times
-
-def best_model_grid_search(X_train, y_train, tree_classifier, k_fold_cross_validation):
-    # Define the hyperparameter grid for tuning
-    param_grid = {
-        'criterion': ['gini', 'entropy'],
-        'splitter': ['best', 'random'],
-        'max_depth': [None, 5, 10, 15],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 5]
-    }
-
-    # Perform GridSearchCV to find the best hyperparameters
-    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, cv=k_fold_cross_validation)
-    grid_search.fit(X_train, y_train)
-
-    # Get the best hyperparameters and train the final model
-    best_tree_classifier = grid_search.best_estimator_
-    print("Grid Search Best Params:\n", grid_search.best_params_)
-    
-    best_tree_classifier.fit(X_train, y_train)
-    
-    return best_tree_classifier, grid_search.best_params_
-
-def cross_validation(X, y, config, target_label, library, model, k_fold_cross_validation):
-    # Cross-validation: accurracy + f1 score
-    accuracies = {}
-    
-    skf = StratifiedKFold(n_splits=k_fold_cross_validation)
-    # skf.get_n_splits(X, y)
-
-    for i, (train_index, test_index) in enumerate(skf.split(X, y)):
-        print("Fold {}:".format(i))
-        print("Train: index={}".format(train_index))
-        print("Test:  index={}".format(test_index))
-        X_train_fold, X_test_fold = X.iloc[train_index], X.iloc[test_index]
-        y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
-        
-        if library == "chefboost":
-            current_iteration_model, acc = chef.fit(X_train_fold+X_test_fold, config, target_label)
-        elif library == "sklearn":
-            current_iteration_model = model.fit(X_train_fold, y_train_fold)
-        else:
-            raise Exception("Decision Model Option Not Valid")
-
-        metrics_acc = []
-        metrics_precision = []
-        metrics_recall = []
-        metrics_f1 = []
-        
-        if library == "chefboost":
-            y_pred = []
-            for _, X_test_instance in X_test_fold.iterrows():
-                y_pred.append(chef.predict(current_iteration_model, X_test_instance))
-        elif library == "sklearn":
-            y_pred = current_iteration_model.predict(X_test_fold)
-        else:
-            raise Exception("Decision Model Option Not Valid")
-            
-        metrics_acc.append(accuracy_score(y_test_fold, y_pred))
-        metrics_precision.append(precision_score(y_test_fold, y_pred, average='weighted'))
-        metrics_recall.append(recall_score(y_test_fold, y_pred, average='weighted'))
-        metrics_f1.append(f1_score(y_test_fold, y_pred, average='weighted'))
-
-    accuracies['accuracy'] = np.mean(metrics_acc)
-    accuracies['precision'] = np.mean(metrics_precision)
-    accuracies['recall'] = np.mean(metrics_recall)
-    accuracies['f1_score'] = np.mean(metrics_f1)
-    print("Stratified K-Fold:  accuracy={} f1_score={}".format(accuracies['accuracy'], accuracies['f1_score']))
-    return accuracies
