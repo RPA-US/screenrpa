@@ -52,19 +52,30 @@ def default_special_colnames():
         # "eyetracking_gaze_point_y": "Gaze point Y" 
         # }
 
-
-        #  Estructura válida actualmente   
+        # {
+        # "Case": "ocel:eid",
+        # "Activity": "ocel:activity",
+        # "Screenshot": "ocel:screenshot:name", 
+        # "Variant": "ocel:variant",
+        # "Timestamp": "ocel:timestamp",
+        # "NameApp": "FileName",
+        # "EventType": "ocel:type:event",
+        # "CoorX": "ocel:click:coorX",
+        # "CoorY": "ocel:click:coorY",
+        # "Header": "header"
+        # }
+        #  Estructura más usada actualmente (Si se va a tirar directamente Process Discovery)
         {
-        "Case": "ocel:eid",
-        "Activity": "ocel:activity",
-        "Screenshot": "ocel:screenshot:name", 
-        "Variant": "ocel:variant",
-        "Timestamp": "ocel:timestamp",
-        "NameApp": "FileName",
-        "EventType": "ocel:type:event",
-        "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY",
-        "Header": "header"
+        "Case": "Case",
+        "Activity": "Activity",
+        "Screenshot": "Screenshot", 
+        "Variant": "Variant",
+        "Timestamp": "Timestamp",
+        "NameApp": "NameApp",
+        "EventType": "EventType",
+        "Coor_X": "Coor_X",
+        "Coor_Y": "Coor_Y",
+        "Header": "Header"
         }
     )
 
