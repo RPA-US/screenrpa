@@ -4,7 +4,7 @@ Copyright (c) RPA-US
 """
 
 bind = '0.0.0.0:8000'
-workers = 1
+workers = 4
 accesslog = '-'
 loglevel = 'debug'
 capture_output = True
