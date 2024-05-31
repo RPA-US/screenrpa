@@ -155,14 +155,14 @@ def scene_level(log_path, scenario_path, execution):
     '''
     def auto_labeling(df, remove_loops):
         activity_inicial = df['activity_label'].iloc[0]
-        trace_id = 1
-        trace_ids = [trace_id]
+        process_id = 1
+        process_ids = [process_id]
         for index, row in df.iterrows():
             if index != 0:
                 if row['activity_label'] == activity_inicial:
-                    trace_id += 1
-                trace_ids.append(trace_id)
-        df['trace_id'] = trace_ids
+                    process_id += 1
+                process_ids.append(process_id)
+        df['process_id'] = process_ids
         if remove_loops: df = remove_duplicate_activities(df, 'activity_label')
         return df
 
@@ -171,7 +171,7 @@ def scene_level(log_path, scenario_path, execution):
         # For now, it simply returns the DataFrame unchanged.
         return df
 
-    def trace_id_assignment(df, remove_loops, labeling_mode='automatic'):
+    def process_id_assignment(df, remove_loops, labeling_mode='automatic'):
         if labeling_mode == 'automatic':
             df = auto_labeling(df, remove_loops)
         elif labeling_mode == 'manual':
@@ -207,7 +207,7 @@ def scene_level(log_path, scenario_path, execution):
                 distance_sort='descending',
                 show_leaf_counts=True)
 
-        dendrogram_path = os.path.join(scenario_path + '_results', 'dendrogram.png')
+        dendrogram_path = os.path.join(root_path, 'results', 'dendrogram.png')
         plt.savefig(dendrogram_path)
         plt.close() 
         print(f"Dendrogram saved in: {dendrogram_path}")
@@ -215,7 +215,7 @@ def scene_level(log_path, scenario_path, execution):
     '''
     Special parameters for the execution of the process discovery
     '''
-    # root_path = execution.exp_folder_complete_path
+    root_path = execution.exp_folder_complete_path
     special_colnames = execution.case_study.special_colnames
 
     '''
@@ -239,18 +239,19 @@ def scene_level(log_path, scenario_path, execution):
     ui_log = read_ui_log_as_dataframe(log_path)
     ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], text_column, image_weight=image_weight, text_weight=text_weight, model_type=model_type)
     ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)
-    ui_log = trace_id_assignment(ui_log, remove_loops, labeling_mode=labeling)
+    ui_log = process_id_assignment(ui_log, remove_loops, labeling_mode=labeling)
 
-    folder_path = scenario_path + '_results'
-    print(folder_path)
+    folder_path = os.path.join(root_path, 'results')
     
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
-    
-    ui_log.to_csv(os.path.join(folder_path, 'pd_ui_log.csv'), index=False)
+        ui_log.to_csv(os.path.join(folder_path, 'ui_log_process_discovery.csv'), index=False)
+    else:
+        raise Exception(_("You selected a process discovery type that does not exist"))
     
     generate_dendrogram(ui_log, show_dendrogram=show_dendrogram)
 
+    print(folder_path)
     return folder_path, ui_log
     
 
@@ -258,7 +259,7 @@ def process_level(folder_path, df, execution):
     special_colnames = execution.case_study.special_colnames
 
     def petri_net_process(df, special_colnames):
-        formatted_df = pm4py.format_dataframe(df, case_id='trace_id', activity_key='activity_label', timestamp_key=special_colnames['Timestamp'])
+        formatted_df = pm4py.format_dataframe(df, case_id='process_id', activity_key='activity_label', timestamp_key=special_colnames['Timestamp'])
         event_log = pm4py.convert_to_event_log(formatted_df)
         process_tree = inductive_miner.apply(event_log)
         net, initial_marking, final_marking = pm4py.convert_to_petri_net(process_tree)
@@ -268,7 +269,7 @@ def process_level(folder_path, df, execution):
             f.write(dot.source)
 
     def bpmn_process(df, special_colnames):
-        formatted_df = pm4py.format_dataframe(df, case_id='trace_id', activity_key='activity_label', timestamp_key=special_colnames['Timestamp'])
+        formatted_df = pm4py.format_dataframe(df, case_id='process_id', activity_key='activity_label', timestamp_key=special_colnames['Timestamp'])
         event_log = pm4py.convert_to_event_log(formatted_df)
         bpmn_model = pm4py.discover_bpmn_inductive(event_log)
         dot = bpmn_visualizer.apply(bpmn_model)
