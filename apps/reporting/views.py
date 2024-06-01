@@ -585,10 +585,10 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     if report.detailed_as_is_process_actions:
         #meter diagrama de decision tree
         decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
-        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
-        run = decision_tree.add_run()
-        run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
-        run.add_break()
+        # path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+        # run = decision_tree.add_run()
+        # run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
+        # run.add_break()
         #decision_tree.text = ''
         #detailes_as_is_process_actions(doc, paragraph_dict, execution, scenario)
 
@@ -658,24 +658,24 @@ def convert_docx_to_pdf(dx_path, pdf_path):
 
 def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames):
     
-    def variant_column(df):
-        sequence_to_variant = {}
-        next_variant_number = 1
-        # Función para generar el mapeo de variantes y asignar valores a la columna Variant2
-        def assign_variant(trace):
-            nonlocal next_variant_number  # Declarar next_variant_number como global
-            cadena = ""
-            for e in trace[colnames['Activity']].tolist():
-                cadena = cadena + str(e)
-            if cadena not in sequence_to_variant:
-                sequence_to_variant[cadena] = next_variant_number
-                next_variant_number += 1
-            trace[colnames['Variant']] = sequence_to_variant[cadena]
-            return trace
+    # def variant_column(df):
+    #     sequence_to_variant = {}
+    #     next_variant_number = 1
+    #     # Función para generar el mapeo de variantes y asignar valores a la columna Variant2
+    #     def assign_variant(trace):
+    #         nonlocal next_variant_number  # Declarar next_variant_number como global
+    #         cadena = ""
+    #         for e in trace[colnames['Activity']].tolist():
+    #             cadena = cadena + str(e)
+    #         if cadena not in sequence_to_variant:
+    #             sequence_to_variant[cadena] = next_variant_number
+    #             next_variant_number += 1
+    #         trace[colnames['Variant']] = sequence_to_variant[cadena]
+    #         return trace
 
-        # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
-        df=df.groupby(colnames['Case']).apply(assign_variant).reset_index(drop=True)
-        return df
+    #     # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
+    #     df=df.groupby(colnames['Case']).apply(assign_variant).reset_index(drop=True)
+    #     return df
     
     
            
@@ -795,6 +795,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         def pintar_imagen(k, action_dict):
             event_description = None
             image_click = None
+            out_click=None
             image = None
 
             action = pd.DataFrame(action_dict[k])
@@ -808,13 +809,22 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 # Calcular la media de Coor_X y Coor_Y
                 mean_x = action[colnames['CoorX']].mean()
                 mean_y = action[colnames['CoorY']].mean()
-                event_description = f"The user clicks at point ({mean_x}, {mean_y})"
 
                 # Cargar la imagen correspondiente
                 screenshot_filename = action[colnames['Screenshot']].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
                 image = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
                 image_click=True
+                with Image.open(path_to_image) as img:
+                    width, height = img.size
+
+                if width>=mean_x and height>=mean_y:
+                    event_description = f"The user clicks at point ({mean_x}, {mean_y})"
+                else:
+
+                    event_description = f"ERROR: coordinates recorded incorrectly, out of screen resolution. User clicks on {mean_x}, {mean_y} and the screen resolution is {width}, {height}."
+                    out_click=True
+
             else:
                     # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
                 text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
@@ -830,26 +840,27 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_tree.add_run(event_description + '\n')
             decision_tree.add_run().add_break()
 
-            if image:
+            if image and not out_click:
                 with Image.open(path_to_image) as img:
                     draw = ImageDraw.Draw(img)
-                    if image_click:
-                        width, height = img.size
-                        print(f'Tamaño de la imagen: {width}x{height}')
+                    
+                    if image_click: # si en la imagen se encuentra el click
+                        
                         # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
                         box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
                         left = mean_x - box_size / 2
                         top = mean_y - box_size / 2
                         right = mean_x + box_size / 2
                         bottom = mean_y + box_size / 2
-                        print(f'Intentando dibujar cuadro desde ({left}, {top}) hasta ({right}, {bottom})')
+                        
                         draw.rectangle([left, top, right, bottom], outline="red", width=5)
                         # Convertir la imagen a un objeto byte para insertar en docx    
-            image_stream = io.BytesIO()
-            img.save(image_stream, 'PNG')
-            image_stream.seek(0)
-            decision_tree.add_run().add_picture(image_stream, width=Inches(6))
-            decision_tree.add_run().add_break()
+
+                image_stream = io.BytesIO()
+                img.save(image_stream, 'PNG')
+                image_stream.seek(0)
+                decision_tree.add_run().add_picture(image_stream, width=Inches(6))
+                decision_tree.add_run().add_break()
         #####################################
 
         decision_tree.add_run().add_break()
