@@ -1,8 +1,9 @@
 import csv
 import json
 import os
+import zipfile
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
@@ -390,7 +391,8 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
         path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset_"+decision_point+".csv")
         # CSV Download
         if path_to_csv_file and download=="True":
-            return ResultDownload(path_to_csv_file) 
+            #return ResultDownload(path_to_csv_file)
+            return Extract_training_dataset_ResultDownload(scenario,execution)
 
         # CSV Reading and Conversion to JSON
         csv_data_json = read_csv_to_json(path_to_csv_file)
@@ -452,6 +454,46 @@ def ResultDownload(path_to_csv_file):
         for row in reader:
             writer.writerow(row)
         return response
+    
+
+
+def Extract_training_dataset_ResultDownload(scenario,execution):
+        # Buscar todos los archivos decision_tree_x.pkl en el directorio
+    results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+    tree_files = []
+    for root, dirs, files in os.walk(results_folder):
+        for file in files:
+            if file.startswith("flattened_dataset_") and file.endswith(".csv"):
+                tree_files.append(os.path.join(root, file))
+
+    if not tree_files:
+        return HttpResponse("No decision tree files found.", status=404)
+    
+    if len(tree_files) == 1:
+        # Si hay solo un archivo, descargarlo directamente
+        file_path = tree_files[0]
+        response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+        return response
+    else:
+        # Si hay más de un archivo, crear un ZIP y descargarlo
+        zip_filename = f"{scenario}_extract_training_dataset_results.zip"
+        zip_buffer = io.BytesIO()
+        try:
+            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                for file_path in tree_files:
+                    zip_file.write(file_path, os.path.relpath(file_path, results_folder))
+            
+            zip_buffer.seek(0)
+            
+            # Crear la respuesta HTTP con el archivo ZIP para descargar
+            response = HttpResponse(zip_buffer, content_type="application/zip")
+            response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+            return response
+        
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 #############################################################
 
@@ -776,29 +818,51 @@ def extract_tree_rules(path_to_tree_file):
 ####################################################################
 
 def DecisionTreeDownload(request, execution_id):
-
     execution = get_object_or_404(Execution, pk=execution_id)
-    #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
     scenario = request.GET.get('scenario')
     
     if scenario is None:
-        scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
-              
-    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_.pkl")
+        scenario = execution.scenarios_to_study[0]  # Por defecto, el primero indicado
     
-    try:
-        # Asegúrate de que la ruta absoluta sea correcta
-        full_file_path = os.path.join('/screenrpa', path_to_tree_file)
-        with open(full_file_path, 'rb') as archivo:
-            response = HttpResponse(archivo.read(), content_type="application/octet-stream")
-            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
+    results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+    
+    # Buscar todos los archivos decision_tree_x.pkl en el directorio
+    tree_files = []
+    for root, dirs, files in os.walk(results_folder):
+        for file in files:
+            if file.startswith("decision_tree_") and file.endswith(".pkl"):
+                tree_files.append(os.path.join(root, file))
+
+    if not tree_files:
+        return HttpResponse("No decision tree files found.", status=404)
+    
+    if len(tree_files) == 1:
+        # Si hay solo un archivo, descargarlo directamente
+        file_path = tree_files[0]
+        response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+        return response
+    else:
+        # Si hay más de un archivo, crear un ZIP y descargarlo
+        zip_filename = f"{scenario}_decision_tree_results.zip"
+        zip_buffer = io.BytesIO()
+        try:
+            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                for file_path in tree_files:
+                    zip_file.write(file_path, os.path.relpath(file_path, results_folder))
+            
+            zip_buffer.seek(0)
+            
+            # Crear la respuesta HTTP con el archivo ZIP para descargar
+            response = HttpResponse(zip_buffer, content_type="application/zip")
+            response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
             return response
         
-    except FileNotFoundError:
-
-        print(f"File not found: {path_to_tree_file}")
-        return HttpResponse("Lo siento, el archivo no se encontró.", status=404)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 
     
 ####################################################################
+
