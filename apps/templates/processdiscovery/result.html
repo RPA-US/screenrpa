@@ -60,7 +60,7 @@
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                       {% for variant in variants %}
-                          <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?variant={{ variant }}">Variante {{ variant }}</a>
+                          <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?scenario={{scenario}}&variant={{ variant }}">Variante {{ variant }}</a>
                       {% endfor %}
                   </div>
               </div>
