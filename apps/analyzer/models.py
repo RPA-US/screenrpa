@@ -44,7 +44,7 @@ def default_special_colnames():
         
         {
         "Case": "trace_id",
-        "Activity": "activity_label",
+        "Activity": "activity_id",
         "Screenshot": "Screenshot", 
         "Variant": "auto_variant",
         "Timestamp": "Timestamp",

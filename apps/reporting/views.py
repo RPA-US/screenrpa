@@ -20,6 +20,8 @@ from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
 import pandas as pd
 from sklearn.tree import export_graphviz
+
+from core.utils import read_ui_log_as_dataframe
 from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
@@ -596,7 +598,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     #############################3 INPUT DATA DESCRPTION
     if report.input_data_description:
         original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
-        df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
+        df_logcsv = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
         input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
 
 
@@ -609,7 +611,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 
 def applications_used(nameapps, execution, scenario, colnames):
     logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
-    df_logcsv = pd.read_csv(logcsv_directory)
+    df_logcsv = read_ui_log_as_dataframe(logcsv_directory)
     unique_names = df_logcsv[colnames['NameApp']].unique()
 
     for name in unique_names:
@@ -663,7 +665,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         def assign_variant(trace):
             nonlocal next_variant_number  # Declarar next_variant_number como global
             cadena = ""
-            for e in trace['activity_label'].tolist():
+            for e in trace[colnames['Activity']].tolist():
                 cadena = cadena + str(e)
             if cadena not in sequence_to_variant:
                 sequence_to_variant[cadena] = next_variant_number
@@ -792,7 +794,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
         def pintar_imagen(k, action_dict):
             event_description = None
-            image_filename = None
+            image_click = None
+            image = None
 
             action = pd.DataFrame(action_dict[k])
             #action= action_dict[k]
@@ -810,34 +813,40 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 # Cargar la imagen correspondiente
                 screenshot_filename = action[colnames['Screenshot']].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                image_filename = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
+                image = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
+                image_click=True
             else:
                     # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
                 text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
                 event_description = f'The user writes "{text_input}"'
+                screenshot_filename = action[colnames['Screenshot']].iloc[0]
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                image = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
+                
+
             
             decision_tree.add_run().add_break()
             if event_description:
                 decision_tree.add_run(event_description + '\n')
             decision_tree.add_run().add_break()
 
-            if image_filename:
+            if image:
                 with Image.open(path_to_image) as img:
                     draw = ImageDraw.Draw(img)
-                    # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
-                    box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
-                    left = mean_x - box_size / 2
-                    top = mean_y - box_size / 2
-                    right = mean_x + box_size / 2
-                    bottom = mean_y + box_size / 2
-                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
-                    # Convertir la imagen a un objeto byte para insertar en docx
-                    image_stream = io.BytesIO()
-                    img.save(image_stream, 'PNG')
-                    image_stream.seek(0)
-                        
-                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
-                decision_tree.add_run().add_break()
+                    if image_click:
+                        # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
+                        box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
+                        left = mean_x - box_size / 2
+                        top = mean_y - box_size / 2
+                        right = mean_x + box_size / 2
+                        bottom = mean_y + box_size / 2
+                        draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                        # Convertir la imagen a un objeto byte para insertar en docx    
+            image_stream = io.BytesIO()
+            img.save(image_stream, 'PNG')
+            image_stream.seek(0)
+            decision_tree.add_run().add_picture(image_stream, width=Inches(6))
+            decision_tree.add_run().add_break()
         #####################################
 
         decision_tree.add_run().add_break()
@@ -846,7 +855,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
         ############################ EXPLICABILIDAD DE LAS ACTIVIDADES Y ACCIONES
         # Filtrar por actividad
-        activity_group = group[group['activity_label'] == activity]
+        activity_group = group[group[colnames['Activity']] == activity]
 
         # Agrupar por trace_id dentro de activity_group
         activity_actions_group = activity_group.groupby(colnames['Case'])
@@ -859,7 +868,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
         if all_single_action: # ACTIVIDAD CON UNA ACCION
             action_dict = {}
-            for i, (activity_label, action) in enumerate(activity_group.groupby('activity_label'), start=1):
+            for i, (activity_label, action) in enumerate(activity_group.groupby(colnames['Activity']), start=1):
                 action_dict[i] = action
 
             for k in sorted(action_dict.keys()):
@@ -909,7 +918,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         decision_tree.add_run().add_break()
 
         #actividades
-        activities = group['activity_label'].unique().tolist() #en funcion de si las activity label se pueden repetir
+        activities = group[colnames['Activity']].unique().tolist() #en funcion de si las activity label se pueden repetir
 
 
         #meto diagrama bpmn resaltado de variantes
@@ -942,7 +951,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
     #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
     #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log-2acciones.csv'), delimiter=';')
-    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+    df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
     df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
