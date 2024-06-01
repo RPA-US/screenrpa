@@ -670,7 +670,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             if cadena not in sequence_to_variant:
                 sequence_to_variant[cadena] = next_variant_number
                 next_variant_number += 1
-            trace['Variant2'] = sequence_to_variant[cadena]
+            trace[colnames['Variant']] = sequence_to_variant[cadena]
             return trace
 
         # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
@@ -834,13 +834,16 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 with Image.open(path_to_image) as img:
                     draw = ImageDraw.Draw(img)
                     if image_click:
+                        width, height = img.size
+                        print(f'Tamaño de la imagen: {width}x{height}')
                         # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
                         box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
                         left = mean_x - box_size / 2
                         top = mean_y - box_size / 2
                         right = mean_x + box_size / 2
                         bottom = mean_y + box_size / 2
-                        draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                        print(f'Intentando dibujar cuadro desde ({left}, {top}) hasta ({right}, {bottom})')
+                        draw.rectangle([left, top, right, bottom], outline="red", width=5)
                         # Convertir la imagen a un objeto byte para insertar en docx    
             image_stream = io.BytesIO()
             img.save(image_stream, 'PNG')
@@ -912,7 +915,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         #añadir el primer punto de decision al diccionario
         variant_decision_points[decision_point['prevAct']]= decision_point
         
-        variant = group['Variant2'].iloc[0]
+        variant = group[colnames['Variant']].iloc[0]
         decision_tree.add_run().add_break()
         decision_tree.add_run(f'#####Variant {variant}\n').bold = True
         decision_tree.add_run().add_break()
@@ -952,11 +955,13 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
     #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log-2acciones.csv'), delimiter=';')
     df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
-    df2= variant_column(df)
+    #se quita porque la columna se aplica ya cuando se crea el csv y se llama auto_variant
+    #df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
-    df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
-    
+    #df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
+    #colnames['Variant'] es auto_variant
+    df.groupby(colnames['Variant']).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
 
 
 ###################################################################
