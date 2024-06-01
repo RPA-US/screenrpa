@@ -95,7 +95,7 @@ def extract_training_dataset(log_path, root_path, execution):
     for c in process_columns:
         if c in columns:
             columns.remove(c)
-    
+    #execution.extract_training_dataset.variants_to_study= log['auto_variant'].unique().tolist()
     # Get the list of variants to study casting all values of the list to int
     variants_to_study = [int(variant) for variant in execution.extract_training_dataset.variants_to_study]
     
@@ -339,19 +339,55 @@ def delete_extracting_training_dataset(request):
 
 ##############################################33
 
+import pygraphviz as pgv
+## FUNCIONA CON LA PREMISA DE QUE UN PUNTO DE DECISION SIEMPRE SE LLEGA MEDIANTE UNA ACTIVIDAD
+def extract_unique_predecessor_labels(dot_path):
+    # Cargar el grafo desde un archivo DOT
+    graph = pgv.AGraph(dot_path)
+    
+    # Lista para guardar las etiquetas que preceden a los puntos de decisión con un único predecesor
+    unique_predecessor_labels = []
+    
+    # Identificar todos los nodos que son puntos de decisión con label "X"
+    decision_points = [node for node in graph.nodes() if graph.get_node(node).attr['label'] == 'X']
+    
+    # Recorrer cada punto de decisión y encontrar los nodos que enlazan a él
+    for decision in decision_points:
+        # Obtener los nodos predecesores del punto de decisión
+        predecessors = graph.predecessors(decision)
+        # Comprobar que solo haya un predecesor
+        if len(predecessors) == 1:
+            # Obtener la etiqueta del único predecesor y añadirla a la lista
+            unique_predecessor_labels.append(graph.get_node(predecessors[0]).attr['label'])
+    
+    return unique_predecessor_labels
+
+
 class ExtractTrainingDatasetResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         # Get the Execution object or raise a 404 error if not found
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
         download = request.GET.get('download')
+        decision_point = request.GET.get('decision_point')
+        #activities_before_dps=execution.process_discovery.activities_before_dps
+        
+        
 
         if scenario == None:
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-      
+            
+        activities_before_dps=extract_unique_predecessor_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+
+        if decision_point == None:
+            #scenario = "1"
+            #decision_point = execution.process_discovery.activities_before_dps[0]
+            decision_point = activities_before_dps[0]
+
+        
         #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/preprocessed_df.csv"
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "preprocessed_df.csv")
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset_"+decision_point+".csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return ResultDownload(path_to_csv_file) 
@@ -364,7 +400,10 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
             "execution_id": execution.id,
             "csv_data": csv_data_json,  # Data to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
+            "scenario": scenario,
+            "decision_point": decision_point,
+            "decision_points": activities_before_dps,
+            #"decision_points": execution.process_discovery.activities_before_dps,
             }  
 
         # Render the HTML template with the context including the CSV data

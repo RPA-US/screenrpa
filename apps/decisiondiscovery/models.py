@@ -100,6 +100,7 @@ class ExtractTrainingDataset(models.Model):
     configurations = models.JSONField(default=dict, blank=True, null=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #variants_to_study=ArrayField(models.CharField(max_length=255), default=list, null=True, blank=True)
     
     def get_absolute_url(self):
         return reverse("decisiondiscovery:extract_training_dataset_list", args=[str(self.case_study_id)])    
