@@ -645,12 +645,22 @@ class DecisionTreeResultDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
+        decision_point = request.GET.get('decision_point')
+        #activities_before_dps=execution.process_discovery.activities_before_dps
         
         if scenario == None:
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-              
-        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+        
+        activities_before_dps=extract_unique_predecessor_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+
+        if decision_point == None:
+            #scenario = "1"
+            #decision_point = execution.process_discovery.activities_before_dps[0]
+            decision_point = activities_before_dps[0]
+
+
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_"+decision_point+".pkl")
         
         tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
 
@@ -663,6 +673,8 @@ class DecisionTreeResultDetailView(DetailView):
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario,
             "tree_rules": tree_rules,
+            "decision_point": decision_point,
+            "decision_points": activities_before_dps,
             }
         return render(request, 'decision_tree_training/result.html', context)
     #/screenrpa/apps/templates/
@@ -772,7 +784,7 @@ def DecisionTreeDownload(request, execution_id):
     if scenario is None:
         scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
               
-    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_.pkl")
     
     try:
         # Asegúrate de que la ruta absoluta sea correcta
