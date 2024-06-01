@@ -18,8 +18,9 @@ from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
+from .overlapping_rules import overlapping_rules
 from .flattening import flat_dataset_row
-from .utils import find_path_in_decision_tree, parse_decision_tree
+from .utils import find_path_in_decision_tree, parse_decision_tree, best_model_grid_search, cross_validation
 from django.utils.translation import gettext_lazy as _
 # Result Treeimport json
 import matplotlib.pyplot as plt
@@ -64,8 +65,6 @@ def extract_training_dataset(log_path, root_path, execution):
     
     :param decision_point_activity: id of the activity inmediatly previous to the decision point which "why" wants to be discovered
     :type decision_point_activity: str
-    :param target_label: name of the column where classification target label is stored
-    :type target_label: str
     :param special_colnames: dict that contains the column names that refers to special columns: "Screenshot", "Variant", "Case"...
     :type special_colnames: dict
     :param columns_to_drop: Names of the colums to remove from the dataset
@@ -77,8 +76,6 @@ def extract_training_dataset(log_path, root_path, execution):
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
-    decision_point_activity = execution.extract_training_dataset.decision_point_activity
-    target_label = execution.extract_training_dataset.target_label
     special_colnames = execution.case_study.special_colnames
     actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point
     
@@ -98,13 +95,22 @@ def extract_training_dataset(log_path, root_path, execution):
     for c in process_columns:
         if c in columns:
             columns.remove(c)
+    
+    # Get the list of variants to study casting all values of the list to int
+    variants_to_study = [int(variant) for variant in execution.extract_training_dataset.variants_to_study]
+    
+    # To filter log dataframe rows to those ones whose variant is cointained in variants_to_study
+    filtered_log = log[log[special_colnames["Variant"]].isin(variants_to_study)]
+    
+    # If filtered_log does not contain any row raise an exception
+    if filtered_log.empty:
+        raise ValueError("Log filtered after variants that you indicates must be studied, does not contain any rows")
         
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    flat_dataset_row(log, columns, target_label, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
-                     special_colnames["Timestamp"], decision_point_activity, actions_columns, execution.process_discovery)
+    flat_dataset_row(log, columns, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
+                     special_colnames["Timestamp"], actions_columns, execution.process_discovery)
 
-                     
-def decision_tree_training(log_path, path, execution):
+def decision_tree_training(log_path, scenario_path, execution):
     # "media/flattened_dataset.json",
     # "media", 
     # "sklearn",
@@ -112,9 +118,8 @@ def decision_tree_training(log_path, path, execution):
     # ["Timestamp_start", "Timestamp_end"],
     # 'Variant',
     # ['NameApp']
-                           
-    target_label = execution.extract_training_dataset.target_label
-    flattened_json_log_path = os.path.join(path+"_results", 'flattened_dataset.json')
+
+    special_colnames = execution.case_study.special_colnames                           
     implementation = execution.decision_tree_training.library
     configuration = execution.decision_tree_training.configuration
     columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
@@ -124,43 +129,50 @@ def decision_tree_training(log_path, path, execution):
     centroid_threshold = int(configuration["centroid_threshold"]) if "centroid_threshold" in configuration else None
     feature_values = configuration["feature_values"] if "feature_values" in configuration else None
     
+    if not os.path.exists(os.path.join(scenario_path, DECISION_FOLDERNAME)):
+        os.mkdir(os.path.join(scenario_path, DECISION_FOLDERNAME))
+        
     tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
-    print(flattened_json_log_path+"\n")
     
-    flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
-    # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
-    
-    if not os.path.exists(os.path.join(path, DECISION_FOLDERNAME)):
-        os.mkdir(os.path.join(path, DECISION_FOLDERNAME))
-    
-    # for col in flattened_dataset.columns:
-    #     if "Coor" in col:
-    #         columns_to_ignore.append(col)  
-    
-    # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
-    flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset.to_csv(os.path.join(path+"_results",FLATTENED_DATASET_NAME+".csv"))
-    columns_len = flattened_dataset.shape[1]
-    flattened_dataset = flattened_dataset.fillna('NaN')
-    # tree_levels = {}
-    
-    if implementation == 'sklearn':
-        res, times = sklearn_decision_tree(flattened_dataset, path+"_results", configuration, one_hot_columns, target_label, k_fold_cross_validation)
-    elif implementation == 'chefboost':
-        res, times = chefboost_decision_tree(flattened_dataset, path+"_results", algorithms, target_label, k_fold_cross_validation)
-        # TODO: caculate number of tree levels automatically
-        # for alg in algorithms:
-            # rules_info = open(path+alg+'-rules.json')
-            # rules_info_json = json.load(rules_info)
-            # tree_levels[alg] = len(rules_info_json.keys())            
-    else:
-        raise Exception(_("Decision model chosen is not an option"))
-    
-    if feature_values:
-        fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, path+"_results")
-    else:
-        fe_checker = None
-    return res, fe_checker, times, columns_len#, tree_levels
+    for act in execution.process_discovery.activities_before_dps:
+        flattened_json_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.json')
+        print(flattened_json_log_path+"\n")
+        
+        flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
+        # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
+        
+        
+        # for col in flattened_dataset.columns:
+        #     if "Coor" in col:
+        #         columns_to_ignore.append(col)  
+        
+        # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
+        flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
+        flattened_dataset.to_csv(os.path.join(scenario_path+"_results",FLATTENED_DATASET_NAME+".csv"))
+        columns_len = flattened_dataset.shape[1]
+        flattened_dataset = flattened_dataset.fillna('NaN')
+        # tree_levels = {}
+        
+        if implementation == 'sklearn':
+            res, times = sklearn_decision_tree(flattened_dataset, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+        elif implementation == 'chefboost':
+            res, times = chefboost_decision_tree(flattened_dataset, scenario_path+"_results", algorithms, "Variant", k_fold_cross_validation)
+            # TODO: caculate number of tree levels automatically
+            # for alg in algorithms:
+                # rules_info = open(path+alg+'-rules.json')
+                # rules_info_json = json.load(rules_info)
+                # tree_levels[alg] = len(rules_info_json.keys())
+        elif implementation == 'overlapping':
+            res, times = overlapping_rules(flattened_dataset, scenario_path+"_results", configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+            
+        else:
+            raise Exception(_("Decision model chosen is not an option"))
+        
+        if feature_values:
+            fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, scenario_path+"_results")
+        else:
+            fe_checker = None
+        return res, fe_checker, times, columns_len#, tree_levels
     
 def decision_tree_predict(module_path, instance):
     """

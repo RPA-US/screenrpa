@@ -23,7 +23,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template import loader
 # Settings variables
-from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY
+from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY, LOG_FILENAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
@@ -65,8 +65,7 @@ from sklearn.tree import _tree
 #============================================================================================================================
 
 def generate_case_study(execution, path_scenario, times):
-    log_filename = 'log.csv'
-    log_path = os.path.join(path_scenario, log_filename)
+    log_path = os.path.join(path_scenario, LOG_FILENAME)
     
     n = 0
     for i, function_to_exec in enumerate(DEFAULT_PHASES):

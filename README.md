@@ -32,9 +32,15 @@
 The following software is needed to run this platform:
 - C++ Dev Tools from Visual Studio: ![visual_studio_c++_features](apps\static\assets\img\image.png) 
 
-- Graphviz: if you are in Linux, you can run this command _sudo apt-get install graphviz graphviz-dev_. If not, you can find your software in https://graphviz.org/download/.
+- Graphviz: 
+    - Windows:
+    1. Download and install Graphviz 2.46.0 for Windows 10 (64-bit):         [stable_windows_10_cmake_Release_x64_graphviz-install-2.46.0-win64.exe](https://gitlab.com/graphviz/graphviz/-/package_files/6164164/download).
+    2. Install PyGraphviz via:   
 
-
+        ```ps
+        python -m pip install --config-settings="--global-option=build_ext" --config-settings="--global-option=-IC:\Program Files\Graphviz\include" --config-settings="--global-option=-LC:\Program Files\Graphviz\lib" pygraphviz
+        ```
+    - Linux: run this command _sudo apt-get install graphviz graphviz-dev_
 
 
 ```bash

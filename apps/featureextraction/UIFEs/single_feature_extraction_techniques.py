@@ -11,7 +11,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution):
     Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
     """
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
-    decision_point = execution.feature_extraction_technique.decision_point_activity
+    # decision_point = execution.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]

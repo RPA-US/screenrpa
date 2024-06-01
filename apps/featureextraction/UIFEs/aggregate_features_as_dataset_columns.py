@@ -31,7 +31,7 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
 
     """
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
-    decision_point = execution.feature_extraction_technique.decision_point_activity
+    # decision_point = execution.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
@@ -113,9 +113,9 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
                 
-            if activity == decision_point:
-                aux_case = case
-                before_DP = False
+            # if activity == decision_point:
+            #     aux_case = case
+            #     before_DP = False
 
     with open(flattened_log, 'w') as f:
         json.dump(ui_log_data, f, indent=4)
@@ -160,7 +160,7 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
     execution_root = path_scenario + '_results'
-    decision_point = execution.feature_extraction_technique.decision_point_activity
+    # decision_point = execution.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
@@ -231,9 +231,9 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile, indent=4)
                 
-            if activity == decision_point:
-                aux_case = case
-                before_DP = False
+            # if decision_point in activity:
+            #     aux_case = case
+            #     before_DP = False
 
     with open(flattened_log, 'w') as f:
         json.dump(ui_log_data, f, indent=4)

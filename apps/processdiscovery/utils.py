@@ -1,5 +1,17 @@
 from .models import ProcessDiscovery
 from django.shortcuts import get_object_or_404
+
+###########################################################################################################################
+# case study get phases data  ###########################################################################################
+###########################################################################################################################
+
+def get_process_discovery(case_study):
+  return get_object_or_404(ProcessDiscovery, case_study=case_study)
+
+def case_study_has_process_discovery(case_study):
+  return ProcessDiscovery.objects.filter(case_study=case_study, active=True).exists()
+
+#%%
 from json import JSONDecoder
 from typing import Optional
 
@@ -28,6 +40,10 @@ class Branch:
       'id': self.id,
       'decision_points': list(map(lambda dp: dp.to_json(), self.decision_points))
     }
+    
+  # Define a to string method
+  def __str__(self):
+    return f"Branch(label={self.label})"
   
   @staticmethod
   def from_json(json: dict) -> 'Branch':
@@ -55,6 +71,10 @@ class Rule:
     self.condition = condition
     self.target = target
     
+  # Define a to string method
+  def __str__(self):
+    return f"Rule(condition={self.condition}, target={self.target})"
+  
   @staticmethod
   def from_json(json: dict) -> 'Rule':
     return RuleDecoder().dict_to_object(json)
@@ -93,11 +113,16 @@ class DecisionPoint:
         self.rules[i].target: self.rules[i].condition for i in range(len(self.rules)) 
       }
     }
+  
+  # Define a to string method
+  def __str__(self):
+    branches_str = ', '.join(str(b) for b in self.branches)
+    return f"DP(id={self.id}, prevAct={self.prevAct}, branches={branches_str})"
 
   @staticmethod
   def from_json(json: dict) -> 'DecisionPoint':
     return DecisionPointDecoder().dict_to_object(json)
-
+  
 class DecisionPointDecoder(JSONDecoder):
   """
   A JSON decoder for DecisionPoint objects
@@ -111,7 +136,7 @@ class DecisionPointDecoder(JSONDecoder):
     # decode rules into a list of Rule objects
     rules = [RuleDecoder().dict_to_object({k: v}) for k, v in d['rules'].items()]
     return DecisionPoint(d['id'], d['prevAct'], branches, rules)
-
+  
 ## PROCESS
 
 class Process:
@@ -123,12 +148,17 @@ class Process:
     if len(ids) != len(set(ids)):
       raise ValueError("Decision points must have unique ids")
     self.decision_points = decision_points 
-  
+   
   def to_json(self) -> dict:
     return {
       'decision_points': list(map(lambda dp: dp.to_json(), self.decision_points))
     }
-
+    
+  # Define a to string method
+  def __str__(self):
+        decision_points_str = ', '.join(str(dp) for dp in self.decision_points)
+        return f"Process(decision_points=[{decision_points_str}])"
+  
   @staticmethod
   def from_json(json: dict) -> 'Process':
     return ProcessDecoder().dict_to_object(json)
@@ -185,12 +215,28 @@ class ProcessDecoder(JSONDecoder):
     decision_points = list(map(lambda dp: DecisionPointDecoder().dict_to_object(dp), d['decision_points']))
     return Process(decision_points)
 
-###########################################################################################################################
-# case study get phases data  ###########################################################################################
-###########################################################################################################################
 
-def get_process_discovery(case_study):
-  return get_object_or_404(ProcessDiscovery, case_study=case_study)
+# Auxiliary function  
+def find_non_empty_decision_points(json_text):
+    """
+    Find non empty decision points from traceability.json
+    
+    Args:
+        json_text (str): traceability.json as file
 
-def case_study_has_process_discovery(case_study):
-  return ProcessDiscovery.objects.filter(case_study=case_study, active=True).exists()
+    Returns:
+        set: non empty decision points
+    """
+    non_empty_decision_points = set()
+
+    def recursive_search(branch, prevAct):
+      if prevAct:
+        non_empty_decision_points.add(prevAct)
+      if branch['decision_points']:  # Si no está vacío
+        for dp in branch['decision_points']:
+          for b in dp['branches']:
+            recursive_search(b, dp['prevAct'])  # Búsqueda recursiva en los hijos
+
+    # Iniciar la búsqueda desde la raíz
+    recursive_search(json_text, None)
+    return non_empty_decision_points
