@@ -745,29 +745,6 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
 
 ####################################################################
 
-# def ProcessDiscoveryDownload(request, execution_id):
-
-#     execution = get_object_or_404(Execution, pk=execution_id)
-#     #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
-#     scenario = request.GET.get('scenario')
-    
-#     if scenario is None:
-#         scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
-              
-#     path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
-    
-#     try:
-#         # Asegúrate de que la ruta absoluta sea correcta
-#         full_file_path = os.path.join('/screenrpa', path_to_bpmn_file)
-#         with open(full_file_path, 'rb') as archivo:
-#             response = HttpResponse(archivo.read(), content_type="application/octet-stream")
-#             response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
-#             return response
-        
-#     except FileNotFoundError:
-
-#         print(f"File not found: {path_to_bpmn_file}")
-#         return HttpResponse("Sorry, the file was not found.", status=404)
     
 def ProcessDiscoveryDownload(request, execution_id):
     execution = get_object_or_404(Execution, pk=execution_id)
