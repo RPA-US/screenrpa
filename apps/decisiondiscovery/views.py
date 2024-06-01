@@ -96,17 +96,7 @@ def extract_training_dataset(log_path, root_path, execution):
     for c in process_columns:
         if c in columns:
             columns.remove(c)
-    #execution.extract_training_dataset.variants_to_study= log['auto_variant'].unique().tolist()
-    # Get the list of variants to study casting all values of the list to int
-    variants_to_study = [int(variant) for variant in execution.extract_training_dataset.variants_to_study]
     
-    # To filter log dataframe rows to those ones whose variant is cointained in variants_to_study
-    filtered_log = log[log[special_colnames["Variant"]].isin(variants_to_study)]
-    
-    # If filtered_log does not contain any row raise an exception
-    if filtered_log.empty:
-        raise ValueError("Log filtered after variants that you indicates must be studied, does not contain any rows")
-        
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
     flat_dataset_row(log, columns, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
                      special_colnames["Timestamp"], actions_columns, execution.process_discovery)
