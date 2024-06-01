@@ -15,6 +15,9 @@ def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activit
     cases = log.loc[:, case_column_name].values.tolist()
     
     activities_before_dps = process_discovery.activities_before_dps
+    if not activities_before_dps or len(activities_before_dps) == 0:
+        raise ValueError("The activities_before_dps list is empty. Please, provide a valid list of activities before the decision point or check the process model discovered.")
+    
     for act in activities_before_dps:
         last_case = cases[0]
         before_DP = True
