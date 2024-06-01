@@ -55,15 +55,15 @@ def default_special_colnames():
 
         #  Estructura válida actualmente   
         {
-        "Case": "ocel:eid",
-        "Activity": "ocel:activity",
-        "Screenshot": "ocel:screenshot:name", 
-        "Variant": "ocel:variant",
-        "Timestamp": "ocel:timestamp",
-        "NameApp": "FileName",
-        "EventType": "ocel:type:event",
-        "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY",
+        "Case": "trace_id",
+        "Activity": "activity_label",
+        "Screenshot": "Screenshot", 
+        "Variant": "auto_variant",
+        "Timestamp": "Timestamp",
+        "NameApp": "Nameapp",
+        "EventType": "MorKeyb",
+        "CoorX": "Coor_X",
+        "CoorY": "Coor_Y",
         "Header": "header"
         }
     )
