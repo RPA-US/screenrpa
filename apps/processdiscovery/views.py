@@ -1,6 +1,8 @@
 import base64
+import io
 import os
 from tempfile import NamedTemporaryFile
+import zipfile
 import cv2
 from graphviz import Source
 import numpy as np
@@ -743,30 +745,65 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
 
 ####################################################################
 
-def ProcessDiscoveryDownload(request, execution_id):
+# def ProcessDiscoveryDownload(request, execution_id):
 
+#     execution = get_object_or_404(Execution, pk=execution_id)
+#     #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
+#     scenario = request.GET.get('scenario')
+    
+#     if scenario is None:
+#         scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
+              
+#     path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+    
+#     try:
+#         # Asegúrate de que la ruta absoluta sea correcta
+#         full_file_path = os.path.join('/screenrpa', path_to_bpmn_file)
+#         with open(full_file_path, 'rb') as archivo:
+#             response = HttpResponse(archivo.read(), content_type="application/octet-stream")
+#             response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
+#             return response
+        
+#     except FileNotFoundError:
+
+#         print(f"File not found: {path_to_bpmn_file}")
+#         return HttpResponse("Sorry, the file was not found.", status=404)
+    
+def ProcessDiscoveryDownload(request, execution_id):
     execution = get_object_or_404(Execution, pk=execution_id)
-    #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
     scenario = request.GET.get('scenario')
     
     if scenario is None:
         scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
-              
-    path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+
+    # Construir las rutas completas a los archivos
+    path_to_bpmn_dot = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+    path_to_bpmn_bpmn = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.bpmn")
     
+    # Nombre del archivo ZIP a crear
+    #zip_filename = f"bpmn_files_{execution_id}_{scenario}.zip"
+    zip_filename = f"{scenario}_pd_results.zip"
+
     try:
-        # Asegúrate de que la ruta absoluta sea correcta
-        full_file_path = os.path.join('/screenrpa', path_to_bpmn_file)
-        with open(full_file_path, 'rb') as archivo:
-            response = HttpResponse(archivo.read(), content_type="application/octet-stream")
-            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
-            return response
+        # Crear un archivo ZIP en memoria
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+            for file_path, arcname in [(path_to_bpmn_dot, "bpmn.dot"), (path_to_bpmn_bpmn, "bpmn.bpmn")]:
+                # Verificar si el archivo existe
+                if os.path.exists(file_path):
+                    zip_file.write(file_path, arcname)
+                else:
+                    print(f"File not found: {file_path}")
         
-    except FileNotFoundError:
-
-        print(f"File not found: {path_to_bpmn_file}")
-        return HttpResponse("Sorry, the file was not found.", status=404)
+        zip_buffer.seek(0)
+        
+        # Crear la respuesta HTTP con el archivo ZIP para descargar
+        response = HttpResponse(zip_buffer, content_type="application/zip")
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+        return response
     
-
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 ####################################################################
