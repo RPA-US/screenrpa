@@ -241,8 +241,10 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
-                    pass
+                    raise Exception("Not implemented yet")
 
+                else:
+                    raise Exception("UIFE: centroid_columnname_type not recognized")
                 # num_UI_elements += 1
             if "features" in data:
                 data["features"]["location"] = info_to_join
@@ -253,7 +255,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
                 json.dump(data, jsonFile)
                 
             # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
-            enriched_log.to_csv(metadata_json_root + ENRICHED_LOG_SUFFIX + ".csv", index=False)
+            enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
                 
         else:
             print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
@@ -294,13 +296,13 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
 # ========================================================================================================
 # Class as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_class():
-    pass
+def xpath_class(ui_log_path, path_scenario, execution):
+    raise Exception("Not implemented yet")
 # ========================================================================================================
 # Boolean if exists as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_ui_elem_class_existence():
-    pass
+def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution):
+    raise Exception("Not implemented yet")
     
 # ========================================================================================================
 # Boolean if exists as value / xpath to reach ui compo as column name
