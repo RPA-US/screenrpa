@@ -837,8 +837,12 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 if width>=mean_x and height>=mean_y:
                     event_description = f"The user clicks at point ({mean_x}, {mean_y})"
                 else:
+                    if mean_x > width:  side="right"# Click is to the right of the image       
+                    if mean_y > height:  side="bottom"# Click is below the image      
+                    if mean_x < 0:  side="left"# Click is to the left of the image         
+                    if mean_y < 0: side="top"# Click is above the image
 
-                    event_description = f"ERROR: coordinates recorded incorrectly, out of screen resolution. User clicks on {mean_x}, {mean_y} and the screen resolution is {width}, {height}."
+                    event_description = f"ERROR: coordinates recorded incorrectly, out of screen resolution by {side} border. User clicks on {mean_x}, {mean_y} and the screen resolution is {width}, {height}."
                     out_click=True
 
             else:
@@ -873,13 +877,13 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         # Convertir la imagen a un objeto byte para insertar en docx   
                     if out_click: # If the click is outside the image
                         border_width = 10
-                        if mean_x > width:  # Click is to the right of the image
+                        if side=="right":  # Click is to the right of the image
                             draw.line([(width - 1, 0), (width - 1, height)], fill="red", width=border_width)
-                        if mean_y > height:  # Click is below the image
+                        if side=="bottom":  # Click is below the image
                             draw.line([(0, height - 1), (width, height - 1)], fill="red", width=border_width)
-                        if mean_x < 0:  # Click is to the left of the image
+                        if side=="left":  # Click is to the left of the image
                             draw.line([(0, 0), (0, height)], fill="red", width=border_width)
-                        if mean_y < 0:  # Click is above the image
+                        if side=="top":  # Click is above the image
                             draw.line([(0, 0), (width, 0)], fill="red", width=border_width)
 
                 image_stream = io.BytesIO()
