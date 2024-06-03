@@ -240,3 +240,29 @@ def find_non_empty_decision_points(json_text):
     # Iniciar la búsqueda desde la raíz
     recursive_search(json_text, None)
     return non_empty_decision_points
+
+##########################################################33
+
+import pygraphviz as pgv
+## WORKS UNDER THE ASSUMPTION THAT A DECISION POINT IS ALWAYS REACHED THROUGH AN ACTIVITY (only one predecessor)
+# extracts a list with the labels of the predecessors to the decision points
+def extract_prev_act_labels(dot_path):
+  # Load the graph from a DOT file
+  graph = pgv.AGraph(dot_path)
+  
+  # List to store the labels that precede the decision points with a single predecessor
+  unique_predecessor_labels = []
+  
+  # Identify all nodes that are decision points with label "X"
+  decision_points = [node for node in graph.nodes() if graph.get_node(node).attr['label'] == 'X']
+  
+  # Iterate over each decision point and find the nodes that link to it
+  for decision in decision_points:
+    # Get the predecessors of the decision point
+    predecessors = graph.predecessors(decision)
+    # Check that there is only one predecessor
+    if len(predecessors) == 1:
+      # Get the label of the unique predecessor and add it to the list
+      unique_predecessor_labels.append(graph.get_node(predecessors[0]).attr['label'])
+  
+  return unique_predecessor_labels

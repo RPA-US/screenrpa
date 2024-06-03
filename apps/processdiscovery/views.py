@@ -367,7 +367,7 @@ def process_level(folder_path, df, execution):
 
             # First we make columns for each of the decision points, with the id of the decision point as the column name
             dps = process.get_non_empty_dp_flattened()
-            execution.process_discovery.activities_before_dps = [dp for dp in dps]
+            #execution.process_discovery.activities_before_dps = [dp for dp in dps]
             # execution.process_discovery.save()
             branches = process.get_all_branches_flattened()
             for dp in dps:

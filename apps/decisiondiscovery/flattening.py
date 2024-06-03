@@ -3,6 +3,8 @@ import json
 import os
 from numpyencoder import NumpyEncoder
 
+from apps.processdiscovery.utils import extract_prev_act_labels
+
 def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
                           actions_columns, process_discovery):
     """
@@ -14,7 +16,10 @@ def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activit
     """
     cases = log.loc[:, case_column_name].values.tolist()
     
-    activities_before_dps = process_discovery.activities_before_dps
+    #activities_before_dps = process_discovery.activities_before_dps
+    activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
+
+
     if not activities_before_dps or len(activities_before_dps) == 0:
         raise ValueError("The activities_before_dps list is empty. Please, provide a valid list of activities before the decision point or check the process model discovered.")
     

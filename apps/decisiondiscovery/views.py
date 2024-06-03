@@ -14,6 +14,7 @@ from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
 from apps.analyzer.models import CaseStudy, Execution
+from apps.processdiscovery.utils import extract_prev_act_labels
 from core.settings import sep, DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
@@ -125,7 +126,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         
     tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
     
-    for act in execution.process_discovery.activities_before_dps:
+    for act in extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot")):
         flattened_json_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.json')
         print(flattened_json_log_path+"\n")
         
@@ -330,28 +331,7 @@ def delete_extracting_training_dataset(request):
 
 ##############################################33
 
-import pygraphviz as pgv
-## FUNCIONA CON LA PREMISA DE QUE UN PUNTO DE DECISION SIEMPRE SE LLEGA MEDIANTE UNA ACTIVIDAD
-def extract_unique_predecessor_labels(dot_path):
-    # Cargar el grafo desde un archivo DOT
-    graph = pgv.AGraph(dot_path)
-    
-    # Lista para guardar las etiquetas que preceden a los puntos de decisión con un único predecesor
-    unique_predecessor_labels = []
-    
-    # Identificar todos los nodos que son puntos de decisión con label "X"
-    decision_points = [node for node in graph.nodes() if graph.get_node(node).attr['label'] == 'X']
-    
-    # Recorrer cada punto de decisión y encontrar los nodos que enlazan a él
-    for decision in decision_points:
-        # Obtener los nodos predecesores del punto de decisión
-        predecessors = graph.predecessors(decision)
-        # Comprobar que solo haya un predecesor
-        if len(predecessors) == 1:
-            # Obtener la etiqueta del único predecesor y añadirla a la lista
-            unique_predecessor_labels.append(graph.get_node(predecessors[0]).attr['label'])
-    
-    return unique_predecessor_labels
+
 
 
 class ExtractTrainingDatasetResultDetailView(DetailView):
@@ -369,7 +349,7 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
             
-        activities_before_dps=extract_unique_predecessor_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+        activities_before_dps=extract_prev_act_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
 
         if decision_point == None:
             #scenario = "1"
@@ -684,7 +664,7 @@ class DecisionTreeResultDetailView(DetailView):
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
         
-        activities_before_dps=extract_unique_predecessor_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+        activities_before_dps=extract_prev_act_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
 
         if decision_point == None:
             #scenario = "1"
