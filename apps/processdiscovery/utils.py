@@ -1,6 +1,6 @@
 from .models import ProcessDiscovery
 from django.shortcuts import get_object_or_404
-
+import pygraphviz as pgv
 ###########################################################################################################################
 # case study get phases data  ###########################################################################################
 ###########################################################################################################################
@@ -243,7 +243,7 @@ def find_non_empty_decision_points(json_text):
 
 ##########################################################33
 
-import pygraphviz as pgv
+
 ## WORKS UNDER THE ASSUMPTION THAT A DECISION POINT IS ALWAYS REACHED THROUGH AN ACTIVITY (only one predecessor)
 # extracts a list with the labels of the predecessors to the decision points
 def extract_prev_act_labels(dot_path):

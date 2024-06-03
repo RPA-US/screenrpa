@@ -161,7 +161,7 @@ def plot_decision_tree(path: str,
 
     return image
 
-def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target_label, k_fold_cross_validation):
+def sklearn_decision_tree(df, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
     times = {}
     accuracies = {}
     
@@ -181,6 +181,8 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     y = df['Variant']
     
     preprocessor = def_preprocessor(X)
+    print(X)
+    df.head()
     X = preprocessor.fit_transform(X)
     X_df = pd.DataFrame(X)
     feature_names = list(preprocessor.get_feature_names_out())
