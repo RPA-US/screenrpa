@@ -579,6 +579,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     ##########################3 AS IS PROCESS MAP
     if report.as_is_process_map:
         bpmn= doc.paragraphs[paragraph_dict['[.BPMN]']]
+        bpmn.text = ''
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
         run = bpmn.add_run()
         run.add_picture(dot_to_png(path_to_tree_file), width=Inches(6))
@@ -817,7 +818,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             #action= action_dict[k]
 
             decision_tree.add_run().add_break()
-            decision_tree.add_run(f'Acción {k}')
+            decision_tree.add_run(f'Action {k}', style='Título 5 Car')
             decision_tree.add_run().add_break()
             
             if action[colnames['EventType']].iloc[0] == 1: #colnames['EventType']
@@ -832,7 +833,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 image_click=True
                 with Image.open(path_to_image) as img:
                     width, height = img.size
-
+                    print(width, height)
                 if width>=mean_x and height>=mean_y:
                     event_description = f"The user clicks at point ({mean_x}, {mean_y})"
                 else:
@@ -855,11 +856,11 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_tree.add_run(event_description + '\n')
             decision_tree.add_run().add_break()
 
-            if image and not out_click:
+            if image:
                 with Image.open(path_to_image) as img:
                     draw = ImageDraw.Draw(img)
                     
-                    if image_click: # si en la imagen se encuentra el click
+                    if image_click and not out_click: # si en la imagen se encuentra el click
                         
                         # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
                         box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
@@ -869,7 +870,17 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         bottom = mean_y + box_size / 2
                         
                         draw.rectangle([left, top, right, bottom], outline="red", width=5)
-                        # Convertir la imagen a un objeto byte para insertar en docx    
+                        # Convertir la imagen a un objeto byte para insertar en docx   
+                    if out_click: # If the click is outside the image
+                        border_width = 10
+                        if mean_x > width:  # Click is to the right of the image
+                            draw.line([(width - 1, 0), (width - 1, height)], fill="red", width=border_width)
+                        if mean_y > height:  # Click is below the image
+                            draw.line([(0, height - 1), (width, height - 1)], fill="red", width=border_width)
+                        if mean_x < 0:  # Click is to the left of the image
+                            draw.line([(0, 0), (0, height)], fill="red", width=border_width)
+                        if mean_y < 0:  # Click is above the image
+                            draw.line([(0, 0), (width, 0)], fill="red", width=border_width)
 
                 image_stream = io.BytesIO()
                 img.save(image_stream, 'PNG')
@@ -879,7 +890,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         #####################################
 
         decision_tree.add_run().add_break()
-        decision_tree.add_run(f'Activity {activity}\n').bold = True
+        decision_tree.add_run(f'Activity {activity}\n', style='Título 4 Car')
+        
         decision_tree.add_run().add_break()
 
         ############################ EXPLICABILIDAD DE LAS ACTIVIDADES Y ACCIONES
@@ -943,7 +955,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         
         variant = group[colnames['Variant']].iloc[0]
         decision_tree.add_run().add_break()
-        decision_tree.add_run(f'#####Variant {variant}\n').bold = True
+        decision_tree.add_run(f'Variant {variant}\n', style='Título 3 Car')
         decision_tree.add_run().add_break()
 
         #actividades
@@ -971,15 +983,16 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 condition = get_branch_condition(decision_point, next_activity) if next_activity else "N/A"
 
                 decision_tree.add_run().add_break()      
-                decision_tree.add_run(f'En esta actividad hay un "decision point" con {num_ramas} ramas. En el caso de esta variante (VARIANTE {variant}) se va por la rama {next_activity} y se cumple que: {condition} \n')
+                decision_tree.add_run(f'Decision Point\n', style='Título 5 Car').bold = True
+                decision_tree.add_run().add_break()
+                decision_tree.add_run().add_break()      
+                decision_tree.add_run(f'After this activity there is a decision point with {num_ramas} branches. In the case of this variant (VARIANT {variant}) it goes along branch {next_activity} and it is satisfied that: {condition} \n')
                 decision_tree.add_run().add_break() 
     
 ###############
     
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
-    #quitar lo del delimiter, esto lo he puesto porque al modificar un csv me lo guardaba con ; en lugar de ,, pero se genrarn con , de normal
-    #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'), delimiter=';')
-    #df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log-2acciones.csv'), delimiter=';')
+    decision_tree.text = ''
     df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
     #se quita porque la columna se aplica ya cuando se crea el csv y se llama auto_variant
     #df2= variant_column(df)
