@@ -3,7 +3,7 @@ import json
 import os
 import zipfile
 from django.forms.models import model_to_dict
-from django.http import FileResponse, HttpResponse, HttpResponseRedirect
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
@@ -362,7 +362,7 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
         # CSV Download
         if path_to_csv_file and download=="True":
             #return ResultDownload(path_to_csv_file)
-            return Extract_training_dataset_ResultDownload(scenario,execution)
+            return Extract_training_dataset_ResultDownload(scenario,execution,path_to_csv_file)
 
         # CSV Reading and Conversion to JSON
         csv_data_json = read_csv_to_json(path_to_csv_file)
@@ -414,7 +414,11 @@ def read_csv_to_json(path_to_csv_file):
     csv_data_json = json.dumps(csv_data)
     return csv_data_json
 ##########################################3
-def ResultDownload(path_to_csv_file):
+#descarga solo el csv que visualizas en pantalla (un escenario y un decision point en concreto)
+def Extract_training_dataset_ResultDownload(path_to_csv_file):
+    if not os.path.exists(path_to_csv_file):
+        raise Http404("El archivo no existe")
+    
     with open(path_to_csv_file, 'r', newline='') as csvfile:
         # Create an HTTP response with the content of the CSV
         response = HttpResponse(content_type='text/csv')
@@ -424,46 +428,45 @@ def ResultDownload(path_to_csv_file):
         for row in reader:
             writer.writerow(row)
         return response
+
+#descarga todos los flattened_dataset del escenario (de todos los decision points)
+# def Extract_training_dataset_ResultDownload(scenario,execution):
+#         # Buscar todos los archivos decision_tree_x.pkl en el directorio
+#     results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+#     tree_files = []
+#     for root, dirs, files in os.walk(results_folder):
+#         for file in files:
+#             if file.startswith("flattened_dataset_") and file.endswith(".csv"):
+#                 tree_files.append(os.path.join(root, file))
+
+#     if not tree_files:
+#         return HttpResponse("No decision tree files found.", status=404)
     
-
-
-def Extract_training_dataset_ResultDownload(scenario,execution):
-        # Buscar todos los archivos decision_tree_x.pkl en el directorio
-    results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
-    tree_files = []
-    for root, dirs, files in os.walk(results_folder):
-        for file in files:
-            if file.startswith("flattened_dataset_") and file.endswith(".csv"):
-                tree_files.append(os.path.join(root, file))
-
-    if not tree_files:
-        return HttpResponse("No decision tree files found.", status=404)
-    
-    if len(tree_files) == 1:
-        # Si hay solo un archivo, descargarlo directamente
-        file_path = tree_files[0]
-        response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
-        return response
-    else:
-        # Si hay más de un archivo, crear un ZIP y descargarlo
-        zip_filename = f"{scenario}_extract_training_dataset_results.zip"
-        zip_buffer = io.BytesIO()
-        try:
-            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                for file_path in tree_files:
-                    zip_file.write(file_path, os.path.relpath(file_path, results_folder))
+#     if len(tree_files) == 1:
+#         # Si hay solo un archivo, descargarlo directamente
+#         file_path = tree_files[0]
+#         response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+#         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+#         return response
+#     else:
+#         # Si hay más de un archivo, crear un ZIP y descargarlo
+#         zip_filename = f"{scenario}_extract_training_dataset_results.zip"
+#         zip_buffer = io.BytesIO()
+#         try:
+#             with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+#                 for file_path in tree_files:
+#                     zip_file.write(file_path, os.path.relpath(file_path, results_folder))
             
-            zip_buffer.seek(0)
+#             zip_buffer.seek(0)
             
-            # Crear la respuesta HTTP con el archivo ZIP para descargar
-            response = HttpResponse(zip_buffer, content_type="application/zip")
-            response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
-            return response
+#             # Crear la respuesta HTTP con el archivo ZIP para descargar
+#             response = HttpResponse(zip_buffer, content_type="application/zip")
+#             response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+#             return response
         
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return HttpResponse("Sorry, there was an error processing your request.", status=500)
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 #############################################################
 
@@ -786,51 +789,72 @@ def extract_tree_rules(path_to_tree_file):
 
 
 ####################################################################
-
+#descarga solo el decision tree del escenario y de decision point que se visualiza en pantalla
 def DecisionTreeDownload(request, execution_id):
     execution = get_object_or_404(Execution, pk=execution_id)
     scenario = request.GET.get('scenario')
-    
-    if scenario is None:
-        scenario = execution.scenarios_to_study[0]  # Por defecto, el primero indicado
-    
-    results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
-    
-    # Buscar todos los archivos decision_tree_x.pkl en el directorio
-    tree_files = []
-    for root, dirs, files in os.walk(results_folder):
-        for file in files:
-            if file.startswith("decision_tree_") and file.endswith(".pkl"):
-                tree_files.append(os.path.join(root, file))
+    decision_point = request.GET.get('decision_point')
 
-    if not tree_files:
-        return HttpResponse("No decision tree files found.", status=404)
-    
-    if len(tree_files) == 1:
-        # Si hay solo un archivo, descargarlo directamente
-        file_path = tree_files[0]
-        response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+    # Construye la ruta al archivo
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "decision_tree_" + decision_point + ".pkl")
+
+    # Verifica si el archivo existe
+    if not os.path.exists(path_to_tree_file):
+        raise Http404("El archivo no existe")
+
+    # Abre el archivo y prepara la respuesta HTTP para la descarga
+    with open(path_to_tree_file, 'rb') as file:
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename={os.path.basename(path_to_tree_file)}'
         return response
-    else:
-        # Si hay más de un archivo, crear un ZIP y descargarlo
-        zip_filename = f"{scenario}_decision_tree_results.zip"
-        zip_buffer = io.BytesIO()
-        try:
-            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                for file_path in tree_files:
-                    zip_file.write(file_path, os.path.relpath(file_path, results_folder))
-            
-            zip_buffer.seek(0)
-            
-            # Crear la respuesta HTTP con el archivo ZIP para descargar
-            response = HttpResponse(zip_buffer, content_type="application/zip")
-            response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
-            return response
+
         
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return HttpResponse("Sorry, there was an error processing your request.", status=500)
+#descarga todos los decision tree del escenario (de todos los decision points)
+
+# def DecisionTreeDownload(request, execution_id):
+#     execution = get_object_or_404(Execution, pk=execution_id)
+#     scenario = request.GET.get('scenario')
+    
+#     if scenario is None:
+#         scenario = execution.scenarios_to_study[0]  # Por defecto, el primero indicado
+    
+#     results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+    
+#     # Buscar todos los archivos decision_tree_x.pkl en el directorio
+#     tree_files = []
+#     for root, dirs, files in os.walk(results_folder):
+#         for file in files:
+#             if file.startswith("decision_tree_") and file.endswith(".pkl"):
+#                 tree_files.append(os.path.join(root, file))
+
+#     if not tree_files:
+#         return HttpResponse("No decision tree files found.", status=404)
+    
+#     if len(tree_files) == 1:
+#         # Si hay solo un archivo, descargarlo directamente
+#         file_path = tree_files[0]
+#         response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+#         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+#         return response
+#     else:
+#         # Si hay más de un archivo, crear un ZIP y descargarlo
+#         zip_filename = f"{scenario}_decision_tree_results.zip"
+#         zip_buffer = io.BytesIO()
+#         try:
+#             with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+#                 for file_path in tree_files:
+#                     zip_file.write(file_path, os.path.relpath(file_path, results_folder))
+            
+#             zip_buffer.seek(0)
+            
+#             # Crear la respuesta HTTP con el archivo ZIP para descargar
+#             response = HttpResponse(zip_buffer, content_type="application/zip")
+#             response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+#             return response
+        
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 
     
