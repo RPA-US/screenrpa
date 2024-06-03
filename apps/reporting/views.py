@@ -510,9 +510,12 @@ class ReportCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
-        saved = self.object.save()
-
-        self.report_generate(self.object)
+        try:
+            self.report_generate(self.object)
+            self.object.save()
+        except Exception as e:
+            form.add_error(None, _("Error generating report: ") + str(e))
+            return self.form_invalid(form)
 
         return HttpResponseRedirect(self.get_success_url())
     
