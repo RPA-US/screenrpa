@@ -161,7 +161,7 @@ def plot_decision_tree(path: str,
 
     return image
 
-def sklearn_decision_tree(df, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
+def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
     times = {}
     accuracies = {}
     
@@ -204,7 +204,7 @@ def sklearn_decision_tree(df, param_path, special_colnames, configuration, one_h
     text_representation = export_text(tree_classifier, feature_names=feature_names)
     print("Decision Tree Rules:\n", text_representation)
     
-    with open(os.path.join(param_path, "decision_tree.log"), "w") as fout:
+    with open(os.path.join(param_path, "decision_tree_"+prevact+".log"), "w") as fout:
         fout.write(text_representation)
         
     # estimator = clf_model.estimators_[5]
@@ -228,7 +228,7 @@ def sklearn_decision_tree(df, param_path, special_colnames, configuration, one_h
         'feature_names': feature_names,
         'class_names': np.unique(y),
     }
-    with open(os.path.join(param_path, 'decision_tree.pkl'), 'wb') as fid:
+    with open(os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'), 'wb') as fid:
         pickle.dump(saved_data, fid)
 
     if PLOT_DECISION_TREES:
