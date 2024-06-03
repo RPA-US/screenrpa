@@ -510,13 +510,11 @@ class ReportCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
-        try:
-            self.report_generate(self.object)
-            self.object.save()
-        except Exception as e:
-            form.add_error(None, _("Error generating report: ") + str(e))
-            return self.form_invalid(form)
 
+        saved = self.object.save()
+
+        self.report_generate(self.object)
+        
         return HttpResponseRedirect(self.get_success_url())
     
     def report_generate(self, report):
@@ -537,7 +535,6 @@ class ReportCreateView(CreateView):
         
 #############################################################################################
 
-
 def report_define(report_directory, report_path, execution,  report, scenario):
     template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
     doc = Document(template_path)
@@ -556,6 +553,9 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     
     purpose= doc.paragraphs[paragraph_dict['[PURPOSE]']]
     purpose.text = report.purpose
+    for style in doc.styles:
+        print(f"Style name: {style.name}, Style type: {style.type}")
+    
     #paragraph.style = doc.styles['Normal']
 
     purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
@@ -566,10 +566,12 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     if report.process_overview:
         title= doc.paragraphs[paragraph_dict['[TITLE]']]
         title.text = execution.process_discovery.title
+        title.style='Normal'
 
     ############################ AS IS PROCESS DESCRPTION: APPLICATIONS USED
     if report.applications_used:
         nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
+        nameapps.text = "The applications used by the user during the execution of the process are:"
         applications_used(nameapps, execution, scenario, colnames)
         #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
         
@@ -613,22 +615,32 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 #################################################################################
 
 def applications_used(nameapps, execution, scenario, colnames):
-    logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
+    logcsv_directory = os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv')
     df_logcsv = read_ui_log_as_dataframe(logcsv_directory)
     unique_names = df_logcsv[colnames['NameApp']].unique()
 
     for name in unique_names:
-        run = nameapps.add_run('\n• ' + name)
-        run.add_break()
+        
+        nameapps.add_run().add_break()
+        nameapps.add_run('\n• ' + name, style='Título 3 Car')
+        # Añadir salto de línea después del nombre
+        nameapps.add_run().add_break()
+
+        # Obtener la primera fila correspondiente al nombre de la aplicación
         row = df_logcsv[df_logcsv[colnames['NameApp']] == name].iloc[0]
         screenshot_filename = row[colnames['Screenshot']]
         screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-        
+
+        # Añadir la imagen si existe
         if os.path.exists(screenshot_directory):
-        
             nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
+            # Añadir salto de línea después de la imagen
+            nameapps.add_run().add_break()
+
+        # Mensaje en caso de que no se encuentre la imagen
         else:
             print(f"Image not found for {name}: {screenshot_directory}")
+
 #############################################################################################
 def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
         
