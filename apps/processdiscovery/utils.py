@@ -266,3 +266,19 @@ def extract_prev_act_labels(dot_path):
       unique_predecessor_labels.append(graph.get_node(predecessors[0]).attr['label'])
   
   return unique_predecessor_labels
+
+def extract_all_activities_labels(dot_path):
+    # Load the graph from a DOT file
+    graph = pgv.AGraph(dot_path)
+    
+    # List to store the labels of all activities (boxes)
+    activity_labels = []
+    
+    # Iterate over each node in the graph
+    for node in graph.nodes():
+        # Check if the node is an activity (box shape) and the label is a number
+        if graph.get_node(node).attr['shape'] == 'box' and graph.get_node(node).attr['label'].isdigit():
+            # Add the label to the list
+            activity_labels.append(int(graph.get_node(node).attr['label']))
+    
+    return activity_labels

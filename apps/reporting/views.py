@@ -45,7 +45,7 @@ import aspose.words as aw
 ##################################
 from graphviz import Source, Digraph
 from tempfile import NamedTemporaryFile
-from apps.processdiscovery.utils import Process
+from apps.processdiscovery.utils import Process, extract_all_activities_labels, extract_prev_act_labels
 
 import pygraphviz as pgv 
 
@@ -579,8 +579,8 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     ##########################3 AS IS PROCESS MAP
     if report.as_is_process_map:
         bpmn= doc.paragraphs[paragraph_dict['[.BPMN]']]
-        bpmn.text = ''
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+        bpmn.text = f"Below is the process model in BPMN format associated with the case study with a total of {len(extract_all_activities_labels(path_to_tree_file))} activities and {len(extract_prev_act_labels(path_to_tree_file))} decision points."
         run = bpmn.add_run()
         run.add_picture(dot_to_png(path_to_tree_file), width=Inches(6))
         run.add_break()
@@ -623,7 +623,7 @@ def applications_used(nameapps, execution, scenario, colnames):
     for name in unique_names:
         
         nameapps.add_run().add_break()
-        nameapps.add_run('\n• ' + name, style='Título 3 Car')
+        nameapps.add_run('\n• ' + name, style='Título 4 Car')
         # Añadir salto de línea después del nombre
         nameapps.add_run().add_break()
 
