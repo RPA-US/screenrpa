@@ -40,7 +40,7 @@ RUN apt upgrade libstdc++6 -y
 RUN apt install libcudnn8 libcudnn8-dev -y
 
 # Install graphviz
-RUN apt-get update && apt-get install -y graphviz
+RUN apt-get update && apt-get install -y graphviz graphviz-dev
 
 # Install latex dependencies for pandoc
 # Make django migrations
