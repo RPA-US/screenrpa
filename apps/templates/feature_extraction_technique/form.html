@@ -84,141 +84,73 @@
 
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
-  <script>
-
-    //if (!document.getElementById('form').readOnly) {
-
-
-    document.addEventListener('DOMContentLoaded', () => { 
-      const rel_comp_pred = document.getElementById('id_consider_relevant_compos')
-      const fe_type = document.getElementById('id_type')
-
-     
-
-      if (rel_comp_pred.checked) {
-        document.getElementById('id_relevant_compos_predicate').disabled = false;
-      } else {
-        document.getElementById('id_relevant_compos_predicate').disabled = true;
-      }
-      rel_comp_pred.onchange = () => {
-        if (rel_comp_pred.checked) {
-          document.getElementById('id_relevant_compos_predicate').disabled = false;
-        } else {
-          document.getElementById('id_relevant_compos_predicate').disabled = true;
-        }
-      }
-    
-      var select = document.getElementById('id_technique_name');
-      var type = fe_type.value;
-
-      
-      // Limpiar las opciones existentes
-      select.innerHTML = '';
-      
-      // Verificar si se ha seleccionado un tipo
-      if (type === '') {
-          // Si no se ha seleccionado un tipo, deshabilitar el campo technique name
-          select.disabled = true;
-      } else {
-          // Si se ha seleccionado un tipo, habilitar el campo technique name
-          select.disabled = false;
-
-          // Definir las opciones basadas en el tipo seleccionado
-          var options;
-          if (type === 'SINGLE') {
-            options = ['number_ui_element', 'caption_ui_element'];
-          } else if (type === 'AGGREGATE') {
-            options = ['status', 'plaintext', 'location', 'quantity'];
-          }
-
-          // Añadir las nuevas opciones al select
-          for (var i = 0; i < options.length; i++) {
-              var option = document.createElement('option');
-              option.text = options[i];
-              option.value = options[i];
-              select.add(option);
-          }
-      }
-    })
-
-    
-    document.getElementById('id_type').addEventListener('change', function() {
-      
-      var select = document.getElementById('id_technique_name');
-      
-      var type = this.value;
-
-      // Limpiar las opciones existentes
-      select.innerHTML = '';
-
-      // Verificar si se ha seleccionado un tipo
-      if (type === '') {
-          // Si no se ha seleccionado un tipo, deshabilitar el campo technique name
-          select.disabled = true;
-      } else {
-          // Si se ha seleccionado un tipo, habilitar el campo technique name
-          select.disabled = false;
-
-          // Definir las opciones basadas en el tipo seleccionado
-          var options;
-          if (type === 'SINGLE') {
-            options = ["ui_elem_location-class", "ui_elem_location-class_plaintext", "class-ui_elem_location", "class_plaintext-ui_elem_location", "xpath-class", "xpath+ui_elem_class-existence", "ui_compo-existence", "xpath-class_filtered_by_attention", "ui_compos_stats"];
-          } else if (type === 'AGGREGATE') {
-            options = ['status', 'quantity'];
-          }
-
-          // Añadir las nuevas opciones al select
-          for (var i = 0; i < options.length; i++) {
-              var option = document.createElement('option');
-              option.text = options[i];
-              option.value = options[i];
-              select.add(option);
-          }
-      }
-  });
-//}
-
-  
-  </script>
 
 <script>
-
-//if (!document.getElementById('form').readOnly) {
-
-document.addEventListener('DOMContentLoaded', () => {
-  const title = document.getElementById('id_title');
-  const type = document.getElementById('id_type');
-  //const skip = document.getElementById('id_skip');
-  const preloaded = document.getElementById('id_preloaded');  
-  const preloaded_file = document.getElementById('id_preloaded_file');  
-  //const configurations = document.getElementById('id_configurations');
-  const identifier = document.getElementById('id_identifier');
-  const technique_name = document.getElementById('id_technique_name');
-
-  // Función para habilitar/deshabilitar campos
-  function toggleFields(isPreloadedChecked) {
-    if (!document.getElementById('form').readOnly) {
-    type.disabled = isPreloadedChecked;
-    //skip.disabled = isPreloadedChecked;
-    //configurations.disabled = isPreloadedChecked;
-    identifier.disabled = isPreloadedChecked;
-    technique_name.disabled = isPreloadedChecked;
-    preloaded_file.disabled = !isPreloadedChecked;
+  document.addEventListener('DOMContentLoaded', () => {
+    const title = document.getElementById('id_title');
+    const type = document.getElementById('id_type');
+    const preloaded = document.getElementById('id_preloaded');  
+    const preloaded_file = document.getElementById('id_preloaded_file');  
+    const identifier = document.getElementById('id_identifier');
+    const technique_name = document.getElementById('id_technique_name');
+  
+    // Función para habilitar/deshabilitar campos
+    function toggleFields(isPreloadedChecked) {
+      if (!document.getElementById('form').readOnly) {
+        type.disabled = isPreloadedChecked;
+        identifier.disabled = isPreloadedChecked;
+        technique_name.disabled = isPreloadedChecked || !type.value;  // Deshabilitar si no se ha seleccionado un tipo
+        preloaded_file.disabled = !isPreloadedChecked;
+      }
     }
-  }
-
-  // Controlador de eventos para el checkbox 'preloaded'
-  preloaded.addEventListener('change', () => {
-    toggleFields(preloaded.checked);
+  
+    // Función para cambiar las opciones de 'technique_name' basado en el valor de 'type'
+    function changeTechniqueOptions() {
+      const selectedType = type.value;
+  
+      // Borrar todas las opciones de 'technique_name'
+      technique_name.options.length = 0;
+  
+      let options = [];
+      if (selectedType === 'SINGLE') {
+          options = [ ('ui_elem_location-class','ui_elem_location-class'),
+          ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
+          ('class-ui_elem_location', 'class-ui_elem_location'),
+          ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
+          ('xpath-class', 'xpath-class'),
+          ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
+          ('ui_compo-existence', 'ui_compo-existence'),
+          ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
+          ('ui_compos_stats', 'ui_compos_stats')
+          ];
+      } else if (selectedType === 'AGGREGATE') {
+          options = [
+          ('status', 'status'),
+          ('quantity', 'quantity')
+          ];
+      }
+  
+      options.forEach(option => {
+          const opt = new Option(option, option);
+          technique_name.add(opt);
+      });
+  
+      // Habilitar el campo 'technique_name' si se ha seleccionado un tipo
+      technique_name.disabled = !selectedType;
+    }
+  
+    preloaded.addEventListener('change', () => {
+      toggleFields(preloaded.checked);
+    });
+  
+    type.addEventListener('change', changeTechniqueOptions);
+  
+    changeTechniqueOptions();
+    toggleFields(preloaded.checked);  // Llamar a toggleFields después de changeTechniqueOptions
+  
+    document.getElementById('form').onsubmit = function() {
+      document.getElementById('id_preloaded').readOnly = false;
+    }
   });
-
-  // Inicializar los campos al cargar la página
-  toggleFields(preloaded.checked);
-
-  document.getElementById('form').onsubmit = function() {
-    document.getElementById('id_preloaded').readOnly = false;
-  }
-})  
-//}
-</script>
+  </script>
 {% endblock javascripts %}

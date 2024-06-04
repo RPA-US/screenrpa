@@ -288,23 +288,32 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             ),
             "type": forms.Select(
                 choices=[
+                    ('', '--- Select type ---'),  # Placeholder
                     ('SINGLE', 'Single: Feature extraction just after UI Elem. Detection'), 
                     ('AGGREGATE', 'Aggregate: Feature extraction after flattening UI log into dataset'), 
                 ],
                 attrs={
                     "class": "form-control",
-                    "required": "false"
+                    "required": "false",
+
                 }),
             "technique_name": forms.Select(
-                # choices=[('quantity', 'Quantity of UI Elem. per class'), 
-                #          ('location', 'Location (UI Elem. Centroid)'), 
-                #          ('plaintext', 'Location (UI Elem. Centroid) + Plain Text'), 
-                #          ('status', 'UI Elem. Status'), 
-                #          ('number_ui_element', 'Number of UI Elem.'),
-                #          ('caption_ui_element', 'Caption of UI Elem.')],
+                # choices=[
+                #     ('ui_elem_location-class','ui_elem_location-class'),
+                #     ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
+                #     ('class-ui_elem_location', 'class-ui_elem_location'),
+                #     ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
+                #     ('xpath-class', 'xpath-class'),
+                #     ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
+                #     ('ui_compo-existence', 'ui_compo-existence'),
+                #     ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
+                #     ('ui_compos_stats', 'ui_compos_stats'),
+                #     ('status', 'status'),
+                #     ('quantity', 'quantity')],         
                 attrs={
                     "class": "form-control",
-                    "required": "false"
+                    "required": "false",
+                    "onchange": "changeTechniqueOptions()"
                     }
             ),
             "decision_point_activity": forms.TextInput(
