@@ -330,6 +330,9 @@ def process_level(folder_path, df, execution):
                 elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING or type(next_node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
                     return Branch(branch_start.name, branch_start.id, dps), next_node, visited
 
+                # Handling any other case
+                else:
+                    raise Exception(f"ScreenRPA does not currently support with processes containing elements of type {type(next_node)}")
             # Return at the end of the BPMN
             return Branch(branch_start.name, branch_start.id, dps), None, visited
 
