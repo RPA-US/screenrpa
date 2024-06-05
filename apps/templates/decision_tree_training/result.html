@@ -72,7 +72,7 @@
                                     <h5 class="h3 mb-0">Rules of class {{ class }}</h5>
                                     <ul class="list-group list-group-flush">
                                         {% for rule in rules %}
-                                            <li class="list-group-item">Rule: {{ rule }}</li>
+                                            <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
                                         {% endfor %}
                                     </ul>
                                 </div>
@@ -141,7 +141,9 @@
                         <h5 class="h3 mb-0">Rules of class {{ class }}</h5>
                         <ul class="list-group list-group-flush">
                             {% for rule in rules %}
-                                <li class="list-group-item">Rule: {{ rule }}</li>
+                                <!-- <li class="list-group-item">Rule: {{ rule }}</li> -->
+                                <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
+
                             {% endfor %}
                         </ul>
                     </div>

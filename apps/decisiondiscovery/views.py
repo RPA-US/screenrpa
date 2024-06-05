@@ -362,7 +362,7 @@ class ExtractTrainingDatasetResultDetailView(DetailView):
         # CSV Download
         if path_to_csv_file and download=="True":
             #return ResultDownload(path_to_csv_file)
-            return Extract_training_dataset_ResultDownload(scenario,execution,path_to_csv_file)
+            return Extract_training_dataset_ResultDownload(path_to_csv_file)
 
         # CSV Reading and Conversion to JSON
         csv_data_json = read_csv_to_json(path_to_csv_file)

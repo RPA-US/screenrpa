@@ -842,7 +842,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                     if mean_x < 0:  side="left"# Click is to the left of the image         
                     if mean_y < 0: side="top"# Click is above the image
 
-                    event_description = f"ERROR: coordinates recorded incorrectly, out of screen resolution by {side} border. User clicks on {mean_x}, {mean_y} and the screen resolution is {width}, {height}."
+                    event_description = f"ERROR: coordinates recorded incorrectly, out of screen resolution by {side} border (highlighted in red in the picture). User clicks on {mean_x}, {mean_y} and the screen resolution is {width}, {height}."
                     out_click=True
 
             else:
