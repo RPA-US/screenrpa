@@ -88,7 +88,7 @@
 
       var select = document.getElementById('id_technique_name');
       select.disabled = true;
-      console.log(select);
+      select.value = "{{ form.technique_name.value }}"
   });
 
 
