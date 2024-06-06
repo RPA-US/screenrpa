@@ -93,6 +93,8 @@
     const preloaded_file = document.getElementById('id_preloaded_file');  
     const identifier = document.getElementById('id_identifier');
     const technique_name = document.getElementById('id_technique_name');
+    const apply_filter_checkbox = document.getElementById('id_consider_relevant_compos');
+    const relevant_compos_predicate = document.getElementById('id_relevant_compos_predicate');  
   
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
@@ -103,6 +105,15 @@
         preloaded_file.disabled = !isPreloadedChecked;
       }
     }
+
+    //Checkbox de 'apply_filter_checkbox' para habilitar/deshabilitar el campo 'relevant_compos_predicate'
+    function toggleFieldsFilterRelevants(isChecked) {
+      relevant_compos_predicate.disabled = !isChecked;
+    }
+    
+    apply_filter_checkbox.addEventListener('change', () => {
+      toggleFieldsFilterRelevants(apply_filter_checkbox.checked);
+    });
   
     // Función para cambiar las opciones de 'technique_name' basado en el valor de 'type'
     function changeTechniqueOptions() {
