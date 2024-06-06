@@ -219,7 +219,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
                 elif centroid_columnname_type == "centroid_class":
                     centroid = compos_list[j]["centroid"]
                     activity = log.at[i, activity_colname]
-                    column_name = id+"_"+str(centroid[0])+"-"+str(centroid[1])+"_"+activity
+                    column_name = f"{id}_{centroid[0]}-{centroid[1]}_{activity}"
                     
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
