@@ -329,7 +329,8 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": 'compo["relevant"]=="True" or compo["relevant"] == "Nested"',
-                    "required": "false"
+                    "required": "false",
+                    "disabled": "true"
                     }
             ),
         }
