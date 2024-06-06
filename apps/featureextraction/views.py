@@ -46,22 +46,22 @@ def ui_elements_classification(log_path, path_scenario, execution):
         output = None
     return output
 
-def feature_extraction_technique(log_path, path_scenario, execution):
+def feature_extraction_technique(log_path, path_scenario, execution, fe):
 
-    fe_type = execution.feature_extraction_technique.type
-    feature_extraction_technique_name = execution.feature_extraction_technique.technique_name
-    skip = execution.feature_extraction_technique.preloaded
+    fe_type = fe.type
+    feature_extraction_technique_name = fe.technique_name
+    skip = fe.preloaded
     output = None
     
     if not skip:
         if fe_type == "SINGLE":
             tprint(PLATFORM_NAME + " - " + SINGLE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
             print("Single feature extraction selected: " + feature_extraction_technique_name+"\n")
-            output = detect_single_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
+            output = detect_single_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution, fe)
         else:
             tprint(PLATFORM_NAME + " - " + AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME, "fancy60")
             print("Aggregate feature extraction selected: " + feature_extraction_technique_name+"\n")
-            output = detect_agg_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution)
+            output = detect_agg_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution, fe)
     return output
 
 class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
@@ -138,6 +138,11 @@ class FeatureExtractionTechniqueListView(ListView, LoginRequiredMixin):
         else:
             queryset = FeatureExtractionTechnique.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
 
+        # Filters by execution_id
+        execution_id = self.request.GET.get("exec_id")
+        if execution_id:
+            queryset = queryset.filter(executions__id=execution_id)
+
         return queryset
 
 class FeatureExtractionTechniqueDetailView(DetailView, LoginRequiredMixin):
@@ -174,18 +179,23 @@ class FeatureExtractionTechniqueDetailView(DetailView, LoginRequiredMixin):
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
 
+@login_required(login_url="/login/")
 def set_as_feature_extraction_technique_active(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
     case_study_id = request.GET.get("case_study_id")
-    feature_extraction_technique_list = FeatureExtractionTechnique.objects.filter(case_study_id=case_study_id)
-    for m in feature_extraction_technique_list:
-        m.active = False
-        m.save()
+
+    # Now we allow for more than one fe to be active
+        # feature_extraction_technique_list = FeatureExtractionTechnique.objects.filter(case_study_id=case_study_id)
+        # for m in feature_extraction_technique_list:
+        #     m.active = False
+        #     m.save()
+
     feature_extraction_technique = FeatureExtractionTechnique.objects.get(id=feature_extraction_technique_id)
     feature_extraction_technique.active = True
     feature_extraction_technique.save()
     return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
 
+@login_required(login_url="/login/")
 def set_as_feature_extraction_technique_inactive(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
     case_study_id = request.GET.get("case_study_id")
@@ -203,6 +213,7 @@ def set_as_feature_extraction_technique_inactive(request):
     feature_extraction_technique.save()
     return HttpResponseRedirect(reverse("featureextraction:fe_technique_list", args=[case_study_id]))
     
+@login_required(login_url="/login/")
 def delete_feature_extraction_technique(request):
     feature_extraction_technique_id = request.GET.get("feature_extraction_technique_id")
     case_study_id = request.GET.get("case_study_id")

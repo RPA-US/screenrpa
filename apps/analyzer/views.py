@@ -71,7 +71,8 @@ def generate_case_study(execution, path_scenario, times):
     n = 0
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
         if getattr(execution, function_to_exec) is not None:
-            phase_has_preloaded = getattr(execution, function_to_exec).preloaded
+            # We handle fe preloaded because it may have several configuations
+            phase_has_preloaded = function_to_exec != "feature_extraction_technique" and getattr(execution, function_to_exec).preloaded
             if phase_has_preloaded:
                 times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
             else:
@@ -84,15 +85,18 @@ def generate_case_study(execution, path_scenario, times):
                     times[n][function_to_exec]["accuracy"] = res
                     times[n][function_to_exec]["feature_checker"] = fe_checker
                 elif function_to_exec == "feature_extraction_technique":
-                    if (getattr(execution, function_to_exec).type == "SINGLE" and i == 5) or (getattr(execution, function_to_exec).type == "AGGREGATE" and i == 8):
-                        start_t = time.time()
-                        num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution)
-                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-                        # Additional feature extraction metrics
-                        times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-                        times[n][function_to_exec]["num_screenshots"] = num_screenshots
-                        times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-                        times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                    for fe in execution.feature_extraction_techniques.all():
+                        if fe.preloaded:
+                            continue
+                        if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
+                            start_t = time.time()
+                            num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
+                            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                            # Additional feature extraction metrics
+                            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                            times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
                     filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
