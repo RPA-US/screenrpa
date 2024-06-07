@@ -125,8 +125,9 @@ def decision_tree_training(log_path, scenario_path, execution):
         os.mkdir(os.path.join(scenario_path, DECISION_FOLDERNAME))
         
     tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
+    activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
     
-    for act in extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot")):
+    for act in activities_before_dps:
         flattened_json_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.json')
         print(flattened_json_log_path+"\n")
         
@@ -161,7 +162,7 @@ def decision_tree_training(log_path, scenario_path, execution):
             raise Exception(_("Decision model chosen is not an option"))
         
         if feature_values:
-            fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, scenario_path+"_results")
+            fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, scenario_path+"_results",act)
         else:
             fe_checker = None
         return res, fe_checker, times, columns_len#, tree_levels
@@ -608,7 +609,7 @@ def delete_decision_tree_training(request):
     decision_tree_training.delete()
     return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
 
-def decision_tree_feature_checker(feature_values, centroid_threshold, path):
+def decision_tree_feature_checker(feature_values, centroid_threshold, path, previous_dp_activity):
     """
     
     A function to check conditions over decision tree representations
@@ -641,7 +642,7 @@ def decision_tree_feature_checker(feature_values, centroid_threshold, path):
             }
         }
     """
-    dt_file = os.path.join(path, "decision_tree.log")
+    dt_file = os.path.join(path, "decision_tree_"+previous_dp_activity+".log")
     
     metadata = {}        
     for target_class, fe_values_class in feature_values.items():

@@ -178,14 +178,19 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
 
     # Extract features and target variable
     X = df.drop(columns=['Variant'])
+    X = X.astype(str)
     y = df['Variant']
     
     preprocessor = def_preprocessor(X)
     print(X)
     df.head()
     X = preprocessor.fit_transform(X)
-    X_df = pd.DataFrame(X)
-    feature_names = list(preprocessor.get_feature_names_out())
+
+    # X es una sparse_matrix
+    dense_matrix=X.toarray()
+    feature_names = preprocessor.get_feature_names_out()
+    X_df = pd.DataFrame(dense_matrix, columns=feature_names)
+
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
@@ -201,7 +206,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     # }
     
     # Assuming 'best_tree_tree' is already trained on the training data
-    text_representation = export_text(tree_classifier, feature_names=feature_names)
+    text_representation = export_text(tree_classifier, feature_names=list(feature_names))
     print("Decision Tree Rules:\n", text_representation)
     
     with open(os.path.join(param_path, "decision_tree_"+prevact+".log"), "w") as fout:
@@ -235,7 +240,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
         target = list(df[target_label].unique())
         target_casted = [str(t) for t in target]
         img = plot_decision_tree(
-            os.path.join(param_path, "decision_tree"), tree_classifier, feature_names, target_casted)
+            os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'), tree_classifier, feature_names, target_casted)
         plt.imshow(img)
         plt.show()
 
