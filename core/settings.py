@@ -50,6 +50,7 @@ AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =   _("aggreate feature extraction")
 DECISION_MODEL_DISCOVERY_PHASE_NAME =       _("decision model discovery")
 ENRICHED_LOG_SUFFIX =                       "_enriched"
 LOG_FILENAME =                              "log.csv"
+PROCESS_DISCOVERY_LOG_FILENAME =            "pd_log.csv"
 
 # System Default Phases
 DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_elements_classification', 'postfilters', 'feature_extraction_technique', 

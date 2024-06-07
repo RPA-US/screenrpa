@@ -15,7 +15,7 @@ import pandas as pd
 from apps.chefboost import Chefboost as chef
 from apps.analyzer.models import CaseStudy, Execution
 from apps.processdiscovery.utils import extract_prev_act_labels
-from core.settings import sep, DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME
+from core.settings import DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME, PROCESS_DISCOVERY_LOG_FILENAME
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
@@ -83,7 +83,7 @@ def extract_training_dataset(log_path, root_path, execution):
     
     
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
-    aux= os.path.join(root_path + "_results", "pd_log.csv")
+    aux= os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
     print(aux+"\n")
 
     log = read_ui_log_as_dataframe(aux)

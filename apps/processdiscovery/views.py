@@ -23,6 +23,7 @@ from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
 from core.utils import read_ui_log_as_dataframe
+from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from apps.processdiscovery.utils import Process, DecisionPoint, Branch, Rule
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
@@ -255,7 +256,7 @@ def scene_level(log_path, scenario_path, execution):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
     
-    ui_log.to_csv(os.path.join(folder_path, 'pd_log.csv'), index=False)
+    ui_log.to_csv(os.path.join(folder_path, PROCESS_DISCOVERY_LOG_FILENAME), index=False)
     
     generate_dendrogram(ui_log, show_dendrogram=show_dendrogram)
 
@@ -391,7 +392,7 @@ def process_level(folder_path, df, execution):
                         
             df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
-            df.to_csv(os.path.join(folder_path, 'pd_log.csv'), index=False)
+            df.to_csv(os.path.join(folder_path, PROCESS_DISCOVERY_LOG_FILENAME), index=False)
 
         try:
             process = bpmn_bfs(node_start, node_end)
@@ -412,7 +413,7 @@ def process_discovery(log_path, scenario_path, execution):
     # scenario_path -> media/unzipped/exec_1/Nano/
     # root_path -> media/unzipped/exec_1/
 
-    # root_path + "results/" + "pd_log.csv"
+    # root_path + "results/" + PROCESS_DISCOVERY_LOG_FILENAME
     #Pasar execution.process_discovery
     folder_path, ui_log = scene_level(log_path, scenario_path, execution)
     process_level(folder_path, ui_log, execution)
@@ -734,7 +735,7 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
               
         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "bpmn.dot")
 
-        df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario + '_results', 'pd_log.csv'))
+        df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario + '_results', PROCESS_DISCOVERY_LOG_FILENAME))
         
         variants = df['auto_variant'].unique().tolist()
 

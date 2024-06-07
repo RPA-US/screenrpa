@@ -22,6 +22,7 @@ import pandas as pd
 from sklearn.tree import export_graphviz
 
 from core.utils import read_ui_log_as_dataframe
+from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
@@ -997,7 +998,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
     decision_tree.text = ''
-    df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+    df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', PROCESS_DISCOVERY_LOG_FILENAME))
     #se quita porque la columna se aplica ya cuando se crea el csv y se llama auto_variant
     #df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
