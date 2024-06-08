@@ -162,7 +162,10 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
 
             for j in range(0, len(compos_list)):
                 compo_class = compos_list[j]["class"]
-                screenshot_compos_frec[compo_class] += 1
+                try:
+                    screenshot_compos_frec[compo_class] += 1
+                except:
+                    raise Exception("UI elements model classes not compatible with Preloaded FE files ones: please select the correct model")
 
 # ========================================================================================================
 # ========================================================================================================
