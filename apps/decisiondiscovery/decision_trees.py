@@ -187,9 +187,10 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     X = preprocessor.fit_transform(X)
 
     # X es una sparse_matrix
-    dense_matrix=X.toarray()
+    # dense_matrix=X.toarray() -> if a dataframe has a high number of columns, may be it has to be treated as a sparse matrix
+
     feature_names = preprocessor.get_feature_names_out()
-    X_df = pd.DataFrame(dense_matrix, columns=feature_names)
+    X_df = pd.DataFrame(X, columns=feature_names)
 
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
@@ -197,7 +198,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     start_t = time.time()
     tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, k_fold_cross_validation)
 
-    accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
+    accuracies = cross_validation(X,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # times["sklearn"]["encoders"] = {
     #     "enabled": status_encoder.fit_transform(["enabled"])[0], 

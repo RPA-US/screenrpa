@@ -91,15 +91,21 @@ def extract_training_dataset(log_path, root_path, execution):
         log = read_ui_log_as_dataframe(aux)
     except:
         raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results")
-    process_columns = [special_colnames["Case"], 
-                       special_colnames["Activity"], 
-                       special_colnames["Variant"],
-                       special_colnames["Timestamp"], 
-                       special_colnames["Screenshot"]]
+    process_columns = [ 
+                        special_colnames["Case"], 
+                        special_colnames["Activity"], 
+                        special_colnames["Variant"],
+                        special_colnames["Timestamp"], 
+                        special_colnames["Screenshot"],
+                        "combined_features", # Feature vector of the screenshot
+                        "case:concept:name", # Case ID Duplicated in Process Discovery
+                        "concept:name", # Activity ID Duplicated in Process Discovery
+                        "time:timestamp" # Timestamp Duplicated in Process Discovery
+                    ]
     
-    # De las columnas del log, se eliminan las columnas que vienen de la identificacion del decision point
+    # From the columns of the log, the columns that come from the decision point identification are removed
     for c in log.columns:
-        if "id" in c and re.match(r'^id[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\(.*\)$', c):
+        if "id" in c and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c):
             process_columns.append(c)
 
     columns = list(log.columns)

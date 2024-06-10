@@ -265,7 +265,7 @@ def read_feature_column_name(column_name):
         centroid = None
         aux2 = 0
     elif not "__" in column_name and not contains_centroid:
-        pattern = r"([a-zA-Z_]+)__([a-zA-Z:]+)_(\d+_\d+)"
+        pattern = r"([a-zA-Z_]+)__([a-zA-Z:+]+)_(\d+_\d+)"
         suffix = None
         aux1 = 0
         aux2 = 1
