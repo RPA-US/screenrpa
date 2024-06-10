@@ -8,8 +8,9 @@ from django.utils.translation import gettext_lazy as _
 from typing import List
 import matplotlib.image as plt_img
 import matplotlib.pyplot as plt
+import scipy
 from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
-from .utils import def_preprocessor, best_model_grid_search, cross_validation
+from .utils import def_preprocessor, best_model_grid_search, cross_validation, prev_preprocessor
 from apps.chefboost import Chefboost as chef
 from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 import pickle
@@ -181,14 +182,19 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     X = X.astype(str)
     y = df[special_colnames["Variant"]]
     
+    X = prev_preprocessor(X)
+    if isinstance(X, str):
+        raise Exception(X)
+        return
     preprocessor = def_preprocessor(X)
     print(X)
-    df.head()
+    #df.head()
     X = preprocessor.fit_transform(X)
-
+    
     # X es una sparse_matrix
-    # dense_matrix=X.toarray() -> if a dataframe has a high number of columns, may be it has to be treated as a sparse matrix
-
+    # if a dataframe has a high number of columns, may be it has to be treated as a sparse matrix
+    if isinstance(X, scipy.sparse.spmatrix):
+        X = X.toarray()
     feature_names = preprocessor.get_feature_names_out()
     X_df = pd.DataFrame(X, columns=feature_names)
 
@@ -198,7 +204,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     start_t = time.time()
     tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, k_fold_cross_validation)
 
-    accuracies = cross_validation(X,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
+    accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # times["sklearn"]["encoders"] = {
     #     "enabled": status_encoder.fit_transform(["enabled"])[0], 

@@ -142,10 +142,10 @@ def decision_tree_training(log_path, scenario_path, execution):
     activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
     
     for act in activities_before_dps:
-        flattened_json_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.json')
-        print(flattened_json_log_path+"\n")
+        flattened_csv_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv')
+        print(flattened_csv_log_path+"\n")
         
-        flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
+        flattened_dataset = pd.read_csv(flattened_csv_log_path)
         # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
         
         
@@ -161,7 +161,12 @@ def decision_tree_training(log_path, scenario_path, execution):
         # tree_levels = {}
         
         if implementation == 'sklearn':
-            res, times = sklearn_decision_tree(flattened_dataset,act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+                try:
+                    if implementation == 'sklearn':
+                        res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+                except:
+                    print(f"No features left after preprocessing.")
+                    continue
         elif implementation == 'chefboost':
             res, times = chefboost_decision_tree(flattened_dataset, scenario_path+"_results", algorithms, "Variant", k_fold_cross_validation)
             # TODO: caculate number of tree levels automatically

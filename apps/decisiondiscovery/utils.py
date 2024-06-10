@@ -108,16 +108,25 @@ def preprocess_data(data):
   data = data.drop(columns=columns_to_drop)
   return data
 
-def def_preprocessor(X):
+def prev_preprocessor(X):
     # define type of columns
     # sta_columns = list(filter(lambda x:"sta_" in x, X.columns))
-    
+
+    X = X.loc[:, ~X.columns.str.contains('^Unnamed')] # Remove unnamed columns automatically generated
     # Identificar las columnas con todos los valores iguales
     columns_to_drop = X.columns[X.nunique() == 1]
     # Identificar las columnas con todos los valores nulos
     columns_to_drop = columns_to_drop.union(X.columns[X.isnull().all()])
     # Eliminar las columnas con todos los valores iguales o nulos
     X = X.drop(columns=columns_to_drop)
+
+    if len(X.columns) == 0:
+        return "No features left after preprocessing."
+
+    return X
+
+def def_preprocessor(X):
+    
     
     mapping_dict = {"enabled": ['NaN', 'enabled', 'disabled'], "checked": ['unchecked', 'checked', '']}
     mapping_list = []
@@ -264,7 +273,7 @@ def read_feature_column_name(column_name):
         aux1 = 0
         centroid = None
         aux2 = 0
-    elif not "__" in column_name and not contains_centroid:
+    elif not "__" in column_name and not contains_centroid: #one_hot_categorical__case:concept:name_1_1
         pattern = r"([a-zA-Z_]+)__([a-zA-Z:+]+)_(\d+_\d+)"
         suffix = None
         aux1 = 0
