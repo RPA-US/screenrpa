@@ -453,6 +453,9 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
             elif algorithm == "sam" or algorithm == "fast-sam":
                 path_to_save_mask_npy=path_to_save_mask_elements+ os.path.basename(image_names[img_index])
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/", sam_type=algorithm)
+
+                if not os.path.exists(path_to_save_time_of_pipepile):
+                    os.makedirs(path_to_save_time_of_pipepile)
                 
                 with open(os.path.join(path_to_save_time_of_pipepile, image_names[img_index]+'_sam_time.json'),'w') as outfile:
                     json.dump(dict_times,outfile)
@@ -464,8 +467,8 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
 
                 # save metadata json
                 with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
-                    # json.dump(compos_json, outfile)
-                    outfile.write(compos_json)
+                    json.dump(compos_json, outfile)
+                    # outfile.write(compos_json)
 
                 path=path_to_save_mask_npy
                 for n in ['segmentation','crop_box']:
