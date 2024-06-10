@@ -87,7 +87,10 @@ def extract_training_dataset(log_path, root_path, execution):
     aux= os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
     print(aux+"\n")
 
-    log = read_ui_log_as_dataframe(aux)
+    try:
+        log = read_ui_log_as_dataframe(aux)
+    except:
+        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results")
     process_columns = [special_colnames["Case"], 
                        special_colnames["Activity"], 
                        special_colnames["Variant"],
@@ -105,8 +108,7 @@ def extract_training_dataset(log_path, root_path, execution):
             columns.remove(c)
     
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    flat_dataset_row(log, columns, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
-                     special_colnames["Timestamp"], actions_columns, execution.process_discovery)
+    flat_dataset_row(log, columns, root_path+'_results', special_colnames, actions_columns, execution.process_discovery)
 
 def decision_tree_training(log_path, scenario_path, execution):
     # "media/flattened_dataset.json",
@@ -147,7 +149,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         
         # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
         flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-        flattened_dataset.to_csv(os.path.join(scenario_path+"_results",FLATTENED_DATASET_NAME+".csv"))
+        # flattened_dataset.to_csv(os.path.join(scenario_path+"_results",FLATTENED_DATASET_NAME+".csv"))
         columns_len = flattened_dataset.shape[1]
         flattened_dataset = flattened_dataset.fillna('NaN')
         # tree_levels = {}

@@ -5,7 +5,7 @@ from numpyencoder import NumpyEncoder
 
 from apps.processdiscovery.utils import extract_prev_act_labels
 
-def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
+def flat_dataset_row(log, columns, path_dataset_saved, special_colnames, 
                           actions_columns, process_discovery):
     """
     This function convert the log into a dataset, that is, to flat all the existing events over the same case,
@@ -14,6 +14,10 @@ def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activit
     with their activity id, for example, timestamp_A, timestamp_B, etc.
 
     """
+    case_column_name = special_colnames["Case"]
+    activity_column_name = special_colnames["Activity"]
+    timestamp_column_name = special_colnames["Timestamp"]
+    variant_colname = special_colnames["Variant"]
     cases = log.loc[:, case_column_name].values.tolist()
     
     #activities_before_dps = process_discovery.activities_before_dps
@@ -41,16 +45,16 @@ def flat_dataset_row(log, columns, path_dataset_saved, case_column_name, activit
                     last_case = c
                     log_dict[c] = {
                             "Timestamp_start": log.at[index, timestamp_column_name],
-                            "Variant": log.at[index, "Variant"]
+                            variant_colname: log.at[index, variant_colname]
                         }
                 if str(act) == str(activity):
-                    for h in columns:
-                        log_dict[c][h+"_"+str(activity)] = log.at[index, h]
-                else:
                     for h in columns:
                         if h not in actions_columns:
                             log_dict[c][h+"_"+str(activity)] = log.at[index, h]
                     before_DP = False
+                else:
+                    for h in columns:
+                        log_dict[c][h+"_"+str(activity)] = log.at[index, h]
     
         log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
         

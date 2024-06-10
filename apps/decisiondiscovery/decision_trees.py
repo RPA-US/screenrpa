@@ -58,7 +58,7 @@ import pickle
 #         # file.write(output)
 #         # file.close()
 #         # Saving model
-#         # model = chef.fit(df, config = config, target_label = 'Variant')
+#         # model = chef.fit(df, config = config, target_label = special_colnames["Variant"])
 #         # chef.save_model(model, alg+'model.pkl')
 #         # TODO: feature importance
 #         fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
@@ -177,9 +177,9 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
         k_fold_cross_validation = 2
 
     # Extract features and target variable
-    X = df.drop(columns=['Variant'])
+    X = df.drop(columns=[special_colnames["Variant"]])
     X = X.astype(str)
-    y = df['Variant']
+    y = df[special_colnames["Variant"]]
     
     preprocessor = def_preprocessor(X)
     print(X)
@@ -197,7 +197,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     start_t = time.time()
     tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, k_fold_cross_validation)
 
-    accuracies = cross_validation(X_df,pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,k_fold_cross_validation)
+    accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # times["sklearn"]["encoders"] = {
     #     "enabled": status_encoder.fit_transform(["enabled"])[0], 
