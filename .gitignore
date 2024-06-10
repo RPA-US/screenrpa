@@ -188,3 +188,4 @@ apps/notebooks
 apps/decisiondiscovery/notebooks/*.csv
 apps/decisiondiscovery/notebooks/*.txt
 apps/decisiondiscovery/notebooks/*.json
+apps/decisiondiscovery/notebooks/test.ipynb
