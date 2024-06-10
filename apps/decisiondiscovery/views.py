@@ -28,6 +28,7 @@ from django.utils.translation import gettext_lazy as _
 import matplotlib.pyplot as plt
 from sklearn import tree
 import io
+import re
 import pickle
 import base64
 import pickle
@@ -93,6 +94,11 @@ def extract_training_dataset(log_path, root_path, execution):
                        special_colnames["Timestamp"], 
                        special_colnames["Screenshot"]]
     
+    # De las columnas del log, se eliminan las columnas que vienen de la identificacion del decision point
+    for c in log.columns:
+        if "id" in c and re.match(r'^id[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\(.*\)$', c):
+            process_columns.append(c)
+
     columns = list(log.columns)
     for c in process_columns:
         if c in columns:
