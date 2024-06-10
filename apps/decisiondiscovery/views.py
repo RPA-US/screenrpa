@@ -173,7 +173,7 @@ def decision_tree_training(log_path, scenario_path, execution):
             fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, scenario_path+"_results",act)
         else:
             fe_checker = None
-        return res, fe_checker, times, columns_len#, tree_levels
+    return res, fe_checker, times, columns_len#, tree_levels
     
 def decision_tree_predict(module_path, instance):
     """
