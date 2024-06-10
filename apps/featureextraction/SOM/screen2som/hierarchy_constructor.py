@@ -90,7 +90,8 @@ def labels_to_output(labels, text_class="Text"):
     Returns:
         dict: SOM.
     """
-    compos = labels["compos"]
+    # Create a copy of compos to not moddify it
+    compos = labels["compos"][:]
     for shape in compos:
         shape["depth"] = 1
         shape["type"] = "leaf"

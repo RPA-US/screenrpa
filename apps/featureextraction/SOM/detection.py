@@ -461,9 +461,10 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
                     json.dump(dict_times,outfile)
 
                 #TODO save mask(sam) json
-                with open(os.path.join(path_to_save_components_json, image_names[img_index]+'_sam_mask.json'),'w') as outfile:
-                    # json.dump(mask_json,outfile)
-                    outfile.write(mask_json)
+                # CURRENTLY COMMENTED OUT. IT DOES NOT PROVIDE MORE INFO THAN COMPOS JSON
+                # with open(os.path.join(path_to_save_components_json, image_names[img_index]+'_sam_mask.json'),'w') as outfile:
+                #     # json.dump(mask_json,outfile)
+                #     outfile.write(mask_json)
 
                 # save metadata json
                 with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
