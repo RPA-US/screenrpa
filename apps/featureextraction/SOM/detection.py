@@ -373,7 +373,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             comp_json["compos"].append({
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
-                text_classname: text[0] if is_text else "",
+                "text": text[0] if is_text else "",
                 "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
                 "centroid": [int((w-x)/2), int((h-y)/2)],
                 "xpath": [],
@@ -387,7 +387,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))
 
-    comp_json = labels_to_output(copy.deepcopy(comp_json))
+    comp_json = labels_to_output(copy.deepcopy(comp_json), text_classname)
 
     return (recortes, comp_json, text_or_not_text, words)
 

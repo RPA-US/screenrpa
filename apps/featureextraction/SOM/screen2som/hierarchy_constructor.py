@@ -1,7 +1,7 @@
 from shapely.geometry import Polygon
 import copy
 
-def build_tree(tree: list, depth=1):
+def build_tree(tree: list, depth=1, text_class="Text"):
     """
     Recursively constructs a tree hierarchy from a list of compos.
 
@@ -30,7 +30,7 @@ def build_tree(tree: list, depth=1):
                     shape1["children"].append(shape2)
                     shape1["type"] = "node"
                     shape2["xpath"].append(shape1["id"])
-                    if shape2["class"] == "Text":
+                    if shape2["class"] == text_class:
                         shape1["text"] += shape2["text"] + " | "
             except ZeroDivisionError:
                 continue
@@ -80,7 +80,7 @@ def readjust_depth(nodes, depth):
 
     return nodes
 
-def labels_to_output(labels):
+def labels_to_output(labels, text_class="Text"):
     """
     Converts a list of labels into  a SOM .
 
@@ -114,7 +114,7 @@ def labels_to_output(labels):
             [labels["img_shape"][1], 0],
             [labels["img_shape"][1], labels["img_shape"][0]]
         ]).centroid.coords[0]),
-        "children": build_tree(copy.deepcopy(compos)),
+        "children": build_tree(copy.deepcopy(compos), text_class=text_class),
     }
 
 
