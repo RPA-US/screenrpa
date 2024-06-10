@@ -1,6 +1,6 @@
 import json
 import os
-from core.settings import STATUS_VALUES_ID, sep
+from core.settings import STATUS_VALUES_ID, PROCESS_DISCOVERY_LOG_FILENAME
 from core.utils import read_ui_log_as_dataframe
 
 def find_st_id(st_value):
@@ -165,78 +165,83 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     metadata_json_root = os.path.join(execution_root, 'components_json')
-    flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
+    
     consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
     relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
     id = execution.feature_extraction_technique.identifier
     
-    with open(flattened_log, 'r') as f:
-        ui_log_data = json.load(f)
-    
-    log = read_ui_log_as_dataframe(ui_log_path)
+    # log = read_ui_log_as_dataframe(ui_log_path)
+    log = read_ui_log_as_dataframe(os.path.join(path_scenario + "_results", PROCESS_DISCOVERY_LOG_FILENAME))
 
     # df = pd.DataFrame([], columns=ui_elements_classification_classes)
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
-    before_DP = True
-    aux_case = -1    
+    # Guardar en la variable flattened_logs los nombres de los archivos que en la ruta de execution_root cumplan el patron de que empiezan por "flattened_dataset" y terminan por ".json"
+    flattened_logs = [os.path.join(execution_root, f) for f in os.listdir(execution_root) if f.startswith('flattened_dataset') and f.endswith('.json')]
 
-    num_screenshots = 0
-    num_UI_elements = 0
-    max_num_UI_elements = 0
-    min_num_UI_elements = 99999999999999999
-    
-    for i, screenshot_filename in enumerate(screenshot_filenames):
-        case = log.at[i, case_colname]
-        activity = log.at[i, activity_colname]
+    for flattened_log in flattened_logs:
+        with open(flattened_log, 'r') as f:
+            ui_log_data = json.load(f)
         
-        if case != aux_case:
-            before_DP = True
-        
-        if before_DP:
-            # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
-                data = json.load(f)
+        before_DP = True
+        aux_case = -1    
 
-            if consider_relevant_compos:
-                compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
-            else:
-                compos_list = data["compos"]
+        num_screenshots = 0
+        num_UI_elements = 0
+        max_num_UI_elements = 0
+        min_num_UI_elements = 99999999999999999
+        
+        for i, screenshot_filename in enumerate(screenshot_filenames):
+            case = log.at[i, case_colname]
+            activity = log.at[i, activity_colname]
             
-            num_UI_elements += len(compos_list)
-            if len(compos_list) > max_num_UI_elements:
-                max_num_UI_elements = len(compos_list)
-            if len(compos_list) < min_num_UI_elements:
-                min_num_UI_elements = len(compos_list)
+            if case != aux_case:
+                before_DP = True
+            
+            if before_DP:
+                # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
+                with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
+                    data = json.load(f)
 
-            for j in range(0, len(compos_list)):
-                # Centroid is Already calculated in the prediction
-                # compo_x1 = compos_list[j]["column_min"]
-                # compo_y1 = compos_list[j]["row_min"]
-                # compo_x2 = compos_list[j]["column_max"]
-                # compo_y2 = compos_list[j]["row_max"]
-                # centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
-                # centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
-                # compos_list[j]["centroid"] = [centroid_x, centroid_y]
-
-                # Status columns 
-                status_columns = [i for i in dict(compos_list[j]).keys() if "st_" in i]
-                centroid = compos_list[j]["centroid"]
-                for status_col in status_columns:
-                    status = compos_list[j][status_col]
-                    sub_id = str(status_col).split("_")[1]
-                    ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid[0])+"-"+str(centroid[1])+"_"+activity] = status
-            num_screenshots += 1
+                if consider_relevant_compos:
+                    compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
+                else:
+                    compos_list = data["compos"]
                 
-            with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
-                json.dump(data, jsonFile, indent=4)
-                
-            # if decision_point in activity:
-            #     aux_case = case
-            #     before_DP = False
+                num_UI_elements += len(compos_list)
+                if len(compos_list) > max_num_UI_elements:
+                    max_num_UI_elements = len(compos_list)
+                if len(compos_list) < min_num_UI_elements:
+                    min_num_UI_elements = len(compos_list)
 
-    with open(flattened_log, 'w') as f:
-        json.dump(ui_log_data, f, indent=4)
+                for j in range(0, len(compos_list)):
+                    # Centroid is Already calculated in the prediction
+                    # compo_x1 = compos_list[j]["column_min"]
+                    # compo_y1 = compos_list[j]["row_min"]
+                    # compo_x2 = compos_list[j]["column_max"]
+                    # compo_y2 = compos_list[j]["row_max"]
+                    # centroid_y = (compo_y2 - compo_y1 / 2) + compo_y1
+                    # centroid_x = (compo_x2 - compo_x1 / 2) + compo_x1
+                    # compos_list[j]["centroid"] = [centroid_x, centroid_y]
+
+                    # Status columns 
+                    status_columns = [i for i in dict(compos_list[j]).keys() if "st_" in i]
+                    centroid = compos_list[j]["centroid"]
+                    for status_col in status_columns:
+                        status = compos_list[j][status_col]
+                        sub_id = str(status_col).split("_")[1]
+                        ui_log_data[str(case)][id+"_"+sub_id+"_"+str(centroid[0])+"-"+str(centroid[1])+"_"+str(activity)] = status
+                num_screenshots += 1
+                    
+                with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
+                    json.dump(data, jsonFile, indent=4)
+                    
+                # if decision_point in activity:
+                #     aux_case = case
+                #     before_DP = False
+
+        with open(flattened_log, 'w') as f:
+            json.dump(ui_log_data, f, indent=4)
         
     # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
