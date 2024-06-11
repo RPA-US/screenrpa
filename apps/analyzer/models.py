@@ -197,10 +197,22 @@ class Execution(models.Model):
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
     postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
-    feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+    # feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
+    # Feature extraction is the only phase than can have several configurations activated
+    feature_extraction_techniques = models.ManyToManyField(FeatureExtractionTechnique, related_name='executions')
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
+
+
+    @property
+    def feature_extraction_technique(self):
+        """
+        Returns true if there is any feature extraction technique activated
+
+        This is done for the purpose of maintaining compatibility with the previous version of the application where every phase is checked to exist with getatrr()
+        """
+        return self.feature_extraction_techniques.exists()
     
     # Check phases dependencies and restrictions
     # To execute feature extraction, UIElementsDetection and UIElementsClassification must be executed
@@ -211,7 +223,7 @@ class Execution(models.Model):
             raise ValidationError('At least one phase must be executed.')
         
         # Check phases dependencies and restrictions
-        if self.feature_extraction_technique and not (self.ui_elements_detection):
+        if self.feature_extraction_techniques.exists() and not (self.ui_elements_detection):
             raise ValidationError('UI Elements Detection must be executed before Feature Extraction.')
         if self.decision_tree_training and not self.extract_training_dataset:
             raise ValidationError('Extract Training Dataset must be executed before Decision Tree Training.')
@@ -226,23 +238,28 @@ class Execution(models.Model):
         self.ui_elements_detection = UIElementsDetection.objects.filter(case_study=self.case_study, active=True).first()
         self.ui_elements_classification = UIElementsClassification.objects.filter(case_study=self.case_study, active=True).first()
         self.postfilters = Postfilters.objects.filter(case_study=self.case_study, active=True).first()
-        self.feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True).first()
+        # self.feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True).first()
         self.process_discovery = ProcessDiscovery.objects.filter(case_study=self.case_study, active=True).first()
         self.extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self.case_study, active=True).first()
         self.decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self.case_study, active=True).first()
 
         self.scenarios_to_study = self.case_study.scenarios_to_study
 
+        # Execution must have an id to perform these operations
+        super().save(*args, **kwargs)
+
+        self.feature_extraction_techniques.set(FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True))
         self.clean()
 
         for stage in [self.monitoring, self.prefilters, self.ui_elements_detection,
-                      self.ui_elements_classification, self.postfilters, self.feature_extraction_technique, 
+                      self.ui_elements_classification, self.postfilters, 
                       self.process_discovery, self.extract_training_dataset, self.decision_tree_training]:
             if stage:
                 stage.freeze = True
                 stage.save()
-
-        super().save(*args, **kwargs)
+        for stage in self.feature_extraction_techniques.all():
+            stage.freeze = True
+            stage.save()
 
         if not self.exp_folder_complete_path or self.exp_folder_complete_path == '':
             self.create_folder_structure()
@@ -254,6 +271,11 @@ class Execution(models.Model):
         for ph in DEFAULT_PHASES:
             if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
                 preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, getattr(self, ph).preloaded_file.name)
+                unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
+                print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
+        for fe in self.feature_extraction_techniques.all():
+            if hasattr(fe, "preloaded") and fe.preloaded:
+                preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, fe.preloaded_file.name)
                 unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
                 print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
 

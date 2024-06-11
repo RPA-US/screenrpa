@@ -213,7 +213,7 @@
 
 
                     <div class="col-lg-3 col-md-6" >
-                      {% if execution.feature_extraction_technique == None %}
+                      {% if not execution.feature_extraction_technique %}
                       <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-money-coins" style="color: grey "></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
@@ -225,10 +225,10 @@
                         </div>
                       {% endif %}
                       </a>
-                      {% if execution.feature_extraction_technique != None %}
+                      {% if execution.feature_extraction_technique %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="/fe/ex/feature-extraction-technique/detail/{{execution_id}}/{{execution.feature_extraction_technique.id}}">Configurations</a>
+                          <a class="dropdown-item" href="/fe/feature-extraction-technique/list/{{execution.case_study.id}}?exec_id={{execution_id}}">Configurations</a>
                           <a class="dropdown-item" href="/fe/feature-extraction-technique/result/{{execution_id}}/">Results</a>
                         </div>
                       {% endif %}
