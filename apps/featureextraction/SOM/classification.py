@@ -13,6 +13,7 @@ from tqdm import tqdm
 from core.utils import read_ui_log_as_dataframe
 from core.settings import sep
 from apps.featureextraction.SOM.CNN.CompDetCNN import CompDetCNN
+from .screen2som.hierarchy_constructor import labels_to_output
 
 default_ui_elements_classification_classes = ['x0_Button', 'x0_CheckBox', 'x0_CheckedTextView', 'x0_EditText', 'x0_ImageButton', 'x0_ImageView', 'x0_NumberPicker', 'x0_RadioButton', 'x0_RatingBar', 'x0_SeekBar', 'x0_Spinner', 'x0_Switch', 'x0_TextView', 'x0_ToggleButton']
 default_ui_elements_classification_image_shape = [64, 64, 3]
@@ -124,8 +125,13 @@ def uied_ui_elements_classification(ui_log_path, path_scenario, execution):
 
             for j in range(0, len(result)):
                 data["compos"][j]["class"] = result[j]
+            
+            # Reconstruct som before continuing
+            new_som = labels_to_output(data.copy())
+            del data
+
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
-                json.dump(data, jsonFile)
+                json.dump(new_som, jsonFile)
 
 
 def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
@@ -155,7 +161,7 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
     :rtype: DataFrame
     """
     
-    path_results = "/".join(path_scenario.split("/")[:-1]) + "_results" + "/"
+    path_results = path_scenario + "_results"
     ui_elements_crops_npy_root = os.path.join(path_results, 'components_npy')
     metadata_json_root = os.path.join(path_results, 'components_json')
     model = execution.ui_elements_classification.model.path # specific extractors
@@ -221,5 +227,10 @@ def legacy_ui_elements_classification(ui_log_path, path_scenario, execution):
                 data = json.load(f)
             for j in range(0, len(result_mapped)):
                 data["compos"][j]["class"] = result_mapped[j]
+
+            # Reconstruct som before continuing
+            new_som = labels_to_output(data.copy())
+            del data
+
             with open(os.path.join(metadata_json_root, screenshot_filenames[i] + '.json'), "w") as jsonFile:
-                json.dump(data, jsonFile)
+                json.dump(new_som, jsonFile)

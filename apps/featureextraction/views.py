@@ -29,7 +29,7 @@ def ui_elements_classification(log_path, path_scenario, execution):
     print(path_scenario+"\n")
 
     if not execution.ui_elements_detection.preloaded:
-        match execution.ui_elements_classification.type:
+        match str.lower(execution.ui_elements_classification.type):
             case "rpa-us":
                 output = legacy_ui_elements_classification(log_path, path_scenario, execution)
             case "uied":
@@ -360,7 +360,7 @@ class UIElementsDetectionCreateView(MultiFormsView, LoginRequiredMixin):
             raise ValidationError("User must be authenticated.")
         self.object = form.save(commit=False)
         if form.cleaned_data['model']:
-            self.object.type = ui_elem_det_obj.type
+            self.object.type = form.cleaned_data['model']
             self.object.model = form.cleaned_data['model']
         else:
             return

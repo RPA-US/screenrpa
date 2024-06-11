@@ -8,7 +8,8 @@ from . import ip_draw as draw
 from art import tprint
 from tqdm import tqdm
 from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
-from .fastSAM import FastSAM, FastSAMPrompt
+from ultralytics import FastSAM
+from ultralytics.models.fastsam.prompt import FastSAMPrompt
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
 from django.utils.translation import gettext_lazy as _
@@ -75,9 +76,9 @@ def get_compos_mask_json(masks, image_shape):
         mask.pop('segmentation')
         mask.pop('crop_box')
 
-    
+    som = UiComponent.to_som(list(image_shape), sorted_compos)
     mask_json = json.dumps(sorted_masks,indent=1)
-    return arrays_dict,mask_json, sorted_compos 
+    return arrays_dict,mask_json, sorted_compos, som 
 
 def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_bordered_images,img_index,checkpoint_path,sam_type="sam",checkpoint='l'):
     '''
@@ -127,25 +128,24 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     time2=time.time()
 
-    arrays_dict,mask_json,uicompos = get_compos_mask_json(masks, image_shape)
+    arrays_dict,mask_json,uicompos, som = get_compos_mask_json(masks, image_shape)
     time3=time.time()
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
-    compos_json,uicompos= nesting_compos(uicompos)
-    time4=time.time()
+    # compos_json,uicompos= nesting_compos(uicompos)
+    # time4=time.time()
     # *** Step 5 *** save detection result
     draw_bounding_box(image_copy, uicompos, show=False, name='merged compo', 
                            write_path=os.path.join(ip_root, name + '.jpg'), 
                            wait_key=0)
     
-    time5=time.time()
+    time4=time.time()
 
     dict_times={
         'preprocess_image':time1-time0,
         'sam_extractor':time2-time1,
         'getting_compos_and_mask_json':time3-time2,
-        'nesting_compos':time4-time3,
-        'drawing':time5-time4
+        'drawing':time4-time3
     }
     # ##########################
     # RESULTS
@@ -153,7 +153,7 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     clips = [compo.compo_clipping(image_copy) for compo in uicompos]
 
-    return clips, uicompos, mask_json, compos_json, arrays_dict, dict_times
+    return clips, uicompos, mask_json, som, arrays_dict, dict_times
   
 def get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy):
     '''
@@ -240,6 +240,15 @@ def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
     prompt_process = FastSAMPrompt(image_copy, everything_results, device=device)
 
     ### GENERATE MASK ###
-    masks = prompt_process._format_results(prompt_process.results[0])
+    result = prompt_process.results[0]
+    masks = prompt_process._format_results(result)
+
+    for i, ann in enumerate(masks):
+        ann['bbox'] = [int(result.boxes.xyxy[i].tolist()[0]), int(result.boxes.xyxy[i].tolist()[1]),
+                                int(result.boxes.xyxy[i].tolist()[2]) - int(result.boxes.xyxy[i].tolist()[0]),
+                                int(result.boxes.xyxy[i].tolist()[3]) - int(result.boxes.xyxy[i].tolist()[1])]
+        ann['score'] = result.boxes.conf[i].tolist()
+        ann['area'] = ann['segmentation'].sum().item()
+        ann['crop_box'] = [0, 0, image_copy.shape[1], image_copy.shape[0]]
 
     return masks
