@@ -170,7 +170,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
 # ========================================================================================================
                 if centroid_columnname_type == "class_as_colname":
-                    column_name = id +"_"+ compo_class+"_"+str(screenshot_compos_frec[compo_class])
+                    column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
@@ -193,10 +193,10 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
                         aux = compos_list[j][text_classname]
-                        column_name = id +"_"+ aux +"_"+str(screenshot_compos_frec[aux]) # concat text in the column name
+                        column_name = f"{id}_{aux}_{str(screenshot_compos_frec[aux])}"
                     else:
                         aux = compo_class
-                        column_name = id +"_"+ compo_class+"_"+str(screenshot_compos_frec[compo_class])
+                        column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
                     screenshot_compos_frec[aux] += 1
                     

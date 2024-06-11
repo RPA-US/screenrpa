@@ -92,6 +92,14 @@ class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
     def get_context_data(self, **kwargs):
         context = super(FeatureExtractionTechniqueCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
+
+        # Load single and aggregate techniques from configurations
+        single_json = json.load(open("configuration/single_feature_extractors.json"))
+        aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
+        context["options"] = {
+            "single": single_json.items(),
+            "aggregate": aggregate_json.items()
+        }
         return context
 
     def form_valid(self, form):
