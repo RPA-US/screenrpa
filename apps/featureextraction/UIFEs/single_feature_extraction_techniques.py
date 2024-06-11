@@ -245,6 +245,30 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
                     raise Exception("Not implemented yet")
+# ========================================================================================================
+# ========================================================================================================
+                elif centroid_columnname_type == "xpath_class":
+                    xpath = compos_list[j]["xpath"]
+                    activity = log.at[i, activity_colname]
+                    column_name = f"{id}_{xpath}_{activity}"
+                    
+                    if column_name in info_to_join:
+                        if not len(info_to_join[column_name]) == i:
+                            for k in range(len(info_to_join[column_name]),i):
+                                info_to_join[column_name].append("")
+                        info_to_join[column_name].append(compos_list[j]["class"])
+                        
+                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                    else:
+                        column_as_vector = []
+                        for k in range(0,i):
+                            column_as_vector.append("")
+                        column_as_vector.append(compos_list[j]["class"])
+                        info_to_join[column_name] = column_as_vector
+                        
+                        if column_name not in new_columns:
+                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
 
                 else:
                     raise Exception("UIFE: centroid_columnname_type not recognized")
@@ -299,12 +323,17 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
 # ========================================================================================================
 # Class as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_class(ui_log_path, path_scenario, execution):
-    raise Exception("Not implemented yet")
+def xpath_class(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: compoclass+int or (if it is text) plaintext+int
+    Column value: centroid 
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "xpath_class")
+
 # ========================================================================================================
 # Boolean if exists as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution):
+def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution, fe):
     raise Exception("Not implemented yet")
     
 # ========================================================================================================
