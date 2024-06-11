@@ -157,7 +157,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
         # flattened_dataset.to_csv(os.path.join(scenario_path+"_results",FLATTENED_DATASET_NAME+".csv"))
         columns_len = flattened_dataset.shape[1]
-        flattened_dataset = flattened_dataset.fillna('NaN')
+        #flattened_dataset = flattened_dataset.fillna('NaN')
         # tree_levels = {}
         
         if implementation == 'sklearn':

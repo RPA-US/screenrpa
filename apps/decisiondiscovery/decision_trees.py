@@ -179,7 +179,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
 
     # Extract features and target variable
     X = df.drop(columns=[special_colnames["Variant"]])
-    X = X.astype(str)
+    #X = X.astype(str)
     y = df[special_colnames["Variant"]]
     
     X = prev_preprocessor(X)
@@ -188,6 +188,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
         return
     preprocessor = def_preprocessor(X)
     print(X)
+    
     #df.head()
     X = preprocessor.fit_transform(X)
     

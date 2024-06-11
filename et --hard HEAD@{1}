@@ -1,0 +1,100 @@
+[33m38a4ae8[m[33m ([m[1;36mHEAD -> [m[1;32mfeat/97_as_is_process_description[m[33m, [m[1;31morigin/feat/97_as_is_process_description[m[33m)[m HEAD@{0}: pull: Fast-forward
+[33m0914946[m HEAD@{1}: commit: [fix]: to be able to run decision_tree_training preprocesing the columns correctly
+[33m6476b82[m HEAD@{2}: pull: Fast-forward
+[33ma5e96d7[m HEAD@{3}: commit: [fix]: generate decision tree files of all the decision points
+[33m3391ea5[m HEAD@{4}: commit: [fix]: new regex to capture one_hot_ expession in decision trees
+[33mbc45f28[m HEAD@{5}: commit: [fix]: new regex to capture one_hot_ expession in decision trees
+[33ma32c79d[m HEAD@{6}: pull: Fast-forward
+[33mf15b060[m HEAD@{7}: pull: Fast-forward
+[33m3effc8c[m HEAD@{8}: pull: Fast-forward
+[33m56ffd51[m HEAD@{9}: commit: [fix]: trying to fix being able to run the decision_tree phase
+[33m871a128[m HEAD@{10}: commit: [fix]: fix a few small bugs
+[33m32119d5[m HEAD@{11}: commit: [fix]: added graphviz-dev installation in nvidia dockerfile
+[33ma0484d1[m HEAD@{12}: commit: [feat]: solving small details
+[33m04a1c9a[m HEAD@{13}: commit: [feat]: new detailed view of decision tree results
+[33m89a603b[m HEAD@{14}: commit: [feat]: download only the results you see in the interface (extract_tarining and decision_tree)
+[33ma365a0f[m HEAD@{15}: commit: [feat]: new reporting arrangements
+[33m3c668a1[m HEAD@{16}: commit: [fix]: improving the appearance of the report
+[33m3726040[m HEAD@{17}: commit: [fix]: arrange details of the report
+[33mab51dd8[m HEAD@{18}: commit: [fix]: when document generation fails that the object is not created.
+[33m8ea553e[m HEAD@{19}: commit: [feat]: preparation to create a decision tree for each decision point
+[33mc9eabe7[m HEAD@{20}: commit: [fix]: fix little things
+[33md6d8cb2[m HEAD@{21}: commit: [fix]: changing the attribute of execution.process_discovery.prev_act_labels to a new function generates this list
+[33mc7c7ada[m HEAD@{22}: pull: Fast-forward
+[33m84689a6[m HEAD@{23}: commit: [feat]: dealing with click out of the picture
+[33m139b9b9[m HEAD@{24}: commit: [feat]: download all results of a scenario in decision_tree and extract_training
+[33mcbfa1f4[m HEAD@{25}: commit: [feat]: new decision tree results view based on decision points
+[33mba2eccf[m HEAD@{26}: commit: [feat]: display extract training dataset results by decision point and ¿?
+[33m5b8b1d4[m HEAD@{27}: commit: [fix]: process discovery result fix
+[33m71b50b8[m HEAD@{28}: commit: [fix]: best text for the drop-down menu
+[33m0e0e933[m HEAD@{29}: commit: [feat]: download pd results in a .zip
+[33me8c7a97[m HEAD@{30}: commit: [fix]: fixing some details in code (acces to columns of df)
+[33m6c70d5c[m HEAD@{31}: commit: [feat]: print image in the report when the user types
+[33mb8f3af3[m HEAD@{32}: commit (merge): Merge branch 'feat/97_as_is_process_description' of https://github.com/a8081/screenrpa into feat/97_as_is_process_description
+[33mae1bb4c[m HEAD@{33}: commit: [fix]: default colnames values
+[33m640fd1e[m HEAD@{34}: commit: [fix]: formating errors
+[33mae871ef[m HEAD@{35}: pull: Fast-forward
+[33md29d92a[m HEAD@{36}: commit: [fix]: fixing some problems
+[33m01b7fce[m HEAD@{37}: commit: [fix]: special colnames generalized
+[33m1283ddf[m HEAD@{38}: commit: [fix]: fix path in legacy ui_element_clasification
+[33mf82a93c[m HEAD@{39}: commit (merge): Merging
+[33mb1b959d[m HEAD@{40}: commit: [feat]: path process discovery to result
+[33m24b9602[m HEAD@{41}: commit: [fix]: new pd result view 2.0
+[33m5380dec[m HEAD@{42}: commit: [feat]: new process discovery result
+[33m94ab07a[m HEAD@{43}: commit: [feat]: access column names using special_colnames
+[33m53cd919[m HEAD@{44}: commit: [fix]: refactor code
+[33ma3ef21f[m HEAD@{45}: commit: [feat]: recognition of several actions
+[33m9fb3195[m HEAD@{46}: commit: [fix]: click point text
+[33m2c7b79c[m HEAD@{47}: commit: [fix]: arrange explainability of activities with an action
+[33maee3fed[m HEAD@{48}: commit: [feat]: activity descriptions
+[33m0df8b23[m HEAD@{49}: reset: moving to HEAD
+[33m0df8b23[m HEAD@{50}: reset: moving to HEAD
+[33m0df8b23[m HEAD@{51}: checkout: moving from front to feat/97_as_is_process_description
+[33m8355348[m[33m ([m[1;32mfront[m[33m)[m HEAD@{52}: pull: Fast-forward
+[33m3c97c17[m HEAD@{53}: checkout: moving from feat/97_as_is_process_description to front
+[33m0df8b23[m HEAD@{54}: commit: [fix]: pygraphviz==1.13.0
+[33md9ad510[m HEAD@{55}: commit: [fix]: declaration of libraries
+[33m9118232[m HEAD@{56}: commit: [fix]: remove pd descrption
+[33m199cb60[m HEAD@{57}: commit: [feat]: latest version of variant diagram
+[33m621a267[m HEAD@{58}: commit: [feat]: variant process diagram
+[33m9e0ebe9[m HEAD@{59}: commit: [feat]: functional version of "detailed as is process actions"
+[33meb3e762[m HEAD@{60}: commit: [feat]: first version of decisions in "detailed as is process actions"
+[33m9042116[m HEAD@{61}: commit: [feat]: Creating variant column from trace_id and activity_label
+[33m9190a44[m HEAD@{62}: commit: [fix]: disable type field
+[33m9521d64[m HEAD@{63}: commit: [fix]: refactor
+[33mf171b96[m HEAD@{64}: commit: [feat]: Print in the as is process map the bpmn.dot diagram with graphviz
+[33m1fd7632[m HEAD@{65}: commit: fix: little detail
+[33me58eb2a[m HEAD@{66}: commit (merge): Merge branch 'front' into feat/97_as_is_process_description
+[33m63f6d58[m HEAD@{67}: checkout: moving from front to feat/97_as_is_process_description
+[33m3c97c17[m HEAD@{68}: pull: Fast-forward
+[33m862ed62[m HEAD@{69}: checkout: moving from feat/97_as_is_process_description to front
+[33m63f6d58[m HEAD@{70}: pull --tags origin feat/97_as_is_process_description: Merge made by the 'recursive' strategy.
+[33ma6fcb5a[m HEAD@{71}: commit: [feat]: pd descrption
+[33m889befa[m HEAD@{72}: reset: moving to 889befab60adbaee3425e4cdaea126ca9e4f649d
+[33m862ed62[m HEAD@{73}: reset: moving to HEAD
+[33m862ed62[m HEAD@{74}: reset: moving to HEAD
+[33m862ed62[m HEAD@{75}: reset: moving to HEAD
+[33m862ed62[m HEAD@{76}: checkout: moving from front to feat/97_as_is_process_description
+[33m862ed62[m HEAD@{77}: pull: Fast-forward
+[33mf03866d[m HEAD@{78}: pull: Fast-forward
+[33m5c3242e[m[33m ([m[1;31morigin/feature/94-add-tracebility-info-to-log-after-pd[m[33m, [m[1;31morigin/feature/93-handle-loops-in-traceabilityjson[m[33m)[m HEAD@{79}: pull: Fast-forward
+[33mbef570a[m HEAD@{80}: checkout: moving from fix/87_phase_detail_view to front
+[33m87b42da[m[33m ([m[1;31morigin/fix/87_phase_detail_view[m[33m, [m[1;32mfix/87_phase_detail_view[m[33m)[m HEAD@{81}: commit: [fix]: Condicion in PhaseDetailView
+[33m268c875[m HEAD@{82}: commit: [fix]: disable fields with js in detail.html
+[33m2ee3f73[m HEAD@{83}: commit: [fix]: disable the technique field
+[33m8f9bec8[m HEAD@{84}: commit: [fix]: save button of phase detail view
+[33m26522a8[m HEAD@{85}: commit: [fix]: phase detail view
+[33mbef570a[m HEAD@{86}: checkout: moving from front to fix/87_phase_detail_view
+[33mbef570a[m HEAD@{87}: pull: Fast-forward
+[33mcad32fc[m HEAD@{88}: checkout: moving from feat/70_phases_result to front
+[33m680c8e1[m[33m ([m[1;31morigin/feat/70_phases_result[m[33m, [m[1;32mfeat/70_phases_result[m[33m)[m HEAD@{89}: commit (merge): Merge branch 'feat/70_phases_result' of https://github.com/a8081/screenrpa into feat/70_phases_result
+[33m048c97d[m HEAD@{90}: commit: [fix]: fixing details
+[33m318dac5[m HEAD@{91}: commit: [fix]: fixing little details
+[33m47a90b3[m HEAD@{92}: commit (merge): Merge branch 'front' into feat/70_phases_result
+[33mff27c16[m HEAD@{93}: checkout: moving from front to feat/70_phases_result
+[33mcad32fc[m HEAD@{94}: pull: Fast-forward
+[33mb5391b7[m HEAD@{95}: checkout: moving from feat/70_phases_result to front
+[33mff27c16[m HEAD@{96}: commit: [feat]: fixing details
+[33mfd295c2[m HEAD@{97}: commit (merge): Merge branch 'feat/70_phases_result' of https://github.com/a8081/screenrpa into feat/70_phases_result
+[33mab87c4a[m HEAD@{98}: commit: [fix]: cleaning code
+[33m7a55d4c[m HEAD@{99}: commit: [feat]: actio
