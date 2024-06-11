@@ -217,8 +217,8 @@ class FeatureExtractionTechnique(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     # quiero validar que solo contenga minusculas y mayusculas, ni numeros ni caracteres especiales
     identifier = models.CharField(max_length=25, default='rpa-us', null=True, blank=True, validators=[RegexValidator(r'^[a-zA-Z-]*$', _('Only lowercase, uppercase letters, and hyphen are allowed'))])
-    type = models.CharField(max_length=255, default='SINGLE', null=True, blank=True)
-    technique_name = models.CharField(max_length=255, default='count', null=True, blank=True)
+    type = models.CharField(max_length=255, null=True)
+    technique_name = models.CharField(max_length=255, null=True)
     relevant_compos_predicate = models.CharField(max_length=255, null=True, blank=True)
     consider_relevant_compos = models.BooleanField(default=False)
     configurations = JSONField(null=True, blank=True)

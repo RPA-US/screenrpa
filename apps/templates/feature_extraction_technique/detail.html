@@ -35,7 +35,7 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/dd/extract-training-dataset/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/fe/feature-extraction-technique/list/{{ case_study_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Feature Extraction Technique Configurations{% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Feature Extraction Technique Configuration{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
@@ -47,9 +47,7 @@
               </ol>
             </nav>
           </div>
-          <div class="col-12 text-right">
-            <a href="/dd/extract-training-dataset/new/{{ case_study_id }}/" class="btn btn btn-light"><i class="fas fa-broom"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
-          </div>
+
         </div>
       </div>
     </div>
@@ -90,6 +88,7 @@
 
       var select = document.getElementById('id_technique_name');
       select.disabled = true;
+      select.value = "{{ form.technique_name.value }}"
   });
 
 
