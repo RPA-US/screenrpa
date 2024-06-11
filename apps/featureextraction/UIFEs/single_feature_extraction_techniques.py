@@ -6,22 +6,22 @@ from core.settings import STATUS_VALUES_ID, ENRICHED_LOG_SUFFIX, sep
 from core.utils import read_ui_log_as_dataframe
 
 
-def ui_compos_stats(ui_log_path, path_scenario, execution):
+def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     """
     Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
     """
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
-    # decision_point = execution.feature_extraction_technique.decision_point_activity
+    # decision_point = fe.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     metadata_json_root = os.path.join(path_scenario, 'components_json')
     flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
-    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv'
+    enriched_log_output = path_scenario + fe.technique_name+'_enriched_log.csv'
     text_classname = execution.case_study.ui_elements_classification.text_classname
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
-    id = execution.feature_extraction_technique.identifier
+    consider_relevant_compos = fe.consider_relevant_compos
+    relevant_compos_predicate = fe.relevant_compos_predicate
+    id = fe.identifier
     
     log = read_ui_log_as_dataframe(ui_log_path)
 
@@ -108,7 +108,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution):
 # Centroid as values / class as column name
 # ========================================================================================================
 
-def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnname_type):
+def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_columnname_type):
     """
     Column name: compoclass+int
     Column value: centroid 
@@ -116,15 +116,15 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
     execution_root = path_scenario + '_results'
     metadata_json_root = os.path.join(execution_root, 'components_json')
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
+    consider_relevant_compos = fe.consider_relevant_compos
+    relevant_compos_predicate = fe.relevant_compos_predicate
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
-    #decision_point = execution.feature_extraction_technique.decision_point_activity
-    id = execution.feature_extraction_technique.identifier
+    #decision_point = fe.decision_point_activity
+    id = fe.identifier
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
-    enriched_log_output = os.path.join(execution_root, execution.feature_extraction_technique.technique_name + '_enriched_log.csv')
+    enriched_log_output = os.path.join(execution_root, fe.technique_name + '_enriched_log.csv')
     text_classname = execution.ui_elements_classification.model.text_classname
     
     log = read_ui_log_as_dataframe(ui_log_path)
@@ -170,7 +170,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
 # ========================================================================================================
 # ========================================================================================================
                 if centroid_columnname_type == "class_as_colname":
-                    column_name = id +"_"+ compo_class+"_"+str(screenshot_compos_frec[compo_class])
+                    column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
@@ -193,10 +193,10 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
                         aux = compos_list[j][text_classname]
-                        column_name = id +"_"+ aux +"_"+str(screenshot_compos_frec[aux]) # concat text in the column name
+                        column_name = f"{id}_{aux}_{str(screenshot_compos_frec[aux])}"
                     else:
                         aux = compo_class
-                        column_name = id +"_"+ compo_class+"_"+str(screenshot_compos_frec[compo_class])
+                        column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
                     screenshot_compos_frec[aux] += 1
                     
@@ -222,7 +222,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
                 elif centroid_columnname_type == "centroid_class":
                     centroid = compos_list[j]["centroid"]
                     activity = log.at[i, activity_colname]
-                    column_name = id+"_"+str(centroid[0])+"-"+str(centroid[1])+"_"+activity
+                    column_name = f"{id}_{centroid[0]}-{centroid[1]}_{activity}"
                     
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
@@ -245,6 +245,30 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
                     raise Exception("Not implemented yet")
+# ========================================================================================================
+# ========================================================================================================
+                elif centroid_columnname_type == "xpath_class":
+                    xpath = compos_list[j]["xpath"]
+                    activity = log.at[i, activity_colname]
+                    column_name = f"{id}_{xpath}_{activity}"
+                    
+                    if column_name in info_to_join:
+                        if not len(info_to_join[column_name]) == i:
+                            for k in range(len(info_to_join[column_name]),i):
+                                info_to_join[column_name].append("")
+                        info_to_join[column_name].append(compos_list[j]["class"])
+                        
+                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                    else:
+                        column_as_vector = []
+                        for k in range(0,i):
+                            column_as_vector.append("")
+                        column_as_vector.append(compos_list[j]["class"])
+                        info_to_join[column_name] = column_as_vector
+                        
+                        if column_name not in new_columns:
+                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
 
                 else:
                     raise Exception("UIFE: centroid_columnname_type not recognized")
@@ -268,43 +292,48 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, centroid_columnnam
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
 
-def class_centroid_ui_element(ui_log_path, path_scenario, execution):
+def class_centroid_ui_element(ui_log_path, path_scenario, execution, fe):
     """
     Column name: compoclass+int
     Column value: centroid 
     """
-    return aux_iterate_compos(ui_log_path, path_scenario, execution, "class_as_colname")
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "class_as_colname")
 
-def class_or_plaintext_centroid_ui_element(ui_log_path, path_scenario, execution):
+def class_or_plaintext_centroid_ui_element(ui_log_path, path_scenario, execution, fe):
     """
     Column name: compoclass+int or (if it is text) plaintext+int
     Column value: centroid 
     """
-    return aux_iterate_compos(ui_log_path, path_scenario, execution, "classplaintext_as_colname")
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "classplaintext_as_colname")
 
-def centroid_ui_element_class(ui_log_path, path_scenario, execution):
+def centroid_ui_element_class(ui_log_path, path_scenario, execution, fe):
     """
     Column name: centroid 
     Column value: compoclass+int
     """
-    return aux_iterate_compos(ui_log_path, path_scenario, execution, "centroid_class")
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "centroid_class")
 
-def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution):
+def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution, fe):
     """
     Column name: centroid 
     Column value: compoclass+int or (if it is text) plaintext+int
     """
-    return aux_iterate_compos(ui_log_path, path_scenario, execution, "centroid_classplaintext")
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "centroid_classplaintext")
 
 # ========================================================================================================
 # Class as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_class(ui_log_path, path_scenario, execution):
-    raise Exception("Not implemented yet")
+def xpath_class(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: compoclass+int or (if it is text) plaintext+int
+    Column value: centroid 
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "xpath_class")
+
 # ========================================================================================================
 # Boolean if exists as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution):
+def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution, fe):
     raise Exception("Not implemented yet")
     
 # ========================================================================================================
@@ -320,7 +349,7 @@ def rec_aux_process_ui_element(element, parent_ids, enriched_log, index):
         rec_aux_process_ui_element(child, parent_ids + [str(element['id'])], enriched_log, index)
 
 
-def ui_compo_existence(ui_log_path, path_scenario, execution):
+def ui_compo_existence(ui_log_path, path_scenario, execution, _):
     execution_root = path_scenario + '_results'
     metadata_json_root = os.path.join(execution_root, 'components_json')
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]

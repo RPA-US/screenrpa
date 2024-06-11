@@ -13,7 +13,7 @@ def find_st_id(st_value):
             break
     return res
 
-def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
+def occurrence_ui_element_class(ui_log_path, path_scenario, execution, fe):
     """
     Since not all images have all classes, a dataset with different columns depending on the images will be generated.
     It will depend whether GUI components of every kind appears o only a subset of these. That is why we initiañize a 
@@ -37,11 +37,11 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     metadata_json_root = os.path.join(path_scenario, 'components_json')
     flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
-    enriched_log_output = path_scenario + execution.feature_extraction_technique.technique_name+'_enriched_log.csv',
+    enriched_log_output = path_scenario + fe.technique_name+'_enriched_log.csv',
     text_classname = execution.case_study.ui_elements_classification.text_classname,
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos,
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate,
-    id = execution.feature_extraction_technique.identifier
+    consider_relevant_compos = fe.consider_relevant_compos,
+    relevant_compos_predicate = fe.relevant_compos_predicate,
+    id = fe.identifier
     
     with open(flattened_log, 'r') as f:
         ui_log_data = json.load(f)
@@ -122,7 +122,7 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution):
 
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
-def state_ui_element_centroid(ui_log_path, path_scenario, execution):
+def state_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
     """
     
     Column name: "sta_"+ substate + centroid_x + centroid_y + activity. Example: sta_enabled_229.5-1145.0_1_A
@@ -160,15 +160,15 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution):
     Components such as (1) buttons, (2) app bars, (3) dialogs, or (4) text fields cannot inherit a dragged state
     """
     execution_root = path_scenario + '_results'
-    # decision_point = execution.feature_extraction_technique.decision_point_activity
+    # decision_point = fe.feature_extraction_technique.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     metadata_json_root = os.path.join(execution_root, 'components_json')
-    
-    consider_relevant_compos = execution.feature_extraction_technique.consider_relevant_compos
-    relevant_compos_predicate = execution.feature_extraction_technique.relevant_compos_predicate
-    id = execution.feature_extraction_technique.identifier
+    flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
+    consider_relevant_compos = fe.consider_relevant_compos
+    relevant_compos_predicate = fe.relevant_compos_predicate
+    id = fe.identifier
     
     # log = read_ui_log_as_dataframe(ui_log_path)
     log = read_ui_log_as_dataframe(os.path.join(path_scenario + "_results", PROCESS_DISCOVERY_LOG_FILENAME))

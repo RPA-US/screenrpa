@@ -124,6 +124,7 @@ def labels_to_output(labels):
     for compo in compos:
         for node in flatten_som(som["children"]):
             if compo["id"] == node["id"]:
+                node["xpath"].append(node["id"])
                 compo["xpath"] = node["xpath"]
                 compo["depth"] = node["depth"]
                 compo["type"] = node["type"]
