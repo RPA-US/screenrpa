@@ -229,7 +229,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         text = [word for word in words[img_index] if len([coord for coord in words[img_index][word] if x <= coord[0] <= w and y <= coord[1] <= h]) > 0]
         is_text = True if len(text)>0 else False
         c = {'id': compo.id, 'class': compo.category}
-        c[text_classname] = str(' '.join(text)) if is_text else ""
+        c["text"] = str(' '.join(text)) if is_text else ""
         c["points"] = [(x, y), (w, y), (w, h), (x, h)]
         c["centroid"] = ((x + w) / 2, (y + h) / 2)
         c["xpath"] = []
@@ -239,7 +239,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         c['contain'] = [contain_compo.id for contain_compo in compo.contain]
         output['compos'].append(c)
     
-    output = labels_to_output(copy.deepcopy(output))
+    output = labels_to_output(copy.deepcopy(output), text_classname)
 
     json.dump(output, f_out, indent=4)
 

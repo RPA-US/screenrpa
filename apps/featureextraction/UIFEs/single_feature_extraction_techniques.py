@@ -192,7 +192,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
-                        aux = compos_list[j][text_classname]
+                        aux = compos_list[j]["text"]
                         column_name = f"{id}_{aux}_{str(screenshot_compos_frec[aux])}"
                     else:
                         aux = compo_class
