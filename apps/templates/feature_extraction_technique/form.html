@@ -114,6 +114,9 @@
     apply_filter_checkbox.addEventListener('change', () => {
       toggleFieldsFilterRelevants(apply_filter_checkbox.checked);
     });
+
+    const feTechniques = {{ options|safe }};
+    console.log({{feTechniques}});
   
     // Función para cambiar las opciones de 'technique_name' basado en el valor de 'type'
     function changeTechniqueOptions() {
@@ -122,21 +125,23 @@
   
       let options = [];
       if (selectedType === 'SINGLE') {
-          options = [ ('ui_elem_location-class','ui_elem_location-class'),
-          ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
-          ('class-ui_elem_location', 'class-ui_elem_location'),
-          ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
-          ('xpath-class', 'xpath-class'),
-          ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
-          ('ui_compo-existence', 'ui_compo-existence'),
-          ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
-          ('ui_compos_stats', 'ui_compos_stats')
-          ];
+          options = feTechniques.single;
+          // options = [ ('ui_elem_location-class','ui_elem_location-class'),
+          // ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
+          // ('class-ui_elem_location', 'class-ui_elem_location'),
+          // ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
+          // ('xpath-class', 'xpath-class'),
+          // ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
+          // ('ui_compo-existence', 'ui_compo-existence'),
+          // ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
+          // ('ui_compos_stats', 'ui_compos_stats')
+          // ];
       } else if (selectedType === 'AGGREGATE') {
-          options = [
-          ('status', 'status'),
-          ('quantity', 'quantity')
-          ];
+          options = feTechniques.aggregate;
+          // options = [
+          // ('status', 'status'),
+          // ('quantity', 'quantity')
+          // ];
       }
   
       options.forEach(option => {

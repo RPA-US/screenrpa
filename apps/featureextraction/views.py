@@ -97,8 +97,8 @@ class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
         single_json = json.load(open("configuration/single_feature_extractors.json"))
         aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
         context["options"] = {
-            "single": single_json.items(),
-            "aggregate": aggregate_json.items()
+            "single": list(single_json.items()),
+            "aggregate": list(aggregate_json.items())
         }
         return context
 
