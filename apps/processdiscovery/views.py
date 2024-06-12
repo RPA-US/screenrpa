@@ -717,7 +717,7 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
         selected_variant = request.GET.get('variant')
-
+        colnames= execution.case_study.special_colnames
         if not execution:
             return HttpResponse(status=404, content="Execution not found.")
         elif not execution.case_study.user == request.user:
@@ -728,13 +728,13 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
               
         path_to_bpmn_file = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "bpmn.dot")
 
-        df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario + '_results', PROCESS_DISCOVERY_LOG_FILENAME))
+        df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario + '_results', PROCESS_DISCOVERY_LOG_FILENAME))
         
-        variants = df['auto_variant'].unique().tolist()
+        variants = df[colnames['Variant']].unique().tolist()
 
         variant_image_base64 = None
         if selected_variant:
-            labels_for_variant = df[df['auto_variant'] == int(selected_variant)][execution.case_study.special_colnames['Activity']].unique().tolist()
+            labels_for_variant = df[df[colnames['Variant']] == int(selected_variant)][execution.case_study.special_colnames['Activity']].unique().tolist()
             modified_dot_path  = cambiar_color_nodos_y_caminos(labels_for_variant, path_to_bpmn_file)
             variant_image_base64 = dot_to_png_base64(modified_dot_path)
         else:

@@ -779,17 +779,17 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 ## devuelve un diccionario cuyas claves son las prev act delos punto de decisiones que hay en una varianye y 
 # de valor los json del punto de dceision
 
-    def get_decision_points_for_branches(data, branch_ids):
+    def get_decision_points_for_branches(data, branch_labels):
         result = {}
 
-        def search_decision_points(decision_points, branch_ids):
+        def search_decision_points(decision_points, branch_labels):
             for dp in decision_points:
                 for branch in dp['branches']:
-                    if branch['id'] in branch_ids:
+                    if int(branch['label']) in branch_labels:
                         result[dp['prevAct']] = dp
-                    search_decision_points(branch.get('decision_points', []), branch_ids)
+                    search_decision_points(branch.get('decision_points', []), branch_labels)
 
-        search_decision_points(data['decision_points'], branch_ids)
+        search_decision_points(data['decision_points'], branch_labels)
         return result
     
 #extrae una lista con todos los id de todos los puntos de decision de una variante  
@@ -951,10 +951,10 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         #print(decision_point)
         first_dp_id= decision_point['id']
         #ir acumulando las id de los puntos de decision de cada variante
-        columnas_id_ramas=[]
+        columnas_label_ramas=[]
         for pd in extract_decision_point_ids(traceability['decision_points']):
-            columnas_id_ramas= columnas_id_ramas + group[pd].unique().tolist()
-            variant_decision_points = get_decision_points_for_branches(traceability, columnas_id_ramas)
+            columnas_label_ramas= columnas_label_ramas + group[pd].unique().tolist()
+            variant_decision_points = get_decision_points_for_branches(traceability, columnas_label_ramas)
         #añadir el primer punto de decision al diccionario
         variant_decision_points[decision_point['prevAct']]= decision_point
         
