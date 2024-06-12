@@ -12,7 +12,7 @@ from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 from apps.chefboost import Chefboost as chef
 from .models import ExtractTrainingDataset, DecisionTreeTraining
-
+import json
 ###########################################################################################################################
 # case study get phases data  ###########################################################################################
 ###########################################################################################################################
@@ -343,3 +343,25 @@ def find_path_in_decision_tree(tree, feature_values, target_class, centroid_thre
         return dt_condition_checker(next_parent, next_node_index, features_in_tree)
 
     return dt_condition_checker(tree, 0, {"feature_values": feature_values})
+
+
+########################################3
+
+
+def find_prev_act(json_path, decision_point_id):
+    
+    try:
+        with open(json_path, 'r') as file:
+            traceability = json.load(file)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        return None
+    except FileNotFoundError as e:
+        print(f"File not found: {e}")
+        return None
+
+    for dp in traceability.get("decision_points", []):
+        if dp["id"] == decision_point_id:
+            return dp["prevAct"]
+    
+    return None

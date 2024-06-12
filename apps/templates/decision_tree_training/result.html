@@ -64,19 +64,27 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 text-center" id="treeImage" style="cursor: pointer;">
-                            <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+                            {% if tree_to_png %}
+                                <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+                            {% else %}
+                                <p>No sufficient information is available to obtain a classification tree</p>
+                            {% endif %}
                         </div>
                         <div class="col-md-6" id="classRules" style="cursor: pointer;">
-                            {% for class, rules in tree_rules.items %}
-                                <div class="mb-3">
-                                    <h5 class="h3 mb-0">Rules of class {{ class }}</h5>
-                                    <ul class="list-group list-group-flush">
-                                        {% for rule in rules %}
-                                            <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endfor %}
+                            {% if tree_rules %}
+                                {% for class, rules in tree_rules.items %}
+                                    <div class="mb-3">
+                                        <h5 class="h3 mb-0">Rules of branch {{ class }}</h5>
+                                        <ul class="list-group list-group-flush">
+                                            {% for rule in rules %}
+                                                <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No sufficient information is available to obtain a classification tree</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -97,7 +105,11 @@
                 </button>
             </div>
             <div class="modal-body text-center">
-                <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+                {% if tree_to_png %}
+                    <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+                {% else %}
+                    <p>No sufficient information is available to obtain a classification tree</p>
+                {% endif %}
                 <div class="mt-4">
                     <div class="dropdown d-inline-block">
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="modalScenarioDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -136,18 +148,20 @@
                 </button>
             </div>
             <div class="modal-body">
-                {% for class, rules in tree_rules.items %}
-                    <div class="mb-3">
-                        <h5 class="h3 mb-0">Rules of class {{ class }}</h5>
-                        <ul class="list-group list-group-flush">
-                            {% for rule in rules %}
-                                <!-- <li class="list-group-item">Rule: {{ rule }}</li> -->
-                                <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
-
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endfor %}
+                {% if tree_rules %}
+                    {% for class, rules in tree_rules.items %}
+                        <div class="mb-3">
+                            <h5 class="h3 mb-0">Rules of branch {{ class }}</h5>
+                            <ul class="list-group list-group-flush">
+                                {% for rule in rules %}
+                                    <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No sufficient information is available to obtain a classification tree</p>
+                {% endif %}
             </div>
         </div>
     </div>
