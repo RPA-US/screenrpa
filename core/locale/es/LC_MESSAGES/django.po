@@ -47,7 +47,7 @@ msgid "flattening"
 msgstr "aplanamiento"
 
 #: core/settings.py:49
-msgid "aggreate feature extraction"
+msgid "aggregate feature extraction"
 msgstr "extracción agregada de características"
 
 #: core/settings.py:50
