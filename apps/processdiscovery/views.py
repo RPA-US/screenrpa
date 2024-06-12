@@ -375,6 +375,7 @@ def process_level(folder_path, df, execution):
                     act_label = row[special_colnames['Activity']]
                     if current_dp is not None:
                         if any(branch.label == act_label for branch in branches):
+                            # Compute the value for the row on column dp_id
                             branch_id = (list(filter(lambda branch: branch.label == act_label, branches))[0].id)
                             current_branches[current_dp] = branch_id
                     for dp in dps:

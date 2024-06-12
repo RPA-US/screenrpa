@@ -373,7 +373,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             comp_json["compos"].append({
                 "id": int(j+1),
                 "class": text_classname if is_text else "Compo",
-                text_classname: text[0] if is_text else "",
+                "text": text[0] if is_text else "",
                 "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
                 "centroid": [int((w-x)/2), int((h-y)/2)],
                 "xpath": [],
@@ -387,7 +387,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
             recortes.append(crop_img)
             text_or_not_text.append(abs(no_solapa-1))
 
-    comp_json = labels_to_output(copy.deepcopy(comp_json))
+    comp_json = labels_to_output(copy.deepcopy(comp_json), text_classname)
 
     return (recortes, comp_json, text_or_not_text, words)
 
@@ -453,19 +453,23 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
             elif algorithm == "sam" or algorithm == "fast-sam":
                 path_to_save_mask_npy=path_to_save_mask_elements+ os.path.basename(image_names[img_index])
                 recortes, uicompos, mask_json, compos_json, arrays_dict,dict_times = get_sam_gui_components_crops(param_img_root, image_names, path_to_save_bordered_images, img_index, "checkpoints/", sam_type=algorithm)
+
+                if not os.path.exists(path_to_save_time_of_pipepile):
+                    os.makedirs(path_to_save_time_of_pipepile)
                 
                 with open(os.path.join(path_to_save_time_of_pipepile, image_names[img_index]+'_sam_time.json'),'w') as outfile:
                     json.dump(dict_times,outfile)
 
                 #TODO save mask(sam) json
-                with open(os.path.join(path_to_save_components_json, image_names[img_index]+'_sam_mask.json'),'w') as outfile:
-                    # json.dump(mask_json,outfile)
-                    outfile.write(mask_json)
+                # CURRENTLY COMMENTED OUT. IT DOES NOT PROVIDE MORE INFO THAN COMPOS JSON
+                # with open(os.path.join(path_to_save_components_json, image_names[img_index]+'_sam_mask.json'),'w') as outfile:
+                #     # json.dump(mask_json,outfile)
+                #     outfile.write(mask_json)
 
                 # save metadata json
                 with open(os.path.join(path_to_save_components_json, os.path.basename(image_names[img_index]) + '.json'), "w") as outfile:
-                    # json.dump(compos_json, outfile)
-                    outfile.write(compos_json)
+                    json.dump(compos_json, outfile)
+                    # outfile.write(compos_json)
 
                 path=path_to_save_mask_npy
                 for n in ['segmentation','crop_box']:
