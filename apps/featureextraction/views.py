@@ -97,8 +97,9 @@ class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
         single_json = json.load(open("configuration/single_feature_extractors.json"))
         aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
         context["options"] = {
-            "single": list(single_json.items()),
-            "aggregate": list(aggregate_json.items())
+            # We convert the tuples returned by the items() method to lists so that javascript can correctly parse them
+            "single": list(map(lambda x: list(x), single_json.items())),
+            "aggregate": list(map(lambda x: list(x), aggregate_json.items()))
         }
         return context
 

@@ -145,7 +145,7 @@
       }
   
       options.forEach(option => {
-          const opt = new Option(option, option);
+          const opt = new Option(option.at(1), option.at(0));
           technique_name.add(opt);
       });
   
