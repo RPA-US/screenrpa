@@ -369,20 +369,24 @@ def process_level(folder_path, df, execution):
 
             for index, row in df.iterrows():
                 if row[special_colnames['Case']] != current_trace_id:
+                    # Insert the branches taken in the previous trace
+                    current_trace_rows = df.loc[df[special_colnames['Case']] == current_trace_id]
+                    for index, trace_row in current_trace_rows.iterrows():
+                        for passed_dp in current_branches.keys():
+                            df.at[index, passed_dp] = current_branches[passed_dp]
+                    # Update trace info
                     current_trace_id = row[special_colnames['Case']]
                     current_branches = {}
-                else:
-                    act_label = row[special_colnames['Activity']]
-                    if current_dp is not None:
-                        if any(branch.label == act_label for branch in branches):
-                            # Compute the value for the row on column dp_id
-                            branch_id = (list(filter(lambda branch: branch.label == act_label, branches))[0].id)
-                            current_branches[current_dp] = branch_id
-                    for dp in dps:
-                        if dp.prevAct == act_label:
-                            current_dp = dp.id
-                    for passed_dp in current_branches.keys():
-                        df.at[index, passed_dp] = current_branches[passed_dp]
+
+                act_label = row[special_colnames['Activity']]
+                if current_dp is not None:
+                    if any(branch.label == act_label for branch in branches):
+                        # Compute the value for the row on column dp_id
+                        branch_label = (list(filter(lambda branch: branch.label == act_label, branches))[0].label)
+                        current_branches[current_dp] = branch_label
+                for dp in dps:
+                    if dp.prevAct == act_label:
+                        current_dp = dp.id
                         
             df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
