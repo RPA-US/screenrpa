@@ -10,14 +10,15 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     """
     Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
     """
+    path_scenario_results = path_scenario + '_results'
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
     # decision_point = fe.decision_point_activity
     case_colname = execution.case_study.special_colnames["Case"]
     activity_colname = execution.case_study.special_colnames["Activity"]
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = os.path.join(path_scenario, 'components_json')
-    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
-    enriched_log_output = path_scenario + fe.technique_name+'_enriched_log.csv'
+    metadata_json_root = os.path.join(path_scenario_results, 'components_json')
+    flattened_log = os.path.join(path_scenario_results, 'flattened_dataset.json')
+    enriched_log_output = path_scenario_results + fe.technique_name+'_enriched_log.csv'
     text_classname = execution.ui_elements_classification.model.text_classname
     consider_relevant_compos = fe.consider_relevant_compos
     relevant_compos_predicate = fe.relevant_compos_predicate
@@ -42,7 +43,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
         num_UI_elements = 0
         num_UI_groups = 0
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
             data = json.load(f)
 
         screenshot_compos_frec = headers.copy()
@@ -77,7 +78,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
                 column_as_vector.append(compos_list[j]["centroid"])
                 info_to_join[column_name] = column_as_vector
             
-            if len(compos_list[j]["contain"]) > 0 or compos_list[j]["contain"] == "UIGroup":
+            if len(compos_list[j]["type"]) != "leaf":
                 num_UI_groups+=1
             else:
                 num_UI_elements+=1
@@ -193,13 +194,16 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
                         aux = compos_list[j]["text"]
-                        column_name = f"{id}_{compo_class}_{aux}"
                     else:
                         aux = compo_class
-                        column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
-
-                    screenshot_compos_frec[aux] += 1
                     
+                    if aux not in screenshot_compos_frec.keys():
+                        screenshot_compos_frec[aux] = 1
+                    else:
+                        screenshot_compos_frec[aux] += 1
+
+                    column_name = f"{id}_{aux}_{screenshot_compos_frec[aux]}"
+
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
                             for k in range(len(info_to_join[column_name]),i):
@@ -334,6 +338,9 @@ def xpath_class(ui_log_path, path_scenario, execution, fe):
 # Boolean if exists as value / xpath to reach ui element as column name
 # ========================================================================================================
 def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution, fe):
+    raise Exception("Not implemented yet")
+
+def xpath_class_filtered_by_attention(ui_log_path, path_scenario, execution, fe):
     raise Exception("Not implemented yet")
     
 # ========================================================================================================
