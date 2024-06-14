@@ -8,6 +8,8 @@ from SOM import ip_draw
 from shapely.geometry import Polygon
 import cv2
 
+from core.utils import read_ui_log_as_dataframe
+
 def save_screenshot_modified(path_to_original_screenshit,path_to_save_modified_screenshit, new_components,random_color=True, color=None,show=False, separator='/'):
     '''
     new_components are the same as the return of similar_uicomponent
@@ -170,7 +172,7 @@ def similar_uicomponent(components, xpath_list, store_xpath, last_element_idx, l
 #########################################
 
 def get_som_json_from_acts(prev_act, next_act, scenario_results_path, special_colnames) -> dict:
-    log = pd.read_csv(os.path.join(scenario_results_path, "pd_log.csv")) 
+    log = read_ui_log_as_dataframe(os.path.join(scenario_results_path, "pd_log.csv")) 
 
     # Find two subsequent rows such that the fisrt 'Activity' is prev_act and the second 'Activity' is next_act
     prev_act_idx = log[log[special_colnames['Activity']]==prev_act].index

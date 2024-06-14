@@ -18,9 +18,12 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
+from matplotlib import pyplot as plt
 import pandas as pd
 from sklearn.tree import export_graphviz
 
+
+#from SOM.utils import get_uicompo_from_centroid
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from .models import PDD
@@ -49,9 +52,73 @@ from tempfile import NamedTemporaryFile
 from apps.processdiscovery.utils import Process, extract_all_activities_labels, extract_prev_act_labels
 
 import pygraphviz as pgv 
+from shapely.geometry import Polygon
+
+####################################################################3
+
+#########################################
+########## COMPONENT RETRIEVAL ##########
+#########################################
+
+def get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames,action) -> dict:
+    # log = read_ui_log_as_dataframe(os.path.join(scenario_results_path, "pd_log.csv"))
+
+    # # Find two subsequent rows such that the fisrt 'Activity' is prev_act and the second 'Activity' is next_act
+    # prev_act_idx = log[log[special_colnames['Activity']]==prev_act].index
+    # next_act_idx = log[log[special_colnames['Activity']]==next_act].index
+
+    # if len(prev_act_idx)==0 or len(next_act_idx)==0:
+    #     return None
+
+    # # Find two consequent numbers in prev_act_idx and next_act_idx
+    # img_name = None
+    # for idx in prev_act_idx:
+    #     if idx+1 in next_act_idx and action==0:
+    #         img_name = log.loc[idx, special_colnames['Screenshot']]
+    #         break
+    #     elif action>0:
+    #         action-=1
+    
+    # if not img_name:
+    #     return None
+
+    if not os.path.exists(os.path.join(scenario_results_path, "components_json")):
+        raise Exception("No UI Elm. Det. Phase Conducted")
+
+    return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
+
+from shapely.geometry import Polygon, Point
+def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+    """
+    Recovers a component from the pd log based on the id of the component.
+    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
+
+    action determines which instance in order should be considered.
+
+    params:
+        @prev_act: previous activity
+        @next_act: next activity
+        @ui_compo_centroid: centroid of the component
+        @scenario_results_path: path to the scenario results
+        @action: instance of the component to recover
+    returns:
+        @uicompo: the component
+    """
+    #pasa de tupla a lista
+    ui_compo_centroid = [float(coord) for coord in ui_compo_centroid]
+    som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
+    #print(som_json)
+    # Filtrar la lista y encontrar el mínimo
+    uicompo_json=None
+    for compo in som_json['compos']:
+        if compo['centroid'] == ui_compo_centroid:
+            uicompo_json= compo
+            break
+            
+
+    return uicompo_json
 
 
-# Create your views here.
 
 def pdd_define_style(document):
     # =======================================================================================================
@@ -800,11 +867,47 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                             # Verificar si el final de la variable está en la lista de actividades finales
                             for act in end_activities:
                                 if variable.endswith(f'_{act}'):
-                                    if act not in condition_dict:
-                                        condition_dict[act] = []
-                                    condition_dict[act].append([condition, variable])
+                                    # Separar variable por '-'
+                                    variable_parts = variable.split('-')
+                                    
+                                    # Verificar si la parte numérica contiene un guion
+                                    if len(variable_parts) > 1:
+                                        last_part = variable_parts[-1]
+                                        
+                                        # Separar partes por '_'
+                                        first_part_split = variable_parts[0].split('_')
+                                        last_part_split = last_part.split('_')
+                                        
+                                        first_element = int(first_part_split[-1])
+                                        second_element = int(last_part_split[0])
+                                        
+                                        if act not in condition_dict:
+                                            condition_dict[act] = []
+                                        condition_dict[act].append([condition, (first_element, second_element)])
                         result_dict[rule.strip()] = condition_dict
                     return result_dict
+#############################################################
+    
+    def draw_polygons_on_image(json_data, image_path, doc_decision_tree):
+        # Cargar la imagen
+        image = Image.open(image_path)
+        print(json_data)
+        # Dibujar los polígonos en la imagen
+        draw = ImageDraw.Draw(image)
+        for e in json_data:
+            points = [tuple(point) for point in e["points"]]
+            color = e.get("color", (0, 255, 0)) #el color verde por defecto
+            draw.polygon(points, outline=color, width=4)
+
+        # Guardar la imagen modificada en memoria
+        image_byte_array = io.BytesIO()
+        image.save(image_byte_array, format='PNG')
+        image_byte_array.seek(0)
+
+        # Añadir la imagen al documento
+        doc_decision_tree.add_run().add_break()
+        doc_decision_tree.add_run().add_picture(image_byte_array, width=Inches(6))
+        doc_decision_tree.add_run().add_break()
     
 ## devuelve un diccionario cuyas claves son las prev act delos punto de decisiones que hay en una varianye y 
 # de valor los json del punto de dceision
@@ -1009,7 +1112,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             #EXPLICAR ACTIVIDADES Y ACCIONES
             explicabilidad_actions(decision_tree, activity,group, colnames)
             
-            ############################
+            ###############################################################################################333
 
             #EXPLICABILIDAD DE LAS DECISIONES
             if str(activity) in variant_decision_points:
@@ -1035,18 +1138,25 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         decision_tree.add_run(f'{rule}\n').bold = True
                         for act, condition_list in conditions.items():
                             color_index = 0
-                            for condition, variable in condition_list:
-                                #decision_tree.add_run(f'Activity {act}: {condition}\n')
-                                run = decision_tree.add_run(f'Activity {act}: {condition}\n')
-                                run.font.color.rgb = colors[color_index % len(colors)]
-                                color_index += 1
                             #obtenemos la screenshot correspondiente
                             screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
                             path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                            # Insertar la imagen en el documento
-                            decision_tree.add_run().add_break()
-                            decision_tree.add_run().add_picture(path_to_image, width=Inches(6))
-                            decision_tree.add_run().add_break()
+                            compo_ui_json=[]
+                            for condition, variable in condition_list:
+                                #decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                color = colors[color_index % len(colors)]
+                                run = decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                run.font.color.rgb = color
+                                color_index += 1
+                                # Insertar la imagen en el documento
+                                ui_compo_centroid=variable
+                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                if compo_ui:
+                                    compo_ui["color"] = color  # Asignar color al polígono
+                                    compo_ui_json.append(compo_ui)
+                            if compo_ui_json:
+                                draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
+                            ##################33
                         
                         decision_tree.add_run().add_break()
     
