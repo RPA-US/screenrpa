@@ -18,7 +18,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     metadata_json_root = os.path.join(path_scenario, 'components_json')
     flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
     enriched_log_output = path_scenario + fe.technique_name+'_enriched_log.csv'
-    text_classname = execution.case_study.ui_elements_classification.text_classname
+    text_classname = execution.ui_elements_classification.model.text_classname
     consider_relevant_compos = fe.consider_relevant_compos
     relevant_compos_predicate = fe.relevant_compos_predicate
     id = fe.identifier
@@ -193,7 +193,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
                         aux = compos_list[j]["text"]
-                        column_name = f"{id}_{aux}_{str(screenshot_compos_frec[aux])}"
+                        column_name = f"{id}_{compo_class}_{aux}"
                     else:
                         aux = compo_class
                         column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
@@ -372,3 +372,6 @@ def ui_compo_existence(ui_log_path, path_scenario, execution, _):
 
     # Guardar el log enriquecido en un nuevo archivo
     enriched_log.to_csv(metadata_json_root + ENRICHED_LOG_SUFFIX + ".csv", index=False)
+
+    num_screenshots = len(enriched_log)
+    return 0, num_screenshots, 99999999999999999, 0

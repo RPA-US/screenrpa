@@ -90,12 +90,12 @@ def generate_case_study(execution, path_scenario, times):
                         if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
                             start_t = time.time()
                             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
-                            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-                            # Additional feature extraction metrics
-                            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-                            times[n][function_to_exec]["num_screenshots"] = num_screenshots
-                            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-                            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                    times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                    # Additional feature extraction metrics
+                    times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                    times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                    times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                    times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
                     filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
