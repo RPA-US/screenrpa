@@ -169,22 +169,7 @@ def similar_uicomponent(components, xpath_list, store_xpath, last_element_idx, l
 ########## COMPONENT RETRIEVAL ##########
 #########################################
 
-def get_uicompo_from_centroid(prev_act, next_act, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
-    """
-    Recovers a component from the pd log based on the id of the component.
-    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
-
-    action determines which instance in order should be considered.
-
-    params:
-        @prev_act: previous activity
-        @next_act: next activity
-        @ui_compo_centroid: centroid of the component
-        @scenario_results_path: path to the scenario results
-        @action: instance of the component to recover
-    returns:
-        @uicompo: the component
-    """
+def get_som_json_from_acts(prev_act, next_act, scenario_results_path, special_colnames) -> dict:
     log = pd.read_csv(os.path.join(scenario_results_path, "pd_log.csv")) 
 
     # Find two subsequent rows such that the fisrt 'Activity' is prev_act and the second 'Activity' is next_act
@@ -209,7 +194,53 @@ def get_uicompo_from_centroid(prev_act, next_act, ui_compo_centroid, scenario_re
     if not os.path.exists(os.path.join(scenario_results_path, "components_json")):
         raise Exception("No UI Elm. Det. Phase Conducted")
 
-    som_json = json.load(open(os.path.join(scenario_results_path, "components_json", img_name, ".json")))
+    return json.load(open(os.path.join(scenario_results_path, "components_json", img_name, ".json")))
+
+def get_uicompo_from_id(prev_act, next_act, ui_compo_id, scenario_results_path, special_colnames, action=0) -> dict:
+    """
+    Recovers a component from the pd log based on the id of the component.
+    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
+
+    action determines which instance in order should be considered.
+
+    params:
+        @prev_act: previous activity
+        @next_act: next activity
+        @ui_compo_id: id of the component
+        @scenario_results_path: path to the scenario results
+        @action: instance of the component to recover
+    returns:
+        @uicompo: the component
+    """
+    som_json = get_som_json_from_acts(prev_act, next_act, scenario_results_path, special_colnames)
+
+    uicompo_json = min(list(filter(
+        lambda x: x["id"]==ui_compo_id and x["class"]!="Text",
+        som_json["compos"]
+    )), key=lambda x: Polygon(x["points"]))
+
+    if not uicompo_json:
+        return None
+
+    return uicompo_json
+
+def get_uicompo_from_centroid(prev_act, next_act, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+    """
+    Recovers a component from the pd log based on the id of the component.
+    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
+
+    action determines which instance in order should be considered.
+
+    params:
+        @prev_act: previous activity
+        @next_act: next activity
+        @ui_compo_centroid: centroid of the component
+        @scenario_results_path: path to the scenario results
+        @action: instance of the component to recover
+    returns:
+        @uicompo: the component
+    """
+    som_json = get_som_json_from_acts(prev_act, next_act, scenario_results_path, special_colnames)
 
     uicompo_json = min(list(filter(
         lambda x: Polygon(x["points"]).contains(ui_compo_centroid) and x["class"]!="Text",
