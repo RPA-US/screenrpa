@@ -1,9 +1,11 @@
 from SOM.UiComponent import UiComponent
 import numpy as np
+import os
 import json
 import pandas as pd
 import random
 from SOM import ip_draw
+from shapely.geometry import Polygon
 import cv2
 
 def save_screenshot_modified(path_to_original_screenshit,path_to_save_modified_screenshit, new_components,random_color=True, color=None,show=False, separator='/'):
@@ -162,3 +164,59 @@ def similar_uicomponent(components, xpath_list, store_xpath, last_element_idx, l
         
         new_xpath_list = xpath_list[1:]
         return similar_uicomponent(store_components,new_xpath_list,store_xpath,last_element_idx, last_group_idx)
+
+#########################################
+########## COMPONENT RETRIEVAL ##########
+#########################################
+
+def get_uicompo_from_centroid(prev_act, next_act, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+    """
+    Recovers a component from the pd log based on the id of the component.
+    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
+
+    action determines which instance in order should be considered.
+
+    params:
+        @prev_act: previous activity
+        @next_act: next activity
+        @ui_compo_centroid: centroid of the component
+        @scenario_results_path: path to the scenario results
+        @action: instance of the component to recover
+    returns:
+        @uicompo: the component
+    """
+    log = pd.read_csv(os.path.join(scenario_results_path, "pd_log.csv")) 
+
+    # Find two subsequent rows such that the fisrt 'Activity' is prev_act and the second 'Activity' is next_act
+    prev_act_idx = log[log[special_colnames['Activity']]==prev_act].index
+    next_act_idx = log[log[special_colnames['Activity']]==next_act].index
+
+    if len(prev_act_idx)==0 or len(next_act_idx)==0:
+        return None
+
+    # Find two consequent numbers in prev_act_idx and next_act_idx
+    img_name = None
+    for idx in prev_act_idx:
+        if idx+1 in next_act_idx and action==0:
+            img_name = log.loc[idx, special_colnames['Screenshot']]
+            break
+        elif action>0:
+            action-=1
+    
+    if not img_name:
+        return None
+
+    if not os.path.exists(os.path.join(scenario_results_path, "components_json")):
+        raise Exception("No UI Elm. Det. Phase Conducted")
+
+    som_json = json.load(open(os.path.join(scenario_results_path, "components_json", img_name, ".json")))
+
+    uicompo_json = min(list(filter(
+        lambda x: Polygon(x["points"]).contains(ui_compo_centroid) and x["class"]!="Text",
+        som_json["compos"]
+    )), key=lambda x: Polygon(x["points"]))
+
+    if not uicompo_json:
+        return None
+
+    return uicompo_json
