@@ -775,6 +775,28 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             else: 
                 res= "No se han encontrado las reglas asociadas a esta rama."
         return res
+##el resultado es un diccionario cuyas claves son las reglas y los valores una lista con los elementos a cada regla
+    def get_branch_condition2(decision_point, branch_number):
+        branches = decision_point.get('branches', [])
+        rules = decision_point.get('rules', {})
+        
+        for branch in branches:
+            if branch['label'] == str(branch_number):
+                res = rules.get(str(branch_number), [])
+                if not res:
+                    return {"No associated rule found": []}
+                else:
+                    condition_dict = {}
+                    for rule in res:
+                        # Dividir la regla por '&' y luego por los operadores de comparación
+                        parts = rule.split('&')
+                        variables = set()
+                        for part in parts:
+                            elements = re.split(r'<=|>=|<|>|==|!=', part)
+                            # Agregar el primer elemento de cada split a las variables
+                            variables.add(elements[0].strip())
+                        condition_dict[rule] = list(variables)
+                    return condition_dict
     
 ## devuelve un diccionario cuyas claves son las prev act delos punto de decisiones que hay en una varianye y 
 # de valor los json del punto de dceision
@@ -985,10 +1007,13 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_point = variant_decision_points[str(activity)]
                 num_ramas = len(decision_point['branches'])
                 next_activity = activities[i+1] if i+1 < len(activities) else None
-                condition = get_branch_condition(decision_point, next_activity) if next_activity else "N/A"
+                
+                result_dict = get_branch_condition2(decision_point, next_activity)
+                # Concatenar todas las claves con " OR "
+                condition = " OR ".join(f"({key})" for key in result_dict.keys()) if result_dict else "N/A"
 
                 decision_tree.add_run().add_break()      
-                decision_tree.add_run(f'Decision Point\n', style='Título 5 Car').bold = True
+                decision_tree.add_run(f'Decision Point\n', style='Título 4 Car').bold = True
                 decision_tree.add_run().add_break()
                 decision_tree.add_run().add_break()      
                 decision_tree.add_run(f'After this activity there is a decision point with {num_ramas} branches. In the case of this variant (VARIANT {variant}) it goes along branch {next_activity} and it is satisfied that: {condition} \n')
