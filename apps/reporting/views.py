@@ -775,8 +775,9 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             else: 
                 res= "No se han encontrado las reglas asociadas a esta rama."
         return res
-##el resultado es un diccionario cuyas claves son las reglas y los valores una lista con los elementos a cada regla
-    def get_branch_condition2(decision_point, branch_number):
+##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
+##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'numeric__Coor_Y_2']], 3: [['numeric__Coor_Y_3 > 491.51', 'numeric__Coor_Y_3']]}}
+    def get_branch_condition2(decision_point, branch_number, end_activities):
         branches = decision_point.get('branches', [])
         rules = decision_point.get('rules', {})
         
@@ -786,17 +787,24 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 if not res:
                     return {"No associated rule found": []}
                 else:
-                    condition_dict = {}
+                    result_dict = {}
                     for rule in res:
+                        condition_dict = {}
                         # Dividir la regla por '&' y luego por los operadores de comparación
                         parts = rule.split('&')
-                        variables = set()
                         for part in parts:
                             elements = re.split(r'<=|>=|<|>|==|!=', part)
-                            # Agregar el primer elemento de cada split a las variables
-                            variables.add(elements[0].strip())
-                        condition_dict[rule] = list(variables)
-                    return condition_dict
+                            variable = elements[0].strip()
+                            condition = part.strip()
+                            
+                            # Verificar si el final de la variable está en la lista de actividades finales
+                            for act in end_activities:
+                                if variable.endswith(f'_{act}'):
+                                    if act not in condition_dict:
+                                        condition_dict[act] = []
+                                    condition_dict[act].append([condition, variable])
+                        result_dict[rule.strip()] = condition_dict
+                    return result_dict
     
 ## devuelve un diccionario cuyas claves son las prev act delos punto de decisiones que hay en una varianye y 
 # de valor los json del punto de dceision
@@ -966,6 +974,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             ############################################
           
 ############################################################3
+    from docx.shared import RGBColor
     def process_variant_group(group, traceability, path_to_dot_file, colnames):
         #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
@@ -1007,8 +1016,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_point = variant_decision_points[str(activity)]
                 num_ramas = len(decision_point['branches'])
                 next_activity = activities[i+1] if i+1 < len(activities) else None
-                
-                result_dict = get_branch_condition2(decision_point, next_activity)
+                #{'numeric__Coor_Y_2 <= 382.39': {2: [['numeric__Coor_Y_2 <= 382.39', 'numeric__Coor_Y_2']]}}
+                result_dict = get_branch_condition2(decision_point, next_activity, activities)
                 # Concatenar todas las claves con " OR "
                 condition = " OR ".join(f"({key})" for key in result_dict.keys()) if result_dict else "N/A"
 
@@ -1018,6 +1027,28 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_tree.add_run().add_break()      
                 decision_tree.add_run(f'After this activity there is a decision point with {num_ramas} branches. In the case of this variant (VARIANT {variant}) it goes along branch {next_activity} and it is satisfied that: {condition} \n')
                 decision_tree.add_run().add_break() 
+
+                colors = [RGBColor(255, 0, 0), RGBColor(0, 255, 0), RGBColor(0, 0, 255), RGBColor(255, 165, 0)]
+                
+                if result_dict and all(isinstance(value, dict) for value in result_dict.values()): #se ejecuta solo si tiene reglas asociadas
+                    for rule, conditions in result_dict.items():
+                        decision_tree.add_run(f'{rule}\n').bold = True
+                        for act, condition_list in conditions.items():
+                            color_index = 0
+                            for condition, variable in condition_list:
+                                #decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                run = decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                run.font.color.rgb = colors[color_index % len(colors)]
+                                color_index += 1
+                            #obtenemos la screenshot correspondiente
+                            screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                            path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                            # Insertar la imagen en el documento
+                            decision_tree.add_run().add_break()
+                            decision_tree.add_run().add_picture(path_to_image, width=Inches(6))
+                            decision_tree.add_run().add_break()
+                        
+                        decision_tree.add_run().add_break()
     
 ###############
     
