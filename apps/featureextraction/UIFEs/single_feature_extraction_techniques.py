@@ -128,7 +128,10 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     enriched_log_output = os.path.join(execution_root, fe.technique_name + '_enriched_log.csv')
     text_classname = execution.ui_elements_classification.model.text_classname
     
-    log = read_ui_log_as_dataframe(ui_log_path)
+    if os.path.exists(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv")):
+        log = read_ui_log_as_dataframe(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"))
+    else:
+        log = read_ui_log_as_dataframe(ui_log_path)
 
     enriched_log = log.copy()
     
