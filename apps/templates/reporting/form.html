@@ -38,11 +38,12 @@
                       {{ form.as_is_process_map.label_tag }} 
                       <span class="ml-2">(Bloqueado: Process Discovery)</span>
                   </div>
-                  
+                  {% endif %} 
+                  {% if execution.decision_tree_training != None %}
                   <div class="form-check">
                       {{ form.detailed_as_is_process_actions }}
                       {{ form.detailed_as_is_process_actions.label_tag }} 
-                      <span class="ml-2">(Bloqueado: Process Discovery)</span>
+                      <span class="ml-2">(Bloqueado: Decision Tree Training)</span>
                   </div>
                    {% endif %} 
                   <div class="form-check">

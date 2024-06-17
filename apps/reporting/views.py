@@ -52,8 +52,8 @@ from tempfile import NamedTemporaryFile
 from apps.processdiscovery.utils import Process, extract_all_activities_labels, extract_prev_act_labels
 
 import pygraphviz as pgv 
-from shapely.geometry import Polygon
-
+from shapely.geometry import Polygon, Point
+from docx.shared import RGBColor
 ####################################################################3
 
 #########################################
@@ -87,7 +87,7 @@ def get_som_json_from_acts(screenshot_filename, scenario_results_path, special_c
 
     return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
 
-from shapely.geometry import Polygon, Point
+
 def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
     """
     Recovers a component from the pd log based on the id of the component.
@@ -111,8 +111,11 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_r
     # Filtrar la lista y encontrar el mínimo
     uicompo_json=None
     for compo in som_json['compos']:
-        if compo['centroid'] == ui_compo_centroid:
-            uicompo_json= compo
+        # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
+        compo_centroid_int = [int(coord) for coord in compo['centroid']]
+        ui_compo_centroid_int = [int(coord) for coord in ui_compo_centroid]
+        if compo_centroid_int == ui_compo_centroid_int:
+            uicompo_json = compo
             break
             
 
@@ -1077,7 +1080,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             ############################################
           
 ############################################################3
-    from docx.shared import RGBColor
+    
     def process_variant_group(group, traceability, path_to_dot_file, colnames):
         #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
