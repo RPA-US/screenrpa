@@ -248,7 +248,35 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
-                    raise Exception("Not implemented yet")
+                    # TODO: Review by @amrojas
+                    column_name = f"{id}_{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"
+
+                    if compo_class == text_classname:
+                        aux = compos_list[j]["text"]
+                    else:
+                        aux = compo_class
+                    
+                    if aux not in screenshot_compos_frec.keys():
+                        screenshot_compos_frec[aux] = 1
+                    else:
+                        screenshot_compos_frec[aux] += 1
+
+                    if column_name in info_to_join:
+                        if not len(info_to_join[column_name]) == i:
+                            for k in range(len(info_to_join[column_name]),i):
+                                info_to_join[column_name].append("")
+                        info_to_join[column_name].append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
+                        
+                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+                    else:
+                        column_as_vector = []
+                        for k in range(0,i):
+                            column_as_vector.append("")
+                        column_as_vector.append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
+                        info_to_join[column_name] = column_as_vector
+                        
+                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "xpath_class":
