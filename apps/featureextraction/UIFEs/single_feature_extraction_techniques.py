@@ -94,10 +94,10 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
         data["features"]["#UIGroups"] = num_UI_groups
         new_row = [screenshot_filename, num_UI_compos, num_UI_elements, num_UI_groups]
         df.loc[i] = new_row
-        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(data, jsonFile, indent=4)
             
-    df.to_csv(metadata_json_root + ENRICHED_LOG_SUFFIX + ".csv", index=False)
+    df.to_csv(os.path.join(metadata_json_root, ENRICHED_LOG_SUFFIX + ".csv"), index=False)
             
         
 
