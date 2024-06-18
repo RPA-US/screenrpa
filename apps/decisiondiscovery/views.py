@@ -575,7 +575,7 @@ class DecisionTreeTrainingDetailView(DetailView):
                     "case_study_id": case_study.id,
                     "form": form,}
         
-                return render(request, "prefiltering/detail.html", context)
+                return render(request, "decision_tree_training/detail.html", context)
             else:
                 return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
          
@@ -586,7 +586,7 @@ class DecisionTreeTrainingDetailView(DetailView):
                             "execution_id": execution.id,
                             "form": form,}
             
-                return render(request, "prefiltering/detail.html", context)
+                return render(request, "decision_tree_training/detail.html", context)
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
 

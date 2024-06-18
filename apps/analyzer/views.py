@@ -593,7 +593,7 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
         if user.id != execution.user.id:
             return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
         reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
-
+        
         context = {
             "reports": reports,
             "execution_id": execution.id, 

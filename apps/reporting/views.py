@@ -638,6 +638,8 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         title= doc.paragraphs[paragraph_dict['[TITLE]']]
         title.text = execution.process_discovery.title
         title.style='Normal'
+    else:
+        doc.paragraphs[paragraph_dict['[TITLE]']].clear()
 
     ############################ AS IS PROCESS DESCRPTION: APPLICATIONS USED
     if report.applications_used:
@@ -645,7 +647,8 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         nameapps.text = "The applications used by the user during the execution of the process are:"
         applications_used(nameapps, execution, scenario, colnames)
         #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
-        
+    else:
+        doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']].clear()
 
     ##########################3 AS IS PROCESS MAP
     if report.as_is_process_map:
@@ -655,6 +658,11 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         run = bpmn.add_run()
         run.add_picture(dot_to_png(path_to_tree_file), width=Inches(6))
         run.add_break()
+    else:
+        # Eliminar el párrafo [.BPMN] si no se cumple la condición
+        doc.paragraphs[paragraph_dict['[.BPMN]']].clear()
+        # O alternativamente eliminar el párrafo por completo
+        #doc.paragraphs.pop(paragraph_dict['[.BPMN]'])
 
     
     #############################3 DETAILS AS IS PROCESS ACTIONS
@@ -670,6 +678,8 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         #detailes_as_is_process_actions(doc, paragraph_dict, execution, scenario)
 
         detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames)
+    else:
+        doc.paragraphs[paragraph_dict['[DECISION TREE]']].clear()
      
     
     #############################3 INPUT DATA DESCRPTION
@@ -677,7 +687,8 @@ def report_define(report_directory, report_path, execution,  report, scenario):
         original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
         df_logcsv = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
         input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
-
+    else:
+        doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']].clear()
 
 
     doc.save(report_path)
