@@ -219,7 +219,8 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
             if configurations[key]["mode"] == "draw":
                 if not os.path.exists(os.path.join(scenario_results_path ,"postfilter_attention_maps")):
                     os.makedirs(os.path.join(scenario_results_path ,"postfilter_attention_maps"))
-                draw_geometry_over_image(os.path.join(path_scenario,screenshot_filename), polygon_circles, polygon_rectangles, os.path.join(scenario_results_path ,"postfilter_attention_maps",screenshot_filename))
+                # draw_geometry_over_image(os.path.join(path_scenario,screenshot_filename), polygon_circles, polygon_rectangles, os.path.join(scenario_results_path ,"postfilter_attention_maps",screenshot_filename))
+                draw_geometry_over_image(os.path.join(scenario_results_path,'borders',screenshot_filename+'_bordered.png'), polygon_circles, polygon_rectangles, os.path.join(scenario_results_path ,"postfilter_attention_maps",screenshot_filename))
             
         else:
             for compo in screenshot_json["compos"]:
