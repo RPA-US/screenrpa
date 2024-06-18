@@ -148,6 +148,8 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
         #     "column_max": 5,
         #     "row_max": 24,
         # ]
+        if screenshot_filename not in fixation_json.keys():
+            continue
         
         with open(os.path.join(scenario_results_path,"components_json", screenshot_filename +'.json'), 'r') as f:
             screenshot_json = json.load(f)
