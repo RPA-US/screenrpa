@@ -254,7 +254,7 @@ class FeatureExtractionResultDetailView(DetailView, LoginRequiredMixin):
       
         # TODO: Sujeto a cambios en la estructura de la carpeta
         #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/flattened_dataset.csv"
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset.csv")
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "log_enriched.csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return ResultDownload(path_to_csv_file)  
