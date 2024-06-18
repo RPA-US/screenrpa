@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'apps.processdiscovery', # Local App
     'apps.decisiondiscovery', # Local App
     'apps.reporting', # Local App
+    'apps.notification', # Local App
     'drf_spectacular', # Swagger
     'drf_spectacular_sidecar',  # Swagger. required for Django collectstatic discovery
 ]
