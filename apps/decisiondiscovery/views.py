@@ -22,7 +22,7 @@ from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
 from .overlapping_rules import overlapping_rules
 from .flattening import flat_dataset_row
-from .utils import find_path_in_decision_tree, parse_decision_tree, best_model_grid_search, cross_validation
+from .utils import extract_tree_rules, find_path_in_decision_tree, parse_decision_tree, best_model_grid_search, cross_validation
 from django.utils.translation import gettext_lazy as _
 # Result Treeimport json
 import matplotlib.pyplot as plt
@@ -754,58 +754,6 @@ def tree_to_png_base64(path_to_tree_file):
     return f'data:image/png;base64,{image_base64}'
 
 ####################################################################
-
-def extract_tree_rules(path_to_tree_file):
-    try:
-        with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
-            loaded_data = pickle.load(archivo)
-        # Obtener el clasificador y los nombres de las características del diccionario cargado
-        tree = loaded_data['classifier']
-        feature_names = loaded_data['feature_names']
-        classes = loaded_data['class_names']
-
-    except FileNotFoundError:
-        print(f"File not found: {path_to_tree_file}")
-        return None
-    
-    """
-    Función que recorre las ramas de un árbol de decisión y extrae las reglas
-    obtenidas para clasificar cada una de las variables objetivo
-    
-    Parametros:
-    - tree: El modelo árbol de decisión.
-    - feature_names: Lista de los atributos del dataset.
-    - classes: Clases posibles de la variable objetivo, ordenada ascendentemente
-    """
-    # accede al objeto interno tree_ del árbol de decisión
-    tree_ = tree.tree_
-    feature_name = [
-        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
-        for i in tree_.feature
-    ]
-
-    # Crear un diccionario para almacenar las reglas de cada clase
-    rules_per_class = {cls: [] for cls in classes}
-
-    def recurse(node, parent_rule):
-        if tree_.feature[node] != _tree.TREE_UNDEFINED:
-            name = feature_name[node]
-            threshold = tree_.threshold[node]
-            left_rule = parent_rule + [f"{name} <= {threshold:.2f}"]
-            right_rule = parent_rule + [f"{name} > {threshold:.2f}"]
-
-            recurse(tree_.children_left[node], left_rule)
-            recurse(tree_.children_right[node], right_rule)
-        else:
-            rule = " & ".join(parent_rule)
-            target = classes[tree_.value[node].argmax()]
-            # Agregar la regla a la lista correspondiente de su clase en el diccionario
-            rules_per_class[target].append(rule)
-
-    recurse(0, [])
-
-    # Convertir el diccionario en una lista de reglas por clase
-    return rules_per_class
 
 
 ####################################################################

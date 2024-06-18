@@ -1,3 +1,4 @@
+import pickle
 import re
 import math
 import numpy as np
@@ -13,6 +14,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 from apps.chefboost import Chefboost as chef
 from .models import ExtractTrainingDataset, DecisionTreeTraining
 import json
+from sklearn.tree import _tree
 ###########################################################################################################################
 # case study get phases data  ###########################################################################################
 ###########################################################################################################################
@@ -365,3 +367,59 @@ def find_prev_act(json_path, decision_point_id):
             return dp["prevAct"]
     
     return None
+
+def extract_tree_rules(path_to_tree_file):
+    try:
+        with open('/screenrpa/' + path_to_tree_file, 'rb') as archivo:
+            loaded_data = pickle.load(archivo)
+        # Obtener el clasificador y los nombres de las características del diccionario cargado
+        tree = loaded_data['classifier']
+        feature_names = loaded_data['feature_names']
+        classes = loaded_data['class_names']
+
+    except FileNotFoundError:
+        print(f"File not found: {path_to_tree_file}")
+        return None
+
+    """
+    Función que recorre las ramas de un árbol de decisión y extrae las reglas
+    obtenidas para clasificar cada una de las variables objetivo
+    
+    Parametros:
+    - tree: El modelo árbol de decisión.
+    - feature_names: Lista de los atributos del dataset.
+    - classes: Clases posibles de la variable objetivo, ordenada ascendentemente
+    """
+    # Accede al objeto interno tree_ del árbol de decisión
+    tree_ = tree.tree_
+    feature_name = [
+        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+        for i in tree_.feature
+    ]
+
+    # Crear un diccionario para almacenar las reglas de cada clase
+    rules_per_class = {cls: [] for cls in classes}
+
+    def recurse(node, parent_rule):
+        if tree_.feature[node] != _tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            left_rule = parent_rule + [f"{name} <= {threshold:.2f}"]
+            right_rule = parent_rule + [f"{name} > {threshold:.2f}"]
+
+            recurse(tree_.children_left[node], left_rule)
+            recurse(tree_.children_right[node], right_rule)
+        else:
+            rule = " & ".join(parent_rule)
+            target_index = tree_.value[node].argmax()
+            target = classes[target_index] if target_index < len(classes) else None
+            if target:
+                # Agregar la regla a la lista correspondiente de su clase en el diccionario
+                rules_per_class[target].append(rule)
+
+    recurse(0, [])
+
+    # Filtrar las clases que no tienen reglas
+    rules_per_class = {k: v for k, v in rules_per_class.items() if v}
+
+    return rules_per_class
