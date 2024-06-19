@@ -207,9 +207,10 @@
         timeDiff = new Date(notification.timestamp).toDateString()
       }
       // Add a vertical bar at the left if the notification is unread
+      // Margin left is -19 because it overwrites row margin, which is -15
       const notificationItem = $(`
         <a href="${notification.href}" class="list-group-item list-group-item-action" ${!notification.read ? 'style="border-left: 4px solid #5e72e3; background: #ebf0ff"' : ''}>
-          <div class="row align-items-center">
+          <div class="row align-items-center" ${!notification.read ? 'style="margin-left: -19px"' : ''}>
             <div class="col-auto">
               <img alt="Image placeholder" src="/static/assets/img/theme/team-1.jpg" class="avatar rounded-circle">
             </div>
