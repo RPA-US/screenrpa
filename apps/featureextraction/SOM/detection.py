@@ -409,11 +409,18 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
     """
     # Since the path ends with a /, the last element of the split will be an empty string
     execution_root = param_img_root + '_results'
-
-    path_to_save_gui_components_npy = os.path.join(execution_root, "components_npy")
-    path_to_save_components_json = os.path.join(execution_root, "components_json")
-    path_to_save_mask_elements=os.path.join(execution_root, 'sam_mask_elements')
-    path_to_save_time_of_pipepile=os.path.join(execution_root, 'time_pipeline')
+    
+    if os.path.basename(execution_root) == "prefiltered_img_results":
+        path_to_save_gui_components_npy = os.path.join(os.path.dirname(execution_root), "components_npy")
+        path_to_save_components_json = os.path.join(os.path.dirname(execution_root), "components_json")
+        path_to_save_mask_elements=os.path.join(os.path.dirname(execution_root), 'sam_mask_elements')
+        path_to_save_time_of_pipepile=os.path.join(os.path.dirname(execution_root), 'time_pipeline')
+        
+    else:    
+        path_to_save_gui_components_npy = os.path.join(execution_root, "components_npy")
+        path_to_save_components_json = os.path.join(execution_root, "components_json")
+        path_to_save_mask_elements=os.path.join(execution_root, 'sam_mask_elements')
+        path_to_save_time_of_pipepile=os.path.join(execution_root, 'time_pipeline')
 
     # Iterate over the list of images
     for img_index in tqdm(range(0, len(image_names)), desc=f"Getting crops for {param_img_root}"):
