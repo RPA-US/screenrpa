@@ -49,8 +49,9 @@
           </form>
         </li>
         <li id="notification-popup" class="nav-item dropdown">
-          <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link position-relative" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="ni ni-bell-55"></i>
+            <badge id="unread-badge" class="bg-warning position-absolute rounded-pill px-1" style="right: 10px; top: -4px; font-size:12px" hidden></badge>
           </a>
           <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
             <!-- Dropdown header -->
@@ -180,6 +181,13 @@
 
     // Update unread notifications
     $('#unread').text(data.unread);
+    if (data.unread) {
+      $('#unread-badge').prop('hidden', false);
+      $('#unread-badge').text(data.unread);
+    } else {
+      $('#unread-badge').prop('hidden', true);
+      $('#unread-badge').text('');
+    }
 
     const notificationList = $('#notification-list');
     notificationList.empty();
@@ -225,11 +233,14 @@
 
   // When the popup is hidden (loses class show), mark all notifications as read
   const notificationPopup = document.getElementById('notification-popup');
-  function notificationCallback(mutationList, observer) {
+  async function notificationCallback(mutationList, observer) {
     for (const mutation of mutationList) {
       if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
         if (!notificationPopup.classList.contains('show')) {
           fetch('/notification/mark_all_as_read', { method: 'GET' });
+          $('#unread-badge').prop('hidden', true);
+          $('#unread-badge').text('');
+          await getNotifications();
         }
       }
     }
