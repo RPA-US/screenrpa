@@ -210,24 +210,36 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     if isinstance(X, str):
         raise Exception(X)
         return
+    
     preprocessor = def_preprocessor(X)
-    print(X)
     
     #df.head()
-    X = preprocessor.fit_transform(X)
+    try:
+        X = preprocessor.fit_transform(X)
+    except Exception as e:
+        raise Exception(e)
+        return
     
     # X es una sparse_matrix
     # if a dataframe has a high number of columns, may be it has to be treated as a sparse matrix
     if isinstance(X, scipy.sparse.spmatrix):
         X = X.toarray()
-    feature_names = preprocessor.get_feature_names_out()
-    X_df = pd.DataFrame(X, columns=feature_names)
+    
+    X_df = pd.DataFrame(X, columns=preprocessor.get_feature_names_out())
 
+    postprocessor= X_df.columns[X_df.nunique() == 1].tolist()
+
+    if len(postprocessor) != 0:
+        X_df= X_df.drop(columns=postprocessor)
+    else:
+        Exception("No features left after preprocessing.")
+    
+    feature_names = X_df.columns.tolist()
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
-    tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, k_fold_cross_validation)
+    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
 
     accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
@@ -238,7 +250,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     # }
     
     # Assuming 'best_tree_tree' is already trained on the training data
-    text_representation = export_text(tree_classifier, feature_names=list(feature_names))
+    text_representation = export_text(tree_classifier, feature_names=feature_names)
     print("Decision Tree Rules:\n", text_representation)
     
     with open(os.path.join(param_path, "decision_tree_"+prevact+".log"), "w") as fout:

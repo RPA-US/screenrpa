@@ -115,53 +115,63 @@ def prev_preprocessor(X):
     # sta_columns = list(filter(lambda x:"sta_" in x, X.columns))
 
     X = X.loc[:, ~X.columns.str.contains('^Unnamed')] # Remove unnamed columns automatically generated
-    # Identificar las columnas con todos los valores iguales
-    columns_to_drop = X.columns[X.nunique() == 1]
     # Identificar las columnas con todos los valores nulos
-    columns_to_drop = columns_to_drop.union(X.columns[X.isnull().all()])
+    columns_to_drop = X.columns[X.isnull().all()].tolist()
     # Eliminar las columnas con todos los valores iguales o nulos
-    X = X.drop(columns=columns_to_drop)
+    X_drop = X.drop(columns=columns_to_drop)
+    
 
-    if len(X.columns) == 0:
+    if len(X_drop.columns) == 0:
         return "No features left after preprocessing."
 
-    return X
+    return X_drop
+
+
 
 def def_preprocessor(X):
-    
-    
+    # Define el diccionario de mapeo para las columnas "enabled" y "checked"
     mapping_dict = {"enabled": ['NaN', 'enabled', 'disabled'], "checked": ['unchecked', 'checked', '']}
+    
     mapping_list = []
     sta_columns = []
-    # Identificar las columnas que contienen "sta_" en su nombre
+    
+    # Identificar las columnas que contienen "rpa-us_" en su nombre
     for col in X.columns:
-        if 'sta_' in col:
+        if 'rpa-us_' in col:
             sta_columns.append(col)
             if 'enabled' in col:
-                mapping_list.append(list(mapping_dict['enabled']))
+                mapping_list.append(mapping_dict['enabled'])
             elif 'checked' in col:
-                mapping_list.append(list(mapping_dict['checked']))
+                mapping_list.append(mapping_dict['checked'])
             else:
-                raise Exception("Not preprocessed column: " + str(col))
+                # Si la columna no coincide con ninguna categoría conocida, agregar un mapeo genérico
+                unique_values = X[col].dropna().unique().tolist()
+                if 'NaN' not in unique_values:
+                    unique_values.append('NaN')
+                mapping_list.append(unique_values)
                 
-    one_hot_columns = list(X.select_dtypes(include=['object']).columns.drop(sta_columns))
+    # Identificar columnas de tipo objeto y numéricas
+    types_obj = X.select_dtypes(include=['object']).columns
+    one_hot_columns = list(types_obj.drop(sta_columns, errors='ignore'))
     numeric_features = X.select_dtypes(include=['number']).columns
 
-    # create each transformer
+    # Crear cada transformador
     status_transformer = Pipeline(steps=[
-                                    ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-                                    ('label_encoder', OrdinalEncoder(categories=list(mapping_list)))
-                                    ])
+        ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+        ('label_encoder', OrdinalEncoder(categories=mapping_list))
+    ])
+    
     one_hot_transformer = Pipeline(steps=[
-                                    ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-                                    ('one_hot_encoder', OneHotEncoder())
-                                    ])
+        ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+        ('one_hot_encoder', OneHotEncoder())
+    ])
 
     numeric_transformer = Pipeline(steps=[
-                                    ('imputer', SimpleImputer(strategy='mean')),
-                                    ])#('scaler',StandardScaler())
+        ('imputer', SimpleImputer(strategy='mean')),
+        # ('scaler',StandardScaler()) # Descomentar si se requiere escalado
+    ])
 
-    # create preprocessor
+    # Crear el preprocesador
     preprocessor = ColumnTransformer(
         transformers=[
             ('numeric', numeric_transformer, numeric_features),
@@ -169,6 +179,7 @@ def def_preprocessor(X):
             ('status_categorical', status_transformer, sta_columns)
         ]
     )
+    
     return preprocessor
 
 def create_and_fit_pipeline(X,y, model):
@@ -254,52 +265,129 @@ def centroid_distance_checker(punto_x, punto_y, umbral):
         distancia = points_distance(punto_x, punto_y)
         return distancia < umbral
   
+# def read_feature_column_name(column_name):
+    
+#     # Buscar el patrón en la cadena de texto
+#     contains_centroid = bool(re.search(r'\d+\.\d+-\d+\.\d+', column_name))
+    
+#     # Definimos la expresión regular para buscar los componentes del identificador
+#     if "__" in column_name and contains_centroid:
+#         pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d*_?[a-zA-Z])"
+#         aux1 = 1
+#         aux2 = 1
+#     elif "__" in column_name and not contains_centroid:
+#         pattern = r"(\w+)__(\w+)_(\w+_\w+)"
+#         centroid = None
+#         aux1 = 1
+#         aux2 = 0
+#     elif not "__" in column_name and not contains_centroid:
+#         pattern = r"(\w+)_(\w+_\w+)"
+#         suffix = None
+#         aux1 = 0
+#         centroid = None
+#         aux2 = 0
+#     elif not "__" in column_name and not contains_centroid: #one_hot_categorical__case:concept:name_1_1
+#         pattern = r"([a-zA-Z_]+)__([a-zA-Z:+]+)_(\d+_\d+)"
+#         suffix = None
+#         aux1 = 0
+#         aux2 = 1
+#     elif "__" in column_name and contains_centroid: #status_categorical__rpa-us_282.6106567382812-167.1426658630371_1
+#         pattern = r"([a-zA-Z_]+)__([a-zA-Z-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)"
+#         suffix = None
+#         aux1 = 0
+#         aux2 = 1
+#     else:
+#         pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d*_?[a-zA-Z])"
+#         suffix = None
+#         aux1 = 0
+#         aux2 = 1
+
+#     # Buscamos las coincidences en el identificador utilizando la expresión regular
+#     coincidences = re.match(pattern, column_name)
+
+#     if coincidences:
+#         if aux1 == 1:
+#             suffix = coincidences.group(1)
+#         feature = coincidences.group(aux1+1)
+#         if aux2 == 1:
+#             centroid = [float(coincidences.group(aux1+2).split("-")[0]), float(coincidences.group(aux1+2).split("-")[1])]
+#         activity = coincidences.group(aux1+aux2+2)
+#     else:
+#         raise Exception(_("The identifier does not follow the pattern"))
+
+#     return suffix, feature, centroid, activity
+
+
+# def read_feature_column_name(column_name):
+#     contains_centroid = bool(re.search(r'\d+\.\d+-\d+\.\d+', column_name))
+
+#     if contains_centroid:
+#         pattern = r"([a-zA-Z_]+)__([a-zA-Z-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+#     else:
+#         #pattern = r"([a-zA-Z_]+)__([a-zA-Z_]+)_(\d+)"
+#         pattern = r"([a-zA-Z_]+)__([a-zA-Z0-9_]+)_(\d+)(_?[a-zA-Z]?)"
+
+#     # Intentamos encontrar coincidencias con el patrón definido
+#     coincidences = re.match(pattern, column_name)
+
+#     # Verificamos si hay coincidencias antes de intentar acceder a los grupos
+#     if not coincidences:
+#         raise Exception(f"The identifier '{column_name}' does not follow the pattern")
+
+#     suffix = coincidences.group(1)
+#     feature = coincidences.group(2)
+#     if contains_centroid:
+#         centroid = [float(coord) for coord in coincidences.group(3).split("-")]
+#         activity = coincidences.group(4)
+#     else:
+#         centroid = None
+#         activity = coincidences.group(3)
+
+#     return suffix, feature, centroid, activity
+#     # Si no coincide con ninguno de los patrones
+
 def read_feature_column_name(column_name):
+    # Patrón para los nombres de columna que contienen centroid
+    pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+    # Patrón para los nombres de columna que no contienen centroid
+    pattern_without_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_]+)_(\d+)(_?[a-zA-Z]?)"
+    # Patrón adicional para nombres de columna sin prefijo
+    pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
     
-    # Buscar el patrón en la cadena de texto
-    contains_centroid = bool(re.search(r'\d+\.\d+-\d+\.\d+', column_name))
-    
-    # Definimos la expresión regular para buscar los componentes del identificador
-    if "__" in column_name and contains_centroid:
-        pattern = r"(.*)__([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d*_?[a-zA-Z])"
-        aux1 = 1
-        aux2 = 1
-    elif "__" in column_name and not contains_centroid:
-        pattern = r"(\w+)__(\w+)_(\w+_\w+)"
-        centroid = None
-        aux1 = 1
-        aux2 = 0
-    elif not "__" in column_name and not contains_centroid:
-        pattern = r"(\w+)_(\w+_\w+)"
-        suffix = None
-        aux1 = 0
-        centroid = None
-        aux2 = 0
-    elif not "__" in column_name and not contains_centroid: #one_hot_categorical__case:concept:name_1_1
-        pattern = r"([a-zA-Z_]+)__([a-zA-Z:+]+)_(\d+_\d+)"
-        suffix = None
-        aux1 = 0
-        aux2 = 1
-    else:
-        pattern = r"([a-zA-Z]+_[a-zA-Z]+)_(\d+\.\d+-\d+\.\d+)_(\d*_?[a-zA-Z])"
-        suffix = None
-        aux1 = 0
-        aux2 = 1
-
-    # Buscamos las coincidences en el identificador utilizando la expresión regular
-    coincidences = re.match(pattern, column_name)
-
+    # Intentamos encontrar coincidencias con los patrones definidos
+    coincidences = re.match(pattern_with_centroid, column_name)
     if coincidences:
-        if aux1 == 1:
-            suffix = coincidences.group(1)
-        feature = coincidences.group(aux1+1)
-        if aux2 == 1:
-            centroid = [float(coincidences.group(aux1+2).split("-")[0]), float(coincidences.group(aux1+2).split("-")[1])]
-        activity = coincidences.group(aux1+aux2+2)
-    else:
-        raise Exception(_("The identifier does not follow the pattern"))
+        suffix = coincidences.group(1)
+        feature = coincidences.group(2)
+        centroid = [float(coord) for coord in coincidences.group(3).split("-")]
+        activity = coincidences.group(4)
+        if coincidences.group(5):  # Si hay un grupo 5 adicional (opcional)
+            activity += coincidences.group(5)
+        return suffix, feature, centroid, activity
 
-    return suffix, feature, centroid, activity
+    coincidences = re.match(pattern_without_centroid, column_name)
+    if coincidences:
+        suffix = coincidences.group(1)
+        feature = coincidences.group(2)
+        centroid = None
+        activity = coincidences.group(3)
+        if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
+            activity += coincidences.group(4)
+        return suffix, feature, centroid, activity
+    
+    coincidences = re.match(pattern_no_prefix, column_name)
+    if coincidences:
+        suffix = None
+        feature = coincidences.group(1)
+        centroid = [float(coord) for coord in coincidences.group(2).split("-")]
+        activity = coincidences.group(3)
+        if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
+            activity += coincidences.group(4)
+        return suffix, feature, centroid, activity
+    
+    # Si no coincide con ninguno de los patrones
+    raise Exception(f"The identifier '{column_name}' does not follow the pattern")
+
   
 def find_path_in_decision_tree(tree, feature_values, target_class, centroid_threshold=250):
     def dt_condition_checker(parent, node_index, features_in_tree):

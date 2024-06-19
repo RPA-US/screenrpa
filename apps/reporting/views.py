@@ -19,6 +19,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
 from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn.tree import export_graphviz
 
@@ -88,6 +89,9 @@ def get_som_json_from_acts(screenshot_filename, scenario_results_path, special_c
     return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
 
 
+
+
+
 def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
     """
     Recovers a component from the pd log based on the id of the component.
@@ -104,22 +108,42 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_r
     returns:
         @uicompo: the component
     """
+    def truncate_to_two_decimals(value):
+        return np.floor(value * 100) / 100.0
     #pasa de tupla a lista
-    ui_compo_centroid = [float(coord) for coord in ui_compo_centroid]
+    ui_compo_centroid = [truncate_to_two_decimals(float(coord)) for coord in ui_compo_centroid]
     som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
     #print(som_json)
     # Filtrar la lista y encontrar el mínimo
     uicompo_json=None
     for compo in som_json['compos']:
         # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
-        compo_centroid_int = [int(coord) for coord in compo['centroid']]
-        ui_compo_centroid_int = [int(coord) for coord in ui_compo_centroid]
+        compo_centroid_int = [truncate_to_two_decimals(float(coord)) for coord in compo['centroid']]
+        ui_compo_centroid_int = [coord for coord in ui_compo_centroid]
         if compo_centroid_int == ui_compo_centroid_int:
             uicompo_json = compo
             break
             
 
     return uicompo_json
+
+def pre_pd_activities(decision_point, df_pd_log,colnames):
+    grouped = df_pd_log.groupby(colnames['Variant'])
+    # Iterate through each group
+    result = []
+    for variant, group in grouped:
+        # Sort by Timestamp
+        sorted_group = group.sort_values(by=colnames['Timestamp'])
+        # Iterate through activities in the sorted group
+        for activity in sorted_group[colnames['Activity']]:
+            
+            if activity not in result:
+                result.append(activity)
+            if str(activity) == decision_point:
+                break
+            # Stop when encountering the specific activity
+            
+    return result
 
 
 
@@ -858,7 +882,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         return res
 ##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
 ##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'numeric__Coor_Y_2']], 3: [['numeric__Coor_Y_3 > 491.51', 'numeric__Coor_Y_3']]}}
-    def get_branch_condition2(decision_point, branch_number, end_activities):
+    def get_branch_condition2(decision_point, branch_number, pre_pd_activities):
         branches = decision_point.get('branches', [])
         rules = decision_point.get('rules', {})
         
@@ -871,35 +895,38 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                     result_dict = {}
                     for rule in res:
                         condition_dict = {}
-                        # Dividir la regla por '&' y luego por los operadores de comparación
                         parts = rule.split('&')
                         for part in parts:
                             elements = re.split(r'<=|>=|<|>|==|!=', part)
                             variable = elements[0].strip()
                             condition = part.strip()
                             
-                            # Verificar si el final de la variable está en la lista de actividades finales
-                            for act in end_activities:
-                                if variable.endswith(f'_{act}'):
-                                    # Separar variable por '-'
+                            # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
+                            matched = False
+                            for act in pre_pd_activities:
+                                pattern = re.compile(f"_{act}(?:_.*)?$")
+                                if pattern.search(variable):
+                                    matched = True
                                     variable_parts = variable.split('-')
                                     
-                                    # Verificar si la parte numérica contiene un guion
                                     if len(variable_parts) > 1:
                                         last_part = variable_parts[-1]
                                         
-                                        # Separar partes por '_'
                                         first_part_split = variable_parts[0].split('_')
                                         last_part_split = last_part.split('_')
                                         
-                                        first_element = int(first_part_split[-1])
-                                        second_element = int(last_part_split[0])
+                                        first_element = float(first_part_split[-1])
+                                        second_element = float(last_part_split[0])
                                         
                                         if act not in condition_dict:
                                             condition_dict[act] = []
                                         condition_dict[act].append([condition, (first_element, second_element)])
+                            #el caso por ejemplo en el que una regla sea de una actividad previa al punto de decision pero que no sea de esa variante (que sea ausencia de icono)
+                            if not matched:
+                                pass
                         result_dict[rule.strip()] = condition_dict
                     return result_dict
+            
 #############################################################
     
     def draw_polygons_on_image(json_data, image_path, doc_decision_tree):
@@ -1089,10 +1116,13 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
                 
             ############################################
+
+    
           
 ############################################################3
     
-    def process_variant_group(group, traceability, path_to_dot_file, colnames):
+    def process_variant_group(group, traceability, path_to_dot_file, colnames,df_pd_log):
+    
         #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
         
@@ -1134,7 +1164,11 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 num_ramas = len(decision_point['branches'])
                 next_activity = activities[i+1] if i+1 < len(activities) else None
                 #{'numeric__Coor_Y_2 <= 382.39': {2: [['numeric__Coor_Y_2 <= 382.39', 'numeric__Coor_Y_2']]}}
-                result_dict = get_branch_condition2(decision_point, next_activity, activities)
+                #actividades previas al pd, independientemente de la variante
+
+                pre_activities = pre_pd_activities(decision_point['prevAct'], df_pd_log,colnames)
+
+                result_dict = get_branch_condition2(decision_point, next_activity, pre_activities)
                 # Concatenar todas las claves con " OR "
                 condition = " OR ".join(f"({key})" for key in result_dict.keys()) if result_dict else "N/A"
 
@@ -1148,14 +1182,29 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 colors = [RGBColor(255, 0, 0), RGBColor(0, 255, 0), RGBColor(0, 0, 255), RGBColor(255, 165, 0)]
                 
                 if result_dict and all(isinstance(value, dict) for value in result_dict.values()): #se ejecuta solo si tiene reglas asociadas
+                    print(result_dict)
                     for rule, conditions in result_dict.items():
                         decision_tree.add_run(f'{rule}\n').bold = True
-                        for act, condition_list in conditions.items():
+                        #compo_ui_json=[]
+                        #color_index = 0
+                        for act, condition_list in conditions.items(): 
                             color_index = 0
-                            #obtenemos la screenshot correspondiente
-                            screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                            path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
                             compo_ui_json=[]
+                            
+                            #obtenemos la screenshot correspondiente
+                            ######################################3
+                            try:
+                                screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                            except IndexError:
+                                screenshot_filename = None
+                            if not screenshot_filename:
+                                # me voy al log y busco la screenshot de la primera fila que tenga esa actividad act
+                                try:
+                                    screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                                except:
+                                    print(f"No se encontró ninguna screenshot para la actividad '{act}'.")
+                                ##################3
+                            path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
                             for condition, variable in condition_list:
                                 #decision_tree.add_run(f'Activity {act}: {condition}\n')
                                 color = colors[color_index % len(colors)]
@@ -1164,12 +1213,14 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                 color_index += 1
                                 # Insertar la imagen en el documento
                                 ui_compo_centroid=variable
+                                
                                 compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
                                 if compo_ui:
                                     compo_ui["color"] = color  # Asignar color al polígono
                                     compo_ui_json.append(compo_ui)
                             if compo_ui_json:
                                 draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
+                                decision_tree.add_run().add_break()
                             ##################33
                         
                         decision_tree.add_run().add_break()
@@ -1178,14 +1229,14 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     
     decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
     decision_tree.text = ''
-    df = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', PROCESS_DISCOVERY_LOG_FILENAME))
+    df_pd_log = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', PROCESS_DISCOVERY_LOG_FILENAME))
     #se quita porque la columna se aplica ya cuando se crea el csv y se llama auto_variant
     #df2= variant_column(df)
     traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
     #df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
     #colnames['Variant'] es auto_variant
-    df.groupby(colnames['Variant']).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
+    df_pd_log.groupby(colnames['Variant']).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log))
 
 
 ###################################################################
