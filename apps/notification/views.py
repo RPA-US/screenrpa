@@ -1,28 +1,21 @@
 import json
 from django.shortcuts import get_object_or_404, render
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from models import Notification
+from .models import Notification
 
 # Create your views here.
 
-class NotificationList(LoginRequiredMixin):
-    model = Notification
-    template_name = 'notification/notification_list.html'
-    context_object_name = 'notifications'
-    login_url = '/login/'
-    paginate_by = 10
-
-    def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
-    
-    def get(self):
-        res = {
-            'unread': Notification.objects.filter(user=self.request.user, read=False).count(),
-            'notifications': self.get_queryset()
-        }
-        return HttpResponse(json.dumps(res), content_type='application/json')
+@login_required(login_url='/login/')
+def get_notifications(request):
+    queryset = Notification.objects.filter(user=request.user).order_by('-created_at')
+    res = {
+        'unread': Notification.objects.filter(user=request.user, read=False).count(),
+        'notifications': queryset.get() if queryset.exists() else []
+    }
+    return HttpResponse(json.dumps(res), content_type='application/json')
 
 @login_required(login_url='/login/')
 def mark_as_read(request):
