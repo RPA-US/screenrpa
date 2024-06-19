@@ -562,7 +562,9 @@ def set_as_ui_elements_detection_inactive(request):
         return HttpResponse(status=403, content="UI Element Detection doesn't belong to the Case Study.")
     ui_elements_detection = UIElementsDetection.objects.get(id=ui_elements_detection_id)
     ui_elements_detection.active = False
+    ui_elements_detection.ui_elements_classification.active = False
     ui_elements_detection.save()
+    ui_elements_detection.ui_elements_classification.save()
     return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
     
 @login_required(login_url="/login/")
@@ -709,6 +711,8 @@ def set_as_prefilters_active(request):
     prefilter = Prefilters.objects.get(id=prefilter_id)
     prefilter.active = True
     prefilter.save()
+    
+    Postfilters.objects.filter(case_study_id=case_study_id, active=True).update(active=False)
     return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
 
 @login_required(login_url="/login/")   
@@ -869,6 +873,8 @@ def set_as_postfilters_active(request):
     postfilter = Postfilters.objects.get(id=postfilter_id)
     postfilter.active = True
     postfilter.save()
+    
+    Prefilters.objects.filter(case_study_id=case_study_id, active=True).update(active=False)
     return HttpResponseRedirect(reverse("featureextraction:postfilters_list", args=[case_study_id]))
 
 @login_required(login_url="/login/")
