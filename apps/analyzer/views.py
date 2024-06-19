@@ -47,6 +47,7 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+from apps.notification.views import create_notification
 # Result Treeimport json
 import matplotlib.pyplot as plt
 from sklearn import tree
@@ -122,7 +123,8 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         user_id (int): The user id of the user that is executing the case study
         case_study_id (int): The case study id of the case study to be executed
     """
-    with transaction.atomic():
+    create_notification(User.objects.get(id=user_id), _("Case Study Execution Started"), _("Case study execution has started"), reverse("analyzer:execution_list"))
+    try:
         execution = Execution(user=User.objects.get(id=user_id), case_study=CaseStudy.objects.get(id=case_study_id))
         execution.save()
         execution.check_preloaded_file()
@@ -170,6 +172,10 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             outfile.write(json_object)
             
         print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
+        create_notification(User.objects.get(id=user_id), _("Case Study Execution Completed"), _("Case study executed successfully"), reverse("analyzer:casestudy_list"))
+    except Exception as e:
+        # TODO: View the error trace in the frontend or link to gtihub issues with description filled
+        create_notification(User.objects.get(id=user_id), _("Case Study Execution Error"), str(e), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}))
 
 #============================================================================================================================
 #============================================================================================================================
