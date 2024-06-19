@@ -172,10 +172,10 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             outfile.write(json_object)
             
         print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
-        create_notification(User.objects.get(id=user_id), _("Case Study Execution Completed"), _("Case study executed successfully"), reverse("analyzer:casestudy_list"))
+        create_notification(User.objects.get(id=user_id), _("Case Study Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}))
     except Exception as e:
         # TODO: View the error trace in the frontend or link to gtihub issues with description filled
-        create_notification(User.objects.get(id=user_id), _("Case Study Execution Error"), str(e), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}))
+        create_notification(User.objects.get(id=user_id), _("Case Study Execution Error"), str(e), reverse("analyzer:casestudy_list"))
 
 #============================================================================================================================
 #============================================================================================================================
