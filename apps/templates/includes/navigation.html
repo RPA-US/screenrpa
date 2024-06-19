@@ -55,105 +55,10 @@
           <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
             <!-- Dropdown header -->
             <div class="px-3 py-3">
-              <h6 class="text-sm text-muted m-0">{% blocktranslate %}You have {% endblocktranslate %}<strong class="text-primary">13</strong>{% blocktranslate %} notifications.{% endblocktranslate %}</h6>
+              <h6 class="text-sm text-muted m-0">{% blocktranslate %}You have {% endblocktranslate %}<strong id="unread" class="text-primary"></strong>{% blocktranslate %} unread notifications.{% endblocktranslate %}</h6>
             </div>
             <!-- List group -->
-            <div class="list-group list-group-flush">
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-1.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>2 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">Let's meet at Starbucks at 11:30. Wdyt?</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-2.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>3 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">A new issue has been reported for Argon.</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-3.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>5 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">Your posts have been liked a lot.</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/user-bg.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>2 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">Let's meet at Starbucks at 11:30. Wdyt?</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-5.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>3 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">A new issue has been reported for Argon.</p>
-                  </div>
-                </div>
-              </a>
+            <div id="notification-list" class="list-group list-group-flush">
             </div>
             <!-- View all -->
             <a href="#!" class="dropdown-item text-center text-primary font-weight-bold py-3">{% blocktranslate %}Close{% endblocktranslate %}</a>
@@ -247,8 +152,29 @@
 {% block javascripts %}
  <script src="/static/assets/vendor/jquery/dist/jquery.min.js"></script>
  <script>
-  // navbar-search functionality
+  //Notifications template
+    // <a href="#!" class="list-group-item list-group-item-action">
+    //   <div class="row align-items-center">
+    //     <div class="col-auto">
+    //       <!-- Avatar -->
+    //       <img alt="Image placeholder" src="/static/assets/img/theme/team-1.jpg" class="avatar rounded-circle">
+    //     </div>
+    //     <div class="col ml--2">
+    //       <div class="d-flex justify-content-between align-items-center">
+    //         <div>
+    //           <h4 class="mb-0 text-sm">Short</h4>
+    //         </div>
+    //         <div class="text-right text-muted">
+    //           <small>time</small>
+    //         </div>
+    //       </div>
+    //       <p class="text-sm mb-0">message</p>
+    //     </div>
+    //   </div>
+    // </a>
+
   $(document).ready(function() {
+    // navbar-search functionality
     // Disable if no element with id list
     if ($('.list').length == 0) {
       // replace nabvar-search-light class with navbar-search-dark
@@ -265,5 +191,41 @@
       window.location.href = url + '?s=' + query;
     });
   });
+
+  async function getNotifications() {
+    const res = await fetch('/notification');
+    const data = await res.json();
+    console.log(data);
+
+    // Update unread notifications
+    $('#unread').text(data.unread);
+
+    const notificationList = $('#notification-list');
+    for (i in data.notifications) {
+      const notification = data.notifications[i];
+      const timeDiff = Math.floor((new Date() - new Date(notification.created_at)) / 1000 / 60);
+      const notificationItem = $(`
+        <a href="${notification.href}"" class="list-group>
+          <div class="row align-items-center">
+            <div class="col-auto">
+              <img alt="Image placeholder" src="/static/assets/img/theme/team-1.jpg" class="avatar rounded-circle">
+            </div>
+            <div class="col ml--2">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h4 class="mb-0 text-sm">${notification.short}</h4>
+                </div>
+                <div class="text-right text-muted">
+                  <small>${timeDiff}</small>
+                </div>
+              </div>
+              <p class="text-sm mb-0">${notification.message}</p>
+            </div>
+          </div>
+        </a>
+        `)
+    }
+  }
+  getNotifications();
 </script>
 {% endblock javascripts %}
