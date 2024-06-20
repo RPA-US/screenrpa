@@ -1,13 +1,17 @@
 import os
 import json
+import pickle
 import numpy as np
 import pandas as pd
 import time
 from collections import Counter
+import scipy
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from .utils import def_preprocessor, best_model_grid_search, cross_validation
+
+#from apps.decisiondiscovery.decision_trees import update_json_with_rules
+from .utils import def_preprocessor, best_model_grid_search, cross_validation, extract_tree_rules, prev_preprocessor
 
 # Buscar en el paths_dict aquellas reglas que se repiten en distintas claves, y devolver una lista con estas claves
 def find_overlapping_rules(paths_dict):
@@ -49,7 +53,7 @@ def extract_paths(tree, feature_names):
         else:
             # Es una hoja, determina la clase y guarda el camino
             class_index = np.argmax(value[node])
-            class_label = int(tree.classes_[class_index])
+            class_label = tree.classes_[class_index]
             if class_label not in paths['paths']:
                 paths['paths'][class_label] = {'rules': [], 'overlapped_rules': []}
             paths['paths'][class_label]['rules'].append(" and ".join(path))
@@ -92,38 +96,85 @@ def get_decision_path(tree, X_sample):
         paths.append(" and ".join(path))
     return paths
 
-def overlapping_rules(df, param_path, configuration, one_hot_columns, k_fold_cross_validation):
+# Función para actualizar traceability.json con las reglas de paths_dict
+
+def update_json_with_rules(traceability_json, path_dict):
+    for decision_point in traceability_json["decision_points"]:
+        for branch in decision_point["branches"]:
+            label = branch["label"]
+            if label + ".0" in path_dict["paths"]:
+                decision_point["rules"][label] = path_dict["paths"][label + ".0"]["rules"]
+                if "overlapped_rules" not in decision_point:
+                    decision_point["overlapped_rules"] = {}
+                decision_point["overlapped_rules"][label] = path_dict["paths"][label + ".0"]["overlapped_rules"]
+    return traceability_json   
+
+#df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation
+def overlapping_rules(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
     times = {}
     accuracies = {}
     
-    columna_objetivo = 'variant'
+    #columna_objetivo = 'variant'
     min_samples_split = 1
     merge_ratio_e = 0.5
     
-    # Split data into training and testing sets
+    # # Split data into training and testing sets
     
-    X = df.drop(columna_objetivo, axis=1)
-    y = df[columna_objetivo]
+    # X = df.drop(columna_objetivo, axis=1)
+    # y = df[columna_objetivo]
     
-    # Preprocess data
+    # # Preprocess data
+    # preprocessor = def_preprocessor(X)
+    # X = preprocessor.fit_transform(X)
+    
+    # # Save preprocessed data
+    # X_df = pd.DataFrame(X)
+    # feature_names = list(preprocessor.get_feature_names_out())
+    # X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
+
+    if "e50_" in param_path:
+        k_fold_cross_validation = 2
+    ###########################################################################
+    # Extract features and target variable
+    X = df.drop(columns=[special_colnames["Variant"]]).drop(columns=["dp_branch"])
+    #X = X.astype(str)
+    y = df["dp_branch"]
+
+    y = y.astype(str)
+
+    X = prev_preprocessor(X)
+    if isinstance(X, str):
+        raise Exception(X)
+        return
     preprocessor = def_preprocessor(X)
-    X = preprocessor.fit_transform(X)
+    #df.head()
+    try:
+        X = preprocessor.fit_transform(X)
+    except Exception as e:
+        raise Exception(e)
+        return
+    # X es una sparse_matrix
+    # if a dataframe has a high number of columns, may be it has to be treated as a sparse matrix
+    if isinstance(X, scipy.sparse.spmatrix):
+        X = X.toarray()
+    X_df = pd.DataFrame(X, columns=preprocessor.get_feature_names_out())
+    postprocessor= X_df.columns[X_df.nunique() == 1].tolist()
+    if len(postprocessor) != 0:
+        X_df= X_df.drop(columns=postprocessor)
+    else:
+        Exception("No features left after preprocessing.")
     
-    # Save preprocessed data
-    X_df = pd.DataFrame(X)
-    feature_names = list(preprocessor.get_feature_names_out())
+    feature_names = X_df.columns.tolist()
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
-    
-    
-    # Define the tree decision tree model
-    tree_classifier, accuracy, paths_dict = overlapping_rules_from_tree(df, param_path, X, y, min_samples_split, merge_ratio_e)    
-    
+    ###############################################3
+     
+    tree_classifier, accuracy, paths_dict = overlapping_rules_from_tree(param_path, X_df, y, min_samples_split, merge_ratio_e)   
     
     start_t = time.time()
     # Find the best model using grid search
-    tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, k_fold_cross_validation)
-    # Get the accuracy of the model using cross validation
-    accuracies = cross_validation(X_df,pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,k_fold_cross_validation)
+    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
+    
+    accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames['Variant'],"sklearn",tree_classifier,k_fold_cross_validation)
     
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # Retrieve the decision tree rules
@@ -131,9 +182,27 @@ def overlapping_rules(df, param_path, configuration, one_hot_columns, k_fold_cro
     print("Decision Tree Rules:\n", text_representation)
     
     
-    with open(os.path.join(param_path, "decision_tree.log"), "w") as fout:
+    with open(os.path.join(param_path, "decision_tree_"+prevact+".log"), "w") as fout:
         fout.write(text_representation)
+
+    saved_data = {
+        'classifier': tree_classifier,
+        'feature_names': feature_names,
+        'class_names': np.unique(y),
+    }
+    with open(os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'), 'wb') as fid:
+        pickle.dump(saved_data, fid)
+
+    traceability_path= (os.path.join(param_path, 'traceability.json'))
+
+    if paths_dict is not None:
+        with open(traceability_path, 'r') as f:
+            json_data = json.load(f)
         
+        updated_json = update_json_with_rules(json_data, paths_dict)
+        
+        with open(traceability_path, 'w') as f:
+            json.dump(updated_json, f, indent=2)
     # Grid Search
     accuracies["selected_params"] = best_params
 
@@ -141,7 +210,6 @@ def overlapping_rules(df, param_path, configuration, one_hot_columns, k_fold_cro
 
 
 def overlapping_rules_from_tree(
-        df,
         param_path,
         X,
         y,
@@ -210,10 +278,11 @@ def overlapping_rules_from_tree(
                 paths_dict['paths'][first_occurence['ground_truth']]['overlapped_rules'].append(first_occurence['decision_path'])
                 
                 paths_dict = check_dict_structure(paths_dict, first_occurence['prediction'])
-                paths_dict['paths'][first_occurence['prediction']]['rules'].remove(first_occurence['decision_path'])
-                paths_dict['paths'][first_occurence['prediction']]['overlapped_rules'].append(first_occurence['decision_path'])
-
-                
+                                # Verifica si la regla existe antes de intentar eliminarla
+                if first_occurence['decision_path'] in paths_dict['paths'][first_occurence['prediction']]['rules']:
+                    paths_dict['paths'][first_occurence['prediction']]['rules'].remove(first_occurence['decision_path'])
+                    paths_dict['paths'][first_occurence['prediction']]['overlapped_rules'].append(first_occurence['decision_path'])
+               
                 # obtener como una lista de tuplas, los pares distintos de valores que existen entre la columna ground_truth y prediction
                 x_missclassified_as_y = subset[['ground_truth', 'prediction']].drop_duplicates().values.tolist()
                 

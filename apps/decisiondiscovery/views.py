@@ -175,7 +175,7 @@ def decision_tree_training(log_path, scenario_path, execution):
                 # rules_info_json = json.load(rules_info)
                 # tree_levels[alg] = len(rules_info_json.keys())
         elif implementation == 'overlapping':
-            res, times = overlapping_rules(flattened_dataset, scenario_path+"_results", configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+            res, times = overlapping_rules(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
             
         else:
             raise Exception(_("Decision model chosen is not an option"))
