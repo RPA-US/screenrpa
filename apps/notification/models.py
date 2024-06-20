@@ -29,6 +29,9 @@ class Status(Enum):
         'icon': 'fas fa-cogs'
     }
 
+def get_default_status():
+    return Status.INFO.value
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     short = models.CharField(max_length=100)
@@ -36,5 +39,5 @@ class Notification(models.Model):
     read = models.BooleanField(default=False)
     href = models.CharField(max_length=100)
     created_at = models.DateTimeField(default=timezone.now)
+    status = models.JSONField(default=get_default_status)
 
-    status = models.JSONField(default=Status.INFO.value)

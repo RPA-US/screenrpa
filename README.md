@@ -47,7 +47,7 @@ $ pip3 install -r requirements.txt
 $
 $ # Create tables
 $ python manage.py makemigrations
-$ python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting
+$ python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting apps_notification
 $ python manage.py migrate
 $
 $ # Populate UI detection models
