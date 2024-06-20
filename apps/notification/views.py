@@ -1,8 +1,9 @@
 import json
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Notification
+from .models import Notification, Status
 
 # Create your views here.
 
@@ -11,13 +12,15 @@ def get_notifications(request):
     queryset = Notification.objects.filter(user=request.user).order_by('-created_at')
     data = []
     if queryset.exists():
+        time_diff = timezone.now() - queryset[0].created_at
         data = list(map(lambda x: {
             'id': x.id,
             'short': x.short,
             'message': x.message,
             'read': x.read,
             'href': x.href,
-            'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            'timeDiff': time_diff.total_seconds(),
+            'status': x.status
         }, queryset))
     res = {
         'unread': Notification.objects.filter(user=request.user, read=False).count(),
@@ -51,5 +54,5 @@ def delete_notification(request):
 
 ## Utils for other modules
 
-def create_notification(user, short, message, href):
-    Notification.objects.create(user=user, short=short, message=message, href=href).save()
+def create_notification(user, short, message, href, status=Status.INFO.value):
+    Notification.objects.create(user=user, short=short, message=message, href=href, status=status).save()

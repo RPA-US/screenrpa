@@ -47,6 +47,7 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+from apps.notification.models import Status as NotifStatus
 from apps.notification.views import create_notification
 # Result Treeimport json
 import matplotlib.pyplot as plt
@@ -124,7 +125,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         case_study_id (int): The case study id of the case study to be executed
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
-    create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Started"), _("Case study execution has started"), reverse("analyzer:execution_list"))
+    create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Started"), _("Case study execution has started"), reverse("analyzer:execution_list"), status=NotifStatus.PROCESSING.value)
     try:
         execution = Execution(user=User.objects.get(id=user_id), case_study=case_study)
         execution.save()
@@ -173,11 +174,11 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             outfile.write(json_object)
             
         print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
-        create_notification(User.objects.get(id=user_id), _(f"{execution.case_study.title} Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}))
+        create_notification(User.objects.get(id=user_id), _(f"{execution.case_study.title} Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}), status=NotifStatus.SUCCESS.value)
     except Exception as e:
         # TODO: View the error trace in the frontend or link to gtihub issues with description filled
         case_study=CaseStudy.objects.get(id=case_study_id)
-        create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"))
+        create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"), status=NotifStatus.ERROR.value)
 
 #============================================================================================================================
 #============================================================================================================================
