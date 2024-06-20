@@ -99,7 +99,6 @@
 
 {% block javascripts %}
 <script>
-if (!document.getElementById('form').readOnly) {
     document.addEventListener('DOMContentLoaded', () => {
       const title = document.getElementById('id_title');
       const type = document.getElementById('id_type');
@@ -134,11 +133,10 @@ if (!document.getElementById('form').readOnly) {
         observer_camera_distance.readOnly = isPreloadedChecked
         screen_width.readOnly = isPreloadedChecked
         screen_height.readOnly = isPreloadedChecked
-
         preloaded_file.disabled = !isPreloadedChecked;
       }
 
-      type.addEventListener('change', () => {
+      function toggleTypeFields() {
         if (type.value == 'webgazer') {
           screen_inches_id_div.style.display = 'block';
           observer_camera_distance_id_div.style.display = 'block';
@@ -148,7 +146,7 @@ if (!document.getElementById('form').readOnly) {
           native_slide_events.value = 'webgazer_properties.json'
           gaze_log_filename.value = 'webgazer_gazeData.csv'
         } else {
-          screen_inches.style.display = 'none';
+          screen_inches_id_div.style.display = 'none';
           observer_camera_distance_id_div.style.display = 'none';
           webgazerOptions.style.display = 'none';
           screen_width_id_div.style.display = 'none';
@@ -156,7 +154,12 @@ if (!document.getElementById('form').readOnly) {
           native_slide_events.value = 'Native_SlideEvents.csv'
           gaze_log_filename.value = 'ET_RExtAPI-GazeAnalysis.csv'
         }
-      });
+      }
+
+      type.addEventListener('change', toggleTypeFields);  // Agregar controlador de eventos a 'type'
+
+      // Mostrar/ocultar campos cuando se carga la página
+      toggleTypeFields();
   
       // Controlador de eventos para el checkbox 'preloaded'
       preloaded.addEventListener('change', () => {
@@ -173,7 +176,7 @@ if (!document.getElementById('form').readOnly) {
         document.getElementById('id_preloaded').readOnly = false;
       }
     })  
-  }
+  
   </script>
 
   {% endblock javascripts %}

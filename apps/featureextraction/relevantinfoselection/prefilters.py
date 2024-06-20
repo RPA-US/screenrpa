@@ -40,7 +40,8 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
     # Apply the attention mask to the original image
     attention_map = Image.composite(image, Image.new('RGB', image.size, (0, 0, 0)), attention_mask)
 
-    attention_path = os.path.join(scenario_results ,'prefilter_attention_maps')
+    # attention_path = os.path.join(scenario_results ,'prefilter_attention_maps')
+    attention_path = os.path.join(scenario_results ,'prefiltered_img')
     print("atenttion_path: "+ str(attention_path))
     # attention_path = root_path + 'prefilter_attention_maps'
     

@@ -111,11 +111,13 @@ class CaseStudy(models.Model):
         # If there exists a log.csv in the unzipped folder or there exists a monitoring configutation, phases can be configured
         exists_log_csvs_paths = [os.path.exists(os.path.join(self.exp_folder_complete_path, scenario, 'log.csv')) for scenario in self.scenarios_to_study]
         if all(exists_log_csvs_paths) or Monitoring.objects.filter(case_study=self, active=True).exists():
-            available_phases.append('Prefilters')
+            if not Postfilters.objects.filter(case_study=self, active=True).exists():
+                available_phases.append('Prefilters')
             available_phases.append('UIElementsDetection')
             if UIElementsDetection.objects.filter(case_study=self, active=True).exists():
                 available_phases.append("FeatureExtractionTechnique")
-                available_phases.append('Postfilters')
+                if not Prefilters.objects.filter(case_study=self, active=True).exists():
+                    available_phases.append('Postfilters')
             available_phases.append("ProcessDiscovery")
             available_phases.append('ExtractTrainingDataset')
             if ExtractTrainingDataset.objects.filter(case_study=self, active=True).exists():
@@ -269,7 +271,7 @@ class Execution(models.Model):
 
     def check_preloaded_file(self):            
         for ph in DEFAULT_PHASES:
-            if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded:
+            if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded and hasattr(getattr(self,ph),"active") and getattr(self,ph).active == True:
                 preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, getattr(self, ph).preloaded_file.name)
                 unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
                 print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")

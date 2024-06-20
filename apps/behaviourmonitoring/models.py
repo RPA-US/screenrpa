@@ -31,7 +31,7 @@ class Monitoring(models.Model):
     ub_log_path = models.CharField(max_length=250, blank=True, null=True, default=None)
     # TODO: What do we do with format
     format = models.CharField(max_length=25, default='mht_csv')
-    ui_log_filename = models.CharField(max_length=100, default='Recording_20230424_1222.mht')
+    ui_log_filename = models.CharField(max_length=100, default='Recording_20240617_1711.mht')
     ui_log_separator = models.CharField(max_length=1, default=',')
     gaze_log_filename = models.CharField(max_length=100, default='ET_RExtAPI-GazeAnalysis.csv')
     gaze_log_adjustment = models.FloatField(default=0)
