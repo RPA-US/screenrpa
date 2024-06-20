@@ -27,5 +27,6 @@ urlpatterns += _(
     path('pd/', include("apps.processdiscovery.urls")),
     path('dd/', include("apps.decisiondiscovery.urls")),
     path('reporting/', include("apps.reporting.urls")),
+    path('notification/', include("apps.notification.urls")),
 )
     
