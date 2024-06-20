@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"POT-Creation-Date: 2024-06-20 09:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/behaviourmonitoring/forms.py:33
 msgid "Type"
 msgstr ""
@@ -61,22 +62,22 @@ msgstr ""
 msgid "There is already an active monitoring for this case study."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:70 apps/behaviourmonitoring/views.py:92
+#: apps/behaviourmonitoring/views.py:110 apps/behaviourmonitoring/views.py:133
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:72 apps/behaviourmonitoring/views.py:94
+#: apps/behaviourmonitoring/views.py:112 apps/behaviourmonitoring/views.py:135
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:74 apps/behaviourmonitoring/views.py:96
+#: apps/behaviourmonitoring/views.py:114 apps/behaviourmonitoring/views.py:137
 msgid "Monitoring doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:76 apps/behaviourmonitoring/views.py:98
+#: apps/behaviourmonitoring/views.py:116 apps/behaviourmonitoring/views.py:139
 msgid "Monitoring doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:109
+#: apps/behaviourmonitoring/views.py:155
 msgid "This object doesn't belong to the authenticated user"
 msgstr ""

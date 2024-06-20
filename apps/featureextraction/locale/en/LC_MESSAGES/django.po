@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-07 10:01+0000\n"
+"POT-Creation-Date: 2024-06-20 09:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,52 +22,52 @@ msgstr ""
 msgid "*** No model loaded ***"
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:583
+#: apps/featureextraction/SOM/detection.py:589
 msgid ""
 "apps/featureextraction/SOM/detection.py Log already exists, it's not needed "
 "to execute format conversor"
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:584
+#: apps/featureextraction/SOM/detection.py:590
 msgid "Log already exists, it's not needed to execute format conversor"
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:586
+#: apps/featureextraction/SOM/detection.py:592
 msgid ""
 "apps/featureextraction/SOM/detection.py Format conversor executed! Type: "
 "%(format), Filename: %(filename)"
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:603
+#: apps/featureextraction/SOM/detection.py:609
 msgid ""
 "\n"
 "\n"
 "Reading images OCR info from file..."
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:640
+#: apps/featureextraction/SOM/detection.py:646
 msgid "Enter path to images numpy arrays location: "
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:641
+#: apps/featureextraction/SOM/detection.py:647
 msgid "Enter numpy array file name: "
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:644
+#: apps/featureextraction/SOM/detection.py:650
 msgid "Length: "
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:646
+#: apps/featureextraction/SOM/detection.py:652
 msgid ""
 "\n"
 "Component: "
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:650
+#: apps/featureextraction/SOM/detection.py:656
 msgid "Empty component"
 msgstr ""
 
-#: apps/featureextraction/SOM/detection.py:653
+#: apps/featureextraction/SOM/detection.py:659
 msgid ""
 "Do you want to check another image components? Indicate another npy file "
 "name: "
@@ -78,40 +78,40 @@ msgid "You selected a type of sam's checkpoint that does not exists"
 msgstr ""
 
 #: apps/featureextraction/forms.py:26 apps/featureextraction/forms.py:101
-#: apps/featureextraction/forms.py:151 apps/featureextraction/forms.py:210
+#: apps/featureextraction/forms.py:155 apps/featureextraction/forms.py:219
 msgid "Type"
 msgstr ""
 
 #: apps/featureextraction/forms.py:27 apps/featureextraction/forms.py:102
-#: apps/featureextraction/forms.py:152 apps/featureextraction/forms.py:211
+#: apps/featureextraction/forms.py:156 apps/featureextraction/forms.py:220
 msgid "Skip"
 msgstr ""
 
-#: apps/featureextraction/forms.py:103 apps/featureextraction/forms.py:153
+#: apps/featureextraction/forms.py:103 apps/featureextraction/forms.py:157
 msgid "Configurations"
 msgstr ""
 
-#: apps/featureextraction/forms.py:248
+#: apps/featureextraction/forms.py:257
 msgid "Identifier"
 msgstr ""
 
-#: apps/featureextraction/forms.py:249
+#: apps/featureextraction/forms.py:258
 msgid "Feature extraction type"
 msgstr ""
 
-#: apps/featureextraction/forms.py:250
+#: apps/featureextraction/forms.py:259
 msgid "Technique"
 msgstr ""
 
-#: apps/featureextraction/forms.py:251
+#: apps/featureextraction/forms.py:260
 msgid "Decision Point Activity"
 msgstr ""
 
-#: apps/featureextraction/forms.py:252
+#: apps/featureextraction/forms.py:261
 msgid "Apply Filtering (Relevant Component Selection)"
 msgstr ""
 
-#: apps/featureextraction/forms.py:253
+#: apps/featureextraction/forms.py:262
 msgid "Condition for a UI Component to be relevant"
 msgstr ""
 
@@ -119,49 +119,38 @@ msgstr ""
 msgid "exp_folder_complete_path separators not coherent"
 msgstr ""
 
-#: apps/featureextraction/models.py:219
-msgid "Only lowercase and uppercase letters"
+#: apps/featureextraction/models.py:220
+msgid "Only lowercase, uppercase letters, and hyphen are allowed"
 msgstr ""
 
-#: apps/featureextraction/views.py:155 apps/featureextraction/views.py:387
-#: apps/featureextraction/views.py:504 apps/featureextraction/views.py:620
+#: apps/featureextraction/views.py:76 apps/featureextraction/views.py:85
+#: apps/featureextraction/views.py:204 apps/featureextraction/views.py:886
+#: apps/featureextraction/views.py:903
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/featureextraction/views.py:157 apps/featureextraction/views.py:389
-#: apps/featureextraction/views.py:506 apps/featureextraction/views.py:622
+#: apps/featureextraction/views.py:206 apps/featureextraction/views.py:888
+#: apps/featureextraction/views.py:905
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/featureextraction/views.py:159
+#: apps/featureextraction/views.py:208
 msgid "Feature Extraction Technique doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/featureextraction/views.py:161
+#: apps/featureextraction/views.py:210
 msgid ""
 "Feature Extraction Technique Tree Training doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/featureextraction/views.py:391
-msgid "Ui Element Detection doesn't belong to the authenticated user."
-msgstr ""
-
-#: apps/featureextraction/views.py:393
-msgid "Ui Element Detection doesn't belong to the Case Study."
-msgstr ""
-
-#: apps/featureextraction/views.py:508
-msgid "Prefiltering doesn't belong to the authenticated user."
-msgstr ""
-
-#: apps/featureextraction/views.py:510
-msgid "Prefiltering doesn't belong to the Case Study."
-msgstr ""
-
-#: apps/featureextraction/views.py:624
+#: apps/featureextraction/views.py:890 apps/featureextraction/views.py:907
 msgid "Postfiltering doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/featureextraction/views.py:626
+#: apps/featureextraction/views.py:892 apps/featureextraction/views.py:909
 msgid "Postfiltering doesn't belong to the Case Study."
+msgstr ""
+
+#: apps/featureextraction/views.py:981
+msgid "Execution doesn't belong to the authenticated user."
 msgstr ""
