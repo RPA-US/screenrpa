@@ -588,8 +588,6 @@ def deleteExecution(request):
     cs = Execution.objects.get(id=execution_id)
     if request.user.id != cs.user.id:
         return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
-    if cs.executed != 0:
-        return HttpResponse(status=422, content=_("This execution cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
