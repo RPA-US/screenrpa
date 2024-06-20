@@ -25,6 +25,7 @@ from sklearn.tree import export_graphviz
 
 
 #from SOM.utils import get_uicompo_from_centroid
+from apps.decisiondiscovery.utils import truncar_a_dos_decimales
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from .models import PDD
@@ -98,7 +99,7 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_r
     Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
 
     action determines which instance in order should be considered.
-
+    
     params:
         @prev_act: previous activity
         @next_act: next activity
@@ -108,19 +109,17 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_r
     returns:
         @uicompo: the component
     """
-    def truncate_to_two_decimals(value):
-        return np.floor(value * 100) / 100.0
+
     #pasa de tupla a lista
-    ui_compo_centroid = [truncate_to_two_decimals(float(coord)) for coord in ui_compo_centroid]
+    ui_compo_centroid = [coord for coord in ui_compo_centroid]
     som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
     #print(som_json)
     # Filtrar la lista y encontrar el mínimo
     uicompo_json=None
     for compo in som_json['compos']:
         # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
-        compo_centroid_int = [truncate_to_two_decimals(float(coord)) for coord in compo['centroid']]
-        ui_compo_centroid_int = [coord for coord in ui_compo_centroid]
-        if compo_centroid_int == ui_compo_centroid_int:
+        compo_centroid_int = [truncar_a_dos_decimales(coord) for coord in compo['centroid']]
+        if compo_centroid_int == ui_compo_centroid:
             uicompo_json = compo
             break
             
@@ -915,8 +914,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                         first_part_split = variable_parts[0].split('_')
                                         last_part_split = last_part.split('_')
                                         
-                                        first_element = float(first_part_split[-1])
-                                        second_element = float(last_part_split[0])
+                                        first_element = first_part_split[-1]
+                                        second_element = last_part_split[0]
                                         
                                         if act not in condition_dict:
                                             condition_dict[act] = []

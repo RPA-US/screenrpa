@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 #from apps.decisiondiscovery.decision_trees import update_json_with_rules
-from .utils import def_preprocessor, best_model_grid_search, cross_validation, extract_tree_rules, prev_preprocessor
+from .utils import def_preprocessor, best_model_grid_search, cross_validation, extract_tree_rules, prev_preprocessor, rename_columns_with_centroids
 
 # Buscar en el paths_dict aquellas reglas que se repiten en distintas claves, y devolver una lista con estas claves
 def find_overlapping_rules(paths_dict):
@@ -56,7 +56,7 @@ def extract_paths(tree, feature_names):
             class_label = tree.classes_[class_index]
             if class_label not in paths['paths']:
                 paths['paths'][class_label] = {'rules': [], 'overlapped_rules': []}
-            paths['paths'][class_label]['rules'].append(" and ".join(path))
+            paths['paths'][class_label]['rules'].append(" & ".join(path))
 
     # Inicia el recorrido desde la raíz
     recurse(0, [])
@@ -93,7 +93,7 @@ def get_decision_path(tree, X_sample):
         path.pop(-1)
         # paths.append("(" + " and ".join(path) + ") -> " + path_class)
         
-        paths.append(" and ".join(path))
+        paths.append(" & ".join(path))
     return paths
 
 # Función para actualizar traceability.json con las reglas de paths_dict
@@ -164,7 +164,10 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
     else:
         Exception("No features left after preprocessing.")
     
+    X_df = rename_columns_with_centroids(X_df)
     feature_names = X_df.columns.tolist()
+
+
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     ###############################################3
      

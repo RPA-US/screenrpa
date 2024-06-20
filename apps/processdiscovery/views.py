@@ -22,6 +22,7 @@ import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
+from apps.decisiondiscovery.utils import rename_columns_with_centroids
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from apps.processdiscovery.utils import Process, DecisionPoint, Branch, Rule
@@ -257,7 +258,8 @@ def scene_level(log_path, scenario_path, execution):
     
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
-    
+    #ACORTARLE EL NOMBRE A LAS COLUMNAS DEL PD_LOG POR LEGIBILIDAD
+    ui_log = rename_columns_with_centroids(ui_log)
     ui_log.to_csv(os.path.join(folder_path, PROCESS_DISCOVERY_LOG_FILENAME), index=False)
     
     generate_dendrogram(ui_log, show_dendrogram=show_dendrogram)

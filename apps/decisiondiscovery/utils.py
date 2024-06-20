@@ -511,3 +511,44 @@ def extract_tree_rules(path_to_tree_file):
     rules_per_class = {k: v for k, v in rules_per_class.items() if v}
 
     return rules_per_class
+
+def truncar_a_dos_decimales(valor):
+    cadena = str(valor)
+    partes = cadena.split('.')
+    if len(partes) == 2:
+        return partes[0] + '.' + partes[1][:2]
+    else:
+        return cadena
+
+def rename_columns_with_centroids(df):
+    pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z0-9]*)"
+    pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z0-9]*)"
+    
+    new_columns = []
+    
+    for column in df.columns:
+        matches_with_centroid = re.match(pattern_with_centroid, column)
+        matches_no_prefix = re.match(pattern_no_prefix, column)
+        
+        if matches_with_centroid:
+            suffix = matches_with_centroid.group(1)
+            feature = matches_with_centroid.group(2)
+            centroid = [float(coord) for coord in matches_with_centroid.group(3).split("-")]
+            activity = matches_with_centroid.group(4)
+            extra = matches_with_centroid.group(5) if matches_with_centroid.group(5) else ""
+            centroid_str = f"{truncar_a_dos_decimales(centroid[0])}-{truncar_a_dos_decimales(centroid[1])}"
+            new_name = f"{suffix}__{feature}_{centroid_str}_{activity}{extra}"
+            new_columns.append(new_name)
+        elif matches_no_prefix:
+            feature = matches_no_prefix.group(1)
+            centroid = [float(coord) for coord in matches_no_prefix.group(2).split("-")]
+            activity = matches_no_prefix.group(3)
+            extra = matches_no_prefix.group(4) if matches_no_prefix.group(4) else ""
+            centroid_str = f"{truncar_a_dos_decimales(centroid[0])}-{truncar_a_dos_decimales(centroid[1])}"
+            new_name = f"{feature}_{centroid_str}_{activity}{extra}"
+            new_columns.append(new_name)
+        else:
+            new_columns.append(column)
+    
+    df.columns = new_columns
+    return df

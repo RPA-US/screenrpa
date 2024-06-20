@@ -696,11 +696,24 @@ class DecisionTreeResultDetailView(DetailView):
 
 
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_"+decision_point+".pkl")
-        
         tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
+        #tree_rules= extract_tree_rules(path_to_tree_file)
+        rules_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "traceability.json")
 
-        tree_rules= extract_tree_rules(path_to_tree_file)
+        # Read the JSON file
+        with open(rules_file, 'r') as file:
+            decision_data = json.load(file)
 
+        # Find the decision point with the matching prevAct
+        decision_point_data = None
+        for dp in decision_data["decision_points"]:
+            if dp["prevAct"] == decision_point:
+                decision_point_data = dp
+                break
+
+        tree_rules = decision_point_data["rules"]
+        tree_overlapped_rules = decision_point_data["overlapped_rules"]
+        
         # Include CSV data in the context for the template
         context = {
             "execution_id": execution.id,
@@ -708,9 +721,11 @@ class DecisionTreeResultDetailView(DetailView):
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario,
             "tree_rules": tree_rules,
+            "tree_overlapped_rules": tree_overlapped_rules,
             "decision_point": decision_point,
             "decision_points": activities_before_dps,
             }
+        
         return render(request, 'decision_tree_training/result.html', context)
     #/screenrpa/apps/templates/
 
