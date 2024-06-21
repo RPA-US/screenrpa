@@ -165,6 +165,7 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
         Exception("No features left after preprocessing.")
     
     X_df = rename_columns_with_centroids(X_df)
+#    X_df=rename_nan_columns(X_df)
     feature_names = X_df.columns.tolist()
 
 

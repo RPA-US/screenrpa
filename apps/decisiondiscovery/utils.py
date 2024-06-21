@@ -195,6 +195,15 @@ def create_and_fit_pipeline(X,y, model):
 
   return pipeline
 
+# def rename_nan_columns(df):
+#     for col in df.columns:
+#         if df[col].nunique() == 2 and 'nan' in col.lower():
+#             # Obtener los nombres únicos en la columna, excluyendo 'NaN'
+#             unique_values = df[col].unique().tolist()
+#             non_nan_value = [val for val in unique_values if 'nan' not in str(val).lower()][0]
+#             # Renombrar la columna
+#             df.rename(columns={col: non_nan_value}, inplace=True)
+#     return df
 
 # Formating textual representation of decision trees
 def parse_decision_tree(file_path):

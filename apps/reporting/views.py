@@ -112,19 +112,43 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_r
     """
 
     #pasa de tupla a lista
-    ui_compo_centroid = [coord for coord in ui_compo_centroid]
+    ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
     som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
     #print(som_json)
     # Filtrar la lista y encontrar el mínimo
     uicompo_json=None
     for compo in som_json['compos']:
         # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
-        compo_centroid_int = [truncar_a_dos_decimales(coord) for coord in compo['centroid']]
+        compo_centroid_int = [int(float(coord)) for coord in compo['centroid']]
         if compo_centroid_int == ui_compo_centroid:
             uicompo_json = compo
             break
-            
+    return uicompo_json
 
+def get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+    ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
+    som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
+
+    uicompo_json = None
+    min_distance = float('inf')
+    closest_compo = None
+
+    for compo in som_json['compos']:
+        # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
+        compo_centroid_int = [int(float((coord))) for coord in compo['centroid']]
+        if compo_centroid_int == ui_compo_centroid:
+            uicompo_json = compo
+            break
+        else:
+            # Calcular la distancia entre centroids
+            distance = np.linalg.norm(np.array(compo_centroid_int) - np.array(ui_compo_centroid))
+            if distance < min_distance:
+                min_distance = distance
+                closest_compo = compo
+
+    # Si no se encontró una coincidencia exacta, usar el más cercano
+    if uicompo_json is None and closest_compo is not None:
+        uicompo_json = closest_compo
     return uicompo_json
 
 def pre_pd_activities(decision_point, df_pd_log,colnames):
@@ -1269,19 +1293,15 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         for act, condition_list in conditions.items(): 
                             color_index = 0
                             compo_ui_json=[]
-                            
+                            screenshot_filename=None
                             #obtenemos la screenshot correspondiente
                             ######################################3
-                            try:
+                            if act in activities:
                                 screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                            except IndexError:
-                                screenshot_filename = None
+                            else:
+                                screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
                             if not screenshot_filename:
-                                # me voy al log y busco la screenshot de la primera fila que tenga esa actividad act
-                                try:
-                                    screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                                except:
-                                    print(f"No se encontró ninguna screenshot para la actividad '{act}'.")
+                                print(f"No screenshot found for the activity '{act}'.")
                                 ##################3
                             path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
                             for condition, variable in condition_list:
@@ -1293,7 +1313,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                 # Insertar la imagen en el documento
                                 ui_compo_centroid=variable
                                 
-                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                compo_ui = get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
                                 if compo_ui:
                                     compo_ui["color"] = color  # Asignar color al polígono
                                     compo_ui_json.append(compo_ui)
@@ -1319,20 +1339,16 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                             decision_tree.add_run(f'{rule}\n').bold = True
                             color_index = 0
                             compo_ui_json = []
-
+                            screenshot_filename= None
                             for act, condition_list in conditions.items():
                                 # Obtener la screenshot correspondiente
-                                try:
+                                if act in activities:
                                     screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                                except IndexError:
-                                    screenshot_filename = None
+                                else:
 
+                                    screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
                                 if not screenshot_filename:
-                                    # Buscar la screenshot en el log
-                                    try:
-                                        screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                                    except:
-                                        print(f"No screenshot found for the activity '{act}'.")
+                                    print(f"No screenshot found for the activity '{act}'.")
 
                                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
 
@@ -1344,7 +1360,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
                                     # Insertar la imagen en el documento
                                     ui_compo_centroid = variable
-                                    compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                    compo_ui = get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
 
                                     if compo_ui:
                                         compo_ui["color"] = color  # Asignar color al polígono
