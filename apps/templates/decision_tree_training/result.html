@@ -71,31 +71,35 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6" id="classRules" style="cursor: pointer;">
-                            {% if tree_rules or tree_overlapped_rules %}
+                            {% if tree_rules or tree_overlapping_rules %}
                                 <h5 class="h3 mb-0">Deterministic Rules</h5>
                                 {% for class, rules in tree_rules.items %}
                                     <div class="mb-3">
-                                        <h6 class="mt-2">Branch {{ class }}</h6>
-                                        <ul class="list-group list-group-flush">
-                                            {% for rule in rules %}
-                                                <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                {% endfor %}
-                                
-                                <h5 class="h3 mb-0 mt-4">Non-Deterministic Rules</h5>
-                                {% for class, overlapped_rules in tree_overlapped_rules.items %}
-                                    <div class="mb-3">
-                                        <h6 class="mt-2">Branch {{ class }}</h6>
-                                        {% if overlapped_rules %}
+                                        <h4 class="mt-2">Branch {{ class }}</h4>
+                                        {% if rules %}
                                             <ul class="list-group list-group-flush">
-                                                {% for overlapped_rule in overlapped_rules %}
-                                                    <li class="list-group-item"><strong>Rule:</strong> {{ overlapped_rule }}</li>
+                                                {% for rule in rules %}
+                                                    <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
                                                 {% endfor %}
                                             </ul>
                                         {% else %}
-                                            <p>No non-deterministic rules for this branch</p>
+                                            <p>No deterministic rules for this branch</p>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                
+                                <h5 class="h3 mb-0 mt-4">Overlapping Rules</h5>
+                                {% for class, overlapping_rules in tree_overlapping_rules.items %}
+                                    <div class="mb-3">
+                                        <h4 class="mt-2">Branch {{ class }}</h4>
+                                        {% if overlapping_rules %}
+                                            <ul class="list-group list-group-flush">
+                                                {% for overlapping_rule in overlapping_rules %}
+                                                    <li class="list-group-item"><strong>Rule:</strong> {{ overlapping_rule }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p>No overlapping rules for this branch</p>
                                         {% endif %}
                                     </div>
                                 {% endfor %}
@@ -169,28 +173,32 @@
                     <h5 class="h3 mb-0">Deterministic Rules</h5>
                     {% for class, rules in tree_rules.items %}
                         <div class="mb-3">
-                            <h6 class="mt-2">Branch {{ class }}</h6>
-                            <ul class="list-group list-group-flush">
-                                {% for rule in rules %}
-                                    <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
-                                {% endfor %}
-                            </ul>
+                            <h4 class="mt-2">Branch {{ class }}</h4>
+                            {% if rules %}
+                                <ul class="list-group list-group-flush">
+                                    {% for rule in rules %}
+                                        <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No deterministic rules for this branch</p>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
                 <div id="modalNonDeterministicRules" class="mt-4">
-                    <h5 class="h3 mb-0">Non-Deterministic Rules</h5>
-                    {% for class, overlapped_rules in tree_overlapped_rules.items %}
+                    <h5 class="h3 mb-0">Overlapping Rules</h5>
+                    {% for class, overlapping_rules in tree_overlapping_rules.items %}
                         <div class="mb-3">
-                            <h6 class="mt-2">Branch {{ class }}</h6>
-                            {% if overlapped_rules %}
+                            <h4 class="mt-2">Branch {{ class }}</h4>
+                            {% if overlapping_rules %}
                                 <ul class="list-group list-group-flush">
-                                    {% for overlapped_rule in overlapped_rules %}
-                                        <li class="list-group-item"><strong>Rule:</strong> {{ overlapped_rule }}</li>
+                                    {% for overlapping_rule in overlapping_rules %}
+                                        <li class="list-group-item"><strong>Rule:</strong> {{ overlapping_rule }}</li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
-                                <p>No non-deterministic rules for this branch</p>
+                                <p>No overlapping rules for this branch</p>
                             {% endif %}
                         </div>
                     {% endfor %}

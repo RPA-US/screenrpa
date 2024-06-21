@@ -27,10 +27,10 @@ def find_overlapping_rules(paths_dict):
 
 def check_dict_structure(paths_dict, dict_key):
     if dict_key not in paths_dict['paths']:
-        paths_dict['paths'][dict_key] = {'rules': [], 'overlapped_rules': []}
+        paths_dict['paths'][dict_key] = {'rules': [], 'overlapping_rules': []}
     else:
-        if 'overlapped_rules' not in paths_dict['paths'][dict_key] :
-            paths_dict['paths'][dict_key]['overlapped_rules'] = []
+        if 'overlapping_rules' not in paths_dict['paths'][dict_key] :
+            paths_dict['paths'][dict_key]['overlapping_rules'] = []
     return paths_dict
 
 def extract_paths(tree, feature_names):
@@ -55,7 +55,7 @@ def extract_paths(tree, feature_names):
             class_index = np.argmax(value[node])
             class_label = tree.classes_[class_index]
             if class_label not in paths['paths']:
-                paths['paths'][class_label] = {'rules': [], 'overlapped_rules': []}
+                paths['paths'][class_label] = {'rules': [], 'overlapping_rules': []}
             paths['paths'][class_label]['rules'].append(" & ".join(path))
 
     # Inicia el recorrido desde la raíz
@@ -104,9 +104,9 @@ def update_json_with_rules(traceability_json, path_dict):
             label = branch["label"]
             if label + ".0" in path_dict["paths"]:
                 decision_point["rules"][label] = path_dict["paths"][label + ".0"]["rules"]
-                if "overlapped_rules" not in decision_point:
-                    decision_point["overlapped_rules"] = {}
-                decision_point["overlapped_rules"][label] = path_dict["paths"][label + ".0"]["overlapped_rules"]
+                if "overlapping_rules" not in decision_point:
+                    decision_point["overlapping_rules"] = {}
+                decision_point["overlapping_rules"][label] = path_dict["paths"][label + ".0"]["overlapping_rules"]
     return traceability_json   
 
 #df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation
@@ -171,17 +171,17 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     ###############################################3
      
-    tree_classifier, accuracy, paths_dict = overlapping_rules_from_tree(param_path, X_df, y, min_samples_split, merge_ratio_e)   
+    tree_classifier_1, accuracy, paths_dict = overlapping_rules_from_tree(param_path, X_df, y, min_samples_split, merge_ratio_e)   
     
     start_t = time.time()
     # Find the best model using grid search
-    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
+    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier_1, k_fold_cross_validation)
     
     accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames['Variant'],"sklearn",tree_classifier,k_fold_cross_validation)
     
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # Retrieve the decision tree rules
-    text_representation = export_text(tree_classifier, feature_names=feature_names)
+    text_representation = export_text(tree_classifier_1, feature_names=feature_names)
     print("Decision Tree Rules:\n", text_representation)
     
     
@@ -189,7 +189,7 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
         fout.write(text_representation)
 
     saved_data = {
-        'classifier': tree_classifier,
+        'classifier': tree_classifier_1,
         'feature_names': feature_names,
         'class_names': np.unique(y),
     }
@@ -278,13 +278,13 @@ def overlapping_rules_from_tree(
                 first_occurence = t_prima_subset.iloc[0]
         
                 paths_dict = check_dict_structure(paths_dict, first_occurence['ground_truth'])
-                paths_dict['paths'][first_occurence['ground_truth']]['overlapped_rules'].append(first_occurence['decision_path'])
+                paths_dict['paths'][first_occurence['ground_truth']]['overlapping_rules'].append(first_occurence['decision_path'])
                 
                 paths_dict = check_dict_structure(paths_dict, first_occurence['prediction'])
                                 # Verifica si la regla existe antes de intentar eliminarla
                 if first_occurence['decision_path'] in paths_dict['paths'][first_occurence['prediction']]['rules']:
                     paths_dict['paths'][first_occurence['prediction']]['rules'].remove(first_occurence['decision_path'])
-                    paths_dict['paths'][first_occurence['prediction']]['overlapped_rules'].append(first_occurence['decision_path'])
+                    paths_dict['paths'][first_occurence['prediction']]['overlapping_rules'].append(first_occurence['decision_path'])
                
                 # obtener como una lista de tuplas, los pares distintos de valores que existen entre la columna ground_truth y prediction
                 x_missclassified_as_y = subset[['ground_truth', 'prediction']].drop_duplicates().values.tolist()
@@ -335,9 +335,9 @@ def overlapping_rules_from_tree(
                         for rule in paths_dict['paths'][key]['rules']:
                                 print(f"    - (precision 100%)  {rule}")
                             
-                        if 'overlapped_rules' in paths_dict['paths'][key]:
-                            for rule in paths_dict['paths'][key]['overlapped_rules']:
-                                print(f"    - (overlapped)      {rule}")
+                        if 'overlapping_rules' in paths_dict['paths'][key]:
+                            for rule in paths_dict['paths'][key]['overlapping_rules']:
+                                print(f"    - (overlapping)      {rule}")
         
         
         

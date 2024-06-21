@@ -930,66 +930,59 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
 #hay que decidr que en el punto de decisión hay una regla solpada entre dos branchas, x e x, y explicar esas reglas.
 #le paso una rama y me da un diccioanrio con las reglas solapadas que tiene con cada una de las otras ramas del punto de decision
-#hay que sacar un diccionario con esta forma: {('6'):{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'numeric__Coor_Y_2']], 3: [['numeric__Coor_Y_3 > 491.51', 'numeric__Coor_Y_3']]}}}
-    def get_overlapped_branch_condition2(decision_point, branch_number, pre_pd_activities):
+#hay que sacar un diccionario con esta forma: {'6':{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'numeric__Coor_Y_2']], 3: [['numeric__Coor_Y_3 > 491.51', 'numeric__Coor_Y_3']]}}}
+    def get_overlapping_branch_condition2(decision_point, branch_number, pre_pd_activities):
         branches = decision_point.get('branches', [])
-        rules = decision_point.get('overlapped_rules', {})
+        rules = decision_point.get('overlapping_rules', {})
         
         branch_rules = defaultdict(list)
-        result_dict = {}
+        result_dict = defaultdict(dict)
         
-        for branch in branches:
-            if branch['label'] == str(branch_number):
-                res = rules.get(str(branch_number), [])
-                if not res:
-                    return {"No associated rule found": []}
-                else:
-                    for rule in res:
-                        condition_dict = {}
-                        parts = rule.split('&')
-                        for part in parts:
-                            elements = re.split(r'<=|>=|<|>|==|!=', part)
-                            variable = elements[0].strip()
-                            condition = part.strip()
+        # Extract the rules for the given branch number
+        target_branch_rules = rules.get(str(branch_number), [])
+        if not target_branch_rules:
+            return {"No associated rule found": []}
+        
+        # Parse rules for the given branch number and collect conditions
+        for rule in target_branch_rules:
+            condition_dict = {}
+            parts = rule.split('&')
+            for part in parts:
+                elements = re.split(r'<=|>=|<|>|==|!=', part)
+                variable = elements[0].strip()
+                condition = part.strip()
+                
+                matched = False
+                for act in pre_pd_activities:
+                    pattern = re.compile(f"_{act}(?:_.*)?$")
+                    if pattern.search(variable):
+                        matched = True
+                        variable_parts = variable.split('-')
+                        
+                        if len(variable_parts) > 1:
+                            last_part = variable_parts[-1]
                             
-                            matched = False
-                            for act in pre_pd_activities:
-                                pattern = re.compile(f"_{act}(?:_.*)?$")
-                                if pattern.search(variable):
-                                    matched = True
-                                    variable_parts = variable.split('-')
-                                    
-                                    if len(variable_parts) > 1:
-                                        last_part = variable_parts[-1]
-                                        
-                                        first_part_split = variable_parts[0].split('_')
-                                        last_part_split = last_part.split('_')
-                                        
-                                        first_element = first_part_split[-1]
-                                        second_element = last_part_split[0]
-                                        
-                                        if act not in condition_dict:
-                                            condition_dict[act] = []
-                                        condition_dict[act].append([condition, (first_element, second_element)])
-                            if not matched:
-                                pass
-                        branch_rules[branch['label']].append((rule.strip(), condition_dict))
+                            first_part_split = variable_parts[0].split('_')
+                            last_part_split = last_part.split('_')
+                            
+                            first_element = first_part_split[-1]
+                            second_element = last_part_split[0]
+                            
+                            if act not in condition_dict:
+                                condition_dict[act] = []
+                            condition_dict[act].append([condition, (first_element, second_element)])
+                if not matched:
+                    pass
+            branch_rules[rule] = condition_dict
         
-        matched_branches = defaultdict(list)
+        # Find and map overlapping rules with other branches
+        for other_branch, other_branch_rules in rules.items():
+            if other_branch != str(branch_number):
+                for rule in other_branch_rules:
+                    if rule in target_branch_rules:
+                        result_dict[other_branch][rule] = branch_rules[rule]
         
-        for label, label_rules in decision_point.get('overlapped_rules', {}).items():
-            if str(branch_number) != label:
-                for rule in label_rules:
-                    if rule in rules.get(str(branch_number), []):
-                        matched_branches[rule].append(label)
-        
-        for rule, branches in matched_branches.items():
-            if len(branches) > 1:
-                result_dict[tuple(branches)] = {rule: branch_rules[str(branch_number)][0][1]}
-            else:
-                result_dict[tuple(branches)] = {rule: branch_rules[str(branch_number)][0][1]}
-        
-        return result_dict
+        return dict(result_dict)
 #############################################################
     
     def draw_polygons_on_image(json_data, image_path, doc_decision_tree):
@@ -1232,34 +1225,42 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 pre_activities = pre_pd_activities(decision_point['prevAct'], df_pd_log,colnames)
 
                 result_dict = get_branch_condition2(decision_point, next_activity, pre_activities)
-                result_dict_overlapped = get_overlapped_branch_condition2(decision_point, next_activity, pre_activities)
-                # Concatenar todas las claves con " OR "
-                condition = " OR ".join(f"({key})" for key in result_dict.keys()) if result_dict else "N/A"
+                result_dict_overlapping = get_overlapping_branch_condition2(decision_point, next_activity, pre_activities)
 
                 decision_tree.add_run().add_break()      
                 decision_tree.add_run(f'Decision Point\n', style='Título 4 Car').bold = True
                 decision_tree.add_run().add_break()
                 decision_tree.add_run().add_break()      
-                decision_tree.add_run(f'After this activity there is a decision point with {num_ramas} branches. In the case of this variant (VARIANT {variant}) it goes along branch {next_activity} and it is satisfied that: {condition} \n')
-                decision_tree.add_run().add_break() 
-                if 'No associated rule found' not in result_dict_overlapped:
-                    for branches, rules in result_dict_overlapped.items():
+                decision_tree.add_run(f'After this activity there is a decision point where the user decides between taking {num_ramas} different branches. \n')
+                decision_tree.add_run(f'In the case of this variant (variant {variant}) the user chooses to take branch {next_activity}. \n')
+                decision_tree.add_run().add_break()
+                if 'No associated rule found' not in result_dict:
+                    decision_tree.add_run(f"In order for the user to decide this branch, one of these deterministic rules must be given:")
+                    for rules in result_dict.keys():
+                        decision_tree.add_run('\n• ' + f"{rules}" + '\n')    
+                    decision_tree.add_run().add_break()
+                else:
+                    decision_tree.add_run(f"No associated deterministic rules are found:")
+                    decision_tree.add_run().add_break()
+                if 'No associated rule found' not in result_dict_overlapping:
+                    for branch, rules in result_dict_overlapping.items(): 
+                        decision_tree.add_run(f"In this decision we find rules that overlap with the rest of the decision branches. These rules are:")
                         for rule, conditions in rules.items():
-                            branches_str = ', '.join(branches)
-                            num_rules = len(rules)
-                            decision_tree.add_run().add_break() 
-                            decision_tree.add_run(f"This branch also has {num_rules} overlapped rule(s) with the following branch(es):")
-                            decision_tree.add_run().add_break()
-                            decision_tree.add_run('\n• ' + f"(Branch(es){branches_str}): {rule}." + '\n')
-                            decision_tree.add_run().add_break()
+                            decision_tree.add_run('\n• ' + f"Rule overlapping with branch {branch}: {rule}." + '\n')
+                        decision_tree.add_run().add_break()
+                else:
+                    decision_tree.add_run(f"No overlapping rules were found.")
+                    decision_tree.add_run().add_break()
+
 
                 colors = [RGBColor(255, 0, 0), RGBColor(0, 255, 0), RGBColor(0, 0, 255), RGBColor(255, 165, 0)]
 
                 #################################################################################################### DETERMINIST RULES
-                decision_tree.add_run().add_break()
-                decision_tree.add_run("Determinist Rules\n", style='Título 4 Car').bold = True
-                decision_tree.add_run().add_break()
+                
                 if result_dict and all(isinstance(value, dict) for value in result_dict.values()): #se ejecuta solo si tiene reglas asociadas
+                    decision_tree.add_run().add_break()
+                    decision_tree.add_run("Determinist Rules\n", style='Título 5 Car').bold = True
+                    decision_tree.add_run().add_break()
                     print(result_dict)
                     for rule, conditions in result_dict.items():
                         decision_tree.add_run(f'{rule}\n').bold = True
@@ -1306,17 +1307,13 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
                 #################################################################################################### OVERLAPPED RULES
 
-                decision_tree.add_run().add_break()
-                decision_tree.add_run("Overlapped Rules\n", style='Título 4 Car').bold = True
-                decision_tree.add_run().add_break()
-
-                if 'No associated rule found' not in result_dict_overlapped:  # se ejecuta solo si tiene reglas asociadas
-                    print(result_dict_overlapped)
-                    for branches, rules in result_dict_overlapped.items():
-                        # Concatenar las ramas solapadas
-                        branches_str = ', '.join(branches)
-                        num_rules = len(rules)
-                        decision_tree.add_run(f'Branch(es):{branches_str}:\n').bold =True
+                if 'No associated rule found' not in result_dict_overlapping:  # se ejecuta solo si tiene reglas asociadas
+                    decision_tree.add_run().add_break()
+                    decision_tree.add_run("Overlapping Rules\n", style='Título 5 Car').bold = True
+                    decision_tree.add_run().add_break()
+                    print(result_dict_overlapping)
+                    for branch, rules in result_dict_overlapping.items():
+                        decision_tree.add_run(f'Branch {branch}:\n').bold =True
                         
                         for rule, conditions in rules.items():
                             decision_tree.add_run(f'{rule}\n').bold = True
@@ -1335,7 +1332,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                     try:
                                         screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
                                     except:
-                                        print(f"No se encontró ninguna screenshot para la actividad '{act}'.")
+                                        print(f"No screenshot found for the activity '{act}'.")
 
                                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
 

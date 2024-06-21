@@ -22,7 +22,7 @@
             </nav>
           </div>
           <div class="col-12 text-right">
-            <a href="/case-study/new/" class="btn btn btn-light"><i class="fas fa-broom" style="margin-right: 5px;"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
+            <a href="/reporting/pdd/generate/{{execution.id}}" class="btn btn btn-light"><i class="fas fa-broom" style="margin-right: 5px;"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
@@ -36,7 +36,7 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">{% blocktranslate %}Create a new Case Study{% endblocktranslate %}</h3>
+            <h3 class="mb-0">{% blocktranslate %}Generate a new Report{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">            
             {% include "reporting/form.html" %}

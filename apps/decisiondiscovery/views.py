@@ -712,7 +712,7 @@ class DecisionTreeResultDetailView(DetailView):
                 break
 
         tree_rules = decision_point_data["rules"]
-        tree_overlapped_rules = decision_point_data["overlapped_rules"]
+        tree_overlapping_rules = decision_point_data["overlapping_rules"]
         
         # Include CSV data in the context for the template
         context = {
@@ -721,7 +721,7 @@ class DecisionTreeResultDetailView(DetailView):
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario,
             "tree_rules": tree_rules,
-            "tree_overlapped_rules": tree_overlapped_rules,
+            "tree_overlapping_rules": tree_overlapping_rules,
             "decision_point": decision_point,
             "decision_points": activities_before_dps,
             }
