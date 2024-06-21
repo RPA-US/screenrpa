@@ -159,7 +159,12 @@ class CaseStudy(models.Model):
             self.exp_folder_complete_path = folder_path
             self.exp_foldername = get_exp_foldername(folder_path)
             super().save(*args, **kwargs)
-            
+
+    def delete(self):
+        # Delete the zip and unzipped folder
+        self.exp_file.delete()
+        shutil.rmtree(self.exp_folder_complete_path)
+        super().delete()    
     
     def term_unique(self, title):
         if CaseStudy.objects.filter(term=title).exists():
