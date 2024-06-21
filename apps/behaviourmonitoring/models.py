@@ -5,6 +5,8 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 def default_monitoring_conf():
     return dict({
@@ -59,3 +61,8 @@ class Monitoring(models.Model):
     
     def __str__(self):
         return 'type: ' + self.type
+
+@receiver(pre_delete, sender=Monitoring)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
