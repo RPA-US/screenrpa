@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-07 10:01+0000\n"
+"POT-Creation-Date: 2024-06-20 10:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -83,15 +83,15 @@ msgstr "Los separadores de exp_folder_complete_path no son coherentes"
 msgid "This is a nice experiment..."
 msgstr "Este es un buen experimento..."
 
-#: apps/analyzer/models.py:127
+#: apps/analyzer/models.py:129
 msgid "Case study"
 msgstr "Caso de estudio"
 
-#: apps/analyzer/models.py:128
+#: apps/analyzer/models.py:130
 msgid "Case studies"
 msgstr "Casos de estudio"
 
-#: apps/analyzer/models.py:164
+#: apps/analyzer/models.py:166
 msgid "The title of the case study already exists"
 msgstr "El título del caso de estudio ya existe"
 
@@ -137,24 +137,48 @@ msgstr "El archivo MHT no tiene '(datetime)' después de 'Paso 1:'"
 msgid "The MHT file doesnt have a valid datetime format"
 msgstr "El archivo MHT no tiene un formato de fecha y hora válido"
 
-#: apps/analyzer/views.py:131
+#: apps/analyzer/views.py:128
+#, python-brace-format
+msgid "{case_study.title} Execution Started"
+msgstr "Ejecución de {case_study.title} comenzada"
+
+#: apps/analyzer/views.py:128
+msgid "Case study execution has started"
+msgstr "La ejecución del caso de estudio ha comenzado"
+
+#: apps/analyzer/views.py:152
 msgid "Scenarios that have been processed: "
 msgstr "Escenarios que han sido procesados: "
 
-#: apps/analyzer/views.py:273
+#: apps/analyzer/views.py:177
+#, python-brace-format
+msgid "{execution.case_study.title} Execution Completed"
+msgstr "Ejecución de {execution.case_study.title} completada"
+
+#: apps/analyzer/views.py:177
+msgid "Case study executed successfully"
+msgstr "Caso de estudio ejecutado satisfactoriamente"
+
+#: apps/analyzer/views.py:181
+#, python-brace-format
+msgid "{case_study.title} Execution Error"
+msgstr "Error de ejecución en {case_study.title}"
+
+#: apps/analyzer/views.py:302
 msgid "User must be authenticated."
 msgstr "El usuario debe estar autenticado."
 
-#: apps/analyzer/views.py:296 apps/analyzer/views.py:309
-#: apps/analyzer/views.py:550
+#: apps/analyzer/views.py:328 apps/analyzer/views.py:342
+#: apps/analyzer/views.py:357 apps/analyzer/views.py:369
+#: apps/analyzer/views.py:467
 msgid "This case study doesn't belong to the authenticated user"
 msgstr "Este caso de estudio no pertenece al usuario autenticado"
 
-#: apps/analyzer/views.py:311 apps/analyzer/views.py:552
+#: apps/analyzer/views.py:344
 msgid "This case study cannot be deleted because it has already been excecuted"
 msgstr "Este caso de estudio no se puede eliminar porque ya ha sido ejecutado"
 
-#: apps/analyzer/views.py:362
+#: apps/analyzer/views.py:403
 #, python-format
 msgid ""
 "phases_to_execute must be of type dict!!!!! and must be composed by phases "
@@ -163,21 +187,21 @@ msgstr ""
 "¡phases_to_execute debe ser de tipo dict y debe estar compuesto por fases "
 "contenidas en %(DEFAULT_PHASES)s!"
 
-#: apps/analyzer/views.py:368
+#: apps/analyzer/views.py:409
 msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 "El algoritmo de detección de elementos debe ser uno de ['legacy', 'uied']"
 
-#: apps/analyzer/views.py:375
+#: apps/analyzer/views.py:416
 msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 "El algoritmo de clasificación de elementos debe ser uno de ['legacy', 'uied']"
 
-#: apps/analyzer/views.py:383 apps/analyzer/views.py:389
+#: apps/analyzer/views.py:424 apps/analyzer/views.py:430
 msgid "The following file or directory does not exists: %(path)"
 msgstr "El siguiente archivo o directorio no existe: %(path)"
 
-#: apps/analyzer/views.py:396
+#: apps/analyzer/views.py:437
 #, python-format
 msgid ""
 "phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
@@ -185,21 +209,21 @@ msgstr ""
 "phases_to_execute debe estar compuesto por fases contenidas en "
 "%(DEFAULT_PHASES)s"
 
-#: apps/analyzer/views.py:409
+#: apps/analyzer/views.py:448
 #, fuzzy, python-format
 #| msgid "Case study with id:%(id) is being generated ..."
 msgid "Case study with id:%(id) is being generated ..."
 msgstr "Se está generando el caso de estudio con ID:%(id) ..."
 
-#: apps/analyzer/views.py:412
+#: apps/analyzer/views.py:451
 msgid "Some of the attributes are invalid: "
 msgstr "Algunos de los atributos no son válidos: "
 
-#: apps/analyzer/views.py:431
+#: apps/analyzer/views.py:473
 msgid "Case Study with id %(id) not found"
 msgstr "Caso de estudio con ID %(id) no encontrado"
 
-#: apps/analyzer/views.py:449
+#: apps/analyzer/views.py:491
 msgid ""
 "The processing of this case study has not yet finished, please try again in "
 "a few minutes"
@@ -207,15 +231,19 @@ msgstr ""
 "El procesamiento de este caso de estudio aún no ha finalizado, por favor "
 "inténtelo de nuevo en unos minutos"
 
-#: apps/analyzer/views.py:452
+#: apps/analyzer/views.py:494
 #, fuzzy, python-format
 #| msgid "Case Study with id %(id) raised an exception: "
 msgid "Case Study with id %(id) raised an exception: "
 msgstr "El caso de estudio con ID %(id) generó una excepción: "
 
-#: apps/analyzer/views.py:506 apps/analyzer/views.py:574
+#: apps/analyzer/views.py:548 apps/analyzer/views.py:622
 msgid "You don't have permissions to access this files"
 msgstr "No tienes permisos para acceder a estos archivos"
+
+#: apps/analyzer/views.py:592 apps/analyzer/views.py:604
+msgid "This execution doesn't belong to the authenticated user"
+msgstr "Este caso de estudio no pertenece al usuario autenticado"
 
 #~ msgid ""
 #~ "Indicate the special column names (e.g. case_id, activity, timestamp, "
