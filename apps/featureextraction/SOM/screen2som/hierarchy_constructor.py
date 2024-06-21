@@ -96,6 +96,7 @@ def labels_to_output(labels, text_class="Text"):
         shape["depth"] = 1
         shape["type"] = "leaf"
         shape["xpath"] = []
+        shape["relevant"] = True
 
     compos.sort(key=lambda x: Polygon(x["points"]).area, reverse=True)
 

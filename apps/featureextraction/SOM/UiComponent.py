@@ -68,6 +68,7 @@ class UiComponent:
             'points':self.points,
             'centroid': [self.bbox[0]+self.bbox[2]/2,self.bbox[1]+self.bbox[3]/2],
             'xpath': [],
+            "relevant": True,
         }
 
     def compo_clipping(self, img, pad=0, show=False):

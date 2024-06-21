@@ -233,6 +233,7 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         c["points"] = [(x, y), (w, y), (w, h), (x, h)]
         c["centroid"] = ((x + w) / 2, (y + h) / 2)
         c["xpath"] = []
+        c["relevant"] = True
         # (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
         # c['width'] = compo.width
         # c['height'] = compo.height

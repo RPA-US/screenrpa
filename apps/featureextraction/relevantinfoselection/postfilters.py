@@ -184,12 +184,15 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
                 
                 # Create a circle polygon around the fixation point with a radius based on the dispersion and scale factor
                 centre = Point(fixation_point_x, fixation_point_y)
+                #El radio relevante es el radio de la dispersion del punto de fijación multiplicado por el factor de escala
+                #El scale_factor es un valor que si puede ser modificable por el usuario.
                 radio = float(fixation_obj["imotions_dispersion"]) * float(configurations[key]["scale_factor"])
                 if not pd.isna(radio):
                     polygon_circle = centre.buffer(radio)
                     polygon_circles.append(polygon_circle)
 
                 # Create a union of all the circle polygons
+                #The fixation mask is created by taking the union of all the fixation circles
                 fixation_mask = unary_union(polygon_circles)
           
             # Iterate over each component in the screenshot.json file
@@ -198,10 +201,9 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
                 compo["relevant"] = "NaN"
 
                 # If the component matches the UI selector and the screenshot has fixation, execute the following code
-                if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
-                    (screenshot_filename in fixation_json): # screenshot has fixation
-                        
-                    #these lines are old. Modified because Polygon is used now to dermine the coordinates of the UI Compo
+                if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and (screenshot_filename in fixation_json): 
+                    
+                    #these lines are OLD. Modified because Polygon is used now to dermine the coordinates of the UI Compo
                     # x_min = compo['points']
                     # y_min = compo['column_min']
                     # x_max = compo['row_max']

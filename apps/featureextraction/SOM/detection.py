@@ -377,6 +377,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
                 "points": [[int(x), int(y)], [int(w), int(y)], [int(w), int(h)], [int(x), int(h)]],
                 "centroid": [int((w-x)/2), int((h-y)/2)],
                 "xpath": [],
+                "relevant": True,
                 # "column_min": int(x),
                 # "row_min": int(y),
                 # "column_max": int(w),
