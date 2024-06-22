@@ -136,6 +136,7 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
         k_fold_cross_validation = 2
     ###########################################################################
     # Extract features and target variable
+    df = df.dropna(subset=['dp_branch'])
     X = df.drop(columns=[special_colnames["Variant"]]).drop(columns=["dp_branch"])
     #X = X.astype(str)
     y = df["dp_branch"]
@@ -169,9 +170,10 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
     feature_names = X_df.columns.tolist()
 
 
-    X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
+    X_df.to_csv(os.path.join(param_path, "preprocessed_df_"+prevact+".csv"), header=feature_names)
     ###############################################3
-     
+    
+    print(y.unique())
     tree_classifier_1, accuracy, paths_dict = overlapping_rules_from_tree(param_path, X_df, y, min_samples_split, merge_ratio_e)   
     
     start_t = time.time()

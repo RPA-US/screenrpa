@@ -1259,12 +1259,12 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_tree.add_run(f'In the case of this variant (variant {variant}) the user chooses to take branch {next_activity}. \n')
                 decision_tree.add_run().add_break()
                 if 'No associated rule found' not in result_dict:
-                    decision_tree.add_run(f"In order for the user to decide this branch, one of these deterministic rules must be given:")
+                    decision_tree.add_run(f"In order for the user to decide this branch, one of these determinist rules must be given:")
                     for rules in result_dict.keys():
                         decision_tree.add_run('\n• ' + f"{rules}" + '\n')    
                     decision_tree.add_run().add_break()
                 else:
-                    decision_tree.add_run(f"No associated deterministic rules are found:")
+                    decision_tree.add_run(f"No associated determinist rules are found:")
                     decision_tree.add_run().add_break()
                 if 'No associated rule found' not in result_dict_overlapping:
                     for branch, rules in result_dict_overlapping.items(): 
