@@ -590,6 +590,9 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         user = request.user
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+
+        feature_extraction_technique=execution.feature_extraction_techniques.first() #parche para que no de error en la vista
+
         if user.id != execution.user.id:
             return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
         reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
@@ -598,6 +601,7 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
             "reports": reports,
             "execution_id": execution.id, 
             "execution": execution, 
+            "feature_extraction_technique": feature_extraction_technique,
             }
         return render(request, "executions/detail.html", context)
 
