@@ -742,7 +742,7 @@ def tree_to_png_base64(path_to_tree_file):
         clasificador_loaded = loaded_data['classifier']
         feature_names_loaded = loaded_data['feature_names']
         
-        class_names_loaded = [str(item) for item in loaded_data['class_names']]
+        class_names_loaded = loaded_data['class_names']
     except FileNotFoundError:
         print(f"File not found: {path_to_tree_file}")
         return None

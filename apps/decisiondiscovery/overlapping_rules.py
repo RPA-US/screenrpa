@@ -174,7 +174,7 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
     ###############################################3
     
     print(y.unique())
-    tree_classifier_1, accuracy, paths_dict = overlapping_rules_from_tree(param_path, X_df, y, min_samples_split, merge_ratio_e)   
+    tree_classifier_1, accuracy, paths_dict,y_train = overlapping_rules_from_tree(param_path, X_df, y, min_samples_split, merge_ratio_e)   
     
     start_t = time.time()
     # Find the best model using grid search
@@ -194,7 +194,7 @@ def overlapping_rules(df,prevact, param_path, special_colnames, configuration, o
     saved_data = {
         'classifier': tree_classifier_1,
         'feature_names': feature_names,
-        'class_names': np.unique(y),
+        'class_names': np.unique(y_train),
     }
     with open(os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'), 'wb') as fid:
         pickle.dump(saved_data, fid)
@@ -352,7 +352,7 @@ def overlapping_rules_from_tree(
     with open(os.path.join(param_path, 'paths.json'), 'w') as f:
         json.dump(paths_dict, f, indent=4)
     
-    return tree, accuracy, paths_dict
+    return tree, accuracy, paths_dict, y_train
 
 
 # from sklearn.metrics import confusion_matrix
