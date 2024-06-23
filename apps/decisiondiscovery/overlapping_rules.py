@@ -275,7 +275,7 @@ def overlapping_rules_from_tree(
                 subset['ground_truth'] = subset_target
                 subset['prediction'] = subset_preds
                 subset['decision_path'] = subset_paths
-                subset.to_csv(f'subset_for_class_{label}.csv', index=False)
+                #subset.to_csv(f'subset_for_class_{label}.csv', index=False)
                             
                 t_prima_subset = subset[subset_preds == t_prima]
                 first_occurence = t_prima_subset.iloc[0]
@@ -320,8 +320,11 @@ def overlapping_rules_from_tree(
     # Imprimir las rules asociadas a las clases que tienen una certeza del 100%
     for label in certain_labels:
         print(f"  Class {label}:")
-        for rule in paths_dict['paths'][label]['rules']:
-            print(f"    - (certainity 100%) {rule} \n")
+        if label in paths_dict['paths']:
+            for rule in paths_dict['paths'][label]['rules']:
+                print(rule)
+        else:
+            print("  No rules found for this class.")
 
 
     print(f"\n\n===================================\nVariants with uncertainty:\n===================================")

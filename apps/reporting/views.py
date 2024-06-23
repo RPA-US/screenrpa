@@ -718,6 +718,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     if report.detailed_as_is_process_actions:
         #meter diagrama de decision tree
         decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+        decision_tree.text = ""
         # path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
         # run = decision_tree.add_run()
         # run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
