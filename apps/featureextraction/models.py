@@ -41,9 +41,6 @@ def get_exp_foldername(exp_folder_complete_path):
 def default_prefilters_conf():
     return dict({
     		    "gaze": {
-        		        "UI_selector": "all",
-        		        "predicate": "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])",
-        		        "only_leaf": True,
 			            "scale_factor":10
     	        	}
                 }
@@ -53,11 +50,9 @@ def default_filters_conf():
     return dict({
                 "gaze": {
                         "UI_selector": "all",
-                        "predicate":"is_component_relevant",
-                        "scale_factor":"10",
-                        "only_leaf": True,
-                        "intersection_area_thresh":1,
-                        "mode":"draw"
+                        "scale_factor":1000,
+                        "intersection_area_thresh":0,
+                        "consider_nested_as_relevant":True
                         }
                     }
                 )
