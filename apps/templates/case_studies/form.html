@@ -27,6 +27,21 @@
         <div class="form-group">
             {{ form.exp_file.label_tag }} (all UI logs has to be named as 'log.csv' to be loaded without log processing)<br/>
             {{ form.exp_file }}
+            <button onclick="event.preventDefault(); alert(`
+|-- zip
+|   |-- scenario_name
+|   |   |-- log.csv
+|   |   |-- webgazer_gazeData.csv
+|   |   |-- webgazer_properties.json
+|   |   |-- image_001.png
+|   |   |-- ...
+|   |   |-- image_00N.png
+-----------------------
+|-- zip
+|   |-- scenario_name
+|   |   |-- log.mht
+|   |   |-- webgazer_gazeData.csv
+|   |   |-- webgazer_properties.json`)">?</button>
             <div class="form-validation">{{ form.exp_file.errors }}</div>
         </div>
         </div>

@@ -3,6 +3,8 @@ from django.db.models import JSONField
 from django.contrib.auth.models import User
 from private_storage.fields import PrivateFileField
 from django.urls import reverse
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 def default_process_discovery():
     return dict({"model_type": "",
@@ -48,3 +50,8 @@ class ProcessDiscovery(models.Model):
     
     def __str__(self):
         return 'type: ' + self.type
+
+@receiver(pre_delete, sender=ProcessDiscovery)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)

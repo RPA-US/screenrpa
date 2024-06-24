@@ -159,7 +159,12 @@ class CaseStudy(models.Model):
             self.exp_folder_complete_path = folder_path
             self.exp_foldername = get_exp_foldername(folder_path)
             super().save(*args, **kwargs)
-            
+
+    def delete(self):
+        # Delete the zip and unzipped folder
+        self.exp_file.delete()
+        shutil.rmtree(self.exp_folder_complete_path)
+        super().delete()    
     
     def term_unique(self, title):
         if CaseStudy.objects.filter(term=title).exists():
@@ -206,6 +211,7 @@ class Execution(models.Model):
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
 
+    errored = models.BooleanField(default=False)
 
     @property
     def feature_extraction_technique(self):
@@ -309,6 +315,8 @@ class Execution(models.Model):
                     os.path.join('../../', scenario),
                     os.path.join(self.exp_folder_complete_path, scenario)
                     )
-        
-        
-       
+    
+    def delete(self):
+        # Delete the execution folder
+        shutil.rmtree(self.exp_folder_complete_path)
+        super().delete()

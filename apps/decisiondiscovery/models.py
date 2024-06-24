@@ -10,6 +10,8 @@ from django.contrib.postgres.fields import ArrayField
 from private_storage.fields import PrivateFileField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -109,6 +111,11 @@ class ExtractTrainingDataset(models.Model):
     
     def __str__(self):
         return 'col to drop: ' + str(self.title)
+
+@receiver(pre_delete, sender=ExtractTrainingDataset)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
     
 class DecisionTreeTraining(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
@@ -137,3 +144,8 @@ class DecisionTreeTraining(models.Model):
     
     def __str__(self):
         return 'library: ' + self.library + ' - algs:' + str(self.configuration)
+
+@receiver(pre_delete, sender=DecisionTreeTraining)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)

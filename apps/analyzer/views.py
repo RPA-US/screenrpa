@@ -180,6 +180,8 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         # TODO: View the error trace in the frontend or link to gtihub issues with description filled
         case_study=CaseStudy.objects.get(id=case_study_id)
         create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"), status=NotifStatus.ERROR.value)
+        execution.errored = True
+        execution.save()
 
 #============================================================================================================================
 #============================================================================================================================
@@ -339,7 +341,7 @@ def deleteCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
-    if cs.executed != 0:
+    if cs.num_executions > 0:
         return HttpResponse(status=422, content=_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
@@ -589,8 +591,6 @@ def deleteExecution(request):
     cs = Execution.objects.get(id=execution_id)
     if request.user.id != cs.user.id:
         raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
-    if cs.executed != 0:
-        return HttpResponse(status=422, content=_("This execution cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     

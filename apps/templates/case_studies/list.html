@@ -73,9 +73,9 @@
                     {{ case_study.exp_foldername }}
                   </td>
                   <td>
-                    <span class="badge badge-dot mr-4">
+                    <a href="/case-study/execution/list?s={{case_study.title}}">
                       {{ case_study.num_executions }}
-                    </span>
+                    </a>
                   </td>
                   <td class="text-right">
                     <div class="dropdown">
@@ -86,8 +86,13 @@
                         <div style="display: flex;">
                           <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
                             <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                          {% if case_study.num_executions > 0 %}
+                          <a class="dropdown-item" title="{% blocktranslate %}Cannot delete an executed case study{% endblocktranslate %}">
+                            <i class="fas fa-trash" style="color: lightgrey; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                          {% else %}
                           <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this case study?{% endblocktranslate %}')" href="/case-study/delete/?id={{ case_study.pk }}">
                             <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                          {% endif %}
                           <a class="dropdown-item" href="/case-study/files/download/{{ case_study.pk }}" onclick="() => alert('Esta operación puede tardar un rato')">
                             <i class="fas fa-file-archive align-icon" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Download .zip{% endblocktranslate %}</a>
                           {% if case_study.any_active %}

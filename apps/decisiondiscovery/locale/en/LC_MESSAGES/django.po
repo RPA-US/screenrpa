@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-07 10:01+0000\n"
+"POT-Creation-Date: 2024-06-20 09:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgid "Decision Point To Study"
 msgstr ""
 
 #: apps/decisiondiscovery/forms.py:28 apps/decisiondiscovery/forms.py:30
-#: apps/decisiondiscovery/forms.py:97
+#: apps/decisiondiscovery/forms.py:101
 msgid "Columns to drop before decision point"
 msgstr ""
 
@@ -43,15 +43,15 @@ msgstr ""
 msgid "Variant"
 msgstr ""
 
-#: apps/decisiondiscovery/forms.py:94
+#: apps/decisiondiscovery/forms.py:98
 msgid "Library"
 msgstr ""
 
-#: apps/decisiondiscovery/forms.py:95
+#: apps/decisiondiscovery/forms.py:99
 msgid "Configuration"
 msgstr ""
 
-#: apps/decisiondiscovery/forms.py:96
+#: apps/decisiondiscovery/forms.py:100
 msgid "One hot columns"
 msgstr ""
 
@@ -59,35 +59,35 @@ msgstr ""
 msgid "The identifier does not follow the pattern"
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:142
+#: apps/decisiondiscovery/views.py:156
 msgid "Decision model chosen is not an option"
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:186 apps/decisiondiscovery/views.py:269
-#: apps/decisiondiscovery/views.py:318 apps/decisiondiscovery/views.py:385
+#: apps/decisiondiscovery/views.py:200 apps/decisiondiscovery/views.py:306
+#: apps/decisiondiscovery/views.py:437 apps/decisiondiscovery/views.py:523
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:271 apps/decisiondiscovery/views.py:387
+#: apps/decisiondiscovery/views.py:308 apps/decisiondiscovery/views.py:525
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:273
+#: apps/decisiondiscovery/views.py:310
 msgid "Extracting_training_dataset doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:275
+#: apps/decisiondiscovery/views.py:312
 msgid "Extracting_training_dataset doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:389
+#: apps/decisiondiscovery/views.py:527
 msgid "Decision Tree Training doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:391
+#: apps/decisiondiscovery/views.py:529
 msgid "Decision Tree Training doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:402
+#: apps/decisiondiscovery/views.py:540
 msgid "This object doesn't belong to the authenticated user"
 msgstr ""
