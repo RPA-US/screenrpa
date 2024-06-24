@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-20 09:57+0000\n"
+"POT-Creation-Date: 2024-06-24 08:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -125,11 +125,11 @@ msgstr "Aplicar filtrado (Selección de components relevantes)"
 msgid "Condition for a UI Component to be relevant"
 msgstr "Condición para que un componente UI sea relevante"
 
-#: apps/featureextraction/models.py:37
+#: apps/featureextraction/models.py:39
 msgid "exp_folder_complete_path separators not coherent"
 msgstr "separador de exp_folder_complete_path no coherente"
 
-#: apps/featureextraction/models.py:220
+#: apps/featureextraction/models.py:240
 msgid "Only lowercase, uppercase letters, and hyphen are allowed"
 msgstr "Solo letras minúsculas y mayúsculas"
 
@@ -161,9 +161,8 @@ msgstr "La configuracion no pertenece al usuario"
 msgid "Postfiltering doesn't belong to the Case Study."
 msgstr "La configuracion no pertenece al usuario"
 
-#: apps/featureextraction/views.py:981
-msgid "Execution doesn't belong to the authenticated user."
-msgstr "La configuracion no pertenece al usuario"
+#~ msgid "Execution doesn't belong to the authenticated user."
+#~ msgstr "La configuracion no pertenece al usuario"
 
 #~ msgid "Ui Element Detection doesn't belong to the authenticated user."
 #~ msgstr "La configuracion no pertenece al usuario"
