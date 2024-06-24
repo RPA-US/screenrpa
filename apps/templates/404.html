@@ -1,0 +1,28 @@
+{% extends 'layouts/base-error.html' %}
+{% load i18n %}
+
+{% block title %} Error 403 {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Page content -->
+    <div class="container mt--8 pb-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card-header bg-transparent pb-5">
+              <img class="img-fluid" id="welcome" src="/static/assets/img/brand/notfound.png" alt="Argon Design - Template Starter Logo.">
+              <div class="text-white text-center mt-3 mb-3">
+                {% blocktranslate %}This page does not exists{% endblocktranslate %}
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
