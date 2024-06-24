@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from .models import Monitoring
 from apps.analyzer.models import CaseStudy, Execution
 from .forms import MonitoringForm
@@ -15,7 +15,7 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
     
-class MonitoringCreateView(CreateView, LoginRequiredMixin):
+class MonitoringCreateView(LoginRequiredMixin, CreateView):
     model = Monitoring
     form_class = MonitoringForm
     template_name = "monitoring/create.html"
@@ -39,7 +39,7 @@ class MonitoringCreateView(CreateView, LoginRequiredMixin):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class MonitoringListView(ListView, LoginRequiredMixin):
+class MonitoringListView(LoginRequiredMixin, ListView):
     login_url = '/login/'
     model = Monitoring
     template_name = "monitoring/list.html"
@@ -48,7 +48,7 @@ class MonitoringListView(ListView, LoginRequiredMixin):
     def get(self, request, *args, **kwargs) -> HttpResponse:
         case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
         if case_study.user != request.user:
-            return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
+            raise PermissionDenied("This object doesn't belong to the authenticated user")
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -70,14 +70,14 @@ class MonitoringListView(ListView, LoginRequiredMixin):
     
         return queryset
 
-class MonitoringDetailView(DetailView, LoginRequiredMixin):
+class MonitoringDetailView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"])
         monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
         
         if not case_study.user == request.user:
-            return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
+            raise PermissionDenied("This object doesn't belong to the authenticated user")
 
         form = MonitoringForm(read_only=True, instance=monitoring)
 
@@ -149,22 +149,22 @@ def delete_monitoring(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
+        raise PermissionDenied("This object doesn't belong to the authenticated user")
     monitoring = Monitoring.objects.get(id=monitoring_id)
     if request.user.id != monitoring.user.id:
-        raise Exception(_("This object doesn't belong to the authenticated user"))
+        raise PermissionDenied(_("This object doesn't belong to the authenticated user"))
     monitoring.delete()
     return HttpResponseRedirect(reverse("behaviourmonitoring:monitoring_list", args=[case_study_id]))
 
 ###########################################################
 
-class MonitoringResultDetailView(DetailView, LoginRequiredMixin):
+class MonitoringResultDetailView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
     def get(self, request, *args, **kwargs):
         # Get the Execution object or raise a 404 error if not found
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         if not execution.case_study.user == request.user:
-            return HttpResponse(status=403, content="This object doesn't belong to the authenticated user")
+            raise PermissionDenied("This object doesn't belong to the authenticated user")
         scenario = request.GET.get('scenario')
         download = request.GET.get('download')
 

@@ -10,7 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 import pm4py
@@ -397,7 +397,7 @@ def process_discovery(log_path, scenario_path, execution):
     process_level(folder_path, ui_log, execution)
         
     
-class ProcessDiscoveryCreateView(CreateView, LoginRequiredMixin):
+class ProcessDiscoveryCreateView(LoginRequiredMixin, CreateView):
     login_url = '/login/'
     model = ProcessDiscovery
     form_class = ProcessDiscoveryForm
@@ -409,7 +409,7 @@ class ProcessDiscoveryCreateView(CreateView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Case Study not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+            raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
 
         if 'ProcessDiscovery' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -421,7 +421,7 @@ class ProcessDiscoveryCreateView(CreateView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Case Study not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+            raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
 
         if 'ProcessDiscovery' in case_study.available_phases:
             return super().post(request, *args, **kwargs)
@@ -456,7 +456,7 @@ class ProcessDiscoveryCreateView(CreateView, LoginRequiredMixin):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class ProcessDiscoveryListView(ListView, LoginRequiredMixin):
+class ProcessDiscoveryListView(LoginRequiredMixin, ListView):
     login_url = '/login/'
     model = ProcessDiscovery
     template_name = "processdiscovery/list.html"
@@ -468,7 +468,7 @@ class ProcessDiscoveryListView(ListView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Case Study not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+            raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
 
         if 'ProcessDiscovery' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -495,13 +495,13 @@ class ProcessDiscoveryListView(ListView, LoginRequiredMixin):
         return queryset
     
 
-class ProcessDiscoveryDetailView(DetailView, LoginRequiredMixin):
+class ProcessDiscoveryDetailView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
         if process_discovery.case_study.user != request.user:
-            return HttpResponse(status=403, content="Process Discovery doesn't belong to the authenticated user.")
+            raise PermissionDenied("Process Discovery doesn't belong to the authenticated user.")
 
         process_discovery_form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)
 
@@ -533,11 +533,11 @@ def set_as_process_discovery_active(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found.")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     elif not ProcessDiscovery.objects.get(pk=process_discovery_id):
         return HttpResponse(status=404, content="Process Discovery not found.")
     elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study == CaseStudy.objects.get(pk=case_study_id):
-        return HttpResponse(status=403, content="Process Discovery doesn't belong to the Case Study.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     process_discovery_list = ProcessDiscovery.objects.filter(case_study_id=case_study_id)
     for m in process_discovery_list:
         m.active = False
@@ -572,20 +572,20 @@ def delete_process_discovery(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found.")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     elif not ProcessDiscovery.objects.get(pk=process_discovery_id):
         return HttpResponse(status=404, content="Process Discovery not found.")
     elif not ProcessDiscovery.objects.get(pk=process_discovery_id).case_study == CaseStudy.objects.get(pk=case_study_id):
-        return HttpResponse(status=403, content="Process Discovery doesn't belong to the Case Study.")
+        raise PermissionDenied("Process Discovery doesn't belong to the Case Study.")
     process_discovery = ProcessDiscovery.objects.get(id=process_discovery_id)
     if request.user.id != process_discovery.user.id:
-        raise Exception("This object doesn't belong to the authenticated user")
+        raise PermissionDenied("This object doesn't belong to the authenticated user")
     process_discovery.delete()
     return HttpResponseRedirect(reverse("processdiscovery:processdiscovery_list", args=[case_study_id]))
 
 ##########################################
 
-class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
+class ProcessDiscoveryResultDetailView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
@@ -594,7 +594,7 @@ class ProcessDiscoveryResultDetailView(DetailView, LoginRequiredMixin):
         if not execution:
             return HttpResponse(status=404, content="Execution not found.")
         elif not execution.case_study.user == request.user:
-            return HttpResponse(status=403, content="Execution doesn't belong to the authenticated user.")
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
 
         if scenario == None:
             #scenario = "1"
