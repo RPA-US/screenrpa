@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
+from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
@@ -325,7 +326,7 @@ def executeCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         # 403 Forbidden
-        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
     elif ACTIVE_CELERY:
         celery_task_process_case_study.delay(request.user.id, case_study_id)
     else:
@@ -339,7 +340,7 @@ def deleteCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
     if cs.num_executions > 0:
         return HttpResponse(status=422, content=_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
@@ -354,7 +355,7 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
         user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         if user.id != case_study.user.id:
-            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(request.POST, instance=case_study)
         if form.is_valid():
             form.save()
@@ -366,7 +367,7 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
         user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         if user.id != case_study.user.id:
-            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(instance=case_study)
         context = {
             "form": form, 
@@ -464,7 +465,7 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
             user = request.user
             case_study = get_object_or_404(CaseStudy, id=case_study_id, active=True)
             if case_study.user.id != user.id:
-                return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+                raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
             serializer = CaseStudySerializer(instance=case_study)
             response = serializer.data
             return Response(response, status=st)
@@ -545,7 +546,7 @@ def exp_file_download(request, case_study_id):
     if cs.exists():
         unzipped_folder = cs[0].exp_folder_complete_path
     else:
-        raise Exception(_("You don't have permissions to access this files"))
+        raise PermissionDenied(_("You don't have permissions to access this files"))
     
     # Create a temporary zip file containing the contents of the unzipped folder
     zip_filename = os.path.basename(unzipped_folder) + ".zip"
@@ -571,7 +572,7 @@ def exp_file_download(request, case_study_id):
 # ============================================================================================================================
 # Executions
 # ============================================================================================================================
-class ExecutionListView(ListView, LoginRequiredMixin):
+class ExecutionListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = Execution
     template_name = "executions/list.html"
@@ -589,7 +590,7 @@ def deleteExecution(request):
     execution_id = request.GET.get("id")
     cs = Execution.objects.get(id=execution_id)
     if request.user.id != cs.user.id:
-        return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
+        raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
@@ -601,7 +602,7 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
         user = request.user
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
         if user.id != execution.user.id:
-            return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
         reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
 
         context = {

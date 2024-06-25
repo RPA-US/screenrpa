@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
 from .models import Notification, Status
 
 # Create your views here.
@@ -33,7 +34,7 @@ def mark_as_read(request):
     notification_id = request.POST.get('notification_id')
     notification = get_object_or_404(Notification, id=notification_id)
     if notification.user != request.user:
-        return HttpResponse(status=403)
+        raise PermissionDenied("This object doesn't belong to the authenticated user")
     notification.read = True
     notification.save()
     return HttpResponse(json.dumps({'success': True}), content_type='application/json')
@@ -48,7 +49,7 @@ def delete_notification(request):
     notification_id = request.POST.get('notification_id')
     notification = get_object_or_404(Notification, id=notification_id)
     if notification.user != request.user:
-        return HttpResponse(status=403)
+        raise PermissionDenied("This object doesn't belong to the authenticated user")
     notification.delete()
     return HttpResponse(json.dumps({'success': True}), content_type='application/json')
 
