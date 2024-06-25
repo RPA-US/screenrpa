@@ -13,8 +13,8 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     path_scenario_results = path_scenario + '_results'
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
     # decision_point = fe.decision_point_activity
-    case_colname = execution.case_study.special_colnames["Case"]
-    activity_colname = execution.case_study.special_colnames["Activity"]
+    #case_colname = execution.case_study.special_colnames["Case"]
+    
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     metadata_json_root = os.path.join(path_scenario_results, 'components_json')
     flattened_log = os.path.join(path_scenario_results, 'flattened_dataset.json')
@@ -122,8 +122,8 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
     #decision_point = fe.decision_point_activity
     id = fe.identifier
-    case_colname = execution.case_study.special_colnames["Case"]
-    activity_colname = execution.case_study.special_colnames["Activity"]
+    #case_colname = execution.case_study.special_colnames["Case"]
+    
     flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
     enriched_log_output = os.path.join(execution_root, fe.technique_name + '_enriched_log.csv')
     text_classname = execution.ui_elements_classification.model.text_classname
@@ -284,8 +284,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
                 elif centroid_columnname_type == "xpath_class":
                     xpath = compos_list[j]["xpath"]
-                    activity = log.at[i, activity_colname]
-                    column_name = f"{id}_{xpath}_{activity}"
+                    column_name = f"{id}_{xpath}"
                     
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
