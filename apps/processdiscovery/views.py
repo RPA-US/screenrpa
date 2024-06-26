@@ -246,8 +246,6 @@ def scene_level(log_path, scenario_path, execution):
     '''
     Process Discovery Execution Main Workflow
     '''
-    #parche porque no se donde se define, coge el log.csv en vez del enriched
-    log_path= os.path.join(scenario_path + '_results','log_enriched.csv')
     ui_log = read_ui_log_as_dataframe(log_path)
     ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], text_column, image_weight=image_weight, text_weight=text_weight, model_type=model_type)
     ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)

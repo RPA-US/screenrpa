@@ -4,6 +4,7 @@ import json
 import random
 import time
 import threading
+import traceback
 from tqdm import tqdm
 from art import tprint
 from django.core.exceptions import ValidationError
@@ -87,18 +88,18 @@ def generate_case_study(execution, path_scenario, times):
                     times[n][function_to_exec]["accuracy"] = res
                     times[n][function_to_exec]["feature_checker"] = fe_checker
                 elif function_to_exec == "feature_extraction_technique":
+                    start_t = time.time()
                     for fe in execution.feature_extraction_techniques.all():
                         if fe.preloaded:
                             continue
                         if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
-                            start_t = time.time()
                             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
-                    times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-                    # Additional feature extraction metrics
-                    times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-                    times[n][function_to_exec]["num_screenshots"] = num_screenshots
-                    times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-                    times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                            # Additional feature extraction metrics
+                            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                            times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
                     filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
@@ -176,6 +177,7 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
         create_notification(User.objects.get(id=user_id), _(f"{execution.case_study.title} Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}), status=NotifStatus.SUCCESS.value)
     except Exception as e:
+        print(traceback.format_exc())
         # TODO: View the error trace in the frontend or link to gtihub issues with description filled
         case_study=CaseStudy.objects.get(id=case_study_id)
         create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"), status=NotifStatus.ERROR.value)
