@@ -94,17 +94,15 @@ class ExtractTrainingDataset(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     preloaded_file = PrivateFileField("File", null=True, blank=True)
     freeze = models.BooleanField(default=False, editable=True)
-    target_label = models.CharField(max_length=50, default='Variant')
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     title = models.CharField(max_length=255, blank=True)
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=25), default=get_default_extract_training_columns_to_ignore)
-    decision_point_activity = models.CharField(max_length=255)
     configurations = models.JSONField(default=dict, blank=True, null=True)
-
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #variants_to_study=ArrayField(models.CharField(max_length=255), default=list, null=True, blank=True)
     
     def get_absolute_url(self):
         return reverse("decisiondiscovery:extract_training_dataset_list", args=[str(self.case_study_id)])    

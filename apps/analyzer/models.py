@@ -41,29 +41,20 @@ def unzip_file_here(zip_file_path, dest_folder_path):
 
 def default_special_colnames():
     return dict(
-        # {
-        # "Case": "Case",
-        # "Activity": "Activity",
-        # "Screenshot": "Screenshot", 
-        # "Variant": "Variant",
-        # "Timestamp": "Timestamp",
-        # "eyetracking_recording_timestamp": "Recording timestamp",
-        # "eyetracking_gaze_point_x": "Gaze point X",
-        # "eyetracking_gaze_point_y": "Gaze point Y" 
-        # }
-
-
-        #  Estructura válida actualmente   
+        
         {
-        "Case": "ocel:eid",
-        "Activity": "ocel:activity",
-        "Screenshot": "ocel:screenshot:name", 
-        "Variant": "ocel:variant",
-        "Timestamp": "ocel:timestamp",
-        "NameApp": "FileName",
-        "EventType": "ocel:type:event",
-        "CoorX": "ocel:click:coorX",
-        "CoorY": "ocel:click:coorY",
+        "Case": "trace_id",
+        "Activity": "activity_id",
+        "Screenshot": "Screenshot", 
+        "Variant": "auto_variant",
+        "Timestamp": "Timestamp",
+        "eyetracking_recording_timestamp": "Recording timestamp",
+        "eyetracking_gaze_point_x": "Gaze point X",
+        "eyetracking_gaze_point_y": "Gaze point Y",
+        "NameApp": "NameApp",
+        "EventType": "MorKeyb",
+        "CoorX": "Coor_X",
+        "CoorY": "Coor_Y",
         "Header": "header"
         }
     )
@@ -93,7 +84,7 @@ class CaseStudy(models.Model):
     exp_file = PrivateFileField("File", null=True)
     exp_foldername = models.CharField(max_length=255, null=True, blank=True)
     exp_folder_complete_path = models.CharField(max_length=255)
-    scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+    scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True) # example: sc_0_size50_Balanced,sc_0_size50_Imbalanced,sc_0_size75_Balanced,sc_0_size75_Imbalanced,sc_0_size100_Balanced,sc_0_size100_Imbalanced,sc_0_size300_Balanced,sc_0_size300_Imbalanced,sc_0_size500_Balanced,sc_0_size500_Imbalanced
     special_colnames = JSONField(default=default_special_colnames)
     phases_to_execute = JSONField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='CaseStudyExecuter')
@@ -195,8 +186,8 @@ class Execution(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     executed = models.IntegerField(default=0, editable=True)
 
-    exp_foldername = models.CharField(max_length=255, null=True, blank=True) # "Nano_Xt6Pt35_1706268943"
-    exp_folder_complete_path = models.CharField(max_length=255) # "/rim/media/unzipped/Nano_Xt6Pt35_1706268943/executions/exec_63"
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
+    exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True)
 
     monitoring = models.ForeignKey(Monitoring, null=True, blank=True, on_delete=models.CASCADE)
@@ -204,38 +195,32 @@ class Execution(models.Model):
     ui_elements_detection = models.ForeignKey(UIElementsDetection, null=True, blank=True, on_delete=models.CASCADE)
     ui_elements_classification = models.ForeignKey(UIElementsClassification, null=True, blank=True, on_delete=models.CASCADE)
     postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
-    # feature_extraction_technique = models.ForeignKey(FeatureExtractionTechnique, null=True, blank=True, on_delete=models.CASCADE)
-    # Feature extraction is the only phase than can have several configurations activated
     feature_extraction_techniques = models.ManyToManyField(FeatureExtractionTechnique, related_name='executions')
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
-
+    
     errored = models.BooleanField(default=False)
-
+  
     @property
     def feature_extraction_technique(self):
         """
         Returns true if there is any feature extraction technique activated
-
         This is done for the purpose of maintaining compatibility with the previous version of the application where every phase is checked to exist with getatrr()
         """
         return self.feature_extraction_techniques.exists()
-    
-    # Check phases dependencies and restrictions
-    # To execute feature extraction, UIElementsDetection and UIElementsClassification must be executed
-    # To execute decision tree training, Decision Tree training must be executed
+
     def clean(self):
         # Check if at least one phase is executed
         if not (self.monitoring or self.prefilters or self.ui_elements_detection or self.ui_elements_classification or self.postfilters or self.feature_extraction_technique or self.process_discovery or self.extract_training_dataset or self.decision_tree_training):
             raise ValidationError('At least one phase must be executed.')
-        
+
         # Check phases dependencies and restrictions
-        if self.feature_extraction_techniques.exists() and not (self.ui_elements_detection):
+        if self.feature_extraction_techniques.exists() and not self.ui_elements_detection:
             raise ValidationError('UI Elements Detection must be executed before Feature Extraction.')
         if self.decision_tree_training and not self.extract_training_dataset:
             raise ValidationError('Extract Training Dataset must be executed before Decision Tree Training.')
-        
+
         if self.scenarios_to_study is None or len(self.scenarios_to_study) == 0:
             raise ValidationError('At least one scenario must be indicated.')
 
@@ -246,17 +231,17 @@ class Execution(models.Model):
         self.ui_elements_detection = UIElementsDetection.objects.filter(case_study=self.case_study, active=True).first()
         self.ui_elements_classification = UIElementsClassification.objects.filter(case_study=self.case_study, active=True).first()
         self.postfilters = Postfilters.objects.filter(case_study=self.case_study, active=True).first()
-        # self.feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True).first()
         self.process_discovery = ProcessDiscovery.objects.filter(case_study=self.case_study, active=True).first()
         self.extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self.case_study, active=True).first()
         self.decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self.case_study, active=True).first()
 
         self.scenarios_to_study = self.case_study.scenarios_to_study
 
-        # Execution must have an id to perform these operations
         super().save(*args, **kwargs)
 
-        self.feature_extraction_techniques.set(FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True))
+        active_feature_extraction_techniques = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True)
+        self.feature_extraction_techniques.set(active_feature_extraction_techniques)
+        
         self.clean()
 
         for stage in [self.monitoring, self.prefilters, self.ui_elements_detection,
@@ -265,56 +250,45 @@ class Execution(models.Model):
             if stage:
                 stage.freeze = True
                 stage.save()
+                
         for stage in self.feature_extraction_techniques.all():
             stage.freeze = True
             stage.save()
 
         if not self.exp_folder_complete_path or self.exp_folder_complete_path == '':
             self.create_folder_structure()
-        
-        super().save(*args, **kwargs)
 
+        super().save(*args, **kwargs)
 
     def check_preloaded_file(self):            
         for ph in DEFAULT_PHASES:
             if hasattr(self, ph) and hasattr(getattr(self, ph), "preloaded") and getattr(self, ph).preloaded and hasattr(getattr(self,ph),"active") and getattr(self,ph).active == True:
                 preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, getattr(self, ph).preloaded_file.name)
-                unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
-                print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
+                unzip_file(preloaded_file_path, self.exp_folder_complete_path)
+                print("Preloaded file unzipped!:", self.exp_folder_complete_path)
+                
         for fe in self.feature_extraction_techniques.all():
             if hasattr(fe, "preloaded") and fe.preloaded:
                 preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, fe.preloaded_file.name)
-                unzip_file(preloaded_file_path, f"{self.exp_folder_complete_path}")
-                print("Preloaded file unzipped!:", f"{self.exp_folder_complete_path}")
+                unzip_file(preloaded_file_path, self.exp_folder_complete_path)
+                print("Preloaded file unzipped!:", self.exp_folder_complete_path)
 
-    
     def create_folder_structure(self):
-        self.exp_foldername = f"exec_{self.id}" #exec_1
+        self.exp_foldername = f"exec_{self.id}"
         self.exp_folder_complete_path = os.path.join(self.case_study.exp_folder_complete_path, 'executions', self.exp_foldername)
-        #output: media/unzipped/zip_1321321/executions/exec_1
-        
-        #FOR ONLY ONE SCENARIO IN YOUR CASE STUDY
-        #If the phases own the preloaded_file, the preloaded_file wil be unzipped from media/ and it will be stored
-        #in the corresponding execution_id folder 
-    
 
         if not os.path.exists(self.exp_folder_complete_path):
             os.makedirs(self.exp_folder_complete_path)
 
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
-
-            # Os Simlink only works for files in windows
+            source = os.path.join('../../', scenario)
+            destination = os.path.join(self.exp_folder_complete_path, scenario)
             if os.name == 'nt':
-                source = os.path.join('..\\..\\', scenario)
-                destination = os.path.join(self.exp_folder_complete_path, scenario)
-                command = f'cmd /c mklink /D {destination} {source}'
+                command = f'cmd /c mklink /D "{destination}" "{source}"'
                 subprocess.run(command, shell=True)
             else:
-                os.symlink(
-                    os.path.join('../../', scenario),
-                    os.path.join(self.exp_folder_complete_path, scenario)
-                    )
+                os.symlink(source, destination)
     
     def delete(self):
         # Delete the execution folder

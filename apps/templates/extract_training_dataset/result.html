@@ -60,8 +60,18 @@
                     {% endfor %}
                   </div>
                 </div>
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Decision Point: {{decision_point}}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for decision_point in decision_points %}
+                    <a class="dropdown-item" href="/dd/extract-training-dataset/result/{{execution_id}}/?scenario={{scenario}}&decision_point={{decision_point}}"> Decision Point: {{decision_point}}</a>
+                    {% endfor %}
+                  </div>
+                </div>
                 <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
-                <a href="/dd/extract-training-dataset/result/{{execution_id}}/?download=True&scenario={{scenario}}">
+                <a href="/dd/extract-training-dataset/result/{{execution_id}}/?download=True&scenario={{scenario}}&decision_point={{decision_point}}">
                   <button class="btn btn-success" style="float: right;" type="button">
                     <i class="ni ni-cloud-download-95"></i> 
                     {% blocktranslate %}Download{% endblocktranslate %}

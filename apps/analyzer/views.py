@@ -24,7 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template import loader
 # Settings variables
-from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY
+from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY, LOG_FILENAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
@@ -68,8 +68,7 @@ from sklearn.tree import _tree
 #============================================================================================================================
 
 def generate_case_study(execution, path_scenario, times):
-    log_filename = 'log.csv'
-    log_path = os.path.join(path_scenario, log_filename)
+    log_path = os.path.join(path_scenario, LOG_FILENAME)
     
     n = 0
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
@@ -94,12 +93,12 @@ def generate_case_study(execution, path_scenario, times):
                         if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
                             start_t = time.time()
                             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
-                            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-                            # Additional feature extraction metrics
-                            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-                            times[n][function_to_exec]["num_screenshots"] = num_screenshots
-                            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-                            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                    times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                    # Additional feature extraction metrics
+                    times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                    times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                    times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                    times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
                     filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
@@ -601,14 +600,18 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         user = request.user
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+
+        feature_extraction_technique=execution.feature_extraction_techniques.first() #parche para que no de error en la vista
+
         if user.id != execution.user.id:
             raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
         reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
-
+        
         context = {
             "reports": reports,
             "execution_id": execution.id, 
             "execution": execution, 
+            "feature_extraction_technique": feature_extraction_technique,
             }
         return render(request, "executions/detail.html", context)
 

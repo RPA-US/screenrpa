@@ -92,6 +92,15 @@ class FeatureExtractionTechniqueCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(FeatureExtractionTechniqueCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
+
+        # Load single and aggregate techniques from configurations
+        single_json = json.load(open("configuration/single_feature_extractors.json"))
+        aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
+        context["options"] = {
+            # We convert the tuples returned by the items() method to lists so that javascript can correctly parse them
+            "single": list(map(lambda x: list(x), single_json.items())),
+            "aggregate": list(map(lambda x: list(x), aggregate_json.items()))
+        }
         return context
 
     def form_valid(self, form):
@@ -245,7 +254,7 @@ class FeatureExtractionResultDetailView(LoginRequiredMixin, DetailView):
       
         # TODO: Sujeto a cambios en la estructura de la carpeta
         #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/flattened_dataset.csv"
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset.csv")
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "log_enriched.csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return ResultDownload(path_to_csv_file)  

@@ -652,3 +652,33 @@ def draw_geometry_over_image(background_image_path, circles, rectangles, output_
 
     # Save the result image
     result_image_rgb.save(output_image_path)
+
+
+##########################################################################
+##    FEATURE EXTRACTION    ##############################################
+##########################################################################
+
+def get_compo_from_xpath(path_scenario: str, img_name: str, xpath: list[str]) -> dict | None:
+    """
+    This function returns the solicitated detected component from the som given an xpath
+
+    params:
+        path_scenario: path to the scenario
+        img_name: name of the image
+        xpath: xpath to the component
+
+    return:
+        json with the component information
+    """
+    som = json.load(open(os.path.join(path_scenario, img_name + ".json")))
+    
+    # Matching compo does not contain information about the children
+    matching_compos = list(filter(lambda x: x["xpath"]==xpath, som["compos"]))
+
+    match(len(matching_compos)):
+        case 0:
+            return None
+        case 1:
+            return matching_compos[0]
+        case _:
+            raise Exception(f"More than one component with the same xpath in img {img_name}, scenario {path_scenario}, xpath {xpath}")

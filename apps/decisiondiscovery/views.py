@@ -1,9 +1,10 @@
 import csv
 import json
 import os
+import zipfile
 from django.forms.models import model_to_dict
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
@@ -14,18 +15,21 @@ from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
 from apps.analyzer.models import CaseStudy, Execution
-from core.settings import sep, DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME
+from apps.processdiscovery.utils import extract_prev_act_labels
+from core.settings import DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME, PROCESS_DISCOVERY_LOG_FILENAME
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
 from .decision_trees import sklearn_decision_tree, chefboost_decision_tree
+from .overlapping_rules import overlapping_rules
 from .flattening import flat_dataset_row
-from .utils import find_path_in_decision_tree, parse_decision_tree
+from .utils import extract_tree_rules, find_path_in_decision_tree, parse_decision_tree, best_model_grid_search, cross_validation
 from django.utils.translation import gettext_lazy as _
 # Result Treeimport json
 import matplotlib.pyplot as plt
 from sklearn import tree
 import io
+import re
 import pickle
 import base64
 import pickle
@@ -65,8 +69,6 @@ def extract_training_dataset(log_path, root_path, execution):
     
     :param decision_point_activity: id of the activity inmediatly previous to the decision point which "why" wants to be discovered
     :type decision_point_activity: str
-    :param target_label: name of the column where classification target label is stored
-    :type target_label: str
     :param special_colnames: dict that contains the column names that refers to special columns: "Screenshot", "Variant", "Case"...
     :type special_colnames: dict
     :param columns_to_drop: Names of the colums to remove from the dataset
@@ -78,33 +80,44 @@ def extract_training_dataset(log_path, root_path, execution):
     :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
     :type actions_columns: list
     """
-    decision_point_activity = execution.extract_training_dataset.decision_point_activity
-    target_label = execution.extract_training_dataset.target_label
     special_colnames = execution.case_study.special_colnames
     actions_columns = execution.extract_training_dataset.columns_to_drop_before_decision_point
     
     
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
-    print(log_path+"\n")
+    aux= os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
+    print(aux+"\n")
 
-    log = read_ui_log_as_dataframe(log_path)
-    process_columns = [special_colnames["Case"], 
-                       special_colnames["Activity"], 
-                       special_colnames["Variant"],
-                       special_colnames["Timestamp"], 
-                       special_colnames["Screenshot"]]
+    try:
+        log = read_ui_log_as_dataframe(aux)
+    except:
+        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results")
+    process_columns = [ 
+                        special_colnames["Case"], 
+                        special_colnames["Activity"], 
+                        special_colnames["Variant"],
+                        special_colnames["Timestamp"], 
+                        special_colnames["Screenshot"],
+                        "combined_features", # Feature vector of the screenshot
+                        "case:concept:name", # Case ID Duplicated in Process Discovery
+                        "concept:name", # Activity ID Duplicated in Process Discovery
+                        "time:timestamp" # Timestamp Duplicated in Process Discovery
+                    ]
     
+    # From the columns of the log, the columns that come from the decision point identification are removed
+    for c in log.columns:
+        if "id" in c and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c):
+            process_columns.append(c)
+
     columns = list(log.columns)
     for c in process_columns:
         if c in columns:
             columns.remove(c)
-        
+    
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
-    flat_dataset_row(log, columns, target_label, root_path+'_results', special_colnames["Case"], special_colnames["Activity"], 
-                     special_colnames["Timestamp"], decision_point_activity, actions_columns)
+    flat_dataset_row(log, columns, root_path+'_results', special_colnames, actions_columns, execution.process_discovery)
 
-                     
-def decision_tree_training(log_path, path, execution):
+def decision_tree_training(log_path, scenario_path, execution):
     # "media/flattened_dataset.json",
     # "media", 
     # "sklearn",
@@ -112,9 +125,8 @@ def decision_tree_training(log_path, path, execution):
     # ["Timestamp_start", "Timestamp_end"],
     # 'Variant',
     # ['NameApp']
-                           
-    target_label = execution.extract_training_dataset.target_label
-    flattened_json_log_path = os.path.join(path+"_results", 'flattened_dataset.json')
+
+    special_colnames = execution.case_study.special_colnames                           
     implementation = execution.decision_tree_training.library
     configuration = execution.decision_tree_training.configuration
     columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
@@ -124,42 +136,55 @@ def decision_tree_training(log_path, path, execution):
     centroid_threshold = int(configuration["centroid_threshold"]) if "centroid_threshold" in configuration else None
     feature_values = configuration["feature_values"] if "feature_values" in configuration else None
     
+    if not os.path.exists(os.path.join(scenario_path, DECISION_FOLDERNAME)):
+        os.mkdir(os.path.join(scenario_path, DECISION_FOLDERNAME))
+        
     tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
-    print(flattened_json_log_path+"\n")
+    activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
     
-    flattened_dataset = pd.read_json(flattened_json_log_path, orient ='index')
-    # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
-    
-    if not os.path.exists(os.path.join(path, DECISION_FOLDERNAME)):
-        os.mkdir(os.path.join(path, DECISION_FOLDERNAME))
-    
-    # for col in flattened_dataset.columns:
-    #     if "Coor" in col:
-    #         columns_to_ignore.append(col)  
-    
-    # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
-    flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
-    flattened_dataset.to_csv(os.path.join(path+"_results",FLATTENED_DATASET_NAME+".csv"))
-    columns_len = flattened_dataset.shape[1]
-    flattened_dataset = flattened_dataset.fillna('NaN')
-    # tree_levels = {}
-    
-    if implementation == 'sklearn':
-        res, times = sklearn_decision_tree(flattened_dataset, path+"_results", configuration, one_hot_columns, target_label, k_fold_cross_validation)
-    elif implementation == 'chefboost':
-        res, times = chefboost_decision_tree(flattened_dataset, path+"_results", algorithms, target_label, k_fold_cross_validation)
-        # TODO: caculate number of tree levels automatically
-        # for alg in algorithms:
-            # rules_info = open(path+alg+'-rules.json')
-            # rules_info_json = json.load(rules_info)
-            # tree_levels[alg] = len(rules_info_json.keys())            
-    else:
-        raise Exception(_("Decision model chosen is not an option"))
-    
-    if feature_values:
-        fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, path+"_results")
-    else:
-        fe_checker = None
+    for act in activities_before_dps:
+        flattened_csv_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv')
+        print(flattened_csv_log_path+"\n")
+        
+        flattened_dataset = pd.read_csv(flattened_csv_log_path)
+        # flattened_dataset.to_csv(path + "flattened_dataset.csv")    
+        
+        
+        # for col in flattened_dataset.columns:
+        #     if "Coor" in col:
+        #         columns_to_ignore.append(col)  
+        
+        # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
+        flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
+        # flattened_dataset.to_csv(os.path.join(scenario_path+"_results",FLATTENED_DATASET_NAME+".csv"))
+        columns_len = flattened_dataset.shape[1]
+        #flattened_dataset = flattened_dataset.fillna('NaN')
+        # tree_levels = {}
+        
+        if implementation == 'sklearn':
+                try:
+                    if implementation == 'sklearn':
+                        res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+                except:
+                    print(f"No features left after preprocessing.")
+                    continue
+        elif implementation == 'chefboost':
+            res, times = chefboost_decision_tree(flattened_dataset, scenario_path+"_results", algorithms, "Variant", k_fold_cross_validation)
+            # TODO: caculate number of tree levels automatically
+            # for alg in algorithms:
+                # rules_info = open(path+alg+'-rules.json')
+                # rules_info_json = json.load(rules_info)
+                # tree_levels[alg] = len(rules_info_json.keys())
+        elif implementation == 'overlapping':
+            res, times = overlapping_rules(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+            
+        else:
+            raise Exception(_("Decision model chosen is not an option"))
+        
+        if feature_values:
+            fe_checker = decision_tree_feature_checker(feature_values, centroid_threshold, scenario_path+"_results",act)
+        else:
+            fe_checker = None
     return res, fe_checker, times, columns_len#, tree_levels
     
 def decision_tree_predict(module_path, instance):
@@ -327,22 +352,36 @@ def delete_extracting_training_dataset(request):
 
 ##############################################33
 
+
 class ExtractTrainingDatasetResultDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         # Get the Execution object or raise a 404 error if not found
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
         download = request.GET.get('download')
+        decision_point = request.GET.get('decision_point')
+        #activities_before_dps=execution.process_discovery.activities_before_dps
+        
+        
 
         if scenario == None:
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-      
+            
+        activities_before_dps=extract_prev_act_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+
+        if decision_point == None:
+            #scenario = "1"
+            #decision_point = execution.process_discovery.activities_before_dps[0]
+            decision_point = activities_before_dps[0]
+
+        
         #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/preprocessed_df.csv"
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "preprocessed_df.csv")
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset_"+decision_point+".csv")
         # CSV Download
         if path_to_csv_file and download=="True":
-            return ResultDownload(path_to_csv_file) 
+            #return ResultDownload(path_to_csv_file)
+            return Extract_training_dataset_ResultDownload(path_to_csv_file)
 
         # CSV Reading and Conversion to JSON
         csv_data_json = read_csv_to_json(path_to_csv_file)
@@ -352,7 +391,10 @@ class ExtractTrainingDatasetResultDetailView(LoginRequiredMixin, DetailView):
             "execution_id": execution.id,
             "csv_data": csv_data_json,  # Data to be used in the HTML template
             "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
+            "scenario": scenario,
+            "decision_point": decision_point,
+            "decision_points": activities_before_dps,
+            #"decision_points": execution.process_discovery.activities_before_dps,
             }  
 
         # Render the HTML template with the context including the CSV data
@@ -391,7 +433,11 @@ def read_csv_to_json(path_to_csv_file):
     csv_data_json = json.dumps(csv_data)
     return csv_data_json
 ##########################################3
-def ResultDownload(path_to_csv_file):
+#descarga solo el csv que visualizas en pantalla (un escenario y un decision point en concreto)
+def Extract_training_dataset_ResultDownload(path_to_csv_file):
+    if not os.path.exists(path_to_csv_file):
+        raise Http404("El archivo no existe")
+    
     with open(path_to_csv_file, 'r', newline='') as csvfile:
         # Create an HTTP response with the content of the CSV
         response = HttpResponse(content_type='text/csv')
@@ -401,6 +447,45 @@ def ResultDownload(path_to_csv_file):
         for row in reader:
             writer.writerow(row)
         return response
+
+#descarga todos los flattened_dataset del escenario (de todos los decision points)
+# def Extract_training_dataset_ResultDownload(scenario,execution):
+#         # Buscar todos los archivos decision_tree_x.pkl en el directorio
+#     results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+#     tree_files = []
+#     for root, dirs, files in os.walk(results_folder):
+#         for file in files:
+#             if file.startswith("flattened_dataset_") and file.endswith(".csv"):
+#                 tree_files.append(os.path.join(root, file))
+
+#     if not tree_files:
+#         return HttpResponse("No decision tree files found.", status=404)
+    
+#     if len(tree_files) == 1:
+#         # Si hay solo un archivo, descargarlo directamente
+#         file_path = tree_files[0]
+#         response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+#         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+#         return response
+#     else:
+#         # Si hay más de un archivo, crear un ZIP y descargarlo
+#         zip_filename = f"{scenario}_extract_training_dataset_results.zip"
+#         zip_buffer = io.BytesIO()
+#         try:
+#             with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+#                 for file_path in tree_files:
+#                     zip_file.write(file_path, os.path.relpath(file_path, results_folder))
+            
+#             zip_buffer.seek(0)
+            
+#             # Crear la respuesta HTTP con el archivo ZIP para descargar
+#             response = HttpResponse(zip_buffer, content_type="application/zip")
+#             response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+#             return response
+        
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 #############################################################
 
@@ -489,7 +574,7 @@ class DecisionTreeTrainingDetailView(LoginRequiredMixin, DetailView):
                     "case_study_id": case_study.id,
                     "form": form,}
         
-                return render(request, "prefiltering/detail.html", context)
+                return render(request, "decision_tree_training/detail.html", context)
             else:
                 return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
          
@@ -500,7 +585,7 @@ class DecisionTreeTrainingDetailView(LoginRequiredMixin, DetailView):
                             "execution_id": execution.id,
                             "form": form,}
             
-                return render(request, "prefiltering/detail.html", context)
+                return render(request, "decision_tree_training/detail.html", context)
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
 
@@ -542,7 +627,7 @@ def delete_decision_tree_training(request):
     decision_tree_training.delete()
     return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
 
-def decision_tree_feature_checker(feature_values, centroid_threshold, path):
+def decision_tree_feature_checker(feature_values, centroid_threshold, path, previous_dp_activity):
     """
     
     A function to check conditions over decision tree representations
@@ -575,7 +660,7 @@ def decision_tree_feature_checker(feature_values, centroid_threshold, path):
             }
         }
     """
-    dt_file = os.path.join(path, "decision_tree.log")
+    dt_file = os.path.join(path, "decision_tree_"+previous_dp_activity+".log")
     
     metadata = {}        
     for target_class, fe_values_class in feature_values.items():
@@ -594,17 +679,40 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')
+        decision_point = request.GET.get('decision_point')
+        #activities_before_dps=execution.process_discovery.activities_before_dps
         
         if scenario == None:
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-              
-        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
         
+        activities_before_dps=extract_prev_act_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+
+        if decision_point == None:
+            #scenario = "1"
+            #decision_point = execution.process_discovery.activities_before_dps[0]
+            decision_point = activities_before_dps[0]
+
+
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_"+decision_point+".pkl")
         tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
+        #tree_rules= extract_tree_rules(path_to_tree_file)
+        rules_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "traceability.json")
 
-        tree_rules= extract_tree_rules(path_to_tree_file)
+        # Read the JSON file
+        with open(rules_file, 'r') as file:
+            decision_data = json.load(file)
 
+        # Find the decision point with the matching prevAct
+        decision_point_data = None
+        for dp in decision_data["decision_points"]:
+            if dp["prevAct"] == decision_point:
+                decision_point_data = dp
+                break
+
+        tree_rules = decision_point_data["rules"]
+        tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        
         # Include CSV data in the context for the template
         context = {
             "execution_id": execution.id,
@@ -612,7 +720,11 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario,
             "tree_rules": tree_rules,
+            "tree_overlapping_rules": tree_overlapping_rules,
+            "decision_point": decision_point,
+            "decision_points": activities_before_dps,
             }
+        
         return render(request, 'decision_tree_training/result.html', context)
     #/screenrpa/apps/templates/
 
@@ -629,7 +741,7 @@ def tree_to_png_base64(path_to_tree_file):
         clasificador_loaded = loaded_data['classifier']
         feature_names_loaded = loaded_data['feature_names']
         
-        class_names_loaded = [str(item) for item in loaded_data['class_names']]
+        class_names_loaded = loaded_data['class_names']
     except FileNotFoundError:
         print(f"File not found: {path_to_tree_file}")
         return None
@@ -657,85 +769,76 @@ def tree_to_png_base64(path_to_tree_file):
 
 ####################################################################
 
-def extract_tree_rules(path_to_tree_file):
-    try:
-        with open('/screenrpa/'+path_to_tree_file, 'rb') as archivo:
-            loaded_data = pickle.load(archivo)
-        # Obtener el clasificador y los nombres de las características del diccionario cargado
-        tree = loaded_data['classifier']
-        feature_names = loaded_data['feature_names']
-        classes = loaded_data['class_names']
-
-    except FileNotFoundError:
-        print(f"File not found: {path_to_tree_file}")
-        return None
-    
-    """
-    Función que recorre las ramas de un árbol de decisión y extrae las reglas
-    obtenidas para clasificar cada una de las variables objetivo
-    
-    Parametros:
-    - tree: El modelo árbol de decisión.
-    - feature_names: Lista de los atributos del dataset.
-    - classes: Clases posibles de la variable objetivo, ordenada ascendentemente
-    """
-    # accede al objeto interno tree_ del árbol de decisión
-    tree_ = tree.tree_
-    feature_name = [
-        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
-        for i in tree_.feature
-    ]
-
-    # Crear un diccionario para almacenar las reglas de cada clase
-    rules_per_class = {cls: [] for cls in classes}
-
-    def recurse(node, parent_rule):
-        if tree_.feature[node] != _tree.TREE_UNDEFINED:
-            name = feature_name[node]
-            threshold = tree_.threshold[node]
-            left_rule = parent_rule + [f"{name} <= {threshold:.2f}"]
-            right_rule = parent_rule + [f"{name} > {threshold:.2f}"]
-
-            recurse(tree_.children_left[node], left_rule)
-            recurse(tree_.children_right[node], right_rule)
-        else:
-            rule = " & ".join(parent_rule)
-            target = classes[tree_.value[node].argmax()]
-            # Agregar la regla a la lista correspondiente de su clase en el diccionario
-            rules_per_class[target].append(rule)
-
-    recurse(0, [])
-
-    # Convertir el diccionario en una lista de reglas por clase
-    return rules_per_class
-
 
 ####################################################################
-
+#descarga solo el decision tree del escenario y de decision point que se visualiza en pantalla
 def DecisionTreeDownload(request, execution_id):
-
     execution = get_object_or_404(Execution, pk=execution_id)
-    #execution = get_object_or_404(Execution, id=request.kwargs["execution_id"])
     scenario = request.GET.get('scenario')
-    
-    if scenario is None:
-        scenario = execution.scenarios_to_study[0]  # by default, the first one that was indicated
-              
-    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
-    
-    try:
-        # Asegúrate de que la ruta absoluta sea correcta
-        full_file_path = os.path.join('/screenrpa', path_to_tree_file)
-        with open(full_file_path, 'rb') as archivo:
-            response = HttpResponse(archivo.read(), content_type="application/octet-stream")
-            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(full_file_path)}-{scenario}"'
-            return response
-        
-    except FileNotFoundError:
+    decision_point = request.GET.get('decision_point')
 
-        print(f"File not found: {path_to_tree_file}")
-        return HttpResponse("Lo siento, el archivo no se encontró.", status=404)
+    # Construye la ruta al archivo
+    path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "decision_tree_" + decision_point + ".pkl")
+
+    # Verifica si el archivo existe
+    if not os.path.exists(path_to_tree_file):
+        raise Http404("El archivo no existe")
+
+    # Abre el archivo y prepara la respuesta HTTP para la descarga
+    with open(path_to_tree_file, 'rb') as file:
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename={os.path.basename(path_to_tree_file)}'
+        return response
+
+        
+#descarga todos los decision tree del escenario (de todos los decision points)
+
+# def DecisionTreeDownload(request, execution_id):
+#     execution = get_object_or_404(Execution, pk=execution_id)
+#     scenario = request.GET.get('scenario')
+    
+#     if scenario is None:
+#         scenario = execution.scenarios_to_study[0]  # Por defecto, el primero indicado
+    
+#     results_folder = os.path.join(execution.exp_folder_complete_path, scenario + "_results")
+    
+#     # Buscar todos los archivos decision_tree_x.pkl en el directorio
+#     tree_files = []
+#     for root, dirs, files in os.walk(results_folder):
+#         for file in files:
+#             if file.startswith("decision_tree_") and file.endswith(".pkl"):
+#                 tree_files.append(os.path.join(root, file))
+
+#     if not tree_files:
+#         return HttpResponse("No decision tree files found.", status=404)
+    
+#     if len(tree_files) == 1:
+#         # Si hay solo un archivo, descargarlo directamente
+#         file_path = tree_files[0]
+#         response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+#         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+#         return response
+#     else:
+#         # Si hay más de un archivo, crear un ZIP y descargarlo
+#         zip_filename = f"{scenario}_decision_tree_results.zip"
+#         zip_buffer = io.BytesIO()
+#         try:
+#             with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+#                 for file_path in tree_files:
+#                     zip_file.write(file_path, os.path.relpath(file_path, results_folder))
+            
+#             zip_buffer.seek(0)
+            
+#             # Crear la respuesta HTTP con el archivo ZIP para descargar
+#             response = HttpResponse(zip_buffer, content_type="application/zip")
+#             response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+#             return response
+        
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             return HttpResponse("Sorry, there was an error processing your request.", status=500)
     
 
     
 ####################################################################
+

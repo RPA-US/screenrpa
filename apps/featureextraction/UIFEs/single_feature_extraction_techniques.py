@@ -10,15 +10,16 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     """
     Add to each compo_json a key named 'features' with the number of UI Components, UI Groups, UI Elements
     """
+    path_scenario_results = path_scenario + '_results'
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
-    decision_point = fe.decision_point_activity
-    case_colname = execution.case_study.special_colnames["Case"]
-    activity_colname = execution.case_study.special_colnames["Activity"]
+    # decision_point = fe.decision_point_activity
+    #case_colname = execution.case_study.special_colnames["Case"]
+    
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    metadata_json_root = os.path.join(path_scenario, 'components_json')
-    flattened_log = os.path.join(path_scenario, 'flattened_dataset.json')
-    enriched_log_output = path_scenario + fe.technique_name+'_enriched_log.csv'
-    text_classname = execution.case_study.ui_elements_classification.text_classname
+    metadata_json_root = os.path.join(path_scenario_results, 'components_json')
+    flattened_log = os.path.join(path_scenario_results, 'flattened_dataset.json')
+    enriched_log_output = path_scenario_results + fe.technique_name+'_enriched_log.csv'
+    text_classname = execution.ui_elements_classification.model.text_classname
     consider_relevant_compos = fe.consider_relevant_compos
     relevant_compos_predicate = fe.relevant_compos_predicate
     id = fe.identifier
@@ -42,7 +43,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
         num_UI_elements = 0
         num_UI_groups = 0
         # This network gives as output the name of the detected class. Additionally, we moddify the json file with the components to add the corresponding classes
-        with open(metadata_json_root + screenshot_filename + '.json', 'r') as f:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
             data = json.load(f)
 
         screenshot_compos_frec = headers.copy()
@@ -77,7 +78,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
                 column_as_vector.append(compos_list[j]["centroid"])
                 info_to_join[column_name] = column_as_vector
             
-            if len(compos_list[j]["contain"]) > 0 or compos_list[j]["contain"] == "UIGroup":
+            if len(compos_list[j]["type"]) != "leaf":
                 num_UI_groups+=1
             else:
                 num_UI_elements+=1
@@ -93,10 +94,10 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
         data["features"]["#UIGroups"] = num_UI_groups
         new_row = [screenshot_filename, num_UI_compos, num_UI_elements, num_UI_groups]
         df.loc[i] = new_row
-        with open(metadata_json_root + screenshot_filename + '.json', "w") as jsonFile:
+        with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(data, jsonFile, indent=4)
             
-    df.to_csv(metadata_json_root + ENRICHED_LOG_SUFFIX + ".csv", index=False)
+    df.to_csv(os.path.join(metadata_json_root, ENRICHED_LOG_SUFFIX + ".csv"), index=False)
             
         
 
@@ -121,13 +122,16 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     ui_elements_classification_classes = execution.ui_elements_classification.model.classes
     #decision_point = fe.decision_point_activity
     id = fe.identifier
-    case_colname = execution.case_study.special_colnames["Case"]
-    activity_colname = execution.case_study.special_colnames["Activity"]
+    #case_colname = execution.case_study.special_colnames["Case"]
+    
     flattened_log = os.path.join(execution_root, 'flattened_dataset.json')
     enriched_log_output = os.path.join(execution_root, fe.technique_name + '_enriched_log.csv')
     text_classname = execution.ui_elements_classification.model.text_classname
     
-    log = read_ui_log_as_dataframe(ui_log_path)
+    if os.path.exists(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv")):
+        log = read_ui_log_as_dataframe(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"))
+    else:
+        log = read_ui_log_as_dataframe(ui_log_path)
 
     enriched_log = log.copy()
     
@@ -162,12 +166,15 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 
             for j in range(0, len(compos_list)):
                 compo_class = compos_list[j]["class"]
-                screenshot_compos_frec[compo_class] += 1
+                try:
+                    screenshot_compos_frec[compo_class] += 1
+                except:
+                    raise Exception("UI Elements Detection model classes not compatible with Preloaded FE files ones: please select the correct model")
 
 # ========================================================================================================
 # ========================================================================================================
                 if centroid_columnname_type == "class_as_colname":
-                    column_name = id +"_"+ compo_class+"_"+str(screenshot_compos_frec[compo_class])
+                    column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
@@ -190,13 +197,16 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
                         aux = compos_list[j]["text"]
-                        column_name = id +"_"+ aux +"_"+str(screenshot_compos_frec[aux]) # concat text in the column name
                     else:
                         aux = compo_class
-                        column_name = id +"_"+ compo_class+"_"+str(screenshot_compos_frec[compo_class])
-
-                    screenshot_compos_frec[aux] += 1
                     
+                    if aux not in screenshot_compos_frec.keys():
+                        screenshot_compos_frec[aux] = 1
+                    else:
+                        screenshot_compos_frec[aux] += 1
+
+                    column_name = f"{id}_{aux}_{screenshot_compos_frec[aux]}"
+
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
                             for k in range(len(info_to_join[column_name]),i):
@@ -218,8 +228,8 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_class":
                     centroid = compos_list[j]["centroid"]
-                    activity = log.at[i, activity_colname]
-                    column_name = f"{id}_{centroid[0]}-{centroid[1]}_{activity}"
+#                    activity = log.at[i, activity_colname]
+                    column_name = f"{id}_{centroid[0]}-{centroid[1]}"
                     
                     if column_name in info_to_join:
                         if not len(info_to_join[column_name]) == i:
@@ -241,8 +251,61 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
-                    pass
+                    # TODO: Review by @amrojas
+                    column_name = f"{id}_{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"
 
+                    if compo_class == text_classname:
+                        aux = compos_list[j]["text"]
+                    else:
+                        aux = compo_class
+                    
+                    if aux not in screenshot_compos_frec.keys():
+                        screenshot_compos_frec[aux] = 1
+                    else:
+                        screenshot_compos_frec[aux] += 1
+
+                    if column_name in info_to_join:
+                        if not len(info_to_join[column_name]) == i:
+                            for k in range(len(info_to_join[column_name]),i):
+                                info_to_join[column_name].append("")
+                        info_to_join[column_name].append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
+                        
+                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+                    else:
+                        column_as_vector = []
+                        for k in range(0,i):
+                            column_as_vector.append("")
+                        column_as_vector.append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
+                        info_to_join[column_name] = column_as_vector
+                        
+                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+# ========================================================================================================
+# ========================================================================================================
+                elif centroid_columnname_type == "xpath_class":
+                    xpath = compos_list[j]["xpath"]
+                    column_name = f"{id}_{xpath}"
+                    
+                    if column_name in info_to_join:
+                        if not len(info_to_join[column_name]) == i:
+                            for k in range(len(info_to_join[column_name]),i):
+                                info_to_join[column_name].append("")
+                        info_to_join[column_name].append(compos_list[j]["class"])
+                        
+                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                    else:
+                        column_as_vector = []
+                        for k in range(0,i):
+                            column_as_vector.append("")
+                        column_as_vector.append(compos_list[j]["class"])
+                        info_to_join[column_name] = column_as_vector
+                        
+                        if column_name not in new_columns:
+                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+
+                else:
+                    raise Exception("UIFE: centroid_columnname_type not recognized")
                 # num_UI_elements += 1
             if "features" in data:
                 data["features"]["location"] = info_to_join
@@ -253,7 +316,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 json.dump(data, jsonFile)
                 
             # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
-            enriched_log.to_csv(metadata_json_root + ENRICHED_LOG_SUFFIX + ".csv", index=False)
+            enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
                 
         else:
             print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
@@ -294,13 +357,21 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
 # ========================================================================================================
 # Class as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_class():
-    pass
+def xpath_class(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: compoclass+int or (if it is text) plaintext+int
+    Column value: centroid 
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "xpath_class")
+
 # ========================================================================================================
 # Boolean if exists as value / xpath to reach ui element as column name
 # ========================================================================================================
-def xpath_ui_elem_class_existence():
-    pass
+def xpath_ui_elem_class_existence(ui_log_path, path_scenario, execution, fe):
+    raise Exception("Not implemented yet")
+
+def xpath_class_filtered_by_attention(ui_log_path, path_scenario, execution, fe):
+    raise Exception("Not implemented yet")
     
 # ========================================================================================================
 # Boolean if exists as value / xpath to reach ui compo as column name
@@ -338,3 +409,6 @@ def ui_compo_existence(ui_log_path, path_scenario, execution, _):
 
     # Guardar el log enriquecido en un nuevo archivo
     enriched_log.to_csv(metadata_json_root + ENRICHED_LOG_SUFFIX + ".csv", index=False)
+
+    num_screenshots = len(enriched_log)
+    return 0, num_screenshots, 99999999999999999, 0

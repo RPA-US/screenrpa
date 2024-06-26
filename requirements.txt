@@ -64,6 +64,7 @@ google-auth==2.12.0
 google-auth-oauthlib==0.4.6
 google-pasta==0.2.0
 graphviz==0.20.1
+pygraphviz==1.13.0
 grpcio==1.49.1
 gunicorn==20.1.0
 h5py==3.7.0

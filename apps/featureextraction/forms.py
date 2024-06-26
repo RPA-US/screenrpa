@@ -250,14 +250,12 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
             "relevant_compos_predicate",
             "preloaded_file",
             "preloaded",
-            "decision_point_activity",
             "title"
         )
         labels = {
             "identifier": _("Identifier"),
             "type": _("Feature extraction type"),
             "technique_name": _("Technique"),
-            "decision_point_activity": _("Decision Point Activity"),
             "consider_relevant_compos": _("Apply Filtering (Relevant Component Selection)"),
             "relevant_compos_predicate": _("Condition for a UI Component to be relevant"),
             "preloaded_file":"Preload Execution Results",
@@ -313,12 +311,6 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
                     "class": "form-control",
                     "required": "false",
                     "onchange": "changeTechniqueOptions()"
-                    }
-            ),
-            "decision_point_activity": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "4_D"
                     }
             ),
             "consider_relevant_compos": forms.CheckboxInput(

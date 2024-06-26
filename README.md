@@ -29,6 +29,20 @@
 
 > UNZIP the sources or clone the private repository. After getting the code, open a terminal and navigate to the working directory, with product source code.
 
+The following software is needed to run this platform:
+- C++ Dev Tools from Visual Studio: ![visual_studio_c++_features](apps\static\assets\img\image.png) 
+
+- Graphviz: 
+    - Windows:
+    1. Download and install Graphviz 2.46.0 for Windows 10 (64-bit):         [stable_windows_10_cmake_Release_x64_graphviz-install-2.46.0-win64.exe](https://gitlab.com/graphviz/graphviz/-/package_files/6164164/download).
+    2. Install PyGraphviz via:   
+
+        ```ps
+        python -m pip install --config-settings="--global-option=build_ext" --config-settings="--global-option=-IC:\Program Files\Graphviz\include" --config-settings="--global-option=-LC:\Program Files\Graphviz\lib" pygraphviz
+        ```
+    - Linux: run this command _sudo apt-get install graphviz graphviz-dev_
+
+
 ```bash
 $ # Get the code
 $ git clone https://github.com/RPA-US/screenrpa.git

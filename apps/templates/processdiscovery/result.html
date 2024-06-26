@@ -31,9 +31,9 @@
       <div class="row">
         <div class="col">
           <div class="card">
-            <!-- Display the decision tree image -->
+            <!-- Display the bpmn image -->
             <div class="card-body">
-              <div id="bpmn-diagram" ></div>
+              <img src="{{ variant_image }}" alt="Grafo del Proceso">
           </div>
           <div class="card-footer py-4">
             <nav aria-label="...">
@@ -47,7 +47,25 @@
                     <a class="dropdown-item" href="/pd/bpmn/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
                     {% endfor %}
                   </div>
+                  
                 </div>
+
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      {% if selected_variant %}
+                          Variante {{ selected_variant }}
+                      {% else %}
+                          Seleccionar Variantes presentes en el log
+                      {% endif %}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      {% for variant in variants %}
+                          <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?scenario={{scenario}}&variant={{ variant }}">Variante {{ variant }}</a>
+                      {% endfor %}
+                  </div>
+              </div>
+
+                
                 <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
                 <a href="/pd/bpmn/result/download/{{execution_id}}/?scenario={{scenario}}">
                   <button class="btn btn-success" style="float: right;" type="button">
@@ -72,7 +90,7 @@
 
   <!-- Specific JS goes HERE --> 
 {% block javascripts %}
-<style>
+<!-- <style>
   #bpmn-diagram {
       width: 100%;       /* O un ancho fijo en píxeles si es necesario */
       height: 500px;     /* Ajusta la altura según sea necesario */
@@ -103,7 +121,7 @@ var prueba = '{{ prueba|escapejs }}';  // Asegúrate de cerrar correctamente la 
 
 // Call the function to render BPMN diagram with the content of 'prueba' variable
 renderBPMNDiagram(prueba);
-</script>
+</script> -->
 
 
 

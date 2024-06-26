@@ -104,14 +104,6 @@
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-target_label">{% blocktranslate %}Target label column name{% endblocktranslate %}</label>
-                      <input type="text" id="input-target_label" class="form-control" disabled placeholder="{% blocktranslate %}Variant{% endblocktranslate %}" disabled value="{{ execution.case_study.target_label }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
                       <label class="form-control-label" for="input-scenarios_to_study">{% blocktranslate %}Scenarios to study{% endblocktranslate %}</label>
                       <input type="text" id="input-scenarios_to_study" class="form-control" disabled placeholder="{% blocktranslate %}['scenario1', 'scenario2']{% endblocktranslate %}" disabled value="{{ execution.scenarios_to_study }}">
                     </div>
@@ -213,7 +205,7 @@
 
 
                     <div class="col-lg-3 col-md-6" >
-                      {% if not execution.feature_extraction_technique %}
+                      {% if not execution.feature_extraction_techniques %}
                       <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-money-coins" style="color: grey "></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
@@ -225,10 +217,10 @@
                         </div>
                       {% endif %}
                       </a>
-                      {% if execution.feature_extraction_technique %}
+                      {% if execution.feature_extraction_techniques %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                          <!-- Dropdown menu links -->
-                          <a class="dropdown-item" href="/fe/feature-extraction-technique/list/{{execution.case_study.id}}?exec_id={{execution_id}}">Configurations</a>
+                          <!-- Dropdown menu links 'ex/feature-extraction-technique/detail/<int:execution_id>/<int:feature_extraction_technique_id>/-->
+                          <a class="dropdown-item" href="/fe/ex/feature-extraction-technique/detail/{{execution_id}}/{{feature_extraction_technique.id}}/">Configurations</a>
                           <a class="dropdown-item" href="/fe/feature-extraction-technique/result/{{execution_id}}/">Results</a>
                         </div>
                       {% endif %}
@@ -342,7 +334,7 @@
                       </div> 
                     {% empty %}
                       <div class="col-12">
-                        <p>No hay reportes asociados con esta ejecución.</p>
+                        <p>There are no reports of this execution.</p>
                       </div>
                     {% endfor %}
                   </div>

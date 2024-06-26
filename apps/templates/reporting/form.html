@@ -24,31 +24,32 @@
                   <div class="form-check">
                       {{ form.process_overview }}
                       {{ form.process_overview.label_tag }} 
-                      <span class="ml-2">(Bloqueado: Process Discovery)</span>
+                      <span class="ml-2">(Locked: Process Discovery)</span>
                   </div>
                   {% endif %}
                   <div class="form-check">
                       {{ form.applications_used }}
                       {{ form.applications_used.label_tag }} 
-                      <span class="ml-2">(No Bloqueado)</span>
+                      <span class="ml-2">(No Locked)</span>
                   </div>    
                    {% if execution.process_discovery != None %}                          
                   <div class="form-check">
                       {{ form.as_is_process_map }}
                       {{ form.as_is_process_map.label_tag }} 
-                      <span class="ml-2">(Bloqueado: Process Discovery)</span>
+                      <span class="ml-2">(Locked: Process Discovery)</span>
                   </div>
-                  
+                  {% endif %} 
+                  {% if execution.decision_tree_training != None %}
                   <div class="form-check">
                       {{ form.detailed_as_is_process_actions }}
                       {{ form.detailed_as_is_process_actions.label_tag }} 
-                      <span class="ml-2">(Bloqueado: Process Discovery)</span>
+                      <span class="ml-2">(Locked: Decision Tree Training)</span>
                   </div>
                    {% endif %} 
                   <div class="form-check">
                       {{ form.input_data_description }}
                       {{ form.input_data_description.label_tag }} 
-                      <span class="ml-2">(No Bloqueado)</span>
+                      <span class="ml-2">(No Locked)</span>
                   </div>
               </div>
           </div>

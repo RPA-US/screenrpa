@@ -16,7 +16,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             )
         fields = (
             "title",
-            "decision_point_activity",
             "columns_to_drop_before_decision_point",
             "configurations",
             "preloaded_file",
@@ -24,11 +23,9 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
         )
         labels = {
             "title": _("Title"),
-            "decision_point_activity": _("Decision Point To Study"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "configurations": _("Additional Configurations (JSON)"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
-            "target_label": _("Target label"),
             "preloaded_file":"Preload Execution Results"
         }
 
@@ -45,18 +42,6 @@ class ExtractTrainingDatasetForm(forms.ModelForm):
             ),
             "preloaded": forms.CheckboxInput(
                 attrs={"class": "primary-checkbox"}
-            ),
-            "target_label": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": _("Variant")
-                    }
-            ),
-            "decision_point_activity": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "C"
-                    }
             ),
             "columns_to_drop_before_decision_point": forms.TextInput(
                 attrs={
