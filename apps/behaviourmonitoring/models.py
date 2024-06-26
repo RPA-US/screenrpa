@@ -5,6 +5,8 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from private_storage.fields import PrivateFileField
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 def default_monitoring_conf():
     return dict({
@@ -31,7 +33,7 @@ class Monitoring(models.Model):
     ub_log_path = models.CharField(max_length=250, blank=True, null=True, default=None)
     # TODO: What do we do with format
     format = models.CharField(max_length=25, default='mht_csv')
-    ui_log_filename = models.CharField(max_length=100, default='Recording_20230424_1222.mht')
+    ui_log_filename = models.CharField(max_length=100, default='Recording_20240617_1711.mht')
     ui_log_separator = models.CharField(max_length=1, default=',')
     gaze_log_filename = models.CharField(max_length=100, default='ET_RExtAPI-GazeAnalysis.csv')
     gaze_log_adjustment = models.FloatField(default=0)
@@ -59,3 +61,8 @@ class Monitoring(models.Model):
     
     def __str__(self):
         return 'type: ' + self.type
+
+@receiver(pre_delete, sender=Monitoring)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)

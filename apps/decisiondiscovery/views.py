@@ -4,11 +4,12 @@ import os
 import zipfile
 from django.forms.models import model_to_dict
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied
 from tqdm import tqdm
 from art import tprint
 import pandas as pd
@@ -195,7 +196,7 @@ def decision_tree_predict(module_path, instance):
     prediction = tree.findDecision(instance)
     return prediction
 
-class ExtractTrainingDatasetCreateView(CreateView):
+class ExtractTrainingDatasetCreateView(LoginRequiredMixin, CreateView):
     model = ExtractTrainingDataset
     form_class = ExtractTrainingDatasetForm
     template_name = "extract_training_dataset/create.html"
@@ -222,14 +223,14 @@ class ExtractTrainingDatasetCreateView(CreateView):
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError(_("User must be authenticated."))
+            raise PermissionDenied("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class ExtractTrainingDatasetListView(ListView):
+class ExtractTrainingDatasetListView(LoginRequiredMixin, ListView):
     model = ExtractTrainingDataset
     template_name = "extract_training_dataset/list.html"
     paginate_by = 50
@@ -262,7 +263,7 @@ class ExtractTrainingDatasetListView(ListView):
         return queryset
     
 
-class ExtractTrainingDatasetDetailView(FormMixin, DetailView):
+class ExtractTrainingDatasetDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = ExtractTrainingDataset
     form_class = ExtractTrainingDatasetForm
     template_name = "extract_training_dataset/details.html"
@@ -328,13 +329,13 @@ def set_as_extracting_training_dataset_inactive(request):
     case_study_id = request.GET.get("case_study_id")
     # Validations
     if not request.user.is_authenticated:
-        raise ValidationError(_("User must be authenticated."))
+        raise PermissionDenied("User must be authenticated.")
     if CaseStudy.objects.get(pk=case_study_id).user != request.user:
-        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     if ExtractTrainingDataset.objects.get(pk=extracting_training_dataset_id).user != request.user:  
-        raise ValidationError(_("Extracting_training_dataset doesn't belong to the authenticated user."))
+        raise PermissionDenied("Extracting_training_dataset doesn't belong to the authenticated user.")
     if ExtractTrainingDataset.objects.get(pk=extracting_training_dataset_id).case_study != CaseStudy.objects.get(pk=case_study_id):
-        raise ValidationError(_("Extracting_training_dataset doesn't belong to the Case Study."))
+        raise PermissionDenied("Extracting_training_dataset doesn't belong to the Case Study.")
     extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
     extracting_training_dataset.active = False
     extracting_training_dataset.save()
@@ -345,16 +346,14 @@ def delete_extracting_training_dataset(request):
     case_study_id = request.GET.get("case_study_id")
     extracting_training_dataset = ExtractTrainingDataset.objects.get(id=extracting_training_dataset_id)
     if request.user.id != extracting_training_dataset.user.id:
-        raise Exception("This object doesn't belong to the authenticated user")
+        raise PermissionDenied("This object doesn't belong to the authenticated user")
     extracting_training_dataset.delete()
     return HttpResponseRedirect(reverse("decisiondiscovery:extract_training_dataset_list", args=[case_study_id]))
 
 ##############################################33
 
 
-
-
-class ExtractTrainingDatasetResultDetailView(DetailView):
+class ExtractTrainingDatasetResultDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         # Get the Execution object or raise a 404 error if not found
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
@@ -494,7 +493,7 @@ def Extract_training_dataset_ResultDownload(path_to_csv_file):
 #####################################################3
 
     
-class DecisionTreeTrainingCreateView(CreateView):
+class DecisionTreeTrainingCreateView(LoginRequiredMixin, CreateView):
     model = DecisionTreeTraining
     form_class = DecisionTreeTrainingForm
     template_name = "decision_tree_training/create.html"
@@ -521,14 +520,14 @@ class DecisionTreeTrainingCreateView(CreateView):
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError(_("User must be authenticated."))
+            raise PermissionDenied("User must be authenticated.")
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class DecisionTreeTrainingListView(ListView):
+class DecisionTreeTrainingListView(LoginRequiredMixin, ListView):
     model = DecisionTreeTraining
     template_name = "decision_tree_training/list.html"
     paginate_by = 50
@@ -561,7 +560,7 @@ class DecisionTreeTrainingListView(ListView):
         return queryset
 
 
-class DecisionTreeTrainingDetailView(DetailView):
+class DecisionTreeTrainingDetailView(LoginRequiredMixin, DetailView):
     # Check if the the phase can be interacted with (included in case study available phases)
     
     def get(self, request, *args, **kwargs):
@@ -607,13 +606,13 @@ def set_as_decision_tree_training_inactive(request):
     case_study_id = request.GET.get("case_study_id")
     # Validations
     if not request.user.is_authenticated:
-        raise ValidationError(_("User must be authenticated."))
+        raise PermissionDenied("User must be authenticated.")
     if CaseStudy.objects.get(pk=case_study_id).user != request.user:
-        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     if DecisionTreeTraining.objects.get(pk=decision_tree_training_id).user != request.user:  
-        raise ValidationError(_("Decision Tree Training doesn't belong to the authenticated user."))
+        raise PermissionDenied("Decision Tree Training doesn't belong to the authenticated user.")
     if DecisionTreeTraining.objects.get(pk=decision_tree_training_id).case_study != CaseStudy.objects.get(pk=case_study_id):
-        raise ValidationError(_("Decision Tree Training doesn't belong to the Case Study."))
+        raise PermissionDenied("Decision Tree Training doesn't belong to the Case Study.")
     decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
     decision_tree_training.active = False
     decision_tree_training.save()
@@ -624,7 +623,7 @@ def delete_decision_tree_training(request):
     case_study_id = request.GET.get("case_study_id")
     decision_tree_training = DecisionTreeTraining.objects.get(id=decision_tree_training_id)
     if request.user.id != decision_tree_training.user.id:
-        raise Exception(_("This object doesn't belong to the authenticated user"))
+        raise PermissionDenied("This object doesn't belong to the authenticated user")
     decision_tree_training.delete()
     return HttpResponseRedirect(reverse("decisiondiscovery:decision_tree_training_list", args=[case_study_id]))
 
@@ -676,7 +675,7 @@ def decision_tree_feature_checker(feature_values, centroid_threshold, path, prev
 
 
 
-class DecisionTreeResultDetailView(DetailView):
+class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         scenario = request.GET.get('scenario')

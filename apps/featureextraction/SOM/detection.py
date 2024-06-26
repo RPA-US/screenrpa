@@ -391,14 +391,15 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     return (recortes, comp_json, text_or_not_text, words)
 
-def detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations, applied_ocr):
+def detect_images_components(scenario_path,param_img_root, log, special_colnames, skip, image_names, text_detected_by_OCR, path_to_save_bordered_images, algorithm, text_classname, metadata, configurations, applied_ocr):
     """
     With this function we process the screencaptures using the information resulting by aplying OCR
     and the image itself. We crop the GUI components and store them in a numpy array with all the 
     cropped components for each of the images in images_names
 
-
-    :param param_img_root: Path where the imaages associated to each log row are stored
+    :param scenario_path: Path to the scenario 
+    :type scenario_path: str  
+    :param param_img_root: Path where the images associated to each log row are stored
     :type param_img_root: str
     :image_names: Names of images in the log by alphabetical order
     :type image_names: list
@@ -408,8 +409,8 @@ def detect_images_components(param_img_root, log, special_colnames, skip, image_
     :type path_to_save_bordered_images: str
     """
     # Since the path ends with a /, the last element of the split will be an empty string
-    execution_root = param_img_root + '_results'
-
+    execution_root = scenario_path + '_results'
+    
     path_to_save_gui_components_npy = os.path.join(execution_root, "components_npy")
     path_to_save_components_json = os.path.join(execution_root, "components_json")
     path_to_save_mask_elements=os.path.join(execution_root, 'sam_mask_elements')
@@ -570,8 +571,9 @@ We make use of OpenCV to carry out the following tasks:
 """
 
 
-def ui_elements_detection(param_log_path, param_img_root, execution):
+def ui_elements_detection(param_log_path, scenario_path, execution):
     log_input_filaname = execution.ui_elements_detection.input_filename
+    img_root = scenario_path if not execution.prefilters else os.path.join(scenario_path + "_results", "prefiltered_img")
     special_colnames = execution.case_study.special_colnames
     configurations = execution.ui_elements_detection.configurations
     algorithm = execution.ui_elements_detection.type
@@ -581,7 +583,7 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
     
     
     tprint(PLATFORM_NAME + " - " + DETECTION_PHASE_NAME, "fancy60")
-    print(param_img_root+"\n")
+    print(scenario_path+"\n")
 
     if os.path.exists(param_log_path):
         logging.info(_("apps/featureextraction/SOM/detection.py Log already exists, it's not needed to execute format conversor"))
@@ -592,35 +594,35 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
             log_filename = configurations["formatted_log_name"]
         else:
             log_filename = "log"
-        param_log_path = format_mht_file(os.path.join(param_img_root, log_input_filaname), configurations["format"], param_img_root, log_filename, configurations["org:resource"])
+        param_log_path = format_mht_file(os.path.join(scenario_path, log_input_filaname), configurations["format"], scenario_path, log_filename, configurations["org:resource"])
 
     # Log read
     log = read_ui_log_as_dataframe(param_log_path)
     # Extract the names of the screenshots associated to each of the rows in the log
     image_names = log.loc[:, special_colnames["Screenshot"]].values.tolist()
     text_corners = []
-    file_exists = os.path.exists(os.path.join(param_img_root, "images_ocr_info.txt"))
+    file_exists = os.path.exists(os.path.join(img_root, "images_ocr_info.txt"))
 
     metadata = { 'screenshots': {} } 
 
     if file_exists:
         print(_("\n\nReading images OCR info from file..."))
-        with open(os.path.join(param_img_root, "images_ocr_info.txt"), "rb") as fp:   # Unpickling
+        with open(os.path.join(img_root, "images_ocr_info.txt"), "rb") as fp:   # Unpickling
             text_corners = pickle.load(fp)
     elif apply_ocr:
         pipeline = keras_ocr.pipeline.Pipeline()
         for img in image_names:
             start_t = time.time()
-            ocr_result = get_ocr_image(pipeline, param_img_root, img)
+            ocr_result = get_ocr_image(pipeline, img_root, img)
             text_corners.append(ocr_result[0])
             metadata['screenshots'][img] = {"get_ocr_image duration": float(time.time()) - float(start_t)}
 
-        with open(os.path.join(param_img_root, "images_ocr_info.txt"), "wb") as fp:  # Pickling
+        with open(os.path.join(img_root, "images_ocr_info.txt"), "wb") as fp:  # Pickling
             pickle.dump(text_corners, fp)
 
     # print(len(text_corners))
 
-    execution_root = param_img_root + '_results'
+    execution_root = scenario_path + '_results'
 
     bordered = os.path.join(execution_root, "borders")
     components_npy = os.path.join(execution_root, "components_npy")
@@ -630,7 +632,7 @@ def ui_elements_detection(param_log_path, param_img_root, execution):
             os.makedirs(p)
 
     start_t = time.time()
-    metadata = detect_images_components(param_img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations, apply_ocr)
+    metadata = detect_images_components(scenario_path,img_root, log, special_colnames, skip, image_names, text_corners, bordered, algorithm, text_classname, metadata, configurations, apply_ocr)
     metadata["duration"] = float(time.time()) - float(start_t)
     return metadata
 

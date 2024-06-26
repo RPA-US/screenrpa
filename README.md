@@ -61,7 +61,7 @@ $ pip3 install -r requirements.txt
 $
 $ # Create tables
 $ python manage.py makemigrations
-$ python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting
+$ python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting apps_notification
 $ python manage.py migrate
 $
 $ # Populate UI detection models
@@ -258,6 +258,31 @@ $ python -m celery -A core worker --concurrency=1
 ```
 
 Visit `http://localhost:85` in your browser. The app should be up & running.
+
+<br />
+
+## Eye Tracking Use and Support
+
+To record a GazeLog with the eye tracking software integrated into ScreenRPA (WebGazer.js <https://github.com/brownhci/WebGazer>), follow these steps:
+
+1. **Start the ScreenRPA Web Application**
+   - Launch the ScreenRPA web application.
+
+2. **Access WebGazer**
+   - Click on "Access to WebGazer" to open the WebGazer.js suite.
+
+3. **Prepare Your Case Study Scenario**
+   - Arrange all the applications you will interact with in windowed mode.
+   - Ensure the ScreenRPA tab in your browser is open and in the background.
+
+4. **Start Recording**
+   - Begin recording the UI Log using either StepRecorders or Screen Action Logger.
+   - Then, click on "Start" in the WebGazer suite to record the Gaze Log.
+
+5. **Perform Your Activity**
+   - Stay calm and perform your activity naturally. ScreenRPA will handle the rest, recording both your UI log and Gaze Log!
+
+By following these steps, you will effectively utilize the eye tracking capabilities of ScreenRPA to capture comprehensive logs of your interactions.
 
 <br />
 

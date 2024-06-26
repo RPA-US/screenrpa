@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-07 10:01+0000\n"
+"POT-Creation-Date: 2024-06-24 08:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgid "Decision Point To Study"
 msgstr "Punto de Decisión a Estudiar "
 
 #: apps/decisiondiscovery/forms.py:28 apps/decisiondiscovery/forms.py:30
-#: apps/decisiondiscovery/forms.py:97
+#: apps/decisiondiscovery/forms.py:101
 msgid "Columns to drop before decision point"
 msgstr "Columnas a eliminar antes del punto de decisión "
 
@@ -43,15 +43,15 @@ msgstr "Clase objetivo"
 msgid "Variant"
 msgstr "Variante"
 
-#: apps/decisiondiscovery/forms.py:94
+#: apps/decisiondiscovery/forms.py:98
 msgid "Library"
 msgstr "Librería"
 
-#: apps/decisiondiscovery/forms.py:95
+#: apps/decisiondiscovery/forms.py:99
 msgid "Configuration"
 msgstr "Configuración"
 
-#: apps/decisiondiscovery/forms.py:96
+#: apps/decisiondiscovery/forms.py:100
 msgid "One hot columns"
 msgstr "Columnas one hot"
 
@@ -59,38 +59,30 @@ msgstr "Columnas one hot"
 msgid "The identifier does not follow the pattern"
 msgstr "El identificador no sigue el patrón"
 
-#: apps/decisiondiscovery/views.py:142
+#: apps/decisiondiscovery/views.py:157
 msgid "Decision model chosen is not an option"
 msgstr "El modelo de decisión elegido no es una opción"
 
-#: apps/decisiondiscovery/views.py:186 apps/decisiondiscovery/views.py:269
-#: apps/decisiondiscovery/views.py:318 apps/decisiondiscovery/views.py:385
-msgid "User must be authenticated."
-msgstr "El usuario debe estar autenticado."
+#~ msgid "User must be authenticated."
+#~ msgstr "El usuario debe estar autenticado."
 
-#: apps/decisiondiscovery/views.py:271 apps/decisiondiscovery/views.py:387
-msgid "Case Study doesn't belong to the authenticated user."
-msgstr "Este objeto no pertenece al usuario autenticado"
+#~ msgid "Case Study doesn't belong to the authenticated user."
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
 
-#: apps/decisiondiscovery/views.py:273
-msgid "Extracting_training_dataset doesn't belong to the authenticated user."
-msgstr "Este objeto no pertenece al usuario autenticado"
+#~ msgid "Extracting_training_dataset doesn't belong to the authenticated user."
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
 
-#: apps/decisiondiscovery/views.py:275
-msgid "Extracting_training_dataset doesn't belong to the Case Study."
-msgstr "Esta configuracion no pertenece al caso de estudio"
+#~ msgid "Extracting_training_dataset doesn't belong to the Case Study."
+#~ msgstr "Esta configuracion no pertenece al caso de estudio"
 
-#: apps/decisiondiscovery/views.py:389
-msgid "Decision Tree Training doesn't belong to the authenticated user."
-msgstr "Este objeto no pertenece al usuario autenticado"
+#~ msgid "Decision Tree Training doesn't belong to the authenticated user."
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
 
-#: apps/decisiondiscovery/views.py:391
-msgid "Decision Tree Training doesn't belong to the Case Study."
-msgstr "Esta configuracion no pertenece al caso de estudio"
+#~ msgid "Decision Tree Training doesn't belong to the Case Study."
+#~ msgstr "Esta configuracion no pertenece al caso de estudio"
 
-#: apps/decisiondiscovery/views.py:402
-msgid "This object doesn't belong to the authenticated user"
-msgstr "Este objeto no pertenece al usuario autenticado"
+#~ msgid "This object doesn't belong to the authenticated user"
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
 
 #~ msgid "Grid Search Best Params:\n"
 #~ msgstr "Mejores parámetros de búsqueda en cuadrícula:\n"

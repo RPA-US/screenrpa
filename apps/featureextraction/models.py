@@ -17,6 +17,8 @@ from django.db.models import JSONField
 from django.urls import reverse
 from core.settings import PRIVATE_STORAGE_ROOT, sep
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 def unzip_file(zip_file_path, dest_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
@@ -51,15 +53,16 @@ def default_prefilters_conf():
     
 def default_filters_conf():
     return dict({
-                "gaze":{
-                    "UI_selector": "all",
-                    "predicate": "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])",
-                    "only_leaf": True
-                },
-                "filter2":{
-
-                }
-                })
+                "gaze": {
+                        "UI_selector": "all",
+                        "predicate":"is_component_relevant",
+                        "scale_factor":"10",
+                        "only_leaf": True,
+                        "intersection_area_thresh":1,
+                        "mode":"draw"
+                        }
+                    }
+                )
 
 
 UI_ELM_DET_TYPES = (
@@ -90,6 +93,10 @@ class Prefilters(models.Model):
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
+@receiver(pre_delete, sender=Prefilters)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
 
 class UIElementsDetection(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
@@ -140,6 +147,11 @@ class UIElementsDetection(models.Model):
 
             super().save(*args, **kwargs)
 
+@receiver(pre_delete, sender=UIElementsDetection)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
+
 def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
@@ -186,6 +198,11 @@ class UIElementsClassification(models.Model):
     def __str__(self):
         return 'type: ' + self.type + ' - model: ' + self.model
 
+@receiver(pre_delete, sender=UIElementsClassification)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
+
 class Postfilters(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
     preloaded_file = PrivateFileField("File", null=True,blank=True)
@@ -206,6 +223,10 @@ class Postfilters(models.Model):
     def __str__(self):
         return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
     
+@receiver(pre_delete, sender=Postfilters)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
 
 class FeatureExtractionTechnique(models.Model):
     preloaded = models.BooleanField(default=False, editable=True)
@@ -235,3 +256,8 @@ class FeatureExtractionTechnique(models.Model):
         
     def __str__(self):
         return 'technique: ' + self.technique_name + ' - skip? ' + str(self.skip)
+
+@receiver(pre_delete, sender=FeatureExtractionTechnique)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)

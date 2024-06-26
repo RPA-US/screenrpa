@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
+from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
@@ -47,6 +48,8 @@ from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, E
 from apps.analyzer.tasks import celery_task_process_case_study
 from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+from apps.notification.models import Status as NotifStatus
+from apps.notification.views import create_notification
 # Result Treeimport json
 import matplotlib.pyplot as plt
 from sklearn import tree
@@ -121,8 +124,10 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         user_id (int): The user id of the user that is executing the case study
         case_study_id (int): The case study id of the case study to be executed
     """
-    with transaction.atomic():
-        execution = Execution(user=User.objects.get(id=user_id), case_study=CaseStudy.objects.get(id=case_study_id))
+    case_study = CaseStudy.objects.get(id=case_study_id)
+    create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Started"), _("Case study execution has started"), reverse("analyzer:execution_list"), status=NotifStatus.PROCESSING.value)
+    try:
+        execution = Execution(user=User.objects.get(id=user_id), case_study=case_study)
         execution.save()
         execution.check_preloaded_file()
 
@@ -169,6 +174,13 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
             outfile.write(json_object)
             
         print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
+        create_notification(User.objects.get(id=user_id), _(f"{execution.case_study.title} Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}), status=NotifStatus.SUCCESS.value)
+    except Exception as e:
+        # TODO: View the error trace in the frontend or link to gtihub issues with description filled
+        case_study=CaseStudy.objects.get(id=case_study_id)
+        create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"), status=NotifStatus.ERROR.value)
+        execution.errored = True
+        execution.save()
 
 #============================================================================================================================
 #============================================================================================================================
@@ -313,7 +325,7 @@ def executeCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         # 403 Forbidden
-        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
     elif ACTIVE_CELERY:
         celery_task_process_case_study.delay(request.user.id, case_study_id)
     else:
@@ -327,8 +339,8 @@ def deleteCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
-    if cs.executed != 0:
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
+    if cs.num_executions > 0:
         return HttpResponse(status=422, content=_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
@@ -342,7 +354,7 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
         user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         if user.id != case_study.user.id:
-            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(request.POST, instance=case_study)
         if form.is_valid():
             form.save()
@@ -354,7 +366,7 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
         user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         if user.id != case_study.user.id:
-            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(instance=case_study)
         context = {
             "form": form, 
@@ -452,7 +464,7 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
             user = request.user
             case_study = get_object_or_404(CaseStudy, id=case_study_id, active=True)
             if case_study.user.id != user.id:
-                return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+                raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
             serializer = CaseStudySerializer(instance=case_study)
             response = serializer.data
             return Response(response, status=st)
@@ -533,7 +545,7 @@ def exp_file_download(request, case_study_id):
     if cs.exists():
         unzipped_folder = cs[0].exp_folder_complete_path
     else:
-        raise Exception(_("You don't have permissions to access this files"))
+        raise PermissionDenied(_("You don't have permissions to access this files"))
     
     # Create a temporary zip file containing the contents of the unzipped folder
     zip_filename = os.path.basename(unzipped_folder) + ".zip"
@@ -559,7 +571,7 @@ def exp_file_download(request, case_study_id):
 # ============================================================================================================================
 # Executions
 # ============================================================================================================================
-class ExecutionListView(ListView, LoginRequiredMixin):
+class ExecutionListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = Execution
     template_name = "executions/list.html"
@@ -577,9 +589,7 @@ def deleteExecution(request):
     execution_id = request.GET.get("id")
     cs = Execution.objects.get(id=execution_id)
     if request.user.id != cs.user.id:
-        return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
-    if cs.executed != 0:
-        return HttpResponse(status=422, content=_("This execution cannot be deleted because it has already been excecuted"))
+        raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
@@ -594,7 +604,7 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
         feature_extraction_technique=execution.feature_extraction_techniques.first() #parche para que no de error en la vista
 
         if user.id != execution.user.id:
-            return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
         reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
         
         context = {

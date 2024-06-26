@@ -48,112 +48,18 @@
             </select>
           </form>
         </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <li id="notification-popup" class="nav-item dropdown">
+          <a class="nav-link position-relative" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="ni ni-bell-55"></i>
+            <badge id="unread-badge" class="bg-warning position-absolute rounded-pill px-1" style="right: 10px; top: -4px; font-size:12px" hidden></badge>
           </a>
           <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
             <!-- Dropdown header -->
             <div class="px-3 py-3">
-              <h6 class="text-sm text-muted m-0">{% blocktranslate %}You have {% endblocktranslate %}<strong class="text-primary">13</strong>{% blocktranslate %} notifications.{% endblocktranslate %}</h6>
+              <h6 class="text-sm text-muted m-0">{% blocktranslate %}You have {% endblocktranslate %}<strong id="unread" class="text-primary"></strong>{% blocktranslate %} unread notifications.{% endblocktranslate %}</h6>
             </div>
             <!-- List group -->
-            <div class="list-group list-group-flush">
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-1.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>2 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">Let's meet at Starbucks at 11:30. Wdyt?</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-2.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>3 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">A new issue has been reported for Argon.</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-3.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>5 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">Your posts have been liked a lot.</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/user-bg.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>2 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">Let's meet at Starbucks at 11:30. Wdyt?</p>
-                  </div>
-                </div>
-              </a>
-              <a href="#!" class="list-group-item list-group-item-action">
-                <div class="row align-items-center">
-                  <div class="col-auto">
-                    <!-- Avatar -->
-                    <img alt="Image placeholder" src="/static/assets/img/theme/team-5.jpg" class="avatar rounded-circle">
-                  </div>
-                  <div class="col ml--2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h4 class="mb-0 text-sm">John Snow</h4>
-                      </div>
-                      <div class="text-right text-muted">
-                        <small>3 hrs ago</small>
-                      </div>
-                    </div>
-                    <p class="text-sm mb-0">A new issue has been reported for Argon.</p>
-                  </div>
-                </div>
-              </a>
+            <div id="notification-list" class="list-group list-group-flush" style="overflow-y: scroll; max-height: 500px">
             </div>
             <!-- View all -->
             <a href="#!" class="dropdown-item text-center text-primary font-weight-bold py-3">{% blocktranslate %}Close{% endblocktranslate %}</a>
@@ -247,8 +153,8 @@
 {% block javascripts %}
  <script src="/static/assets/vendor/jquery/dist/jquery.min.js"></script>
  <script>
-  // navbar-search functionality
   $(document).ready(function() {
+    // navbar-search functionality
     // Disable if no element with id list
     if ($('.list').length == 0) {
       // replace nabvar-search-light class with navbar-search-dark
@@ -265,5 +171,81 @@
       window.location.href = url + '?s=' + query;
     });
   });
+
+  getNotifications();
+  setInterval(getNotifications, 5 * 1000); // Update every minute
+
+  async function getNotifications() {
+    const res = await fetch('/notification');
+    const data = await res.json();
+
+    // Update unread notifications
+    $('#unread').text(data.unread);
+    if (data.unread) {
+      $('#unread-badge').prop('hidden', false);
+      $('#unread-badge').text(data.unread);
+    } else {
+      $('#unread-badge').prop('hidden', true);
+      $('#unread-badge').text('');
+    }
+
+    const notificationList = $('#notification-list');
+    notificationList.empty();
+    for (i in data.notifications) {
+      const notification = data.notifications[i];
+      // timeDiff in "now"/minutes/hours/days/specific date depending on the time difference
+      let timeDiff = notification.timeDiff
+      if (timeDiff < 60) {
+        timeDiff = 'right now';
+      } else if (timeDiff < 3600) {
+        timeDiff = Math.floor(timeDiff / 60) + ' min ago';
+      } else if (timeDiff < 86400) {
+        timeDiff = Math.floor(timeDiff / 3600) + ' hours ago';
+      } else if (timeDiff < 604800) {
+        timeDiff = Math.floor(timeDiff / 86400) + ' days ago';
+      } else {
+        timeDiff = new Date(notification.timestamp).toDateString()
+      }
+      // Add a vertical bar at the left if the notification is unread
+      // Margin left is -19 because it overwrites row margin, which is -15
+      const notificationItem = $(`
+        <a href="${notification.href}" class="list-group-item list-group-item-action" ${!notification.read ? 'style="border-left: 4px solid #5e72e3; background: #ebf0ff"' : ''}>
+          <div class="row align-items-center" ${!notification.read ? 'style="margin-left: -19px"' : ''}>
+            <div class="col-auto">
+              <i class="${notification.status.icon}" style="font-size: 40px; color: ${notification.status.color}"></i>
+            </div>
+            <div class="col ml--2">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h4 class="mb-0 text-sm">${notification.short}</h4>
+                </div>
+                <div class="text-right text-muted">
+                  <small>${timeDiff}</small>
+                </div>
+              </div>
+              <p class="text-sm mb-0">${notification.message}</p>
+            </div>
+          </div>
+        </a>
+        `)
+        notificationList.append(notificationItem);
+    }
+  }
+
+  // When the popup is hidden (loses class show), mark all notifications as read
+  const notificationPopup = document.getElementById('notification-popup');
+  async function notificationCallback(mutationList, observer) {
+    for (const mutation of mutationList) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        if (!notificationPopup.classList.contains('show')) {
+          fetch('/notification/mark_all_as_read', { method: 'GET' });
+          await getNotifications();
+        }
+      }
+    }
+  }
+  const observer = new MutationObserver(notificationCallback);
+  observer.observe(notificationPopup, { attributes: true })
+
 </script>
 {% endblock javascripts %}

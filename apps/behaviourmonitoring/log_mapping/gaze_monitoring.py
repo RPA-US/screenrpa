@@ -73,9 +73,10 @@ def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
     hs = int(min/60)
     ms -= min*60
     min -= hs*60
-    # Datetime can read 6 digits as miliseconds
-    if len(str(float(current_timestamp) / 1000)) > 6:
-      ms = str(ms)[:6]
+    # # Datetime can read 6 digits as miliseconds
+    # if len(str(float(current_timestamp) / 1000)) > 6:
+    #   ms = str(ms)[:6]
+    ms = round(ms, 3)  # Round to 3 decimal places
     ms = str(hs)+"-"+str(min)+"-"+str(ms)
     time = datetime.datetime.strptime(ms, ms_pattern).time()
     res = start_datetime + datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=time.second, microseconds=time.microsecond)
@@ -438,32 +439,32 @@ def monitoring(log_path, root_path, execution):
           logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
           raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
         
-        #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
-        gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
+      #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
+      gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         
-        #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-        startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
-        startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
+      #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
+      startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
+      startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
 
-        if os.path.exists(os.path.join(root_path ,"fixation.json")):
-          fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
-          logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
-          print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
-        else:
-          fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
+      if os.path.exists(os.path.join(root_path ,"fixation.json")):
+        fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
+        logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
+        print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
+      else:
+        fixation_p = gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
         
-        # Serializing json
-        json_object = json.dumps(fixation_p, indent=4)
-        with open(os.path.join(root_path , "fixation.json"), "w") as outfile:
-            outfile.write(json_object)
-        logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
+      # Serializing json
+      json_object = json.dumps(fixation_p, indent=4)
+      with open(os.path.join(root_path , "fixation.json"), "w") as outfile:
+          outfile.write(json_object)
+      logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
         
-        fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+      fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
         
-        monitoring_obj.executed = 100
-        monitoring_obj.ub_log_path = os.path.join(root_path,"fixation.json")
-        # update monitoring_obj
-        monitoring_obj.save()
+      monitoring_obj.executed = 100
+      monitoring_obj.ub_log_path = os.path.join(root_path,"fixation.json")
+      # update monitoring_obj
+      monitoring_obj.save()
     elif monitoring_type == "webgazer":
       #### Preprocessing WebgazerLog Start ####
       pixels_threshold_i_dt = get_distance_threshold_by_resolution(monitoring_screen_inches,INCH_PER_CENTIMETRES, monitoring_observer_camera_distance,monitoring_screen_width,monitoring_screen_height) #Capturing the distance threshold in pixels regarding to the screen resolution
@@ -495,35 +496,35 @@ def monitoring(log_path, root_path, execution):
         #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
         
         #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-        startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
-        startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path , monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
+      startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
+      startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path , monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
 
-        #native_slide_events = "native_slideevents.csv"
+      #native_slide_events = "native_slideevents.csv"
 
-        if os.path.exists(os.path.join(root_path ,"fixation.json")):
-          fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
-          logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
-          print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
-        else:
-          fixation_p = gaze_log_mapping(ui_log, gazeanalysis_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
+      if os.path.exists(os.path.join(root_path ,"fixation.json")):
+        fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
+        logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
+        print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
+      else:
+        fixation_p = gaze_log_mapping(ui_log, gazeanalysis_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
         
-        # Serializing json
-        json_object = json.dumps(fixation_p, indent=4)
-        with open(os.path.join(root_path ,"fixation.json"), "w") as outfile:
-            outfile.write(json_object)
-        logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
+      # Serializing json
+      json_object = json.dumps(fixation_p, indent=4)
+      with open(os.path.join(root_path ,"fixation.json"), "w") as outfile:
+          outfile.write(json_object)
+      logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
         
-        fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+      fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
         
-        monitoring_obj.executed = 100
-        monitoring_obj.ub_log_path =os.path.join( root_path , "fixation.json")
-        # update monitoring_obj
-        monitoring_obj.save()
+      monitoring_obj.executed = 100
+      monitoring_obj.ub_log_path =os.path.join( root_path , "fixation.json")
+      # update monitoring_obj
+      monitoring_obj.save()
  
     elif monitoring_type == "already_processed":
       print("Log processing: The log have been already processed")
     else:
-        logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
-        raise Exception("You select a gaze analysis that is not available in the system")
+      logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
+      raise Exception("You select a gaze analysis that is not available in the system")
         
     return os.path.join(root_path , "fixation.json")
