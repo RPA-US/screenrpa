@@ -75,8 +75,11 @@
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">
-                      {% if execution.executed == 0 %}
+                      {% if execution.errored %}
                       <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}errored{% endblocktranslate %}</span>
+                      {% elif execution.executed == 0 %}
+                      <i class="bg-warning"></i>
                       <span class="status">{% blocktranslate %}not executed{% endblocktranslate %}</span>
                       {% elif execution.executed == 100 %}
                       <i class="bg-success"></i>
@@ -91,9 +94,13 @@
                     <div class="d-flex align-items-center">
                       <span class="completion mr-2">{{ execution.executed }}</span>
                       <div>
-                        {% if execution.executed == 0 %}
+                        {% if execution.errored %}
                         <div class="progress">
                           <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                        </div>
+                        {% elif execution.executed == 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
                         </div>
                         {% elif execution.executed == 100 %}
                         <div class="progress">
@@ -114,14 +121,28 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         <div style="display: flex;">
-                          <a class="dropdown-item" href="/case-study/execution/detail/{{ execution.pk }}/">
+                        {% if execution.errored %}
+                          <a class="dropdown-item" title="{%blocktranslate%}Cannot be generated due to an error during the execution{%endblocktranslate%}">
                             <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                          <a class="dropdown-item" title="{%blocktranslate%}Cannot be generated due to an error during the execution{%endblocktranslate%}">                   
+                            <i class="fas fa-download" style="color: light-gray; vertical-align: 0%;"></i>{% blocktranslate %}Download results{% endblocktranslate %}</a>           
+                          <a class="dropdown-item" title="{%blocktranslate%}Cannot be generated due to an error during the execution{%endblocktranslate%}">                   
+                            <i class="fas fa-file" style="color: light-gray; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
                           <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this execution?{% endblocktranslate %}')" href="/case-study/execution/delete/?id={{ execution.pk }}">
                             <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>    
+                        {% elif execution.executed == 100 %}
+                          <a class="dropdown-item" href="/case-study/execution/detail/{{ execution.pk }}/">
+                            <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                          <a class="dropdown-item" href="/case-study/execution/files/download/{{execution.id}}">                   
+                            <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>{% blocktranslate %}Download results{% endblocktranslate %}</a>           
                           <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to generate the report?{% endblocktranslate %}')" href="/reporting/pdd/generate/{{execution.id}}">                   
-                          
-                            <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
-                          </div>
+                            <i class="fas fa-file" style="color: gray; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this execution?{% endblocktranslate %}')" href="/case-study/execution/delete/?id={{ execution.pk }}">
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>    
+                        {% else %}
+                          <a class="dropdown-item disabled" style="color: gray;">{% blocktranslate %}Executing...{% endblocktranslate %}</a>
+                        {% endif %}
+                        </div>
                       </div>
                     </div>
                   </td>

@@ -1,7 +1,10 @@
 import base64
+from collections import defaultdict
 import io
+import json
 import os
 import pickle
+import re
 from tempfile import NamedTemporaryFile
 #from tkinter import Image
 from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
@@ -16,8 +19,16 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
+from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn.tree import export_graphviz
+
+
+#from SOM.utils import get_uicompo_from_centroid
+from apps.decisiondiscovery.utils import truncar_a_dos_decimales
+from core.utils import read_ui_log_as_dataframe
+from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from .models import PDD
 from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
@@ -38,9 +49,127 @@ import pydotplus
 from PIL import Image, ImageDraw
 #import subprocess
 import aspose.words as aw
+##################################
+from graphviz import Source, Digraph
+from tempfile import NamedTemporaryFile
+from apps.processdiscovery.utils import Process, extract_all_activities_labels, extract_prev_act_labels
+
+import pygraphviz as pgv 
+from shapely.geometry import Polygon, Point
+from docx.shared import RGBColor
+####################################################################3
+
+#########################################
+########## COMPONENT RETRIEVAL ##########
+#########################################
+
+def get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames,action) -> dict:
+    # log = read_ui_log_as_dataframe(os.path.join(scenario_results_path, "pd_log.csv"))
+
+    # # Find two subsequent rows such that the fisrt 'Activity' is prev_act and the second 'Activity' is next_act
+    # prev_act_idx = log[log[special_colnames['Activity']]==prev_act].index
+    # next_act_idx = log[log[special_colnames['Activity']]==next_act].index
+
+    # if len(prev_act_idx)==0 or len(next_act_idx)==0:
+    #     return None
+
+    # # Find two consequent numbers in prev_act_idx and next_act_idx
+    # img_name = None
+    # for idx in prev_act_idx:
+    #     if idx+1 in next_act_idx and action==0:
+    #         img_name = log.loc[idx, special_colnames['Screenshot']]
+    #         break
+    #     elif action>0:
+    #         action-=1
+    
+    # if not img_name:
+    #     return None
+
+    if not os.path.exists(os.path.join(scenario_results_path, "components_json")):
+        raise Exception("No UI Elm. Det. Phase Conducted")
+
+    return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
 
 
-# Create your views here.
+
+
+
+def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+    """
+    Recovers a component from the pd log based on the id of the component.
+    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
+
+    action determines which instance in order should be considered.
+    
+    params:
+        @prev_act: previous activity
+        @next_act: next activity
+        @ui_compo_centroid: centroid of the component
+        @scenario_results_path: path to the scenario results
+        @action: instance of the component to recover
+    returns:
+        @uicompo: the component
+    """
+
+    #pasa de tupla a lista
+    ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
+    som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
+    #print(som_json)
+    # Filtrar la lista y encontrar el mínimo
+    uicompo_json=None
+    for compo in som_json['compos']:
+        # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
+        compo_centroid_int = [int(float(coord)) for coord in compo['centroid']]
+        if compo_centroid_int == ui_compo_centroid:
+            uicompo_json = compo
+            break
+    return uicompo_json
+
+def get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+    ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
+    som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
+
+    uicompo_json = None
+    min_distance = float('inf')
+    closest_compo = None
+
+    for compo in som_json['compos']:
+        # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
+        compo_centroid_int = [int(float((coord))) for coord in compo['centroid']]
+        if compo_centroid_int == ui_compo_centroid:
+            uicompo_json = compo
+            break
+        else:
+            # Calcular la distancia entre centroids
+            distance = np.linalg.norm(np.array(compo_centroid_int) - np.array(ui_compo_centroid))
+            if distance < min_distance:
+                min_distance = distance
+                closest_compo = compo
+
+    # Si no se encontró una coincidencia exacta, usar el más cercano
+    if uicompo_json is None and closest_compo is not None:
+        uicompo_json = closest_compo
+    return uicompo_json
+
+def pre_pd_activities(decision_point, df_pd_log,colnames):
+    grouped = df_pd_log.groupby(colnames['Variant'])
+    # Iterate through each group
+    result = []
+    for variant, group in grouped:
+        # Sort by Timestamp
+        sorted_group = group.sort_values(by=colnames['Timestamp'])
+        # Iterate through activities in the sorted group
+        for activity in sorted_group[colnames['Activity']]:
+            
+            if activity not in result:
+                result.append(activity)
+            if str(activity) == decision_point:
+                break
+            # Stop when encountering the specific activity
+            
+    return result
+
+
 
 def pdd_define_style(document):
     # =======================================================================================================
@@ -457,6 +586,27 @@ def tree_to_png(path_to_tree_file):
     
     return temp_file.name
 
+
+#########################################
+def dot_to_png(dot_path):
+    # Cargar el contenido del archivo .dot
+    with open(dot_path, 'r') as file:
+        dot_content = file.read()
+    try:
+        graph = Source(dot_content)
+        graph.format = 'png'
+        
+        # Guardar la imagen a un archivo temporal
+        temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+        graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
+        
+        return graph_path 
+    
+    except Exception as e:
+
+        print(f"Error al procesar el gráfico: {e}")
+        return None
+
 #############################################################################################
 class ReportCreateView(CreateView):
     model = PDD
@@ -479,10 +629,11 @@ class ReportCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.execution = Execution.objects.get(pk=self.kwargs.get('execution_id'))
+
         saved = self.object.save()
 
         self.report_generate(self.object)
-
+        
         return HttpResponseRedirect(self.get_success_url())
     
     def report_generate(self, report):
@@ -503,11 +654,10 @@ class ReportCreateView(CreateView):
         
 #############################################################################################
 
-
 def report_define(report_directory, report_path, execution,  report, scenario):
     template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
     doc = Document(template_path)
-
+    colnames=execution.case_study.special_colnames
     ###############3
     paragraph_dict = {}
     for i, paragraph in enumerate(doc.paragraphs):
@@ -522,72 +672,107 @@ def report_define(report_directory, report_path, execution,  report, scenario):
     
     purpose= doc.paragraphs[paragraph_dict['[PURPOSE]']]
     purpose.text = report.purpose
+    for style in doc.styles:
+        print(f"Style name: {style.name}, Style type: {style.type}")
+    
     #paragraph.style = doc.styles['Normal']
 
     purpose= doc.paragraphs[paragraph_dict['[OBJECTIVE]']]
     purpose.text = report.objective
 
-    #############################################PROCESS OVERVIEW
+    ############################################# AS IS PROCESS DESCRPTION: PROCESS OVERVIEW
 
     if report.process_overview:
         title= doc.paragraphs[paragraph_dict['[TITLE]']]
         title.text = execution.process_discovery.title
+        title.style='Normal'
+    else:
+        doc.paragraphs[paragraph_dict['[TITLE]']].clear()
 
-        #falta [SHORT DESCRIPTION] --> meter el campo en process discovery
-
-    ############################ APPLICATIONS USED
+    ############################ AS IS PROCESS DESCRPTION: APPLICATIONS USED
     if report.applications_used:
         nameapps= doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']]
-        applications_used(nameapps, execution, scenario)
+        nameapps.text = "The applications used by the user during the execution of the process are:"
+        applications_used(nameapps, execution, scenario, colnames)
         #nameapps.style = doc.styles['ListBullet'] --> add_paragraph('text', style='ListBullet')
-        
+    else:
+        doc.paragraphs[paragraph_dict['[DIFERENT NAMEAPPS]']].clear()
 
     ##########################3 AS IS PROCESS MAP
+    if report.as_is_process_map:
+        bpmn= doc.paragraphs[paragraph_dict['[.BPMN]']]
+        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+        bpmn.text = f"Below is the process model in BPMN format associated with the case study with a total of {len(extract_all_activities_labels(path_to_tree_file))} activities and {len(extract_prev_act_labels(path_to_tree_file))} decision points."
+        run = bpmn.add_run()
+        run.add_picture(dot_to_png(path_to_tree_file), width=Inches(6))
+        run.add_break()
+    else:
+        # Eliminar el párrafo [.BPMN] si no se cumple la condición
+        doc.paragraphs[paragraph_dict['[.BPMN]']].clear()
+        # O alternativamente eliminar el párrafo por completo
+        #doc.paragraphs.pop(paragraph_dict['[.BPMN]'])
 
-    #############################3
-    if report.input_data_description:
-        original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
-        df_logcsv = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
-        input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
-
-    #############################3 DETAILS AS IS PROCESS
+    
+    #############################3 DETAILS AS IS PROCESS ACTIONS
     
     if report.detailed_as_is_process_actions:
-
+        #meter diagrama de decision tree
         decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
-        path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
-        run = decision_tree.add_run()
-        run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
-        run.add_break()
+        decision_tree.text = ""
+        # path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree.pkl")
+        # run = decision_tree.add_run()
+        # run.add_picture(tree_to_png(path_to_tree_file), width=Inches(6))
+        # run.add_break()
         #decision_tree.text = ''
         #detailes_as_is_process_actions(doc, paragraph_dict, execution, scenario)
 
-        detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution)
+        detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames)
+    else:
+        doc.paragraphs[paragraph_dict['[DECISION TREE]']].clear()
      
-    ###################
+    
+    #############################3 INPUT DATA DESCRPTION
+    if report.input_data_description:
+        original_log= doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']]
+        df_logcsv = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv'))
+        input_data_descrption(doc, original_log, execution, scenario, df_logcsv)
+    else:
+        doc.paragraphs[paragraph_dict['[ORIGINAL LOG]']].clear()
+
+
     doc.save(report_path)
 
     convert_docx_to_pdf(report_path, report_path.replace('.docx', '.pdf'))
 
 #################################################################################
 
-def applications_used(nameapps, execution, scenario):
-            logcsv_directory = os.path.join(execution.exp_folder_complete_path,scenario,'log.csv')
-            df_logcsv = pd.read_csv(logcsv_directory)
-            unique_names = df_logcsv['NameApp'].unique()
+def applications_used(nameapps, execution, scenario, colnames):
+    logcsv_directory = os.path.join(execution.exp_folder_complete_path, scenario, 'log.csv')
+    df_logcsv = read_ui_log_as_dataframe(logcsv_directory)
+    unique_names = df_logcsv[colnames['NameApp']].unique()
 
-            for name in unique_names:
-                run = nameapps.add_run('\n• ' + name)
-                run.add_break()
-                row = df_logcsv[df_logcsv['NameApp'] == name].iloc[0]
-                screenshot_filename = row['Screenshot']
-                screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                
-                if os.path.exists(screenshot_directory):
-                
-                    nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
-                else:
-                    print(f"Image not found for {name}: {screenshot_directory}")
+    for name in unique_names:
+        
+        nameapps.add_run().add_break()
+        nameapps.add_run('\n• ' + name, style='Título 4 Car')
+        # Añadir salto de línea después del nombre
+        nameapps.add_run().add_break()
+
+        # Obtener la primera fila correspondiente al nombre de la aplicación
+        row = df_logcsv[df_logcsv[colnames['NameApp']] == name].iloc[0]
+        screenshot_filename = row[colnames['Screenshot']]
+        screenshot_directory = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+
+        # Añadir la imagen si existe
+        if os.path.exists(screenshot_directory):
+            nameapps.add_run().add_picture(screenshot_directory, width=Inches(6))
+            # Añadir salto de línea después de la imagen
+            nameapps.add_run().add_break()
+
+        # Mensaje en caso de que no se encuentre la imagen
+        else:
+            print(f"Image not found for {name}: {screenshot_directory}")
+
 #############################################################################################
 def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
         
@@ -618,86 +803,589 @@ def convert_docx_to_pdf(dx_path, pdf_path):
 #     pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
 ##################################################33
 
+def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames):
+    
+    # def variant_column(df):
+    #     sequence_to_variant = {}
+    #     next_variant_number = 1
+    #     # Función para generar el mapeo de variantes y asignar valores a la columna Variant2
+    #     def assign_variant(trace):
+    #         nonlocal next_variant_number  # Declarar next_variant_number como global
+    #         cadena = ""
+    #         for e in trace[colnames['Activity']].tolist():
+    #             cadena = cadena + str(e)
+    #         if cadena not in sequence_to_variant:
+    #             sequence_to_variant[cadena] = next_variant_number
+    #             next_variant_number += 1
+    #         trace[colnames['Variant']] = sequence_to_variant[cadena]
+    #         return trace
 
-def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution):
-    decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
-
-    def find_decision_point():
-        print("find_decision_point")
+    #     # Aplicar la función a cada grupo de trace_id y asignar el resultado al DataFrame original
+    #     df=df.groupby(colnames['Case']).apply(assign_variant).reset_index(drop=True)
+    #     return df
+    
+    
+           
         
-    # Function to process each 'Variant' group
-    def process_variant_group(group):
-        variant = group['Variant'].iloc[0]
-        decision_tree.add_run().add_break()
-        decision_tree.add_run(f'Variant {variant}\n').bold = True
-        decision_tree.add_run().add_break()
-        # Sort activities based on extracted number
-        group = group.sort_values('ActivityNumber')
-        activity_dict = {}
-        # Iterate over each activity and calculate coordinate mean or display TextInput
-        for (activity_number, activity), activity_group in group.groupby(['ActivityNumber', 'Activity']):
-            action_number = len(activity_dict.get(activity, [])) + 1
-            if action_number == 1:
-                activity_dict = {}
-            activity_dict.setdefault(activity, []).append(activity_number)
-
-            if activity_group['EventType'].iloc[0] == 1:
-                # Calculate mean of Coor_X and Coor_Y
-                mean_x = activity_group['Coor_X'].mean()
-                mean_y = activity_group['Coor_Y'].mean()
-                event_description=(f"The user clicks at point {mean_x:.0f},{mean_y:.0f}")
-                
-                # Load corresponding image
-                screenshot_filename = activity_group['Screenshot'].iloc[0]
-                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                image_filename = activity_group['Screenshot'].iloc[0] if 'Screenshot' in activity_group.columns else None
-                
+    def cambiar_color_nodos_y_caminos(labels, path_to_dot_file):
+        # Cargar el contenido del archivo .dot
+        with open(path_to_dot_file, 'r') as file:
+            dot_content = file.read()
+        # Crear un grafo desde el contenido del archivo .dot
+        grafo = pgv.AGraph(string=dot_content)
+        
+        # Crear un conjunto de nodos que necesitamos colorear
+        nodos_a_colorear = set()
+        labels = [str(elemento) for elemento in labels]
+        # Recorrer todos los nodos del grafo y colorear los nodos correspondientes
+        for nodo in grafo.nodes():
+            if nodo.attr['label'] in labels:
+                nodo.attr['fillcolor'] = "yellow"
+                nodo.attr['style'] = 'filled'
+                nodos_a_colorear.add(nodo.name)
+            elif nodo.attr['label'] == "":
+                nodo.attr['label'] = " "
+                nodo.attr['fillcolor'] = nodo.attr['fillcolor']
+                nodo.attr['style'] = nodo.attr['style']
             else:
-                # Display TextInput value if exists, otherwise print "No TextInput"
-                text_input = activity_group['TextInput'].iloc[0] if 'TextInput' in activity_group.columns and not pd.isnull(activity_group['TextInput'].iloc[0]) else "No TextInput"
-                event_description=(f'The user writes "{text_input}"')
+                nodo.attr['style'] = 'filled'
+                
 
-            # Write to docx
+        # Recorrer todas las aristas del grafo y colorear las que conectan nodos en la lista
+        # Identificar y colorear los nodos de tipo "diamond" entre los nodos etiquetados
+        for edge in grafo.edges():
+            if edge[0] in nodos_a_colorear and edge[1] not in nodos_a_colorear:
+                nodo_destino = grafo.get_node(edge[1])
+                if nodo_destino.attr['shape'] == 'diamond':
+                    nodo_destino.attr['fillcolor'] = "yellow"
+                    nodo_destino.attr['style'] = 'filled'
+                    nodos_a_colorear.add(nodo_destino.name)
+            elif edge[1] in nodos_a_colorear and edge[0] not in nodos_a_colorear:
+                nodo_origen = grafo.get_node(edge[0])
+                if nodo_origen.attr['shape'] == 'diamond':
+                    nodo_origen.attr['fillcolor'] = "yellow"
+                    nodo_origen.attr['style'] = 'filled'
+                    nodos_a_colorear.add(nodo_origen.name)
+
+        # Colorear las aristas conectadas entre los nodos coloreados
+        for edge in grafo.edges():
+            if edge[0] in nodos_a_colorear and edge[1] in nodos_a_colorear:
+                edge.attr['color'] = "blue"
+                edge.attr['penwidth'] = 2.0
+
+        # Configurar atributos globales del grafo
+        grafo.graph_attr.update(bgcolor='white', rankdir='LR')
+        grafo.graph_attr['overlap'] = 'false'
+        grafo.format = 'png'
+
+        # Guardar la imagen a un archivo temporal
+        temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+        grafo.draw(temp_file.name, prog='dot', format='png')
+        graph_path = temp_file.name
+
+        return graph_path
+
+        
+
+    def lectura_traceability(json_path):
+        # Leer el contenido del fichero JSON
+        with open(json_path, 'r') as file:
+            traceability = json.load(file)
+            return traceability
+        
+
+    def get_branch_condition(decision_point, branch_number):
+        branches = decision_point.get('branches', [])
+        rules = decision_point.get('rules', {})
+        
+        for branch in branches:
+            if branch['label'] == str(branch_number):
+                res= rules.get(str(branch_number))
+                break
+            else: 
+                res= "No se han encontrado las reglas asociadas a esta rama."
+        return res
+##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
+##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'aqui va el centroid en tupla']], 3: [['numeric__Coor_Y_3 > 491.51', 'aqui va el centroid en tupla']]}}
+    def get_branch_condition2(decision_point, branch_number, pre_pd_activities):
+        branches = decision_point.get('branches', [])
+        rules = decision_point.get('rules', {})
+        
+        for branch in branches:
+            if branch['label'] == str(branch_number):
+                res = rules.get(str(branch_number), [])
+                if not res:
+                    return {"No associated rule found": []}
+                else:
+                    result_dict = {}
+                    for rule in res:
+                        condition_dict = {}
+                        parts = rule.split('&')
+                        for part in parts:
+                            elements = re.split(r'<=|>=|<|>|==|!=', part)
+                            variable = elements[0].strip()
+                            condition = part.strip()
+                            
+                            # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
+                            matched = False
+                            for act in pre_pd_activities:
+                                pattern = re.compile(f"_{act}(?:_.*)?$")
+                                if pattern.search(variable):
+                                    matched = True
+                                    variable_parts = variable.split('-')
+                                    
+                                    if len(variable_parts) > 1:
+                                        last_part = variable_parts[-1]
+                                        
+                                        first_part_split = variable_parts[0].split('_')
+                                        last_part_split = last_part.split('_')
+                                        
+                                        first_element = first_part_split[-1]
+                                        second_element = last_part_split[0]
+                                        
+                                        if act not in condition_dict:
+                                            condition_dict[act] = []
+                                        condition_dict[act].append([condition, (first_element, second_element)])
+                            #el caso por ejemplo en el que una regla sea de una actividad previa al punto de decision pero que no sea de esa variante (que sea ausencia de icono)
+                            if not matched:
+                                pass
+                        result_dict[rule.strip()] = condition_dict
+                    return result_dict
+
+
+#hay que decidr que en el punto de decisión hay una regla solpada entre dos branchas, x e x, y explicar esas reglas.
+#le paso una rama y me da un diccioanrio con las reglas solapadas que tiene con cada una de las otras ramas del punto de decision
+#hay que sacar un diccionario con esta forma: {'6':{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'numeric__Coor_Y_2']], 3: [['numeric__Coor_Y_3 > 491.51', 'numeric__Coor_Y_3']]}}}
+    def get_overlapping_branch_condition2(decision_point, branch_number, pre_pd_activities):
+        branches = decision_point.get('branches', [])
+        rules = decision_point.get('overlapping_rules', {})
+        
+        branch_rules = defaultdict(list)
+        result_dict = defaultdict(dict)
+        
+        # Extract the rules for the given branch number
+        target_branch_rules = rules.get(str(branch_number), [])
+        if not target_branch_rules:
+            return {"No associated rule found": []}
+        
+        # Parse rules for the given branch number and collect conditions
+        for rule in target_branch_rules:
+            condition_dict = {}
+            parts = rule.split('&')
+            for part in parts:
+                elements = re.split(r'<=|>=|<|>|==|!=', part)
+                variable = elements[0].strip()
+                condition = part.strip()
+                
+                matched = False
+                for act in pre_pd_activities:
+                    pattern = re.compile(f"_{act}(?:_.*)?$")
+                    if pattern.search(variable):
+                        matched = True
+                        variable_parts = variable.split('-')
+                        
+                        if len(variable_parts) > 1:
+                            last_part = variable_parts[-1]
+                            
+                            first_part_split = variable_parts[0].split('_')
+                            last_part_split = last_part.split('_')
+                            
+                            first_element = first_part_split[-1]
+                            second_element = last_part_split[0]
+                            
+                            if act not in condition_dict:
+                                condition_dict[act] = []
+                            condition_dict[act].append([condition, (first_element, second_element)])
+                if not matched:
+                    pass
+            branch_rules[rule] = condition_dict
+        
+        # Find and map overlapping rules with other branches
+        for other_branch, other_branch_rules in rules.items():
+            if other_branch != str(branch_number):
+                for rule in other_branch_rules:
+                    if rule in target_branch_rules:
+                        result_dict[other_branch][rule] = branch_rules[rule]
+        
+        return dict(result_dict)
+#############################################################
+    
+    def draw_polygons_on_image(json_data, image_path, doc_decision_tree):
+        # Cargar la imagen
+        image = Image.open(image_path)
+        print(json_data)
+        # Dibujar los polígonos en la imagen
+        draw = ImageDraw.Draw(image)
+        for e in json_data:
+            points = [tuple(point) for point in e["points"]]
+            color = e.get("color", (0, 255, 0)) #el color verde por defecto
+            draw.polygon(points, outline=color, width=4)
+
+        # Guardar la imagen modificada en memoria
+        image_byte_array = io.BytesIO()
+        image.save(image_byte_array, format='PNG')
+        image_byte_array.seek(0)
+
+        # Añadir la imagen al documento
+        doc_decision_tree.add_run().add_break()
+        doc_decision_tree.add_run().add_picture(image_byte_array, width=Inches(6))
+        doc_decision_tree.add_run().add_break()
+    
+## devuelve un diccionario cuyas claves son las prev act delos punto de decisiones que hay en una varianye y 
+# de valor los json del punto de dceision
+
+    def get_decision_points_for_branches(data, branch_labels):
+        result = {}
+
+        def search_decision_points(decision_points, branch_labels):
+            for dp in decision_points:
+                for branch in dp['branches']:
+                    if int(branch['label']) in branch_labels:
+                        result[dp['prevAct']] = dp
+                    search_decision_points(branch.get('decision_points', []), branch_labels)
+
+        search_decision_points(data['decision_points'], branch_labels)
+        return result
+    
+#extrae una lista con todos los id de todos los puntos de decision de una variante  
+    def extract_decision_point_ids(decision_points):
+        ids = []
+    
+        def extract_ids(dp_list):
+            for dp in dp_list:
+                ids.append(dp['id'])
+                for branch in dp['branches']:
+                    extract_ids(branch['decision_points'])
+        
+        extract_ids(decision_points)
+        return ids
+    #def explicabilidad_decisions(decision_points, variant_decision_points):
+
+
+    def explicabilidad_actions(decision_tree, activity,group, colnames):
+
+        def pintar_imagen(k, action_dict):
+            event_description = None
+            image_click = None
+            out_click=None
+            image = None
+
+            action = pd.DataFrame(action_dict[k])
+            #action= action_dict[k]
+
             decision_tree.add_run().add_break()
-            if action_number == 1:
-                decision_tree.add_run(f'Activity {activity}\n').bold = True
+            decision_tree.add_run(f'Action {k}', style='Título 5 Car')
             decision_tree.add_run().add_break()
-            decision_tree.add_run(f'Action {action_number}\n')
+            
+            if action[colnames['EventType']].iloc[0] == 1: #colnames['EventType']
+                # Calcular la media de Coor_X y Coor_Y
+                mean_x = action[colnames['CoorX']].mean()
+                mean_y = action[colnames['CoorY']].mean()
+
+                # Cargar la imagen correspondiente
+                screenshot_filename = action[colnames['Screenshot']].iloc[0]
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                image = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
+                image_click=True
+                with Image.open(path_to_image) as img:
+                    width, height = img.size
+                    print(width, height)
+                if width>=mean_x and height>=mean_y:
+                    event_description = f"The user clicks at point ({mean_x}, {mean_y})"
+                else:
+                    if mean_x > width:  side="right"# Click is to the right of the image       
+                    if mean_y > height:  side="bottom"# Click is below the image      
+                    if mean_x < 0:  side="left"# Click is to the left of the image         
+                    if mean_y < 0: side="top"# Click is above the image
+
+                    event_description = f"ERROR: coordinates recorded incorrectly, out of screen resolution by {side} border (highlighted in red in the picture). User clicks on {mean_x}, {mean_y} and the screen resolution is {width}, {height}."
+                    out_click=True
+
+            else:
+                    # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
+                text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
+                event_description = f'The user writes "{text_input}"'
+                screenshot_filename = action[colnames['Screenshot']].iloc[0]
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                image = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
+                
+
+            
             decision_tree.add_run().add_break()
-            decision_tree.add_run(event_description + '\n')
+            if event_description:
+                decision_tree.add_run(event_description + '\n')
             decision_tree.add_run().add_break()
 
-            if image_filename:
+            if image:
                 with Image.open(path_to_image) as img:
                     draw = ImageDraw.Draw(img)
-                    # Draw a small square around the mean coordinates
-                    box_size = 10  # Adjust the square size as needed
-                    left = mean_x - box_size / 2
-                    top = mean_y - box_size / 2
-                    right = mean_x + box_size / 2
-                    bottom = mean_y + box_size / 2
-                    draw.rectangle([left, top, right, bottom], outline="red", width=2)
-                    # Convert the image to a byte object to insert into docx
-                    image_stream = io.BytesIO()
-                    img.save(image_stream, 'PNG')
-                    image_stream.seek(0)
                     
-                    decision_tree.add_run().add_picture(image_stream, width=Inches(4))
+                    if image_click and not out_click: # si en la imagen se encuentra el click
+                        
+                        # Dibujar un pequeño cuadrado alrededor de las coordenadas medias
+                        box_size = 10  # Ajustar el tamaño del cuadrado según sea necesario
+                        left = mean_x - box_size / 2
+                        top = mean_y - box_size / 2
+                        right = mean_x + box_size / 2
+                        bottom = mean_y + box_size / 2
+                        
+                        draw.rectangle([left, top, right, bottom], outline="red", width=5)
+                        # Convertir la imagen a un objeto byte para insertar en docx   
+                    if out_click: # If the click is outside the image
+                        border_width = 10
+                        if side=="right":  # Click is to the right of the image
+                            draw.line([(width - 1, 0), (width - 1, height)], fill="red", width=border_width)
+                        if side=="bottom":  # Click is below the image
+                            draw.line([(0, height - 1), (width, height - 1)], fill="red", width=border_width)
+                        if side=="left":  # Click is to the left of the image
+                            draw.line([(0, 0), (0, height)], fill="red", width=border_width)
+                        if side=="top":  # Click is above the image
+                            draw.line([(0, 0), (width, 0)], fill="red", width=border_width)
+
+                image_stream = io.BytesIO()
+                img.save(image_stream, 'PNG')
+                image_stream.seek(0)
+                decision_tree.add_run().add_picture(image_stream, width=Inches(6))
                 decision_tree.add_run().add_break()
+        #####################################
 
-    ######################################  
-    # Load data - replace 'path_to_file.csv' with your data file path
-    
-    df = pd.read_csv(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'pd_log.csv'))
+        decision_tree.add_run().add_break()
+        decision_tree.add_run(f'Activity {activity}\n', style='Título 4 Car')
+        
+        decision_tree.add_run().add_break()
 
-    # Extract activity number and convert to integer for sorting
-    df['ActivityNumber'] = df['Activity'].apply(lambda x: int(x.split('_')[0]))
-    df['Activity'] = df['Activity'].apply(lambda x: str(x.split('_')[1]))
-    
-    # Apply the function to each 'Variant' group
-    df.groupby('Variant').apply(process_variant_group)
+        ############################ EXPLICABILIDAD DE LAS ACTIVIDADES Y ACCIONES
+        # Filtrar por actividad
+        activity_group = group[group[colnames['Activity']] == activity]
+
+        # Agrupar por trace_id dentro de activity_group
+        activity_actions_group = activity_group.groupby(colnames['Case'])
+        
+        # Verificar si todos los grupos tienen una fila
+        all_single_action = all(len(actions) == 1 for _, actions in activity_actions_group)
+        # Iterar sobre cada grupo y determinar el número de acciones
+
+        
+
+        if all_single_action: # ACTIVIDAD CON UNA ACCION
+            action_dict = {}
+            for i, (activity_label, action) in enumerate(activity_group.groupby(colnames['Activity']), start=1):
+                action_dict[i] = action
+
+            for k in sorted(action_dict.keys()):
+                pintar_imagen(k, action_dict)    
+                
+             
+        else: #ACTIVIDADES CON MAS DE UNA ACCION 
+            action_dict = {}  # Crear el diccionario vacío    
+            for i, (activity_label, action_group) in enumerate(activity_actions_group):
+                #crear un diccionario, cuyos claves sean el indice de accion (accion 1, 2, 3) y los valores sea el grupo de filas de la accion
+                            
+                for j, (index, action) in enumerate(action_group.iterrows(), start=1):
+                    #relleno el diccionario
+                    
+                    if j not in action_dict:
+                        action_dict[j] = []
+                    # Relleno el diccionario
+                    action_dict[j].append(action)
+                    #action_dict[j] = action_dict[j].append(action[1])
+
+            #recorrer las claves del diccionario
+            for k in sorted(action_dict.keys()):
+                pintar_imagen(k, action_dict)
+                    
+
+                
+            ############################################
 
     
+          
+############################################################3
+    
+    def process_variant_group(group, traceability, path_to_dot_file, colnames,df_pd_log):
+    
+        #prev_act = traceability['decision_points'][0]['prevAct']
+        decision_point = traceability['decision_points'][0]
+        
+        #print(decision_point)
+        first_dp_id= decision_point['id']
+        #ir acumulando las id de los puntos de decision de cada variante
+        columnas_label_ramas=[]
+        for pd in extract_decision_point_ids(traceability['decision_points']):
+            columnas_label_ramas= columnas_label_ramas + group[pd].unique().tolist()
+            variant_decision_points = get_decision_points_for_branches(traceability, columnas_label_ramas)
+        #añadir el primer punto de decision al diccionario
+        variant_decision_points[decision_point['prevAct']]= decision_point
+        
+        variant = group[colnames['Variant']].iloc[0]
+        decision_tree.add_run().add_break()
+        decision_tree.add_run(f'Variant {variant}\n', style='Título 3 Car')
+        decision_tree.add_run().add_break()
+
+        #actividades
+        activities = group[colnames['Activity']].unique().tolist() #en funcion de si las activity label se pueden repetir
+
+
+        #meto diagrama bpmn resaltado de variantes
+        run = decision_tree.add_run()
+        run.add_picture(cambiar_color_nodos_y_caminos(activities, path_to_dot_file), width=Inches(6))
+        run.add_break()
+
+
+        for i, activity in enumerate(activities):
+
+            #EXPLICAR ACTIVIDADES Y ACCIONES
+            explicabilidad_actions(decision_tree, activity,group, colnames)
+            
+            ###############################################################################################333
+
+            #EXPLICABILIDAD DE LAS DECISIONES
+            if str(activity) in variant_decision_points:
+                decision_point = variant_decision_points[str(activity)]
+                num_ramas = len(decision_point['branches'])
+                next_activity = activities[i+1] if i+1 < len(activities) else None
+                #{'numeric__Coor_Y_2 <= 382.39': {2: [['numeric__Coor_Y_2 <= 382.39', 'numeric__Coor_Y_2']]}}
+                #actividades previas al pd, independientemente de la variante
+
+                pre_activities = pre_pd_activities(decision_point['prevAct'], df_pd_log,colnames)
+
+                result_dict = get_branch_condition2(decision_point, next_activity, pre_activities)
+                result_dict_overlapping = get_overlapping_branch_condition2(decision_point, next_activity, pre_activities)
+
+                decision_tree.add_run().add_break()      
+                decision_tree.add_run(f'Decision Point\n', style='Título 4 Car').bold = True
+                decision_tree.add_run().add_break()
+                decision_tree.add_run().add_break()      
+                decision_tree.add_run(f'After this activity there is a decision point where the user decides between taking {num_ramas} different branches. \n')
+                decision_tree.add_run(f'In the case of this variant (variant {variant}) the user chooses to take branch {next_activity}. \n')
+                decision_tree.add_run().add_break()
+                if 'No associated rule found' not in result_dict:
+                    decision_tree.add_run(f"In order for the user to decide this branch, one of these deterministic rules must be given:")
+                    for rules in result_dict.keys():
+                        decision_tree.add_run('\n• ' + f"{rules}" + '\n')    
+                    decision_tree.add_run().add_break()
+                else:
+                    decision_tree.add_run(f"No associated deterministic rules are found:")
+                    decision_tree.add_run().add_break()
+                if 'No associated rule found' not in result_dict_overlapping:
+                    for branch, rules in result_dict_overlapping.items(): 
+                        decision_tree.add_run(f"In this decision we find rules that overlap with the rest of the decision branches. These rules are:")
+                        for rule, conditions in rules.items():
+                            decision_tree.add_run('\n• ' + f"Rule overlapping with branch {branch}: {rule}." + '\n')
+                        decision_tree.add_run().add_break()
+                else:
+                    decision_tree.add_run(f"No overlapping rules were found.")
+                    decision_tree.add_run().add_break()
+
+
+                colors = [RGBColor(255, 0, 0), RGBColor(0, 255, 0), RGBColor(0, 0, 255), RGBColor(255, 165, 0)]
+
+                #################################################################################################### DETERMINIST RULES
+                
+                if result_dict and all(isinstance(value, dict) for value in result_dict.values()): #se ejecuta solo si tiene reglas asociadas
+                    decision_tree.add_run().add_break()
+                    decision_tree.add_run("Determinist Rules\n", style='Título 5 Car').bold = True
+                    decision_tree.add_run().add_break()
+                    print(result_dict)
+                    for rule, conditions in result_dict.items():
+                        decision_tree.add_run(f'{rule}\n').bold = True
+                        #compo_ui_json=[]
+                        #color_index = 0
+                        for act, condition_list in conditions.items(): 
+                            color_index = 0
+                            compo_ui_json=[]
+                            screenshot_filename=None
+                            #obtenemos la screenshot correspondiente
+                            ######################################3
+                            if act in activities:
+                                screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                            else:
+                                screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                            if not screenshot_filename:
+                                print(f"No screenshot found for the activity '{act}'.")
+                                ##################3
+                            path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                            for condition, variable in condition_list:
+                                #decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                color = colors[color_index % len(colors)]
+                                run = decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                run.font.color.rgb = color
+                                color_index += 1
+                                # Insertar la imagen en el documento
+                                ui_compo_centroid=variable
+                                
+                                compo_ui = get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                if compo_ui:
+                                    compo_ui["color"] = color  # Asignar color al polígono
+                                    compo_ui_json.append(compo_ui)
+                            if compo_ui_json:
+                                draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
+                                decision_tree.add_run().add_break()
+                            ##################33
+                        
+                        decision_tree.add_run().add_break()
+
+
+                #################################################################################################### OVERLAPPED RULES
+
+                if 'No associated rule found' not in result_dict_overlapping:  # se ejecuta solo si tiene reglas asociadas
+                    decision_tree.add_run().add_break()
+                    decision_tree.add_run("Overlapping Rules\n", style='Título 5 Car').bold = True
+                    decision_tree.add_run().add_break()
+                    print(result_dict_overlapping)
+                    for branch, rules in result_dict_overlapping.items():
+                        decision_tree.add_run(f'Branch {branch}:\n').bold =True
+                        
+                        for rule, conditions in rules.items():
+                            decision_tree.add_run(f'{rule}\n').bold = True
+                            color_index = 0
+                            compo_ui_json = []
+                            screenshot_filename= None
+                            for act, condition_list in conditions.items():
+                                # Obtener la screenshot correspondiente
+                                if act in activities:
+                                    screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                                else:
+
+                                    screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                                if not screenshot_filename:
+                                    print(f"No screenshot found for the activity '{act}'.")
+
+                                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+
+                                for condition, variable in condition_list:
+                                    color = colors[color_index % len(colors)]
+                                    run = decision_tree.add_run(f'Activity {act}: {condition}\n')
+                                    run.font.color.rgb = color
+                                    color_index += 1
+
+                                    # Insertar la imagen en el documento
+                                    ui_compo_centroid = variable
+                                    compo_ui = get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+
+                                    if compo_ui:
+                                        compo_ui["color"] = color  # Asignar color al polígono
+                                        compo_ui_json.append(compo_ui)
+
+                                if compo_ui_json:
+                                    draw_polygons_on_image(compo_ui_json, path_to_image, decision_tree)
+                                    decision_tree.add_run().add_break()
+
+                            decision_tree.add_run().add_break()
+
+    
+###############
+    
+    decision_tree= doc.paragraphs[paragraph_dict['[DECISION TREE]']]
+    decision_tree.text = ''
+    df_pd_log = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', PROCESS_DISCOVERY_LOG_FILENAME))
+    #se quita porque la columna se aplica ya cuando se crea el csv y se llama auto_variant
+    #df2= variant_column(df)
+    traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
+    path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
+    #df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
+    #colnames['Variant'] es auto_variant
+    df_pd_log.groupby(colnames['Variant']).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log))
 
 
 ###################################################################

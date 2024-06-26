@@ -306,7 +306,7 @@ def get_gui_components_crops(param_img_root, image_names, texto_detectado_ocr, p
 
     # draw the countours on the image
     cv2.drawContours(img_copy, contornos, -1, (0, 0, 255), 2)
-    cv2.imwrite(path_to_save_bordered_images + os.path.basename(image_names[img_index]) + '_bordered.png', img_copy)
+    cv2.imwrite(os.path.join(path_to_save_bordered_images, os.path.basename(image_names[img_index]) + '_bordered.png'), img_copy)
 
     # We carry out the crops for each detected countour
     recortes = []

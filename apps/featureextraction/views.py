@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import ListView, DetailView, CreateView
 from apps.utils import MultiFormsView
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from apps.analyzer.models import CaseStudy
 from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
 from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique
@@ -64,7 +64,7 @@ def feature_extraction_technique(log_path, path_scenario, execution, fe):
             output = detect_agg_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution, fe)
     return output
 
-class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
+class FeatureExtractionTechniqueCreateView(LoginRequiredMixin, CreateView):
     login_url = "/login/"
     model = FeatureExtractionTechnique
     form_class = FeatureExtractionTechniqueForm
@@ -92,6 +92,15 @@ class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
     def get_context_data(self, **kwargs):
         context = super(FeatureExtractionTechniqueCreateView, self).get_context_data(**kwargs)
         context['case_study_id'] = self.kwargs.get('case_study_id')
+
+        # Load single and aggregate techniques from configurations
+        single_json = json.load(open("configuration/single_feature_extractors.json"))
+        aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
+        context["options"] = {
+            # We convert the tuples returned by the items() method to lists so that javascript can correctly parse them
+            "single": list(map(lambda x: list(x), single_json.items())),
+            "aggregate": list(map(lambda x: list(x), aggregate_json.items()))
+        }
         return context
 
     def form_valid(self, form):
@@ -103,7 +112,7 @@ class FeatureExtractionTechniqueCreateView(CreateView, LoginRequiredMixin):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class FeatureExtractionTechniqueListView(ListView, LoginRequiredMixin):
+class FeatureExtractionTechniqueListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = FeatureExtractionTechnique
     template_name = "feature_extraction_technique/list.html"
@@ -115,7 +124,7 @@ class FeatureExtractionTechniqueListView(ListView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Case Study not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+            raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
         if 'FeatureExtractionTechnique' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
         else:
@@ -145,7 +154,7 @@ class FeatureExtractionTechniqueListView(ListView, LoginRequiredMixin):
 
         return queryset
 
-class FeatureExtractionTechniqueDetailView(DetailView, LoginRequiredMixin):
+class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
     login_url = "/login/"
     # Check if the the phase can be interacted with (included in case study available phases)
  
@@ -154,7 +163,7 @@ class FeatureExtractionTechniqueDetailView(DetailView, LoginRequiredMixin):
         if not feature_extraction:
             return HttpResponse(status=404, content="FE not found.")
         elif feature_extraction.case_study.user != request.user:
-            return HttpResponse(status=403, content="FE doesn't belong to the authenticated user.")
+            raise PermissionDenied("FE doesn't belong to the authenticated user.")
 
         form = FeatureExtractionTechniqueForm(read_only=True, instance=feature_extraction)
         if 'case_study_id' in kwargs:
@@ -225,7 +234,7 @@ def delete_feature_extraction_technique(request):
 
 #########################################################
 
-class FeatureExtractionResultDetailView(DetailView, LoginRequiredMixin):
+class FeatureExtractionResultDetailView(LoginRequiredMixin, DetailView):
     login_url = "/login/"
 
     def get(self, request, *args, **kwargs):
@@ -234,7 +243,7 @@ class FeatureExtractionResultDetailView(DetailView, LoginRequiredMixin):
         if not execution:
             return HttpResponse(status=404, content="FE not found.")
         elif execution.user != request.user:
-            return HttpResponse(status=403, content="FE doesn't belong to the authenticated user.")
+            raise PermissionDenied("FE doesn't belong to the authenticated user.")
 
         scenario = request.GET.get('scenario')
         download = request.GET.get('download')
@@ -245,7 +254,7 @@ class FeatureExtractionResultDetailView(DetailView, LoginRequiredMixin):
       
         # TODO: Sujeto a cambios en la estructura de la carpeta
         #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/flattened_dataset.csv"
-        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "flattened_dataset.csv")
+        path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "log_enriched.csv")
         # CSV Download
         if path_to_csv_file and download=="True":
             return ResultDownload(path_to_csv_file)  
@@ -298,7 +307,7 @@ def ResultDownload(path_to_csv_file):
 
 
 
-class UIElementsDetectionCreateView(MultiFormsView, LoginRequiredMixin):
+class UIElementsDetectionCreateView(LoginRequiredMixin, MultiFormsView):
     login_url = "/login/"
     form_classes = {
         'ui_elements_detection': UIElementsDetectionForm,
@@ -313,7 +322,7 @@ class UIElementsDetectionCreateView(MultiFormsView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="UI Elm Det not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="UI Elm Det doesn't belong to the authenticated user.")
+            raise PermissionDenied("UI Elm Det doesn't belong to the authenticated user.")
 
         if 'UIElementsDetection' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -325,7 +334,7 @@ class UIElementsDetectionCreateView(MultiFormsView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="UI Elm Det not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="UI Elm Det doesn't belong to the authenticated user.")
+            raise PermissionDenied("UI Elm Det doesn't belong to the authenticated user.")
 
         if 'UIElementsDetection' in case_study.available_phases:
             return super().post(request, *args, **kwargs)
@@ -382,7 +391,7 @@ class UIElementsDetectionListView(LoginRequiredMixin, ListView):
         if not case_study:
             return HttpResponse(status=404, content="UI Elm Det not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="UI Elm Det doesn't belong to the authenticated user.")
+            raise PermissionDenied("UI Elm Det doesn't belong to the authenticated user.")
 
         if 'UIElementsDetection' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -408,7 +417,7 @@ class UIElementsDetectionListView(LoginRequiredMixin, ListView):
 
         return queryset
 
-class UIElementsDetectionDetailView(MultiFormsView, LoginRequiredMixin):
+class UIElementsDetectionDetailView(LoginRequiredMixin, MultiFormsView):
     login_url = "/login/"
     form_classes = {
         'ui_elements_detection': UIElementsDetectionForm,
@@ -425,7 +434,7 @@ class UIElementsDetectionDetailView(MultiFormsView, LoginRequiredMixin):
             if not case_study:
                 return HttpResponse(status=404, content="UI Elm Det not found.")
             elif case_study.user != request.user:
-                return HttpResponse(status=403, content="UI Elm Det doesn't belong to the authenticated user.")
+                raise PermissionDenied("UI Elm Det doesn't belong to the authenticated user.")
 
             if 'UIElementsDetection' in case_study.available_phases:
                 return super().get(request, *args, **kwargs)
@@ -528,11 +537,11 @@ def set_as_ui_elements_detection_active(request):
     prefilter_list = UIElementsDetection.objects.filter(case_study_id=case_study_id)
     # Validations
     if CaseStudy.objects.get(pk=case_study_id).user != request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     if UIElementsDetection.objects.get(pk=ui_elements_detection_id).user != request.user:  
-        return HttpResponse(status=403, content="UI Element Detection doesn't belong to the authenticated user.")
+        raise PermissionDenied("UI Element Detection doesn't belong to the authenticated user.")
     if UIElementsDetection.objects.get(pk=ui_elements_detection_id).case_study != CaseStudy.objects.get(pk=case_study_id):
-        return HttpResponse(status=403, content="UI Element Detection doesn't belong to the Case Study.")
+        raise PermissionDenied("UI Element Detection doesn't belong to the Case Study.")
     for m in prefilter_list:
         m.active = False
         m.save()
@@ -555,11 +564,11 @@ def set_as_ui_elements_detection_inactive(request):
     case_study_id = request.GET.get("case_study_id")
     # Validations
     if CaseStudy.objects.get(pk=case_study_id).user != request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     if UIElementsDetection.objects.get(pk=ui_elements_detection_id).user != request.user:  
-        return HttpResponse(status=403, content="UI Element Detection doesn't belong to the authenticated user.")
+        raise PermissionDenied("UI Element Detection doesn't belong to the authenticated user.")
     if UIElementsDetection.objects.get(pk=ui_elements_detection_id).case_study != CaseStudy.objects.get(pk=case_study_id):
-        return HttpResponse(status=403, content="UI Element Detection doesn't belong to the Case Study.")
+        raise PermissionDenied("UI Element Detection doesn't belong to the Case Study.")
     ui_elements_detection = UIElementsDetection.objects.get(id=ui_elements_detection_id)
     ui_elements_detection.active = False
     ui_elements_detection.ui_elements_classification.active = False
@@ -578,7 +587,7 @@ def delete_ui_elements_detection(request):
     return HttpResponseRedirect(reverse("featureextraction:ui_detection_list", args=[case_study_id]))
 
 
-class PrefiltersCreateView(CreateView, LoginRequiredMixin):
+class PrefiltersCreateView(LoginRequiredMixin, CreateView):
     login_url = "/login/"
     model = Prefilters
     form_class = PrefiltersForm
@@ -590,7 +599,7 @@ class PrefiltersCreateView(CreateView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Prefilter not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Prefilter doesn't belong to the authenticated user.")
+            raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
         if 'Prefilters' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -602,7 +611,7 @@ class PrefiltersCreateView(CreateView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Prefilter not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Prefilter doesn't belong to the authenticated user.")
+            raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
         if 'Prefilters' in case_study.available_phases:
             return super().post(request, *args, **kwargs)
@@ -625,7 +634,7 @@ class PrefiltersCreateView(CreateView, LoginRequiredMixin):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class PrefiltersListView(ListView, LoginRequiredMixin):
+class PrefiltersListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = Prefilters
     template_name = "prefiltering/list.html"
@@ -637,7 +646,7 @@ class PrefiltersListView(ListView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Prefilter not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Prefilter doesn't belong to the authenticated user.")
+            raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
         if 'Prefilters' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -664,14 +673,14 @@ class PrefiltersListView(ListView, LoginRequiredMixin):
         return queryset
 
     
-class PrefiltersDetailView(DetailView, LoginRequiredMixin):
+class PrefiltersDetailView(LoginRequiredMixin, DetailView):
     login_url = "/login/"
     # Check if the the phase can be interacted with (included in case study available phases)
     
     def get(self, request, *args, **kwargs):
         prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
         if prefilter.case_study.user != request.user:
-            return HttpResponse(status=403, content="Prefilter doesn't belong to the authenticated user.")
+            raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
         form = PrefiltersForm(read_only=True, instance=prefilter)
         if 'case_study_id' in kwargs:
@@ -703,7 +712,7 @@ def set_as_prefilters_active(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found.")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     prefilter_list = Prefilters.objects.filter(case_study_id=case_study_id)
     for m in prefilter_list:
         m.active = False
@@ -722,7 +731,7 @@ def set_as_prefilters_inactive(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found.")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
 
     prefilter = Prefilters.objects.get(id=prefilter_id)
     prefilter.active = False
@@ -736,12 +745,12 @@ def delete_prefilter(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found.")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     prefilter = Prefilters.objects.get(id=prefilter_id)
     prefilter.delete()
     return HttpResponseRedirect(reverse("featureextraction:prefilters_list", args=[case_study_id]))
 
-class PostfiltersCreateView(CreateView, LoginRequiredMixin):
+class PostfiltersCreateView(LoginRequiredMixin, CreateView):
     login_url = "/login/"
     model = Postfilters
     form_class = PostfiltersForm
@@ -753,7 +762,7 @@ class PostfiltersCreateView(CreateView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Postfilters doesn't belong to the authenticated user.")
+            raise PermissionDenied("Postfilters doesn't belong to the authenticated user.")
 
         if 'Postfilters' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -765,7 +774,7 @@ class PostfiltersCreateView(CreateView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Postfilters doesn't belong to the authenticated user.")
+            raise PermissionDenied("Postfilters doesn't belong to the authenticated user.")
 
         if 'Postfilters' in case_study.available_phases:
             return super().post(request, *args, **kwargs)
@@ -786,7 +795,7 @@ class PostfiltersCreateView(CreateView, LoginRequiredMixin):
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class PostfiltersListView(ListView, LoginRequiredMixin):
+class PostfiltersListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = Postfilters
     template_name = "postfiltering/list.html"
@@ -798,7 +807,7 @@ class PostfiltersListView(ListView, LoginRequiredMixin):
         if not case_study:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif case_study.user != request.user:
-            return HttpResponse(status=403, content="Postfilters doesn't belong to the authenticated user.")
+            raise PermissionDenied("Postfilters doesn't belong to the authenticated user.")
 
         if 'Postfilters' in case_study.available_phases:
             return super().get(request, *args, **kwargs)
@@ -824,7 +833,7 @@ class PostfiltersListView(ListView, LoginRequiredMixin):
 
         return queryset
     
-class PostfiltersDetailView(DetailView, LoginRequiredMixin):
+class PostfiltersDetailView(LoginRequiredMixin, DetailView):
     login_url = "/login/"
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
@@ -833,7 +842,7 @@ class PostfiltersDetailView(DetailView, LoginRequiredMixin):
         if not postfilter:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif postfilter.case_study.user != request.user:
-            return HttpResponse(status=403, content="Postfilters doesn't belong to the authenticated user.")
+            raise PermissionDenied("Postfilters doesn't belong to the authenticated user.")
 
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
@@ -865,7 +874,7 @@ def set_as_postfilters_active(request):
     if not CaseStudy.objects.get(pk=case_study_id):
         return HttpResponse(status=404, content="Case Study not found.")
     elif not CaseStudy.objects.get(pk=case_study_id).user == request.user:
-        return HttpResponse(status=403, content="Case Study doesn't belong to the authenticated user.")
+        raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
     postfilter_list = Postfilters.objects.filter(case_study_id=case_study_id)
     for m in postfilter_list:
         m.active = False
@@ -978,7 +987,7 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
         user = request.user
         execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         if user.id != execution.user.id:
-            return HttpResponse(status=403, content=_("Execution doesn't belong to the authenticated user."))
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
         scenario: str = request.GET.get('scenario')
         download = request.GET.get('download')
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-06 10:36+0000\n"
+"POT-Creation-Date: 2024-06-20 09:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,179 +17,224 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: apps/reporting/views.py:65 apps/reporting/views.py:82
+
+#: apps/reporting/forms.py:25
+msgid "Objective"
+msgstr ""
+
+#: apps/reporting/forms.py:26
+msgid "Purpose"
+msgstr ""
+
+#: apps/reporting/forms.py:27
+msgid "Process Overview"
+msgstr ""
+
+#: apps/reporting/forms.py:28
+msgid "Applications Used"
+msgstr ""
+
+#: apps/reporting/forms.py:29
+msgid "AS IS Process Map"
+msgstr ""
+
+#: apps/reporting/forms.py:30
+msgid "Detailed AS IS Process Actions"
+msgstr ""
+
+#: apps/reporting/forms.py:31
+msgid "Input Data Description"
+msgstr ""
+
+#: apps/reporting/forms.py:35
+msgid "Objective of the PDD"
+msgstr ""
+
+#: apps/reporting/forms.py:36
+msgid "Purpose of the PDD..."
+msgstr ""
+
+#: apps/reporting/views.py:88 apps/reporting/views.py:105
 msgid "Process Definition Document"
 msgstr ""
 
-#: apps/reporting/views.py:66
+#: apps/reporting/views.py:89
 msgid "This is a first version of your RPA Process Definition Document."
 msgstr ""
 
-#: apps/reporting/views.py:67
+#: apps/reporting/views.py:90
 msgid "PDDs"
 msgstr ""
 
-#: apps/reporting/views.py:83
+#: apps/reporting/views.py:106
 msgid "Version 1.0"
 msgstr ""
 
-#: apps/reporting/views.py:91
+#: apps/reporting/views.py:114
 msgid "Table of Contents"
 msgstr ""
 
-#: apps/reporting/views.py:111
+#: apps/reporting/views.py:134
 msgid "Right-click to update field."
 msgstr ""
 
-#: apps/reporting/views.py:141
+#: apps/reporting/views.py:164
 msgid "1. Introduction"
 msgstr ""
 
-#: apps/reporting/views.py:149
+#: apps/reporting/views.py:172
 msgid "This document outlines the process definition for..."
 msgstr ""
 
-#: apps/reporting/views.py:161
+#: apps/reporting/views.py:184
 msgid "This process consists of the following steps:"
 msgstr ""
 
-#: apps/reporting/views.py:165
+#: apps/reporting/views.py:188
 msgid "Step 1: ..."
 msgstr ""
 
-#: apps/reporting/views.py:166
+#: apps/reporting/views.py:189
 msgid ""
 "\n"
 "Step 2: ..."
 msgstr ""
 
-#: apps/reporting/views.py:167
+#: apps/reporting/views.py:190
 msgid ""
 "\n"
 "Step 3: ..."
 msgstr ""
 
-#: apps/reporting/views.py:179
+#: apps/reporting/views.py:202
 msgid "The following roles and responsibilities are involved in this process:"
 msgstr ""
 
-#: apps/reporting/views.py:193
+#: apps/reporting/views.py:216
 msgid "Role"
 msgstr ""
 
-#: apps/reporting/views.py:194
+#: apps/reporting/views.py:217
 msgid "Responsibilities"
 msgstr ""
 
-#: apps/reporting/views.py:198
+#: apps/reporting/views.py:221
 msgid "Manager"
 msgstr ""
 
-#: apps/reporting/views.py:199
+#: apps/reporting/views.py:222
 msgid "Approves final output of the process"
 msgstr ""
 
-#: apps/reporting/views.py:201
+#: apps/reporting/views.py:224
 msgid "Analyst"
 msgstr ""
 
-#: apps/reporting/views.py:202
+#: apps/reporting/views.py:225
 msgid "Conducts analysis for the process"
 msgstr ""
 
-#: apps/reporting/views.py:204
+#: apps/reporting/views.py:227
 msgid "Developer"
 msgstr ""
 
-#: apps/reporting/views.py:205
+#: apps/reporting/views.py:228
 msgid "Implements changes to the process"
 msgstr ""
 
-#: apps/reporting/views.py:209
+#: apps/reporting/views.py:232
 msgid "4. Process Flow"
 msgstr ""
 
-#: apps/reporting/views.py:217
+#: apps/reporting/views.py:240
 msgid "The process flow for this process is as follows:"
 msgstr ""
 
-#: apps/reporting/views.py:222
+#: apps/reporting/views.py:245
 msgid "5. Process Metrics"
 msgstr ""
 
-#: apps/reporting/views.py:230
+#: apps/reporting/views.py:253
 msgid "The following metrics are tracked for this process:"
 msgstr ""
 
-#: apps/reporting/views.py:235
+#: apps/reporting/views.py:258
 msgid "Metric 1: ..."
 msgstr ""
 
-#: apps/reporting/views.py:236
+#: apps/reporting/views.py:259
 msgid ""
 "\n"
 "Metric 2: ..."
 msgstr ""
 
-#: apps/reporting/views.py:237
+#: apps/reporting/views.py:260
 msgid ""
 "\n"
 "Metric 3: ..."
 msgstr ""
 
-#: apps/reporting/views.py:241
+#: apps/reporting/views.py:264
 msgid "6. Process Improvement"
 msgstr ""
 
-#: apps/reporting/views.py:249
+#: apps/reporting/views.py:272
 msgid ""
 "The following improvement opportunities have been identified for this "
 "process:"
 msgstr ""
 
-#: apps/reporting/views.py:255 apps/reporting/views.py:262
-#: apps/reporting/views.py:269
+#: apps/reporting/views.py:278 apps/reporting/views.py:285
+#: apps/reporting/views.py:292
 msgid "Opportunity 1: ..."
 msgstr ""
 
-#: apps/reporting/views.py:256 apps/reporting/views.py:263
-#: apps/reporting/views.py:270
+#: apps/reporting/views.py:279 apps/reporting/views.py:286
+#: apps/reporting/views.py:293
 msgid "Opportunity 2: ..."
 msgstr ""
 
-#: apps/reporting/views.py:257 apps/reporting/views.py:264
-#: apps/reporting/views.py:271
+#: apps/reporting/views.py:280 apps/reporting/views.py:287
+#: apps/reporting/views.py:294
 msgid "Opportunity 3: ..."
 msgstr ""
 
-#: apps/reporting/views.py:284
+#: apps/reporting/views.py:307
 msgid "The following terms are used throughout this document:"
 msgstr ""
 
-#: apps/reporting/views.py:299
+#: apps/reporting/views.py:322
 msgid "Term"
 msgstr ""
 
-#: apps/reporting/views.py:300
+#: apps/reporting/views.py:323
 msgid "Definition"
 msgstr ""
 
-#: apps/reporting/views.py:304
+#: apps/reporting/views.py:327
 msgid "Process"
 msgstr ""
 
-#: apps/reporting/views.py:305
+#: apps/reporting/views.py:328
 msgid "A set of activities that transform inputs into outputs"
 msgstr ""
 
-#: apps/reporting/views.py:307
+#: apps/reporting/views.py:330
 msgid "Metric"
 msgstr ""
 
-#: apps/reporting/views.py:308
+#: apps/reporting/views.py:331
 msgid "A quantifiable measure used to track the performance of a process"
 msgstr ""
 
-#: apps/reporting/views.py:345
+#: apps/reporting/views.py:369
 msgid "File does not exist"
+msgstr ""
+
+#: apps/reporting/views.py:478
+msgid "User must be authenticated."
+msgstr ""
+
+#: apps/reporting/views.py:711
+msgid "This case study doesn't belong to the authenticated user"
 msgstr ""

@@ -521,6 +521,8 @@ def monitoring(log_path, root_path, execution):
       # update monitoring_obj
       monitoring_obj.save()
  
+    elif monitoring_type == "already_processed":
+      print("Log processing: The log have been already processed")
     else:
       logging.exception("behaviourmonitoring/monitoring/monitoring line:195. Gaze analysis selected is not available in the system")
       raise Exception("You select a gaze analysis that is not available in the system")

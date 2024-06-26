@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-02 11:11+0000\n"
+"POT-Creation-Date: 2024-06-20 09:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,17 +47,17 @@ msgid "flattening"
 msgstr "aplanamiento"
 
 #: core/settings.py:49
-msgid "aggreate feature extraction"
+msgid "aggregate feature extraction"
 msgstr "extracción agregada de características"
 
 #: core/settings.py:50
 msgid "decision model discovery"
 msgstr "descubrimiento de modelo de decisión"
 
-#: core/settings.py:197
+#: core/settings.py:198
 msgid "English"
 msgstr "Inglés"
 
-#: core/settings.py:198
+#: core/settings.py:199
 msgid "Spanish"
 msgstr "Español"

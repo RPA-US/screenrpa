@@ -4,6 +4,7 @@ import json
 import random
 import time
 import threading
+import traceback
 from tqdm import tqdm
 from art import tprint
 from django.core.exceptions import ValidationError
@@ -13,6 +14,7 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
+from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
@@ -23,7 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template import loader
 # Settings variables
-from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY
+from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY, LOG_FILENAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
 from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
@@ -67,8 +69,7 @@ from sklearn.tree import _tree
 #============================================================================================================================
 
 def generate_case_study(execution, path_scenario, times):
-    log_filename = 'log.csv'
-    log_path = os.path.join(path_scenario, log_filename)
+    log_path = os.path.join(path_scenario, LOG_FILENAME)
     
     n = 0
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
@@ -87,18 +88,18 @@ def generate_case_study(execution, path_scenario, times):
                     times[n][function_to_exec]["accuracy"] = res
                     times[n][function_to_exec]["feature_checker"] = fe_checker
                 elif function_to_exec == "feature_extraction_technique":
+                    start_t = time.time()
                     for fe in execution.feature_extraction_techniques.all():
                         if fe.preloaded:
                             continue
                         if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
-                            start_t = time.time()
                             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
-                            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
                             # Additional feature extraction metrics
                             times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
                             times[n][function_to_exec]["num_screenshots"] = num_screenshots
                             times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
                             times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
                     filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
@@ -176,9 +177,12 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
         create_notification(User.objects.get(id=user_id), _(f"{execution.case_study.title} Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}), status=NotifStatus.SUCCESS.value)
     except Exception as e:
+        print(traceback.format_exc())
         # TODO: View the error trace in the frontend or link to gtihub issues with description filled
         case_study=CaseStudy.objects.get(id=case_study_id)
         create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"), status=NotifStatus.ERROR.value)
+        execution.errored = True
+        execution.save()
 
 #============================================================================================================================
 #============================================================================================================================
@@ -323,7 +327,7 @@ def executeCaseStudy(request):
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
         # 403 Forbidden
-        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
     elif ACTIVE_CELERY:
         celery_task_process_case_study.delay(request.user.id, case_study_id)
     else:
@@ -337,8 +341,8 @@ def deleteCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
-    if cs.executed != 0:
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
+    if cs.num_executions > 0:
         return HttpResponse(status=422, content=_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
@@ -352,7 +356,7 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
         user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         if user.id != case_study.user.id:
-            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(request.POST, instance=case_study)
         if form.is_valid():
             form.save()
@@ -364,7 +368,7 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
         user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
         if user.id != case_study.user.id:
-            return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
         form = CaseStudyForm(instance=case_study)
         context = {
             "form": form, 
@@ -462,7 +466,7 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
             user = request.user
             case_study = get_object_or_404(CaseStudy, id=case_study_id, active=True)
             if case_study.user.id != user.id:
-                return HttpResponse(status=403, content=_("This case study doesn't belong to the authenticated user"))
+                raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
             serializer = CaseStudySerializer(instance=case_study)
             response = serializer.data
             return Response(response, status=st)
@@ -543,7 +547,7 @@ def exp_file_download(request, case_study_id):
     if cs.exists():
         unzipped_folder = cs[0].exp_folder_complete_path
     else:
-        raise Exception(_("You don't have permissions to access this files"))
+        raise PermissionDenied(_("You don't have permissions to access this files"))
     
     # Create a temporary zip file containing the contents of the unzipped folder
     zip_filename = os.path.basename(unzipped_folder) + ".zip"
@@ -569,7 +573,7 @@ def exp_file_download(request, case_study_id):
 # ============================================================================================================================
 # Executions
 # ============================================================================================================================
-class ExecutionListView(ListView, LoginRequiredMixin):
+class ExecutionListView(LoginRequiredMixin, ListView):
     login_url = "/login/"
     model = Execution
     template_name = "executions/list.html"
@@ -587,9 +591,7 @@ def deleteExecution(request):
     execution_id = request.GET.get("id")
     cs = Execution.objects.get(id=execution_id)
     if request.user.id != cs.user.id:
-        return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
-    if cs.executed != 0:
-        return HttpResponse(status=422, content=_("This execution cannot be deleted because it has already been excecuted"))
+        raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
@@ -600,14 +602,18 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         user = request.user
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])
-        if user.id != execution.user.id:
-            return HttpResponse(status=403, content=_("This execution doesn't belong to the authenticated user"))
-        reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
 
+        feature_extraction_technique=execution.feature_extraction_techniques.first() #parche para que no de error en la vista
+
+        if user.id != execution.user.id:
+            raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
+        
         context = {
             "reports": reports,
             "execution_id": execution.id, 
             "execution": execution, 
+            "feature_extraction_technique": feature_extraction_technique,
             }
         return render(request, "executions/detail.html", context)
 

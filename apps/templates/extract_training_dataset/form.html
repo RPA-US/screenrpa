@@ -28,21 +28,13 @@
             {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
           {% endif %}
         </label>
+        <!-- TODO: Update hint -->
         <button onclick="alert('|-- zip\n|   |-- scenario_results\n|   |   |-- recortes -> .png\n|   |   |-- components_npy -> .npy\n|   |   |-- components_json\n|   |   |   ->  .json\n|   |   |   |-- soms -> .json')">?</button>
       </div>
     </div>
     <hr>
     <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
     <div class="pl-lg-4">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="form-group">
-                <label class="form-control-label" for="input-title">{% blocktranslate %}Decision Point to Study {% endblocktranslate %}<b class="text-red">*</b></label>
-                {{ form.decision_point_activity }}
-                <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
-            </div>
-            </div>
-        </div>
         <div class="row">
             <div class="col-lg-12">
             <div class="form-group">

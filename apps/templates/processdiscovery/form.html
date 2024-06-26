@@ -16,10 +16,8 @@
   </div>
 
   <div class="pl-lg-4">
-    <div class="form-group">
-      <label class="form-control-label" for="id_type">
-        {{ form.type.label }}<b class="text-red">*</b>
-      </label>
+    <div class="form-group" id ="type">
+      <label class="form-control-label" for="id_type">{{ form.type.label }}<b class="text-red">*</b></label>
       {{ form.type }}
       <div class="form-validation">{{ form.type.errors }}</div>
     </div>
@@ -146,7 +144,7 @@
           {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
         {% endif %}
       </label>
-      <button onclick="alert('|-- zip\n|   |-- recortes -> .png\n|   |-- components_npy -> .npy\n|   |-- components_json\n|   |   ->  .json\n|   |   |-- soms -> .json')">?</button>
+      <button onclick="alert('|-- zip\n|   |-- scenario_results\n|   |   |-- pd_log.csv')">?</button>
     </div>
   </div>
   <hr>

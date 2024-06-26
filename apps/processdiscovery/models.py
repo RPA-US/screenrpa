@@ -1,8 +1,11 @@
 from django.db import models
 from django.db.models import JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 from private_storage.fields import PrivateFileField
 from django.urls import reverse
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 def default_process_discovery():
     return dict({"model_type": "",
@@ -30,6 +33,7 @@ class ProcessDiscovery(models.Model):
     skip = models.BooleanField(default=False)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #activities_before_dps = ArrayField(models.CharField(max_length=255), default=list)
 
     # New fields
     model_type = models.CharField(max_length=10, choices=[('vgg', 'VGG'), ('clip', 'Clip')], default='vgg')
@@ -48,3 +52,8 @@ class ProcessDiscovery(models.Model):
     
     def __str__(self):
         return 'type: ' + self.type
+
+@receiver(pre_delete, sender=ProcessDiscovery)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)

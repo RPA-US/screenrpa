@@ -31,13 +31,13 @@
         <div class="form-validation">{{ form.technique_name.errors }}</div>
       </div>
     </div>
-    <div class="col-lg-12">
+    {% comment %} <div class="col-lg-12">
         <div class="form-group">
         <label class="form-control-label" for="input-title">{% blocktranslate %}Decision Point Activity to study {% endblocktranslate %}</label>
         {{ form.decision_point_activity }}
         <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
         </div>
-    </div>
+    </div> {% endcomment %}
   </div>
   <hr>
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
@@ -53,7 +53,7 @@
                 {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
               {% endif %}
             </label>
-            <button onclick="event.preventDefault(); alert('|-- zip\n|   |-- scenario_results\n|   |   |-- components_json_enriched.csv')">?</button>
+            <button onclick="event.preventDefault(); alert('|-- zip\n|   |-- scenario_results\n|   |   |-- enriched_log.csv')">?</button>
           </div>
         </div>
     <hr>
@@ -114,6 +114,9 @@
     apply_filter_checkbox.addEventListener('change', () => {
       toggleFieldsFilterRelevants(apply_filter_checkbox.checked);
     });
+
+    const feTechniques = {{ options|safe }};
+    console.log({{feTechniques}});
   
     // Función para cambiar las opciones de 'technique_name' basado en el valor de 'type'
     function changeTechniqueOptions() {
@@ -122,25 +125,27 @@
   
       let options = [];
       if (selectedType === 'SINGLE') {
-          options = [ ('ui_elem_location-class','ui_elem_location-class'),
-          ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
-          ('class-ui_elem_location', 'class-ui_elem_location'),
-          ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
-          ('xpath-class', 'xpath-class'),
-          ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
-          ('ui_compo-existence', 'ui_compo-existence'),
-          ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
-          ('ui_compos_stats', 'ui_compos_stats')
-          ];
+          options = feTechniques.single;
+          // options = [ ('ui_elem_location-class','ui_elem_location-class'),
+          // ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
+          // ('class-ui_elem_location', 'class-ui_elem_location'),
+          // ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
+          // ('xpath-class', 'xpath-class'),
+          // ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
+          // ('ui_compo-existence', 'ui_compo-existence'),
+          // ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
+          // ('ui_compos_stats', 'ui_compos_stats')
+          // ];
       } else if (selectedType === 'AGGREGATE') {
-          options = [
-          ('status', 'status'),
-          ('quantity', 'quantity')
-          ];
+          options = feTechniques.aggregate;
+          // options = [
+          // ('status', 'status'),
+          // ('quantity', 'quantity')
+          // ];
       }
   
       options.forEach(option => {
-          const opt = new Option(option, option);
+          const opt = new Option(option.at(1), option.at(0));
           technique_name.add(opt);
       });
   

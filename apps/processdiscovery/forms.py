@@ -44,6 +44,7 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "show_dendrogram": _("Show Dendrogram"),
             "remove_loops": _("Remove Loops"),
             "text_column": _("Text Column"),
+            
         }
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Process discovery Technique"}),
