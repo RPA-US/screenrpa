@@ -130,6 +130,7 @@ def labels_to_output(labels, text_class="Text"):
                 compo["xpath"] = node["xpath"]
                 compo["depth"] = node["depth"]
                 compo["type"] = node["type"]
+                compo["relevant"] = node["relevant"]
                 break
 
     labels["som"] = som

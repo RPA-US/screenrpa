@@ -89,6 +89,7 @@ def generate_case_study(execution, path_scenario, times):
                     times[n][function_to_exec]["feature_checker"] = fe_checker
                 elif function_to_exec == "feature_extraction_technique":
                     start_t = time.time()
+                    times[n][function_to_exec] = dict()
                     for fe in execution.feature_extraction_techniques.all():
                         if fe.preloaded:
                             continue
