@@ -162,7 +162,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
             if consider_relevant_compos:
                 compos_list = [ compo for compo in data["compos"] if eval(relevant_compos_predicate)]
             else:
-                compos_list = data["compos"]
+                compos_list = list(filter(lambda x: x["relevant"] == True, data["compos"]))
 
             for j in range(0, len(compos_list)):
                 compo_class = compos_list[j]["class"]
