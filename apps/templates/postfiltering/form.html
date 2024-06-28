@@ -5,26 +5,47 @@
       <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
           <div class="pl-lg-2">
               <div class="col-12">
-                  <div class="form-group">
-                      <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
-                      {{ form.title }}
-                      <div class="form-validation">{{ form.title.errors }}</div>
-                  </div>
-              </div>
-              <div class="col-12">
-                  <div class="form-group">
-                      <label class="form-control-label" for="input-title">{% blocktranslate %}Type {% endblocktranslate %}<b class="text-red">*</b></label>
-                      {{ form.type }}
-                  <div class="form-validation">{{ form.type.errors }}</div>
-                  </div>
-              </div>
-              <div class="col-lg-6">
                 <div class="form-group">
-                  {{ form.skip.label_tag }}
-                  {{ form.skip }}
-                  <div class="form-validation">{{ form.skip.errors }}</div>
+                  <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+                    {{ form.title }}
+                  <div class="form-validation">{{ form.title.errors }}</div>
                 </div>
-              </div>
+              </div> 
+          </div>
+          <div class="pl-lg-2">
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="form-control-label" for="input-ui_selector">{% blocktranslate %}UI Selector {% endblocktranslate %}<b class="text-red">*</b></label>
+                    {{form.ui_selector.label}}
+                    {{ form.ui_selector }}
+                  <div class="form-validation">{{ form.ui_selector.errors }}</div>
+                </div>
+              </div> 
+          </div>
+          <div class="pl-lg-2">
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor {% endblocktranslate %}<b class="text-red">*</b></label>
+                    {{ form.scale_factor }}
+                  <div class="form-validation">{{ form.scale_factor.errors }}</div>
+                </div>
+              </div> 
+          </div>
+          <div class="pl-lg-2">
+              <div class="col-12">
+                <div class="form-group">
+                  <label class="form-control-label" for="input-intersection_area_thresh">{% blocktranslate %}Intersection Area Threshold {% endblocktranslate %}<b class="text-red">*</b></label>
+                    {{ form.intersection_area_thresh }}
+                  <div class="form-validation">{{ form.intersection_area_thresh.errors }}</div>
+                </div>
+              </div> 
+          </div>
+          <div class="col-lg-6">
+            <div class="form-group">
+              {{ form.consider_nested_as_relevant.label }}
+              {{ form.consider_nested_as_relevant }}
+              <div class="form-validation">{{ form.consider_nested_as_relevant.errors }}</div>
+            </div>
           </div>
       <hr>
         <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
@@ -67,23 +88,24 @@
 {% block javascripts %}
 
 <script>
-if (!document.getElementById('form').readOnly) {
-
   document.addEventListener('DOMContentLoaded', () => {
     const title = document.getElementById('id_title');
-    const type = document.getElementById('id_type');
-    const skip = document.getElementById('id_skip');
+    const scale_factor = document.getElementById('id_scale_factor');
+    const ui_selector = document.getElementById('id_ui_selector');
+    const intersection_area_thresh = document.getElementById('id_intersection_area_thresh');
+    const consider_nested_as_relevant = document.getElementById('id_consider_nested_as_relevant');
     const preloaded = document.getElementById('id_preloaded');  
     const preloaded_file = document.getElementById('id_preloaded_file');  
-    const configurations = document.getElementById('id_configurations');
+
 
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
-      type.disabled = isPreloadedChecked;
-      skip.disabled = isPreloadedChecked;
-      configurations.disabled = isPreloadedChecked;
-
       preloaded_file.disabled = !isPreloadedChecked;
+      scale_factor.disabled = isPreloadedChecked;
+      ui_selector.disabled = isPreloadedChecked;
+      intersection_area_thresh.disabled = isPreloadedChecked;
+      consider_nested_as_relevant.disabled = isPreloadedChecked;
+
     }
 
     // Controlador de eventos para el checkbox 'preloaded'
@@ -99,7 +121,7 @@ if (!document.getElementById('form').readOnly) {
     }
   })  
 
-}
+
 </script>
 
 

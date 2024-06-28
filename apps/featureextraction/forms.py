@@ -90,35 +90,19 @@ class PrefiltersForm(forms .ModelForm):
             "created_at",
             )
         fields = (
-            "type",
-            "skip",
-            "configurations",
+            "title",
+            "scale_factor",
             "preloaded_file",
             "preloaded",
-            "title"
         )
         labels = {
-            "type": _("Type"),
-            "skip": _("Skip"),
-            "configurations": _("Configurations"),
-            "preloaded_file":"Preload Execution Results"
+            "preloaded_file":"Preload Execution Results",
+            "scale_factor": "Dispersion Scale Factor"
         }
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "type": forms.Select(
-                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
-                attrs={
-                    "class": "form-control"
-                }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox"}
-            ),
-            "configurations": forms.Textarea(attrs={
-                'class': 'form-control',
-                'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
-            }),
+            "scale_factor": forms.NumberInput(attrs={"class": "form-control"}),
             "preloaded_file": forms.FileInput(
                 attrs={
                     'accept': '.zip'
@@ -144,43 +128,30 @@ class PostfiltersForm(forms .ModelForm):
             "created_at",
             )
         fields = (
-            "type",
-            "skip",
-            "configurations",
+            "title",
+            "ui_selector",
+            "scale_factor",
+            "intersection_area_thresh",
+            "consider_nested_as_relevant",
             "preloaded_file",
             "preloaded",
-            "title"
         )
         labels = {
-            "type": _("Type"),
-            "skip": _("Skip"),
-            "configurations": _("Configurations"),
-            "preloaded_file":"Preload Execution Results"
+            "preloaded_file":"Preload Execution Results",
+            "ui_selector": "UI Elements Selector",
+            "scale_factor": "Dispersion Scale Factor",
+            "intersection_area_thresh": "Intersection Area Threshold",
+            "consider_nested_as_relevant": "Consider Nested Components as Relevant"
         }
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "type": forms.Select(
-                choices=[('screen2som', 'Screen2SOM'), ('rpa-us', 'Kevin Moran'), ('uied', 'UIED'), ('sam', 'SAM'), ('fast-sam', 'Fast-SAM')],
-                attrs={
-                    "class": "form-control"
-                }
-            ),
-            "skip": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox"}
-            ),
-            "preloaded_file": forms.FileInput(
-                attrs={
-                    'accept': '.zip'
-                    }   
-            ),
-            "preloaded": forms.CheckboxInput(
-                attrs={"class": "primary-checkbox"}
-            ),
-            "configurations": forms.Textarea(attrs={
-                'class': 'form-control',
-                'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'
-            })
+            "ui_selector": forms.Select(choices=[("all","all")],attrs={"class": "form-control"}),
+            "scale_factor": forms.NumberInput(attrs={"class": "form-control"}),
+            "intersection_area_thresh": forms.NumberInput(attrs={"class": "form-control"}),
+            "consider_nested_as_relevant": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),
+            "preloaded_file": forms.FileInput(attrs={'accept': '.zip'}),
+            "preloaded": forms.CheckboxInput(attrs={"class": "primary-checkbox"})
         }
 
     def __init__(self, *args, **kwargs):

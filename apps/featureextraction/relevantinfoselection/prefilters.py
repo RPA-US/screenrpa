@@ -52,41 +52,46 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
     attention_map.save(os.path.join(attention_path ,screenshot_filename))
     print(screenshot_filename+" prefiltered correctly and saved in: "+ str(attention_path))
 
-def attention_areas_prefilter(log_path, path_scenario, special_colnames, configurations, config_key):
+def attention_areas_prefilter(log_path, path_scenario, special_colnames, scale_factor):
     ui_log = read_ui_log_as_dataframe(log_path)
     # Load the fixation data
     with open(os.path.join(path_scenario, 'fixation.json'), 'r') as f:
         fixation_data = json.load(f)
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         if screenshot_filename in fixation_data:
-            attention_screen_mapping(log_path, path_scenario, fixation_data, screenshot_filename, configurations[config_key]["scale_factor"])
+            attention_screen_mapping(log_path, path_scenario, fixation_data, screenshot_filename, scale_factor)
         else:
             logging.info(str(screenshot_filename) + " doesn't generate filtered screenshot. It doesn't have fixations related.")
 
-def apply_prefilters(log_path, path_scenario, special_colnames, configurations):
+def apply_prefilters(log_path, path_scenario, special_colnames, scale_factor):
     times = {}
-    for key in tqdm(configurations, desc="Prefilters have been processed: "):
-        # ui_selector = configurations[key]["UI_selector"]
-        # predicate = configurations[key]["predicate"]
-        # remove_nested = configurations[key]["remove_nested"]
-        s = "and applied!"
-        start_t = time.time()
-        match key:
-            case "gaze":
-                attention_areas_prefilter(log_path, path_scenario, special_colnames, configurations, "gaze")
-            case _:
-                s = "but not executed. It's not one of the possible prefilters to apply!"
-                pass
+    # for key in tqdm(configurations, desc="Prefilters have been processed: "):
+    #     # ui_selector = configurations[key]["UI_selector"]
+    #     # predicate = configurations[key]["predicate"]
+    #     # remove_nested = configurations[key]["remove_nested"]
+    #     s = "and applied!"
+    #     start_t = time.time()
+    #     match key:
+    #         case "gaze":
+    #             attention_areas_prefilter(log_path, path_scenario, special_colnames, configurations, "gaze")
+    #         case _:
+    #             s = "but not executed. It's not one of the possible prefilters to apply!"
+    #             pass
         
-        print("Prefilter '" + key + "' detected " + s)
-        logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
-        times[key] = {"duration": float(time.time()) - float(start_t)}
+    #     print("Prefilter '" + key + "' detected " + s)
+    #     logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
+    #     times[key] = {"duration": float(time.time()) - float(start_t)}
+    print("Prefiltering phase started...")
+    start_t = time.time()
+    attention_areas_prefilter(log_path, path_scenario, special_colnames, scale_factor)
+    print("Prefiltering phase finished satisfactory!")
+    times["prefiltering"] = {"duration": float(time.time()) - float(start_t)}
+
     return times
 
 def prefilters(log_path, path_scenario, execution):
     special_colnames = execution.case_study.special_colnames
-    configurations = execution.prefilters.configurations
-    filters_format_type = execution.prefilters.type
+    scale_factor = execution.prefilters.scale_factor
     skip = execution.prefilters.preloaded
     
     if not skip:  
@@ -94,7 +99,7 @@ def prefilters(log_path, path_scenario, execution):
         # match filters_format_type:
         #     case "rpa-us":
         #         output = apply_prefilters(log_path, execution.exp_folder_complete_path, special_colnames, configurations)
-        output = apply_prefilters(log_path, path_scenario, special_colnames, configurations)
+        output = apply_prefilters(log_path, path_scenario, special_colnames, scale_factor)
         #     case _:
         #         raise Exception(_("You select a type of prefilter that doesnt exists"))
     else:

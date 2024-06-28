@@ -25,7 +25,7 @@
     <div class="row">
         <div class="col-lg-12">
         <div class="form-group">
-            {{ form.exp_file.label_tag }} (all UI logs has to be named as 'log.csv' to be loaded without log processing)<br/>
+            {{ form.exp_file.label_tag }} <b class="text-red">*</b> (all UI logs has to be named as 'log.csv' to be loaded without log processing)<br/>
             {{ form.exp_file }}
             <button onclick="event.preventDefault(); alert(`
 |-- zip
@@ -51,7 +51,15 @@
     <!-- Configuration -->
     <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
     <div class="pl-lg-4">
-    <div>
+        <div class="form-group">
+            <label for="config_dropdown">{% blocktranslate %}Configuration{% endblocktranslate %}</label>
+            <select class="form-control" id="config_dropdown">
+                <option value="standard">{% blocktranslate %}Configuration Standard Template without Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="with_gazelog">{% blocktranslate %}Configuration Template with Webgazer Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="blank">{% blocktranslate %}Custom Configuration{% endblocktranslate %}</option>
+            </select>
+        </div>    
+    </div>
         <label class="form-control-label" for="type">{{ form.special_colnames.label }}<b class="text-red">*</b></label>
         {{ form.special_colnames.as_hidden }}
         <div id="json-inputs" class="d-flex flex-wrap p-4">
@@ -124,36 +132,77 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
 <script>
-    const data = JSON.parse('{{ form.special_colnames.value|escapejs }}');
+    const config_dropdown = document.getElementById('config_dropdown');
     const container = document.getElementById('json-inputs');
 
-    for (const key in data) {
-        const div = document.createElement('div');
-        div.className = 'd-flex w-50 flex-row p-1 justify-content-between';
-
-        const required = document.createElement('b');
-        required.className = 'text-red';
-        required.textContent = '*';
-
-        const label = document.createElement('label');
-        label.className = 'p-0 align-self-center text-wrap w-50 text-truncate';
-        label.textContent = key;
-        label.appendChild(required);
-
-        const input = document.createElement('input');
-        input.className = 'form-control';
-        input.required = true;
-        input.name = key;
-        input.value = data[key];
-
-        //const next = document.createElement('div');
-        //next.className = 'w-100'
-
-        container.appendChild(div);
-        div.appendChild(label);
-        div.appendChild(input);
-        //container.appendChild(next);
+    function loadDataBasedOnSelection() {
+        let data;
+        if (config_dropdown.value === 'standard') {
+            data = JSON.parse('{{ form.special_colnames.value|escapejs }}');
+        } else if (config_dropdown.value === 'with_gazelog') {
+            data = {
+                "Case": "trace_id",
+                "Activity": "activity_id",
+                "Screenshot": "ocel:screenshot:name", 
+                "Variant": "auto_variant",
+                "Timestamp": "ocel:timestamp",
+                "NameApp": "FileName",
+                "EventType": "ocel:type:event",
+                "CoorX": "ocel:click:coorX",
+                "CoorY": "ocel:click:coorY",
+                "Header": "header"
+            };
+        } else if (config_dropdown.value === 'blank') {
+            data = {
+                "Case": "",
+                "Activity": "",
+                "Screenshot": "", 
+                "Variant": "",
+                "Timestamp": "",
+                "NameApp": "",
+                "EventType": "",
+                "CoorX": "",
+                "CoorY": "",
+                "Header": ""
+            };
+        }
+        return data;
     }
+
+    function createInputsForData(data) {
+        container.innerHTML = ''; // Clear previous inputs
+        for (const key in data) {
+            const div = document.createElement('div');
+            div.className = 'd-flex w-50 flex-row p-1 justify-content-between';
+
+            const required = document.createElement('b');
+            required.className = 'text-red';
+            required.textContent = '*';
+
+            const label = document.createElement('label');
+            label.className = 'p-0 align-self-center text-wrap w-50 text-truncate';
+            label.textContent = key;
+            label.appendChild(required);
+
+            const input = document.createElement('input');
+            input.className = 'form-control';
+            input.required = true;
+            input.name = key;
+            input.value = data[key];
+
+            div.appendChild(label);
+            div.appendChild(input);
+            container.appendChild(div);
+        }
+    }
+
+    // Initial load
+    createInputsForData(loadDataBasedOnSelection());
+
+    config_dropdown.addEventListener('change', function() {
+        const data = loadDataBasedOnSelection();
+        createInputsForData(data);
+    });
 
     // When the form is submitted, update the hidden input with the JSON data
     document.getElementById('form-cs').addEventListener('submit', (event) => {

@@ -131,7 +131,7 @@ def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_p
     return res
 
 
-def gaze_filtering(log_path, path_scenario, special_colnames, configurations, key):
+def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, ui_selector, intersection_area_thresh, consider_nested_as_relevant):
     """
     This function removes from 'screenshot000X.JPG' the components that do not receive attention by the user 
     (there's no fixation point that matches component area)
@@ -140,9 +140,10 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
     log_path (str): Path to the log file
     path_scenario (str): Path to the scenario
     special_colnames (dict): Dictionary of special column names
-    configurations (dict): Dictionary of configurations
-    key (str): Key for the configurations dictionary
-
+    scale_factor (int): Scale factor for the fixation dispersion
+    ui_selector (str): UI Components selector
+    intersection_area_thresh (float): Threshold for the intersection area
+    consider_nested_as_relevant (bool): Flag to consider nested components as relevant   
     Returns:
     None
     """
@@ -184,7 +185,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
             centre = Point(fixation_point_x, fixation_point_y)
             #El radio relevante es el radio de la dispersion del punto de fijación multiplicado por el factor de escala
             #El scale_factor es un valor que si puede ser modificable por el usuario.
-            radio = float(fixation_obj["imotions_dispersion"]) * float(configurations[key]["scale_factor"])
+            radio = float(fixation_obj["imotions_dispersion"]) * float(scale_factor)
             if not pd.isna(radio):
                 polygon_circle = centre.buffer(radio)
                 polygon_circles.append(polygon_circle)
@@ -199,7 +200,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
             compo["relevant"] = "NaN"
 
             # If the component matches the UI selector and the screenshot has fixation, execute the following code
-            if (configurations[key]["UI_selector"] == "all" or (compo["class"] in configurations[key]["UI_selector"])) and (screenshot_filename in fixation_json): 
+            if (ui_selector == "all" ) and (screenshot_filename in fixation_json): 
                                       
                 # Create a polygon from the component points
                 points = compo['points']
@@ -210,8 +211,8 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
                 compo["intersection_area"] = intersection.area
 
                     # If the instersection area correspond to more than the threshold percentage of the component area, mark the component as relevant
-                if polygon.area > 0 and (intersection.area / polygon.area) > float(configurations[key]["intersection_area_thresh"]):
-                    consider_nodes = bool(configurations[key]["consider_nested_as_relevant"])
+                if polygon.area > 0 and (intersection.area / polygon.area) > float(intersection_area_thresh):
+                    consider_nodes = consider_nested_as_relevant
                     if consider_nodes and compo["type"] == "node":
                          # compo["relevant"] = "Nested"
                         compo["relevant"] = True
@@ -239,36 +240,42 @@ def gaze_filtering(log_path, path_scenario, special_colnames, configurations, ke
         with open(os.path.join(scenario_results_path , "components_json" , screenshot_filename + '.json'), "w") as jsonFile:
             json.dump(screenshot_json, jsonFile, indent=4)
    # Print and log the completion of the postfilter
-    print("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
-    logging.info("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
+    print("apps/featureextraction/postfilters.py Postfilter finished!!")
+    logging.info("apps/featureextraction/postfilters.py Postfilter finished!!")
 
 def apply_filters(log_path, path_scenario, execution):
     
     special_colnames = execution.case_study.special_colnames
-    configurations = execution.postfilters.configurations
-    
+    scale_factor = execution.postfilters.scale_factor
+    ui_selector  = execution.postfilters.ui_selector
+    intersection_area_thresh = execution.postfilters.intersection_area_thresh
+    consider_nested_as_relevant = execution.postfilters.consider_nested_as_relevant 
     times = {}
-    for key in tqdm(configurations, desc="Postfilters have been processed: "):
-        # ui_selector = configurations["key"]["UI_selector"]
-        # predicate = configurations["key"]["predicate"]
-        # remove_nested = configurations["key"]["remove_nested"]
-        s = "and applied!"
-        start_t = time.time()
-        match key:
-            case "gaze":
-                gaze_filtering(log_path, path_scenario, special_colnames, configurations, "gaze")
-            case _:
-                s = "but not executed. It's not one of the possible filters to apply!"
-                pass
+    # for key in tqdm(configurations, desc="Postfilters have been processed: "):
+    #     # ui_selector = configurations["key"]["UI_selector"]
+    #     # predicate = configurations["key"]["predicate"]
+    #     # remove_nested = configurations["key"]["remove_nested"]
+    #     s = "and applied!"
+    #     start_t = time.time()
+    #     match key:
+    #         case "gaze":
+    #             gaze_filtering(log_path, path_scenario, special_colnames, configurations, "gaze")
+    #         case _:
+    #             s = "but not executed. It's not one of the possible filters to apply!"
+    #             pass
         
-        print("Filter '" + key + "' detected " + s)
-        logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
-        times[key] = {"duration": float(time.time()) - float(start_t)}
+    #     print("Filter '" + key + "' detected " + s)
+    #     logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
+    #     times[key] = {"duration": float(time.time()) - float(start_t)}
+    print("Postfiltering phase started...")
+    start_t = time.time()
+    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,ui_selector,intersection_area_thresh,consider_nested_as_relevant)
+    print("Postfiltering phase finished satisfactory!")
+    times["postfiltering"] = {"duration": float(time.time()) - float(start_t)}
 
     return times
 
 def postfilters(log_path, path_scenario, execution):
-    filters_format_type = execution.postfilters.type
     skip = execution.postfilters.preloaded
     
     if not skip:  
