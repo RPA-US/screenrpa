@@ -138,29 +138,29 @@
             data = JSON.parse('{{ form.special_colnames.value|escapejs }}');
         } else if (config_dropdown.value === 'with_gazelog') {
             data = {
-                "Case": "trace_id",
-                "Activity": "activity_id",
-                "Screenshot": "ocel:screenshot:name", 
-                "Variant": "auto_variant",
-                "Timestamp": "ocel:timestamp",
-                "NameApp": "FileName",
-                "EventType": "ocel:type:event",
+                "Case": "ocel:eid",
                 "CoorX": "ocel:click:coorX",
                 "CoorY": "ocel:click:coorY",
-                "Header": "header"
+                "Header": "header",
+                "NameApp": "FileName",
+                "Variant": "ocel:variant",
+                "Activity": "ocel:activity",
+                "EventType": "ocel:type:event",
+                "Timestamp": "ocel:timestamp",
+                "Screenshot": "ocel:screenshot:name", 
             };
         } else if (config_dropdown.value === 'blank') {
             data = {
                 "Case": "",
-                "Activity": "",
-                "Screenshot": "", 
-                "Variant": "",
-                "Timestamp": "",
-                "NameApp": "",
-                "EventType": "",
                 "CoorX": "",
                 "CoorY": "",
-                "Header": ""
+                "Header": "",
+                "NameApp": "",
+                "Variant": "",
+                "Activity": "",
+                "EventType": "",
+                "Timestamp": "",
+                "Screenshot": "", 
             };
         }
         return data;
