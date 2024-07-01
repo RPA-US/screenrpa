@@ -184,7 +184,6 @@ class Postfilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    ui_selector =  models.CharField(max_length=255, default='all')
     scale_factor = models.IntegerField(default=10)
     intersection_area_thresh = models.IntegerField(default=0)
     consider_nested_as_relevant = models.BooleanField(default=True)

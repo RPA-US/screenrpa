@@ -129,7 +129,6 @@ class PostfiltersForm(forms .ModelForm):
             )
         fields = (
             "title",
-            "ui_selector",
             "scale_factor",
             "intersection_area_thresh",
             "consider_nested_as_relevant",
@@ -138,7 +137,6 @@ class PostfiltersForm(forms .ModelForm):
         )
         labels = {
             "preloaded_file":"Preload Execution Results",
-            "ui_selector": "UI Elements Selector",
             "scale_factor": "Dispersion Scale Factor",
             "intersection_area_thresh": "Intersection Area Threshold",
             "consider_nested_as_relevant": "Consider Nested Components as Relevant"
@@ -146,7 +144,6 @@ class PostfiltersForm(forms .ModelForm):
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "ui_selector": forms.Select(choices=[("all","all")],attrs={"class": "form-control"}),
             "scale_factor": forms.NumberInput(attrs={"class": "form-control"}),
             "intersection_area_thresh": forms.NumberInput(attrs={"class": "form-control"}),
             "consider_nested_as_relevant": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),

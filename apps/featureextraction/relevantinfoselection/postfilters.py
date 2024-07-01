@@ -131,7 +131,7 @@ def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_p
     return res
 
 
-def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, ui_selector, intersection_area_thresh, consider_nested_as_relevant):
+def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, intersection_area_thresh, consider_nested_as_relevant):
     """
     This function removes from 'screenshot000X.JPG' the components that do not receive attention by the user 
     (there's no fixation point that matches component area)
@@ -163,7 +163,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, ui_s
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         
         # If the screenshot filename is not in the fixation.json keys, skip this iteration
-        if screenshot_filename not in fixation_json.keys():
+        if screenshot_filename not in fixation_json.keys() or fixation_json[screenshot_filename] == {}:
             continue
         
         # Open the corresponding screenshot.json file and load its content
@@ -200,7 +200,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, ui_s
             compo["relevant"] = "NaN"
 
             # If the component matches the UI selector and the screenshot has fixation, execute the following code
-            if (ui_selector == "all" ) and (screenshot_filename in fixation_json): 
+            if (screenshot_filename in fixation_json): 
                                       
                 # Create a polygon from the component points
                 points = compo['points']
@@ -247,7 +247,6 @@ def apply_filters(log_path, path_scenario, execution):
     
     special_colnames = execution.case_study.special_colnames
     scale_factor = execution.postfilters.scale_factor
-    ui_selector  = execution.postfilters.ui_selector
     intersection_area_thresh = execution.postfilters.intersection_area_thresh
     consider_nested_as_relevant = execution.postfilters.consider_nested_as_relevant 
     times = {}
@@ -269,7 +268,7 @@ def apply_filters(log_path, path_scenario, execution):
     #     times[key] = {"duration": float(time.time()) - float(start_t)}
     print("Postfiltering phase started...")
     start_t = time.time()
-    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,ui_selector,intersection_area_thresh,consider_nested_as_relevant)
+    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,intersection_area_thresh,consider_nested_as_relevant)
     print("Postfiltering phase finished satisfactory!")
     times["postfiltering"] = {"duration": float(time.time()) - float(start_t)}
 

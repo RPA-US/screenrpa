@@ -15,16 +15,6 @@
           <div class="pl-lg-2">
               <div class="col-12">
                 <div class="form-group">
-                  <label class="form-control-label" for="input-ui_selector">{% blocktranslate %}UI Selector {% endblocktranslate %}<b class="text-red">*</b></label>
-                    {{form.ui_selector.label}}
-                    {{ form.ui_selector }}
-                  <div class="form-validation">{{ form.ui_selector.errors }}</div>
-                </div>
-              </div> 
-          </div>
-          <div class="pl-lg-2">
-              <div class="col-12">
-                <div class="form-group">
                   <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor {% endblocktranslate %}<b class="text-red">*</b></label>
                     {{ form.scale_factor }}
                   <div class="form-validation">{{ form.scale_factor.errors }}</div>
@@ -91,7 +81,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     const title = document.getElementById('id_title');
     const scale_factor = document.getElementById('id_scale_factor');
-    const ui_selector = document.getElementById('id_ui_selector');
     const intersection_area_thresh = document.getElementById('id_intersection_area_thresh');
     const consider_nested_as_relevant = document.getElementById('id_consider_nested_as_relevant');
     const preloaded = document.getElementById('id_preloaded');  
@@ -102,7 +91,6 @@
     function toggleFields(isPreloadedChecked) {
       preloaded_file.disabled = !isPreloadedChecked;
       scale_factor.disabled = isPreloadedChecked;
-      ui_selector.disabled = isPreloadedChecked;
       intersection_area_thresh.disabled = isPreloadedChecked;
       consider_nested_as_relevant.disabled = isPreloadedChecked;
 
