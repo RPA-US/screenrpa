@@ -4,6 +4,10 @@ import json
 import os
 import pickle
 import re
+# For file conversion
+import subprocess # Libreoffice
+from docx2pdf import convert # MS Word
+
 from tempfile import NamedTemporaryFile
 #from tkinter import Image
 from django.http import FileResponse, HttpResponse, HttpResponseRedirect
@@ -21,6 +25,10 @@ from django.views.generic import ListView, DetailView, CreateView
 import numpy as np
 import pandas as pd
 from sklearn.tree import export_graphviz
+
+#from SOM.utils import get_uicompo_from_centroid
+from apps.decisiondiscovery.utils import truncar_a_dos_decimales
+from apps.notification.views import create_notification
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from .models import PDD
@@ -648,7 +656,7 @@ def report_define(report_directory, report_path, execution,  report, scenario):
 
     doc.save(report_path)
 
-    convert_docx_to_pdf(report_path, report_path.replace('.docx', '.pdf'))
+    convert_docx_to_pdf(execution.user, report_path, report_path.replace('.docx', '.pdf'))
 
 #################################################################################
 
@@ -697,10 +705,16 @@ def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
         p.addnext(tbl)
 ###################
 
-def convert_docx_to_pdf(dx_path, pdf_path):
-    
-    doc = aw.Document(dx_path)
-    doc.save(pdf_path)
+def convert_docx_to_pdf(user, dx_path, pdf_path):
+    try:
+        if os.name == 'nt':
+            convert(dx_path, pdf_path)
+        else:
+            subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', os.path.dirname(pdf_path), dx_path])
+    except:
+        create_notification(user, _('Limited report'), _('Please install MS Word on windows or Libreoffice on linux to generate the execution report.'), "")
+        doc = aw.Document(dx_path)
+        doc.save(pdf_path)
 
 
 # def convert_docx_to_pdf2(dx_path, pdf_path):
