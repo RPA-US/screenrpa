@@ -27,10 +27,10 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
     draw = ImageDraw.Draw(attention_mask)
     for fixation_point in fixation_data[screenshot_filename]['fixation_points']:
         x, y = map(float, fixation_point.split('#'))
-        if 'dispersion' in fixation_data[screenshot_filename]['fixation_points'][fixation_point]:
-            dispersion = float(fixation_data[screenshot_filename]['fixation_points'][fixation_point]['dispersion'])
+        if 'imotions_dispersion' in fixation_data[screenshot_filename]['fixation_points'][fixation_point]:
+            dispersion = float(fixation_data[screenshot_filename]['fixation_points'][fixation_point]['imotions_dispersion'])
             if not pd.isna(dispersion):
-                radius = int(dispersion) * int(scale_factor)  # Scale the dispersion to a reasonable size for the circle
+                radius = dispersion * scale_factor  # Scale the dispersion to a reasonable size for the circle
                 draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=255)
             else:
                 logging.info(fixation_point + " - (dispersion attr is nan) not mapped to attention area in screenshot " + screenshot_filename)
