@@ -1,4 +1,3 @@
-import base64
 from collections import defaultdict
 import io
 import json
@@ -7,7 +6,7 @@ import pickle
 import re
 from tempfile import NamedTemporaryFile
 #from tkinter import Image
-from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import FileResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 import datetime
 import docx
@@ -19,20 +18,14 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from django.views.generic import ListView, DetailView, CreateView
-from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.tree import export_graphviz
-
-
-#from SOM.utils import get_uicompo_from_centroid
-from apps.decisiondiscovery.utils import truncar_a_dos_decimales
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
 from .models import PDD
-from apps.analyzer.models import CaseStudy
 from django.utils.translation import gettext_lazy as _
-from apps.analyzer.models import CaseStudy, Execution # add this
+from apps.analyzer.models import Execution 
 from .forms import ReportingForm
 from django.urls import reverse
 
@@ -50,84 +43,28 @@ from PIL import Image, ImageDraw
 #import subprocess
 import aspose.words as aw
 ##################################
-from graphviz import Source, Digraph
+from graphviz import Source
 from tempfile import NamedTemporaryFile
-from apps.processdiscovery.utils import Process, extract_all_activities_labels, extract_prev_act_labels
+from apps.processdiscovery.utils import extract_all_activities_labels, extract_prev_act_labels
 
 import pygraphviz as pgv 
-from shapely.geometry import Polygon, Point
 from docx.shared import RGBColor
-####################################################################3
 
 #########################################
 ########## COMPONENT RETRIEVAL ##########
 #########################################
 
-def get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames,action) -> dict:
-    # log = read_ui_log_as_dataframe(os.path.join(scenario_results_path, "pd_log.csv"))
-
-    # # Find two subsequent rows such that the fisrt 'Activity' is prev_act and the second 'Activity' is next_act
-    # prev_act_idx = log[log[special_colnames['Activity']]==prev_act].index
-    # next_act_idx = log[log[special_colnames['Activity']]==next_act].index
-
-    # if len(prev_act_idx)==0 or len(next_act_idx)==0:
-    #     return None
-
-    # # Find two consequent numbers in prev_act_idx and next_act_idx
-    # img_name = None
-    # for idx in prev_act_idx:
-    #     if idx+1 in next_act_idx and action==0:
-    #         img_name = log.loc[idx, special_colnames['Screenshot']]
-    #         break
-    #     elif action>0:
-    #         action-=1
+def get_som_json_from_screenshots_in_components(screenshot_filename, scenario_results_path) -> dict:
     
-    # if not img_name:
-    #     return None
-
     if not os.path.exists(os.path.join(scenario_results_path, "components_json")):
         raise Exception("No UI Elm. Det. Phase Conducted")
 
     return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
 
 
-
-
-
 def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
-    """
-    Recovers a component from the pd log based on the id of the component.
-    Uses prevAct and nextAct to determine the imagen to analyze, which should correspond to the activity before the decision point.
-
-    action determines which instance in order should be considered.
-    
-    params:
-        @prev_act: previous activity
-        @next_act: next activity
-        @ui_compo_centroid: centroid of the component
-        @scenario_results_path: path to the scenario results
-        @action: instance of the component to recover
-    returns:
-        @uicompo: the component
-    """
-
-    #pasa de tupla a lista
     ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
-    som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
-    #print(som_json)
-    # Filtrar la lista y encontrar el mínimo
-    uicompo_json=None
-    for compo in som_json['compos']:
-        # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
-        compo_centroid_int = [int(float(coord)) for coord in compo['centroid']]
-        if compo_centroid_int == ui_compo_centroid:
-            uicompo_json = compo
-            break
-    return uicompo_json
-
-def get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
-    ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
-    som_json = get_som_json_from_acts(screenshot_filename, scenario_results_path, special_colnames, action)
+    som_json = get_som_json_from_screenshots_in_components(screenshot_filename, scenario_results_path, special_colnames, action)
 
     uicompo_json = None
     min_distance = float('inf')
@@ -168,8 +105,6 @@ def pre_pd_activities(decision_point, df_pd_log,colnames):
             # Stop when encountering the specific activity
             
     return result
-
-
 
 def pdd_define_style(document):
     # =======================================================================================================
@@ -468,7 +403,6 @@ def ui_screen_trace_back_reporting(case_study_id):
 # TODO:
 class ReportGenerateView(DetailView):
     def get(self, request, *args, **kwargs):
-        print("se ejecuta")
         cs = get_object_or_404(PDD, id=kwargs["case_study_id"], active=True)
         
         document = ui_screen_trace_back_reporting(cs.id)
@@ -533,33 +467,6 @@ class ReportListView(ListView):
         return queryset
 
 #############################################################################################
-#############################################################################################
-#############################################################################################
-## VERSIONES DE ALE
-
-# class ReportGenerateView_ALE(DetailView):
-#     def get(self, request, *args, **kwargs):
-#         model = Execution
-#         execution = get_object_or_404(Execution, id=kwargs["execution_id"]) 
-
-#         pdd = PDD.objects.create(
-#             execution=execution,
-#             user=request.user  
-#         )
-#         report_path = os.path.join(execution.exp_folder_complete_path,'exec_'+str(execution.id)+'_reports', 'report.docx')
-
-#         # Simulate report creation (you should replace this with your actual report generation logic)
-#         with open(report_path, 'wb') as file:
-#             file.write(b'PDF content or whatever content you generate')
-
-#         pdd.file.name = report_path
-#         pdd.save()
-
-#         return response
-    
-
-#########################################################################
-
 
 def tree_to_png(path_to_tree_file):
     # Load the decision tree data
@@ -652,7 +559,6 @@ class ReportCreateView(CreateView):
             # with open(report_path, 'wb') as file:
             #     file.write(b'PDF content or whatever content you generate')
         
-#############################################################################################
 
 def report_define(report_directory, report_path, execution,  report, scenario):
     template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
@@ -789,7 +695,7 @@ def input_data_descrption(doc, original_log, execution, scenario, df_logcsv):
 
         tbl, p = table._tbl, original_log._p
         p.addnext(tbl)
-###################33333
+###################
 
 def convert_docx_to_pdf(dx_path, pdf_path):
     
@@ -801,7 +707,7 @@ def convert_docx_to_pdf(dx_path, pdf_path):
 #     extra_args = ['--pdf-engine-opt', '-dPDFSETTINGS=/prepress']
 #     #pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
 #     pypandoc.convert_file(dx_path, 'pdf', outputfile=pdf_path, extra_args=extra_args)
-##################################################33
+##################################################
 
 def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, colnames):
     
@@ -824,9 +730,6 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     #     df=df.groupby(colnames['Case']).apply(assign_variant).reset_index(drop=True)
     #     return df
     
-    
-           
-        
     def cambiar_color_nodos_y_caminos(labels, path_to_dot_file):
         # Cargar el contenido del archivo .dot
         with open(path_to_dot_file, 'r') as file:
@@ -959,7 +862,6 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     def get_overlapping_branch_condition2(decision_point, branch_number, pre_pd_activities):
         branches = decision_point.get('branches', [])
         rules = decision_point.get('overlapping_rules', {})
-        
         branch_rules = defaultdict(list)
         result_dict = defaultdict(dict)
         
@@ -1008,7 +910,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         result_dict[other_branch][rule] = branch_rules[rule]
         
         return dict(result_dict)
-#############################################################
+    
     
     def draw_polygons_on_image(json_data, image_path, doc_decision_tree):
         # Cargar la imagen
@@ -1193,12 +1095,6 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             #recorrer las claves del diccionario
             for k in sorted(action_dict.keys()):
                 pintar_imagen(k, action_dict)
-                    
-
-                
-            ############################################
-
-    
           
 ############################################################3
     
@@ -1224,8 +1120,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
         #actividades
         activities = group[colnames['Activity']].unique().tolist() #en funcion de si las activity label se pueden repetir
-
-
+        
         #meto diagrama bpmn resaltado de variantes
         run = decision_tree.add_run()
         run.add_picture(cambiar_color_nodos_y_caminos(activities, path_to_dot_file), width=Inches(6))
@@ -1314,7 +1209,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                 # Insertar la imagen en el documento
                                 ui_compo_centroid=variable
                                 
-                                compo_ui = get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
                                 if compo_ui:
                                     compo_ui["color"] = color  # Asignar color al polígono
                                     compo_ui_json.append(compo_ui)
@@ -1361,7 +1256,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
                                     # Insertar la imagen en el documento
                                     ui_compo_centroid = variable
-                                    compo_ui = get_uicompo_from_centroid2(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                    compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
 
                                     if compo_ui:
                                         compo_ui["color"] = color  # Asignar color al polígono
