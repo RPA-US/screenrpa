@@ -13,21 +13,14 @@
               </div>
               <div class="col-12">
                   <div class="form-group">
-                      <label class="form-control-label" for="input-title">{% blocktranslate %}Type {% endblocktranslate %}<b class="text-red">*</b></label>
-                      {{ form.type }}
-                  <div class="form-validation">{{ form.type.errors }}</div>
+                      <label class="form-control-label" for="input-title">{% blocktranslate %} Scale Factor {% endblocktranslate %}<b class="text-red">*</b> <small>(2000 recommended)</small></label>
+                      {{ form.scale_factor }}
+                      <div class="form-validation">{{ form.scale_factor.errors }}</div>
                   </div>
-              </div>
-              <div class="col-lg-6">
-                <div class="form-group">
-                  {{ form.skip.label_tag }}
-                  {{ form.skip }}
-                  <div class="form-validation">{{ form.skip.errors }}</div>
-                </div>
               </div>
           </div>
       <hr>
-        <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+      <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
         <div class="col-12">
           <div class="form-group" id="preloaded">
             {{form.preloaded}}
@@ -43,16 +36,6 @@
             <button onclick="alert('|-- zip\n|   |-- scenario_results\n|   |   |-- prefilter_attention_maps -> screenshotXXXX.JPEG')">?</button>
           </div>
         </div>
-        <hr>
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="form-group">
-            {{ form.configurations.label_tag }}
-            {{ form.configurations }}
-            <div class="form-validation">{{ form.configurations.errors }}</div>
-          </div>
-        </div>
-      </div>
     </div>
     {% if not form.read_only %}
     <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
@@ -66,21 +49,16 @@
 {% block javascripts %}
 
 <script>
-if (!document.getElementById('form').readOnly) {
   document.addEventListener('DOMContentLoaded', () => {
     const title = document.getElementById('id_title');
-    const type = document.getElementById('id_type');
-    const skip = document.getElementById('id_skip');
     const preloaded = document.getElementById('id_preloaded');  
     const preloaded_file = document.getElementById('id_preloaded_file');  
-    const configurations = document.getElementById('id_configurations');
+    const scale_factor = document.getElementById('id_scale_factor');
     
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
-      skip.disabled = isPreloadedChecked;
-      configurations.disabled = isPreloadedChecked;
-
       preloaded_file.disabled = !isPreloadedChecked;
+      scale_factor.disabled = isPreloadedChecked;
     }
 
     // Controlador de eventos para el checkbox 'preloaded'
@@ -95,7 +73,7 @@ if (!document.getElementById('form').readOnly) {
       document.getElementById('id_preloaded').readOnly = false;
     }
   })  
-}
+
 </script>
 
 

@@ -73,6 +73,19 @@ def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
     hs = int(min/60)
     ms -= min*60
     min -= hs*60
+    # Datetime can read 6 digits as miliseconds
+    if len(str(float(current_timestamp) / 1000)) > 6:
+      ms = str(ms)[:6]
+    ms = str(hs)+"-"+str(min)+"-"+str(ms)
+    time = datetime.datetime.strptime(ms, ms_pattern).time()
+    res = start_datetime + datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=time.second, microseconds=time.microsecond)
+    total_seconds = (res - time_begining).total_seconds()
+  elif pattern == "ms_webgazer":
+    ms = float(current_timestamp) / 1000
+    min = int(ms/60)
+    hs = int(min/60)
+    ms -= min*60
+    min -= hs*60
     # # Datetime can read 6 digits as miliseconds
     # if len(str(float(current_timestamp) / 1000)) > 6:
     #   ms = str(ms)[:6]
@@ -81,18 +94,6 @@ def get_timestamp(time_begining, start_datetime, current_timestamp, pattern):
     time = datetime.datetime.strptime(ms, ms_pattern).time()
     res = start_datetime + datetime.timedelta(hours=time.hour, minutes=time.minute, seconds=time.second, microseconds=time.microsecond)
     total_seconds = (res - time_begining).total_seconds()
-  elif pattern == "webgazer":
-    # Convertir a número entero (en segundos)
-    js_timestamp_int = int(float(current_timestamp) / 1000)
-    # Convertir a un objeto datetime
-    date_time_obj = datetime.datetime.utcfromtimestamp(js_timestamp_int)
-    # Obtener la hora
-    time = date_time_obj.time()
-    res = datetime.datetime.combine(start_datetime, time)
-    if res < time_begining:
-      total_seconds = 0
-    else:
-      total_seconds = (res - time_begining).total_seconds()
   else:
     time =  datetime.datetime.strptime(current_timestamp, pattern).time()
     res = datetime.datetime.combine(start_datetime, time)
@@ -305,7 +306,7 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
             break        
 
         screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
-        if fixation_points[screenshot_name]["fixation_points"] == {}:	
+        if fixation_points[screenshot_name]["fixation_points"] == {}:
           raise Exception("No fixation points in screenshot " + screenshot_name)
         gaze_metrics = fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)]
         metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
@@ -319,7 +320,6 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
         raise Exception("UI and Gaze Logs Timestamps are not well synchronized")
       else:
         logging.info("behaviourmonitoring/monitoring/gaze_log_mapping line:155. UI Logs events with the same timestamps: next_timestamp (row " + str(j+1) + ") == current_timestamp (row " + str(j) + ")")
-  
   last_ui_log_timestamp, t = get_timestamp(starting_point, startDateTime_ui_log, ui_log.iloc[len(ui_log)-1][special_colnames["Timestamp"]], ui_log_timestamp_pattern)        
   last_gaze_timestamp, t = get_timestamp(starting_point, startDateTime_gaze_tz, gaze_log.iloc[len(gaze_log)-1]["Timestamp"], gaze_log_timestamp_pattern)# + gaze_log_timedelta
   
@@ -342,7 +342,17 @@ def gaze_log_mapping(ui_log, gaze_log, special_colnames, startDateTime_ui_log, s
           msg = "No fixation point in " + str(gaze_log.iloc[i]["RowNumber"]) + ". Saccade: " + str(gaze_log.iloc[i]["Saccade Index"])
         logging.info(msg)
         print(msg)
-      
+    
+    #Guardamos aquellos eventos de fijación que no se han guardado en la iteración anterior
+    for j in range(len(ui_log)):
+      screenshot_name = ui_log.iloc[j][special_colnames["Screenshot"]]
+      if screenshot_name not in fixation_points:
+        # Añade screenshot_name a fixation_points con un diccionario que contiene "fixation_points" vacío
+        fixation_points[screenshot_name] = {"fixation_points": {}}
+        # Log para indicar que se ha añadido una nueva entrada para screenshot_name
+        logging.info(f"Added {screenshot_name} to fixation_points with empty fixation_points.")    
+
+  
   return fixation_points
 
 def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
@@ -506,7 +516,7 @@ def monitoring(log_path, root_path, execution):
         logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
         print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
       else:
-        fixation_p = gaze_log_mapping(ui_log, gazeanalysis_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms')
+        fixation_p = gaze_log_mapping(ui_log, gazeanalysis_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms_webgazer')
         
       # Serializing json
       json_object = json.dumps(fixation_p, indent=4)

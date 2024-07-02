@@ -678,7 +678,9 @@ class PrefiltersDetailView(LoginRequiredMixin, DetailView):
     # Check if the the phase can be interacted with (included in case study available phases)
     
     def get(self, request, *args, **kwargs):
-        prefilter = get_object_or_404(Prefilters, id=kwargs["prefilter_id"])
+        prefilter_id=kwargs.get("prefilter_id")
+        prefilter = get_object_or_404(Prefilters, id=prefilter_id)
+        form = PrefiltersForm(read_only=True, instance=prefilter)
         if prefilter.case_study.user != request.user:
             raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
@@ -837,8 +839,9 @@ class PostfiltersDetailView(LoginRequiredMixin, DetailView):
     login_url = "/login/"
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
+        postfilter_id = kwargs.get('postfilter_id')
+        postfilter = get_object_or_404(Postfilters, id=postfilter_id) 
         form = PostfiltersForm(read_only=True, instance=postfilter)
-        postfilter = get_object_or_404(Postfilters, id=kwargs["postfilter_id"])
         if not postfilter:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif postfilter.case_study.user != request.user:

@@ -45,8 +45,8 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Type{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
@@ -69,10 +69,10 @@
                     </div>
                   </th>
                   <td>
-                      {{ prefilter.created_at }}
+                    <a href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">{{ prefilter.title }} </a>
                   </td>
                   <td>
-                    <a href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">{{ prefilter.title }} </a>
+                      {{ prefilter.created_at }}
                   </td>
                   <td class="type">
                       {{ prefilter.type }}

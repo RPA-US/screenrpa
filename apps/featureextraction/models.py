@@ -40,26 +40,6 @@ def get_exp_foldername(exp_folder_complete_path):
     splitted_s = exp_folder_complete_path.split(aux)
     return splitted_s[len(splitted_s) - 1]
 
-def default_prefilters_conf():
-    return dict({
-    		    "gaze": {
-			            "scale_factor":10
-    	        	}
-                }
-            )
-    
-def default_filters_conf():
-    return dict({
-                "gaze": {
-                        "UI_selector": "all",
-                        "scale_factor":1000,
-                        "intersection_area_thresh":0,
-                        "consider_nested_as_relevant":True
-                        }
-                    }
-                )
-
-
 UI_ELM_DET_TYPES = (
     ('rpa-us', 'Kevin Moran'),
     ('uied', 'UIED'),
@@ -76,9 +56,7 @@ class Prefilters(models.Model):
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
-    configurations = JSONField(null=True, blank=True, default=default_prefilters_conf)
-    type = models.CharField(max_length=25, default='rpa-us')
-    skip = models.BooleanField(default=False)
+    scale_factor = models.IntegerField(default=2000)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -206,9 +184,9 @@ class Postfilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    configurations = JSONField(null=True, blank=True, default=default_filters_conf)
-    type = models.CharField(max_length=25, default='rpa-us', null=True, blank=True)
-    skip = models.BooleanField(default=False)
+    scale_factor = models.IntegerField(default=10)
+    intersection_area_thresh = models.IntegerField(default=0)
+    consider_nested_as_relevant = models.BooleanField(default=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
