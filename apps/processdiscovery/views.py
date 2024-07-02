@@ -55,7 +55,7 @@ def scene_level(log_path, scenario_path, execution):
             processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
             return model, processor
         elif model_type == 'vgg':
-            tf.config.set_visible_devices([], 'GPU')
+            # tf.config.set_visible_devices([], 'GPU')
             model = VGG16(weights='imagenet', include_top=False)
             return model, None
     
