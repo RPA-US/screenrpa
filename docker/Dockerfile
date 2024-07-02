@@ -28,6 +28,9 @@ RUN ./venv/bin/python -m pip install transformers
 
 # Install graphviz
 RUN apt-get update && apt-get install -y graphviz graphviz-dev
+# Install libreoffice
+RUN apt-get install libreoffice-core-nogui libreoffice-writer-nogui --no-install-recommends --no-install-suggests
+
 # Make django migrations
 COPY ./docker/.env ./core/.env
 RUN ./venv/bin/python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting

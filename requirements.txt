@@ -47,6 +47,7 @@ django-private-storage==3.0
 django-rest-auth==0.9.5
 djangorestframework==3.14.0
 docx==0.2.4
+docx2pdf==0.1.8
 drf-spectacular==0.24.2
 drf-spectacular-sidecar==2022.10.1
 editdistance==0.6.0
