@@ -24,7 +24,7 @@ from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
 from apps.decisiondiscovery.utils import rename_columns_with_centroids
 from core.utils import read_ui_log_as_dataframe
-from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
+from core.settings import PROCESS_DISCOVERY_LOG_FILENAME, ENRICHED_LOG_SUFFIX
 from apps.processdiscovery.utils import Process, DecisionPoint, Branch, Rule
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
@@ -163,7 +163,7 @@ def scene_level(log_path, scenario_path, execution):
     '''
     Labeling WorkFlow
     '''
-    def auto_labeling(df, remove_loops):
+    def auto_labeling(df, fe_log, remove_loops):
         activity_inicial = df[special_colnames['Activity']].iloc[0]
         trace_id = 1
         trace_ids = [trace_id]
@@ -173,28 +173,31 @@ def scene_level(log_path, scenario_path, execution):
                     trace_id += 1
                 trace_ids.append(trace_id)
         df['trace_id'] = trace_ids
-        if remove_loops: df = remove_duplicate_activities(df, special_colnames['Activity'])
-        return df
+        if remove_loops: df, fe_log = remove_duplicate_activities(df, fe_log, special_colnames['Activity'])
+        return df, fe_log
 
     def manual_labeling(df):
         # Placeholder for manual labeling logic.
         # For now, it simply returns the DataFrame unchanged.
         return df
 
-    def trace_id_assignment(df, remove_loops, labeling_mode='automatic'):
+    def trace_id_assignment(df, fe_log, remove_loops, labeling_mode='automatic'):
         if labeling_mode == 'automatic':
-            df = auto_labeling(df, remove_loops)
+            df, fe_log = auto_labeling(df, fe_log, remove_loops)
         elif labeling_mode == 'manual':
             df = manual_labeling(df)
         else:
             raise ValueError("Unsupported labeling mode. Choose 'automatic' or 'manual'.")
-        return df
+        return df, fe_log
     
-    def remove_duplicate_activities(df, activity_column):
+    def remove_duplicate_activities(df, fe_log, activity_column):
         to_remove = df[activity_column].eq(df[activity_column].shift())
+        index_to_remove = df[to_remove].index
         df = df[~to_remove]
+        if fe_log is not None:
+            fe_log = fe_log[~fe_log.index.isin(index_to_remove)]
         
-        return df
+        return df, fe_log
 
     '''
     Dendrogram generation WorkFlow
@@ -247,9 +250,13 @@ def scene_level(log_path, scenario_path, execution):
     Process Discovery Execution Main Workflow
     '''
     ui_log = read_ui_log_as_dataframe(log_path)
+    if execution.feature_extraction_technique:
+        fe_log = read_ui_log_as_dataframe(os.path.join(scenario_path + "_results", 'log' + ENRICHED_LOG_SUFFIX + '.csv'))
+    else:
+        fe_log = None
     ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], text_column, image_weight=image_weight, text_weight=text_weight, model_type=model_type)
     ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)
-    ui_log = trace_id_assignment(ui_log, remove_loops, labeling_mode=labeling)
+    ui_log, fe_log = trace_id_assignment(ui_log, fe_log, remove_loops, labeling_mode=labeling)
 
     folder_path = scenario_path + '_results'
     print(folder_path)
@@ -262,10 +269,10 @@ def scene_level(log_path, scenario_path, execution):
     
     generate_dendrogram(ui_log, show_dendrogram=show_dendrogram)
 
-    return folder_path, ui_log
+    return folder_path, ui_log, fe_log
     
 
-def process_level(folder_path, df, execution):
+def process_level(folder_path, df, fe_log, execution):
     special_colnames = execution.case_study.special_colnames
 
     def petri_net_process(df, special_colnames):
@@ -393,20 +400,26 @@ def process_level(folder_path, df, execution):
             df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
             df.to_csv(os.path.join(folder_path, PROCESS_DISCOVERY_LOG_FILENAME), index=False)
+            return df
 
         try:
             process = bpmn_bfs(node_start, node_end)
             json.dump(process.to_json(), open(os.path.join(folder_path, 'traceability.json'), 'w'))
-            add_trace_to_log(process, df)
+            df = add_trace_to_log(process, df)
         except Exception as e:
             print(e)
+
+        if fe_log is not None:
+            # Save full log (pd + fe)
+            fe_log.drop(columns=df.columns, inplace=True, errors='ignore')
+            full_log = pd.concat([df, fe_log], axis=1)
+            full_log.to_csv(os.path.join(folder_path, 'pipeline_log.csv'), index=False)
 
     petri_net_process(df, special_colnames)
     try:
         bpmn_process(df, special_colnames)
     except Exception as e:
         print(f'Error generating BPMN: {e} Continuing with Petrinet...')
-    
     
 def process_discovery(log_path, scenario_path, execution):
     # log_path -> media/unzipped/exec_1/Nano/log.csv
@@ -415,8 +428,8 @@ def process_discovery(log_path, scenario_path, execution):
 
     # root_path + "results/" + PROCESS_DISCOVERY_LOG_FILENAME
     #Pasar execution.process_discovery
-    folder_path, ui_log = scene_level(log_path, scenario_path, execution)
-    process_level(folder_path, ui_log, execution)
+    folder_path, ui_log, fe_log = scene_level(log_path, scenario_path, execution)
+    process_level(folder_path, ui_log, fe_log, execution)
         
     
 class ProcessDiscoveryCreateView(LoginRequiredMixin, CreateView):
