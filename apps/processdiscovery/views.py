@@ -195,7 +195,7 @@ def scene_level(log_path, scenario_path, execution):
         index_to_remove = df[to_remove].index
         df = df[~to_remove]
         if fe_log is not None:
-            fe_log = fe_log[~fe_log.index.isin(index_to_remove)]
+            fe_log = fe_log[~to_remove]
         
         return df, fe_log
 
@@ -412,6 +412,7 @@ def process_level(folder_path, df, fe_log, execution):
         if fe_log is not None:
             # Save full log (pd + fe)
             fe_log.drop(columns=df.columns, inplace=True, errors='ignore')
+            fe_log = fe_log.reset_index()
             full_log = pd.concat([df, fe_log], axis=1)
             full_log.to_csv(os.path.join(folder_path, 'pipeline_log.csv'), index=False)
 
