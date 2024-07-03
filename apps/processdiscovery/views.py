@@ -285,7 +285,7 @@ def process_level(folder_path, df, fe_log, execution):
         with open(dot_path, 'w') as f:
             f.write(dot.source)
 
-    def bpmn_process(df, special_colnames):
+    def bpmn_process(df, fe_log, special_colnames):
         formatted_df = pm4py.format_dataframe(df, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])
         event_log = pm4py.convert_to_event_log(formatted_df)
         bpmn_model = pm4py.discover_bpmn_inductive(event_log)
@@ -418,7 +418,7 @@ def process_level(folder_path, df, fe_log, execution):
 
     petri_net_process(df, special_colnames)
     try:
-        bpmn_process(df, special_colnames)
+        bpmn_process(df, fe_log, special_colnames)
     except Exception as e:
         print(f'Error generating BPMN: {e} Continuing with Petrinet...')
     
