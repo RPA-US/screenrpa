@@ -107,13 +107,16 @@ def extract_training_dataset(log_path, root_path, execution):
         log = read_ui_log_as_dataframe(log)
     except:
         raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results")
+    
+    # We apply filters because iterating and removing will mess up the indices
+    columns = list(filter(lambda c: c not in process_columns, log.columns))
     # From the columns of the log, the columns that come from the decision point identification are removed
-    columns = list(log.columns)
-    for c in process_columns:
-        if c in columns:
-            columns.remove(c)
-        # elif "id" in c and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c):
-        #     columns.remove(c)
+    columns = list(filter(lambda c: not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c), columns))
+    # for c in columns:
+    #     if c in process_columns:
+    #         columns.remove(c)
+    #     elif "id" in c and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c):
+    #         columns.remove(c)
     
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
     flat_dataset_row(log, columns, root_path+'_results', special_colnames, actions_columns, execution.process_discovery)

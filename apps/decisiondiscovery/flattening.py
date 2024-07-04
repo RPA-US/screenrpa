@@ -65,14 +65,13 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                     before_DP = False
                 else:
                     for feat in columns:
-                        log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
+                        if feat not in actions_columns:
+                            log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
 
             # Extraer el valor único para cada columna que sigue el patrón especificado y añadirlo al diccionario
             for col in log.columns:
                 if "id" in col and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', col):
-                    if col != dp:
-                        log.columns.drop(col, errors='ignore')
-                    else:
+                    if col == dp:
                         branch = log.at[index, col]
                         #unique_value = log[col,c].unique()[0]  # Suponiendo que hay un único valor
                         prev_act = find_prev_act(os.path.join(path_dataset_saved, "traceability.json"), col)
