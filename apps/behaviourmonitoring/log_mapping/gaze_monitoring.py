@@ -156,7 +156,10 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
   gaze_fixation_start = None
   
   # When a fixation slot ends, dispersion is calculated
-  if last_ui_log_index_row != -1 and (not pd.isnull(last_fixation_index)) and last_fixation_index != 0 and (not pd.isnull(gaze_log.iloc[i]["Fixation Index"])) and gaze_log.iloc[i]["Fixation Index"] != last_fixation_index:
+  if last_ui_log_index_row != -1 and (not pd.isnull(last_fixation_index)) and \
+    last_fixation_index != 0 and (not pd.isnull(gaze_log.iloc[i]["Fixation Index"])) \
+    and gaze_log.iloc[i]["Fixation Index"] != last_fixation_index \
+    and format_fixation_point_key(last_fixation_index_row, gaze_log) in fixation_points[ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]]["fixation_points"]:
     screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
     gaze_metrics = fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)]
     metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
