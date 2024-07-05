@@ -396,6 +396,12 @@ def process_level(folder_path, df, fe_log, execution):
                 for dp in dps:
                     if dp.prevAct == act_label:
                         current_dp = dp.id
+
+                # Register trace of the last Case or trace_id
+                last_trace_row = df.loc[df[special_colnames['Case']] == current_trace_id]
+                for index, trace_row in last_trace_row.iterrows():
+                    for passed_dp in current_branches.keys():
+                        df.at[index, passed_dp] = current_branches[passed_dp]
                         
             df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
