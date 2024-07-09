@@ -138,7 +138,7 @@ def def_preprocessor(X):
     # Identificar las columnas que contienen "rpa-us_" en su nombre
     for col in X.columns:
         if 'rpa-us_' in col:
-            sta_columns.append(col)
+            # sta_columns.append(col)
             if 'enabled' in col:
                 mapping_list.append(mapping_dict['enabled'])
             elif 'checked' in col:
@@ -156,10 +156,10 @@ def def_preprocessor(X):
     numeric_features = X.select_dtypes(include=['number']).columns
 
     # Crear cada transformador
-    status_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-        ('label_encoder', OrdinalEncoder(categories=mapping_list))
-    ])
+    # status_transformer = Pipeline(steps=[
+    #     ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+    #     ('label_encoder', OrdinalEncoder(categories=mapping_list))
+    # ])
     
     one_hot_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
@@ -175,8 +175,7 @@ def def_preprocessor(X):
     preprocessor = ColumnTransformer(
         transformers=[
             ('numeric', numeric_transformer, numeric_features),
-            ('one_hot_categorical', one_hot_transformer, one_hot_columns),
-            ('status_categorical', status_transformer, sta_columns)
+            ('one_hot_categorical', one_hot_transformer, one_hot_columns)
         ]
     )
     
