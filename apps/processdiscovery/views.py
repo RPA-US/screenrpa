@@ -418,7 +418,8 @@ def process_level(folder_path, df, fe_log, execution):
         if fe_log is not None:
             # Save full log (pd + fe)
             fe_log.drop(columns=df.columns, inplace=True, errors='ignore')
-            fe_log = fe_log.reset_index()
+            df.drop(columns=["index"], inplace=True, errors='ignore')
+            fe_log = fe_log.reset_index(drop=True)
             full_log = pd.concat([df, fe_log], axis=1)
             full_log.to_csv(os.path.join(folder_path, 'pipeline_log.csv'), index=False)
 
