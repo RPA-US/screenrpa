@@ -56,6 +56,7 @@
             <select class="form-control" id="config_dropdown">
                 <option value="standard">{% blocktranslate %}Configuration Standard Template without Gaze Log included in Case Study{% endblocktranslate %}</option>
                 <option value="with_gazelog">{% blocktranslate %}Configuration Template with Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="with_gazelog_and_screenActionLogger">{% blocktranslate %}Configuration Template with ScreenActionLogger UI Log and Webgazer.js Gaze Log included in Case Study{% endblocktranslate %}</option>
                 <option value="blank">{% blocktranslate %}Custom Configuration{% endblocktranslate %}</option>
             </select>
         </div>    
@@ -148,6 +149,19 @@
                 "EventType": "ocel:type:event",
                 "Timestamp": "ocel:timestamp",
                 "Screenshot": "ocel:screenshot:name", 
+            };
+        } else if (config_dropdown.value === 'with_gazelog_and_screenActionLogger') {
+            data = {
+                "Case": "case:concept:name",
+                "CoorX": "coordX",
+                "CoorY": "coordY",
+                "Header": "header",
+                "NameApp": "application",
+                "Variant": "ocel:variant",
+                "Activity": "ocel:activity",
+                "EventType": "category",
+                "Screenshot": "screenshot", 
+                "Timestamp": "time:timestamp",
             };
         } else if (config_dropdown.value === 'blank') {
             data = {
