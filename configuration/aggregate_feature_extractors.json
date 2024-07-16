@@ -1,4 +1,5 @@
 {
     "quantity": "occurrence_ui_element_class",
-    "status": "state_ui_element_centroid"
+    "status": "state_ui_element_centroid",
+    "centroid": "combine_ui_element_centroid"
 }
