@@ -8,6 +8,8 @@ import email
 import base64
 import lxml.etree as ET
 from lxml import html
+import pytz
+from dateutil.parser import parse
 # from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique, case_study_has_ui_elements_detection, get_ui_elements_detection, case_study_has_ui_elements_classification, get_ui_elements_classification, case_study_has_postfilters, get_postfilters, case_study_has_prefilters, get_prefilters
 # from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
 # from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery
@@ -224,6 +226,24 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
       raise Exception(_("The MHT file doesnt have a valid datetime format"))
 
     return datetime.datetime.strptime(datetime_parenthesis, format_pattern)
+  
+  
+def get_csv_log_start_datetime(csv_file_path,pattern):
+  log_csv = pd.read_csv(csv_file_path)
+  first_timestamp = parse(log_csv["time:timestamp"].iloc[0])
+  timezone = pytz.timezone("Etc/GMT")
+  first_timestamp = first_timestamp.astimezone(timezone)
+  first_timestamp = first_timestamp.replace(tzinfo=None) 
+  return first_timestamp
+
+def convert_timestamps_and_clean_screenshot_name_in_csv(csv_file_path):
+    df = pd.read_csv(csv_file_path)
+    df['time:timestamp'] = pd.to_datetime(df['time:timestamp']).dt.strftime('%H:%M:%S')
+    df['screenshot'] = df['screenshot'].apply(lambda x: x.split('\\')[-1])
+    # Save and apply this changes
+    df.to_csv(csv_file_path, index=False)
+    return df
+    
 
 ###########################################################################################################################
 ###########################################################################################################################
