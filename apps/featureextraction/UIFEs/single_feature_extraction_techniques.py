@@ -1,9 +1,13 @@
 import os
 import json
+import re
 import pandas as pd
+import numpy as np
+from shapely import Polygon, Point
 from core.utils import read_ui_log_as_dataframe
 from core.settings import STATUS_VALUES_ID, ENRICHED_LOG_SUFFIX, sep
 from core.utils import read_ui_log_as_dataframe
+from tqdm import tqdm
 
 
 def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
@@ -190,7 +194,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         column_as_vector.append(compos_list[j]["centroid"])
                         info_to_join[column_name] = column_as_vector
                         
-                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
 # ========================================================================================================
 # ========================================================================================================
@@ -221,7 +225,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         column_as_vector.append(compos_list[j]["centroid"])
                         info_to_join[column_name] = column_as_vector
                         
-                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                 
 # ========================================================================================================
@@ -246,7 +250,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         info_to_join[column_name] = column_as_vector
                         
                         if column_name not in new_columns:
-                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                            enriched_log[column_name] = "" # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
 # ========================================================================================================
 # ========================================================================================================
@@ -278,7 +282,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         column_as_vector.append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
                         info_to_join[column_name] = column_as_vector
                         
-                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
 # ========================================================================================================
 # ========================================================================================================
@@ -301,7 +305,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         info_to_join[column_name] = column_as_vector
                         
                         if column_name not in new_columns:
-                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                            enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
 
                 else:
@@ -316,12 +320,11 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 json.dump(data, jsonFile)
                 
             # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
-            enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
                 
         else:
             print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
 
-    
+    enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
     
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
