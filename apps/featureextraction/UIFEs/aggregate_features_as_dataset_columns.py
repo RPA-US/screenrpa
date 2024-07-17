@@ -295,6 +295,8 @@ def combine_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
                 for centroid in centroids:
                     centroid_point = Point(centroid.astype(float))
                     containing_compos = [(compo, poly.area) for poly, compo in compos_polygons if poly.contains(centroid_point)] 
+                    if len(containing_compos) == 0:
+                        continue
                     compo = min(containing_compos, key=lambda x: x[1])[0]
 
                     # Insert the class of the smallest object containing the centroid
