@@ -38,10 +38,11 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
     if not activities_before_dps or len(activities_before_dps) == 0:
         raise ValueError("The activities_before_dps list is empty. Please, provide a valid list of activities before the decision point or check the process model discovered.")
     
-    for act, dp in activities_before_dps:
+    for i, (act, dp) in enumerate(activities_before_dps):
         last_case = cases[0]
         before_DP = True
         log_dict = {}
+        current_post_dps = list(map(lambda dp: dp.id, decision_points[i:]))
 
         for index, c  in enumerate(cases):
             activity = log.at[index, activity_column_name]
@@ -60,12 +61,18 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                         }
                 if int(act) == int(activity):
                     for feat in columns:
-                        if feat not in actions_columns:
+                        if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
+                        and feat not in current_post_dps:
+                            log_dict[c][feat] = log.at[index, feat]
+                        elif feat not in actions_columns:
                             log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
                     before_DP = False
                 else:
                     for feat in columns:
-                        if feat not in actions_columns:
+                        if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
+                        and feat not in current_post_dps:
+                            log_dict[c][feat] = log.at[index, feat]
+                        elif feat not in actions_columns:
                             log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
 
             # Extraer el valor único para cada columna que sigue el patrón especificado y añadirlo al diccionario
@@ -77,7 +84,7 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                         prev_act = find_prev_act(os.path.join(path_dataset_saved, "traceability.json"), col)
                         if prev_act == act:
                             log_dict[c]["dp_branch"] = branch
-    
+
         log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
         
         # Serializing json

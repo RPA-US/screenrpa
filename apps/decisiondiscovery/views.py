@@ -111,7 +111,7 @@ def extract_training_dataset(log_path, root_path, execution):
     # We apply filters because iterating and removing will mess up the indices
     columns = list(filter(lambda c: c not in process_columns, log.columns))
     # From the columns of the log, the columns that come from the decision point identification are removed
-    columns = list(filter(lambda c: not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c), columns))
+    # columns = list(filter(lambda c: not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c), columns))
     # for c in columns:
     #     if c in process_columns:
     #         columns.remove(c)
