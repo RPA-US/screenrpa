@@ -102,7 +102,7 @@ class PrefiltersForm(forms .ModelForm):
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "scale_factor": forms.NumberInput(attrs={"class": "form-control"}),
+            "scale_factor": forms.NumberInput(attrs={'type': 'range', 'min': 1, 'max': 10, 'step': 1}),
             "preloaded_file": forms.FileInput(
                 attrs={
                     'accept': '.zip'
@@ -130,7 +130,7 @@ class PostfiltersForm(forms .ModelForm):
         fields = (
             "title",
             "scale_factor",
-            "intersection_area_thresh",
+            # "intersection_area_thresh",
             "consider_nested_as_relevant",
             "preloaded_file",
             "preloaded",
@@ -138,14 +138,14 @@ class PostfiltersForm(forms .ModelForm):
         labels = {
             "preloaded_file":"Preload Execution Results",
             "scale_factor": "Dispersion Scale Factor",
-            "intersection_area_thresh": "Intersection Area Threshold",
+            # "intersection_area_thresh": "Intersection Area Threshold",
             "consider_nested_as_relevant": "Consider Nested Components as Relevant"
         }
 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
-            "scale_factor": forms.NumberInput(attrs={"class": "form-control"}),
-            "intersection_area_thresh": forms.NumberInput(attrs={"class": "form-control"}),
+            "scale_factor": forms.NumberInput(attrs={'type': 'range', 'min': 1, 'max': 10, 'step': 1}),
+            # "intersection_area_thresh": forms.NumberInput(attrs={"class": "form-control"}),
             "consider_nested_as_relevant": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),
             "preloaded_file": forms.FileInput(attrs={'accept': '.zip'}),
             "preloaded": forms.CheckboxInput(attrs={"class": "primary-checkbox"})
