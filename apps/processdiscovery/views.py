@@ -335,10 +335,17 @@ def process_level(folder_path, df, fe_log, execution):
                     branches: list[Branch] = []
                     rules: list[Rule] = []
                     for arc in next_node.get_out_arcs():
-                        branch, converge_gateway, visited = explore_branch(arc.target, visited)
-                        branches.append(branch)
-                        rule = Rule([], arc.target.name)
+                        ## Handle empty branches 
+                        if type(arc.target) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and \
+                        arc.target.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING:
+                            branch = Branch(arc.target.name, arc.target.id, [])
+                            rule = Rule([], arc.target.name)
+                            converge_gateway = arc.target
+                        else:
+                            branch, converge_gateway, visited = explore_branch(arc.target, visited)
+                            rule = Rule([], arc.target.name)
                         rules.append(rule)
+                        branches.append(branch)
                     dps.append(DecisionPoint(next_node.id, cn.name, branches, rules))
 
                     # If the gateway at the end of the branch is a NormalEndEvent, the function return because the BPMN discovery has finished
