@@ -239,7 +239,7 @@ def get_csv_log_start_datetime(csv_file_path,pattern):
 def convert_timestamps_and_clean_screenshot_name_in_csv(csv_file_path):
     df = pd.read_csv(csv_file_path)
     df['time:timestamp'] = pd.to_datetime(df['time:timestamp']).dt.strftime('%H:%M:%S')
-    df['screenshot'] = df['screenshot'].apply(lambda x: x.split('\\')[-1])
+    df['screenshot'] = df['screenshot'].apply(lambda x: re.split(r'[\\/]+', x)[-1])
     # Save and apply this changes
     df.to_csv(csv_file_path, index=False)
     return df
