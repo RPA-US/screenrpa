@@ -15,7 +15,7 @@ from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
 from apps.analyzer.models import CaseStudy, Execution
-from apps.processdiscovery.utils import extract_prev_act_labels
+from apps.processdiscovery.utils import extract_prev_act_labels, Process
 from core.settings import DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME, PROCESS_DISCOVERY_LOG_FILENAME, ENRICHED_LOG_SUFFIX
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
@@ -144,13 +144,23 @@ def decision_tree_training(log_path, scenario_path, execution):
         os.mkdir(os.path.join(scenario_path, DECISION_FOLDERNAME))
         
     tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
-    activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
+    # activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
+
+    try:
+        json_traceability = json.load(open(os.path.join(scenario_path + "_results", "traceability.json")))
+        process_tracebility = Process.from_json(json_traceability)
+    except:
+        raise Exception("Tracebility.json not found durring dataset flattening")
+
+    decision_points = process_tracebility.get_non_empty_dp_flattened()
+    # activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
+    activities_before_dps = list(map(lambda dp: (dp.prevAct, dp.id), decision_points))
 
     res = dict()
     fe_checker = dict()
     times = dict()
     
-    for act in activities_before_dps:
+    for act, _ in activities_before_dps:
         flattened_csv_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv')
         print(flattened_csv_log_path+"\n")
         
