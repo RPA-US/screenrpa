@@ -294,9 +294,18 @@ def process_level(folder_path, df, fe_log, execution):
         with open(dot_path, 'w') as f:
             f.write(dot.source)
         bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
+
+        # Give name to gates without
+        i = 0
+        nodes = bpmn_model.get_nodes()
+        for node in nodes:
+            if type(node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway:
+                if node.name == '':
+                    # node.name is a propperty and cannot be set. The class attribute is __name
+                    node._BPMN__name = f'xor_{i}'
+                    i += 1
         
         # Get the decision points in the model (diverging exclusive gateways)
-        nodes = bpmn_model.get_nodes()
         node_start = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.StartEvent, nodes))[0]
         node_end = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, nodes))[0]
 
