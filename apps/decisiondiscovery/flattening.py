@@ -59,7 +59,7 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                             "Timestamp_start": log.at[index, timestamp_column_name],
                             variant_colname: log.at[index, variant_colname]
                         }
-                if int(act) == int(activity):
+                if str(act) == str(activity):
                     for feat in columns:
                         if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
                         and feat not in current_post_dps:
