@@ -59,7 +59,7 @@ class BranchDecoder(JSONDecoder):
   def dict_to_object(self, d: dict) -> Branch:
     # decode decision points into a list of DecisionPoint objects
     decision_points = list(map(lambda dp: DecisionPointDecoder().dict_to_object(dp), d['decision_points']))
-    return Branch(d['label'], decision_points)
+    return Branch(d['label'], d['id'], decision_points)
 
 ## RULE
 
