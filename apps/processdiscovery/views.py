@@ -309,7 +309,7 @@ def process_level(folder_path, df, fe_log, execution):
         node_start = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.StartEvent, nodes))[0]
         node_end = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, nodes))[0]
 
-        def explore_branch(node_start, visited) -> tuple[Branch, pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway|pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, set]:
+        def explore_branch(node_start, visited, last_act) -> tuple[Branch, pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway|pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, set]:
             branch_start = node_start
             cn = branch_start # Current node
             dps: list[DecisionPoint] = []
@@ -337,6 +337,7 @@ def process_level(folder_path, df, fe_log, execution):
                 # If the next node is a Task or a StartEvent, it is added to the visited set and becomes the current node
                 if type(cn) == pm4py.objects.bpmn.obj.BPMN.Task or type(cn) == pm4py.objects.bpmn.obj.BPMN.StartEvent:
                     visited.add(cn)
+                    last_act = cn.name
                     cn = next_node
 
                 # If the next node is a diverging ExclusiveGateway, it is added to the visited set
@@ -355,12 +356,11 @@ def process_level(folder_path, df, fe_log, execution):
                             rule = Rule([], arc.target.name)
                             converge_gateway = arc.target
                         else:
-                            branch, converge_gateway, visited = explore_branch(arc.target, visited)
+                            branch, converge_gateway, visited = explore_branch(arc.target, visited, last_act)
                             rule = Rule([], arc.target.name)
                         rules.append(rule)
                         branches.append(branch)
-                    prev_node = cn.get_in_arcs()[0].source
-                    dps.append(DecisionPoint(cn.id, prev_node.name, branches, rules))
+                    dps.append(DecisionPoint(cn.id, last_act, branches, rules))
 
                     # If the gateway at the end of the branch is a NormalEndEvent, the function return because the BPMN discovery has finished
                     if type(converge_gateway) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
@@ -375,7 +375,7 @@ def process_level(folder_path, df, fe_log, execution):
             return Branch(branch_start.name, branch_start.id, dps), None, visited
 
         def bpmn_bfs(node_start, node_end) -> Process:
-            return Process(explore_branch(node_start, set())[0].decision_points)
+            return Process(explore_branch(node_start, set(), node_start.name)[0].decision_points)
 
         def add_trace_to_log(process, df) -> None:
             # Navigate the log and add to each row info about the branches taken on each decision point
