@@ -44,6 +44,10 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
         log_dict = {}
         current_post_dps = list(map(lambda dp: dp.id, decision_points[i:]))
 
+        # If the previous activity is the start event, there are no features to base ourselves on
+        if act == "start":
+            before_DP = False
+
         for index, c  in enumerate(cases):
             activity = log.at[index, activity_column_name]
 
