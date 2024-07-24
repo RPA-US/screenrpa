@@ -60,10 +60,9 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
 #Tengo que convertir el formado del UTC del json que obtengo de de fixations_updated_centroids a un formato astimezone.
 def decode_webgazer_timezone(native_slideevents_path):
     with open(os.path.join(native_slideevents_path , "webgazer_properties.json"), 'r') as file:
-        data = json.load(file)
-    
+        data = json.load(file)  
     res = parse(data["SlideShowStartDateTime"])
     timezone = pytz.timezone(data["TimeZone"])
     res = res.astimezone(timezone)
-        
+    res = res.replace(tzinfo=None)
     return res

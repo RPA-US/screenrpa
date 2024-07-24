@@ -9,7 +9,7 @@ from dateutil import tz
 from apps.behaviourmonitoring.log_mapping.wegbgazer_log_processing import add_saccade_index, get_distance_threshold_by_resolution, get_minimum_fixation_gazepoints, int_index, preprocess_gaze_log
 from core.utils import read_ui_log_as_dataframe
 from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS, INCH_PER_CENTIMETRES, DEVICE_FREQUENCY, FIXATION_MINIMUM_DURATION
-from apps.analyzer.utils import get_mht_log_start_datetime
+from apps.analyzer.utils import convert_timestamps_and_clean_screenshot_name_in_csv, get_csv_log_start_datetime, get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents, decode_webgazer_timezone
 from apps.behaviourmonitoring.utils import get_monitoring
@@ -156,7 +156,10 @@ def update_fixation_points(j, i, key, fixation_points, gaze_log, ui_log, last_fi
   gaze_fixation_start = None
   
   # When a fixation slot ends, dispersion is calculated
-  if last_ui_log_index_row != -1 and (not pd.isnull(last_fixation_index)) and last_fixation_index != 0 and (not pd.isnull(gaze_log.iloc[i]["Fixation Index"])) and gaze_log.iloc[i]["Fixation Index"] != last_fixation_index:
+  if last_ui_log_index_row != -1 and (not pd.isnull(last_fixation_index)) and \
+    last_fixation_index != 0 and (not pd.isnull(gaze_log.iloc[i]["Fixation Index"])) \
+    and gaze_log.iloc[i]["Fixation Index"] != last_fixation_index \
+    and format_fixation_point_key(last_fixation_index_row, gaze_log) in fixation_points[ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]]["fixation_points"]:
     screenshot_name = ui_log.iloc[last_ui_log_index_row][special_colnames["Screenshot"]]
     gaze_metrics = fixation_points[screenshot_name]["fixation_points"][format_fixation_point_key(last_fixation_index_row, gaze_log)]
     metrics_aux = calculate_dispersion(gaze_log, gaze_metrics, last_fixation_index_row)
@@ -422,6 +425,7 @@ def monitoring(log_path, root_path, execution):
     monitoring_observer_camera_distance = monitoring_obj.observer_camera_distance
     monitoring_screen_width = monitoring_obj.screen_width
     monitoring_screen_height = monitoring_obj.screen_height
+    ui_log_filename = monitoring_obj.ui_log_filename
     
     if os.path.exists(log_path):
       logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
@@ -429,7 +433,7 @@ def monitoring(log_path, root_path, execution):
     elif (getattr(monitoring_obj, 'format') is not None):
       log_filename = "log"
       # TODO: org:resource
-      log_path = format_mht_file(os.path.join(root_path, monitoring_obj.ui_log_filename), monitoring_obj.format, root_path, log_filename, 'User1')
+      log_path = format_mht_file(os.path.join(root_path, ui_log_filename), monitoring_obj.format, root_path, log_filename, 'User1')
   
   
     ui_log = read_ui_log_as_dataframe(log_path)
@@ -454,7 +458,7 @@ def monitoring(log_path, root_path, execution):
         
       #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
       startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
-      startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
+      startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, ui_log_filename), ui_log_format_pattern)#en steprecorder
 
       if os.path.exists(os.path.join(root_path ,"fixation.json")):
         fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
@@ -505,12 +509,19 @@ def monitoring(log_path, root_path, execution):
         #GazeLog se corresponde con la tabla GazeLog del fichero de salida de iMotions; Metadata se corresponde con los metadatos que se encuentran en el mismo archivo (datos "feos" que salen arriba de la tabla)
         #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
         
-        #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
+      #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
       startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
-      startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path , monitoring_obj.ui_log_filename), ui_log_format_pattern)#en steprecorder
-
-      #native_slide_events = "native_slideevents.csv"
-
+      
+      #If the ui log file is a mht file. We need to get the startdatetime from the mht file with the get_mht_log_start_datetime function
+      if ui_log_filename.endswith('.mht'):
+        startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path , ui_log_filename), ui_log_format_pattern)
+      #If the ui log file is a csv file. We need to get the startdatetime from the csv file with the get_csv_log_start_datetime function
+      elif ui_log_filename.endswith('.csv'):
+        startDateTime_ui_log = get_csv_log_start_datetime(os.path.join(root_path , ui_log_filename), ui_log_format_pattern)
+        ui_log = convert_timestamps_and_clean_screenshot_name_in_csv(log_path)
+        
+        
+        
       if os.path.exists(os.path.join(root_path ,"fixation.json")):
         fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
         logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")

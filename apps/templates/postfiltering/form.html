@@ -15,13 +15,14 @@
           <div class="pl-lg-2">
               <div class="col-12">
                 <div class="form-group">
-                  <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor {% endblocktranslate %}<b class="text-red">*</b></label>
+                  <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor {% endblocktranslate %}<b class="text-red">*</b> <small>Scale the dispersion to a reasonable size for the circle. 5 is recommended as first prefiltering execution.</small></label>
                     {{ form.scale_factor }}
+                    <span id="scale_factor_value"></span>
                   <div class="form-validation">{{ form.scale_factor.errors }}</div>
                 </div>
               </div> 
           </div>
-          <div class="pl-lg-2">
+          <!-- <div class="pl-lg-2">
               <div class="col-12">
                 <div class="form-group">
                   <label class="form-control-label" for="input-intersection_area_thresh">{% blocktranslate %}Intersection Area Threshold {% endblocktranslate %}<b class="text-red">*</b></label>
@@ -29,12 +30,14 @@
                   <div class="form-validation">{{ form.intersection_area_thresh.errors }}</div>
                 </div>
               </div> 
-          </div>
-          <div class="col-lg-6">
-            <div class="form-group">
-              {{ form.consider_nested_as_relevant.label }}
-              {{ form.consider_nested_as_relevant }}
-              <div class="form-validation">{{ form.consider_nested_as_relevant.errors }}</div>
+          </div> -->
+          <div class="pl-lg-2">
+            <div class="col-12">
+              <div class="form-group">
+                {{ form.consider_nested_as_relevant.label }}
+                {{ form.consider_nested_as_relevant }}
+                <div class="form-validation">{{ form.consider_nested_as_relevant.errors }}</div>
+              </div>
             </div>
           </div>
       <hr>
@@ -80,18 +83,32 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const title = document.getElementById('id_title');
-    const scale_factor = document.getElementById('id_scale_factor');
-    const intersection_area_thresh = document.getElementById('id_intersection_area_thresh');
+    //const intersection_area_thresh = document.getElementById('id_intersection_area_thresh');
     const consider_nested_as_relevant = document.getElementById('id_consider_nested_as_relevant');
     const preloaded = document.getElementById('id_preloaded');  
-    const preloaded_file = document.getElementById('id_preloaded_file');  
+    const preloaded_file = document.getElementById('id_preloaded_file');
+    const scale_factor = document.getElementById('id_scale_factor');
+    const scale_factor_value = document.getElementById('scale_factor_value');
+
+    if (scale_factor) {
+        scale_factor.type = 'range';
+        scale_factor.min = 1;
+        scale_factor.max = 10;
+        scale_factor.step = 1;
+        scale_factor.value = 5; // Default value
+        scale_factor_value.innerText = `${scale_factor.value}`;
+
+        scale_factor.oninput = function() {
+            scale_factor_value.innerText = `${this.value}`;
+        }
+    }  
 
 
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
       preloaded_file.disabled = !isPreloadedChecked;
       scale_factor.disabled = isPreloadedChecked;
-      intersection_area_thresh.disabled = isPreloadedChecked;
+      //intersection_area_thresh.disabled = isPreloadedChecked;
       consider_nested_as_relevant.disabled = isPreloadedChecked;
 
     }

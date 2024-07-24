@@ -131,7 +131,8 @@ def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_p
     return res
 
 
-def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, intersection_area_thresh, consider_nested_as_relevant):
+# def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, !!!!intersection_area_thresh, consider_nested_as_relevant):
+def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, consider_nested_as_relevant):
     """
     This function removes from 'screenshot000X.JPG' the components that do not receive attention by the user 
     (there's no fixation point that matches component area)
@@ -185,7 +186,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, inte
             centre = Point(fixation_point_x, fixation_point_y)
             #El radio relevante es el radio de la dispersion del punto de fijación multiplicado por el factor de escala
             #El scale_factor es un valor que si puede ser modificable por el usuario.
-            radio = float(fixation_obj["imotions_dispersion"]) * float(scale_factor)
+            radio = float(fixation_obj["imotions_dispersion"]) * (500 * float(scale_factor))
             if not pd.isna(radio):
                 polygon_circle = centre.buffer(radio)
                 polygon_circles.append(polygon_circle)
@@ -210,8 +211,9 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, inte
                 intersection = polygon.intersection(fixation_mask)
                 compo["intersection_area"] = intersection.area
 
-                    # If the instersection area correspond to more than the threshold percentage of the component area, mark the component as relevant
-                if polygon.area > 0 and (intersection.area / polygon.area) > float(intersection_area_thresh):
+                # If the instersection area correspond to more than the threshold percentage of the component area, mark the component as relevant
+                # if polygon.area > 0 and (intersection.area / polygon.area) > float(intersection_area_thresh):
+                if polygon.area > 0 and (intersection.area / polygon.area) > 0:
                     consider_nodes = consider_nested_as_relevant
                     if consider_nodes and compo["type"] == "node":
                          # compo["relevant"] = "Nested"
@@ -247,7 +249,7 @@ def apply_filters(log_path, path_scenario, execution):
     
     special_colnames = execution.case_study.special_colnames
     scale_factor = execution.postfilters.scale_factor
-    intersection_area_thresh = execution.postfilters.intersection_area_thresh
+    # intersection_area_thresh = execution.postfilters.intersection_area_thresh
     consider_nested_as_relevant = execution.postfilters.consider_nested_as_relevant 
     times = {}
     # for key in tqdm(configurations, desc="Postfilters have been processed: "):
@@ -268,7 +270,8 @@ def apply_filters(log_path, path_scenario, execution):
     #     times[key] = {"duration": float(time.time()) - float(start_t)}
     print("Postfiltering phase started...")
     start_t = time.time()
-    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,intersection_area_thresh,consider_nested_as_relevant)
+    # gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,!!!intersection_area_thresh,consider_nested_as_relevant)
+    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,consider_nested_as_relevant)
     print("Postfiltering phase finished satisfactory!")
     times["postfiltering"] = {"duration": float(time.time()) - float(start_t)}
 
