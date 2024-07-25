@@ -402,8 +402,8 @@ def read_feature_column_name(column_name):
         feature = coincidences.group(2)
         centroid = None
         activity = coincidences.group(3)
-        if coincidences.group(5):  # Si hay un grupo 5 adicional (opcional)
-            activity += coincidences.group(5)
+        if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
+            activity += coincidences.group(4)
         return suffix, feature, centroid, activity
     
     # Si no coincide con ninguno de los patrones
