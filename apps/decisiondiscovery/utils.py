@@ -363,7 +363,7 @@ def read_feature_column_name(column_name):
     pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
     # Patroón para puntos de decisión
     # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
-    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)"
+    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)(_?[a-zA-Z]?)"
     
     # Intentamos encontrar coincidencias con los patrones definidos
     coincidences = re.match(pattern_with_centroid, column_name)
