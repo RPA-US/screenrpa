@@ -361,6 +361,9 @@ def read_feature_column_name(column_name):
     pattern_without_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_]+)_(\d+)(_?[a-zA-Z]?)"
     # Patrón adicional para nombres de columna sin prefijo
     pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+    # Patroón para puntos de decisión
+    # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
+    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)"
     
     # Intentamos encontrar coincidencias con los patrones definidos
     coincidences = re.match(pattern_with_centroid, column_name)
@@ -391,6 +394,16 @@ def read_feature_column_name(column_name):
         activity = coincidences.group(3)
         if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
             activity += coincidences.group(4)
+        return suffix, feature, centroid, activity
+
+    coincidences = re.match(pattern_decision_point, column_name)
+    if coincidences:
+        suffix = coincidences.group(1)
+        feature = coincidences.group(2)
+        centroid = None
+        activity = coincidences.group(3)
+        if coincidences.group(5):  # Si hay un grupo 5 adicional (opcional)
+            activity += coincidences.group(5)
         return suffix, feature, centroid, activity
     
     # Si no coincide con ninguno de los patrones
