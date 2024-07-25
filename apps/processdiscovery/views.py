@@ -164,6 +164,7 @@ def scene_level(log_path, scenario_path, execution):
     Labeling WorkFlow
     '''
     def auto_labeling(df, fe_log, remove_loops):
+        if remove_loops: df, fe_log = remove_duplicate_activities(df, fe_log, special_colnames['Activity'])
         activity_inicial = df[special_colnames['Activity']].iloc[0]
         trace_id = 1
         trace_ids = [trace_id]
@@ -173,7 +174,6 @@ def scene_level(log_path, scenario_path, execution):
                     trace_id += 1
                 trace_ids.append(trace_id)
         df['trace_id'] = trace_ids
-        if remove_loops: df, fe_log = remove_duplicate_activities(df, fe_log, special_colnames['Activity'])
         return df, fe_log
 
     def manual_labeling(df):
