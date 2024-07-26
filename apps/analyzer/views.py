@@ -93,7 +93,7 @@ def generate_case_study(execution, path_scenario, times):
                     for fe in execution.feature_extraction_techniques.all():
                         if fe.preloaded:
                             continue
-                        if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
+                        if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 7):
                             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
                             # Additional feature extraction metrics
                             times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
