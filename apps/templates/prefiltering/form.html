@@ -13,7 +13,7 @@
             </div>
             <div class="col-12">
                 <div class="form-group">
-                    <label class="form-control-label" for="input-title">{% blocktranslate %}Scale Dispersion {% endblocktranslate %}<b class="text-red">*</b> <small>Scale the dispersion to a reasonable size for the circle. 2 is recommended as first prefiltering execution.</small></label>
+                    <label class="form-control-label" for="input-title">{% blocktranslate %}Scale Dispersion{% endblocktranslate %}<b class="text-red">*</b> <small>{% blocktranslate %}Scale the dispersion area circle . The value 3 is recommended as first prefiltering execution. (1-5){% endblocktranslate %}</small></label>
                     {{ form.scale_factor }}
                     <span id="scale_factor_value"></span>
                     <div class="form-validation">{{ form.scale_factor.errors }}</div>
@@ -34,7 +34,7 @@
                         {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
                     {% endif %}
                 </label>
-                <button type="button" onclick="alert('|-- zip\n|   |-- scenario_results\n|   |   |-- prefilter_attention_maps -> screenshotXXXX.JPEG')">?</button>
+                <button type="button" onclick="alert('|-- *preloaded*.zip\n|   |-- scenario_results\n|   |   |-- prefilter_img -> screenshotXXXX.JPEG')">?</button>
             </div>
         </div>
     </div>

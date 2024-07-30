@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-24 08:18+0000\n"
+"POT-Creation-Date: 2024-07-30 11:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,154 +71,154 @@ msgstr ""
 msgid "Title is taken"
 msgstr ""
 
-#: apps/analyzer/models.py:83
+#: apps/analyzer/models.py:72
 msgid "exp_folder_complete_path separators not coherent"
 msgstr ""
 
-#: apps/analyzer/models.py:89
+#: apps/analyzer/models.py:78
 msgid "This is a nice experiment..."
 msgstr ""
 
-#: apps/analyzer/models.py:129
+#: apps/analyzer/models.py:118
 msgid "Case study"
 msgstr ""
 
-#: apps/analyzer/models.py:130
+#: apps/analyzer/models.py:119
 msgid "Case studies"
 msgstr ""
 
-#: apps/analyzer/models.py:171
+#: apps/analyzer/models.py:160
 msgid "The title of the case study already exists"
 msgstr ""
 
-#: apps/analyzer/utils.py:45
+#: apps/analyzer/utils.py:47
 msgid ""
 "analyzer/utils/store_screenshots. line 49. MIME Html format not contains "
 "Content-Location header in screenshots"
 msgstr ""
 
-#: apps/analyzer/utils.py:46
+#: apps/analyzer/utils.py:48
 msgid "MIME Html format not contains Content-Location header in screenshots"
 msgstr ""
 
-#: apps/analyzer/utils.py:184
+#: apps/analyzer/utils.py:186
 msgid ""
 "analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt "
 "exists"
 msgstr ""
 
-#: apps/analyzer/utils.py:185
+#: apps/analyzer/utils.py:187
 msgid "You select a format mht file that doesnt exists"
 msgstr ""
 
-#: apps/analyzer/utils.py:214
+#: apps/analyzer/utils.py:216
 msgid ""
 "analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the "
 "format:'Step 1: (datetime)'"
 msgstr ""
 
-#: apps/analyzer/utils.py:215
+#: apps/analyzer/utils.py:217
 msgid "The MHT file doesnt have '(datetime)' after 'Step 1:'"
 msgstr ""
 
-#: apps/analyzer/utils.py:224
+#: apps/analyzer/utils.py:226
 msgid "The MHT file doesnt have a valid datetime format"
 msgstr ""
 
-#: apps/analyzer/views.py:129
+#: apps/analyzer/views.py:130
 #, python-brace-format
 msgid "{case_study.title} Execution Started"
 msgstr ""
 
-#: apps/analyzer/views.py:129
+#: apps/analyzer/views.py:130
 msgid "Case study execution has started"
 msgstr ""
 
-#: apps/analyzer/views.py:153
+#: apps/analyzer/views.py:154
 msgid "Scenarios that have been processed: "
 msgstr ""
 
-#: apps/analyzer/views.py:178
+#: apps/analyzer/views.py:179
 #, python-brace-format
 msgid "{execution.case_study.title} Execution Completed"
 msgstr ""
 
-#: apps/analyzer/views.py:178
+#: apps/analyzer/views.py:179
 msgid "Case study executed successfully"
 msgstr ""
 
-#: apps/analyzer/views.py:182
+#: apps/analyzer/views.py:184
 #, python-brace-format
 msgid "{case_study.title} Execution Error"
 msgstr ""
 
-#: apps/analyzer/views.py:303
+#: apps/analyzer/views.py:305
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/analyzer/views.py:329 apps/analyzer/views.py:343
-#: apps/analyzer/views.py:358 apps/analyzer/views.py:370
-#: apps/analyzer/views.py:468
+#: apps/analyzer/views.py:331 apps/analyzer/views.py:345
+#: apps/analyzer/views.py:360 apps/analyzer/views.py:372
+#: apps/analyzer/views.py:470
 msgid "This case study doesn't belong to the authenticated user"
 msgstr ""
 
-#: apps/analyzer/views.py:345
+#: apps/analyzer/views.py:347
 msgid "This case study cannot be deleted because it has already been excecuted"
 msgstr ""
 
-#: apps/analyzer/views.py:404
+#: apps/analyzer/views.py:406
 #, python-format
 msgid ""
 "phases_to_execute must be of type dict!!!!! and must be composed by phases "
 "contained in %(DEFAULT_PHASES)s"
 msgstr ""
 
-#: apps/analyzer/views.py:410
+#: apps/analyzer/views.py:412
 msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 
-#: apps/analyzer/views.py:417
+#: apps/analyzer/views.py:419
 msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 
-#: apps/analyzer/views.py:425 apps/analyzer/views.py:431
+#: apps/analyzer/views.py:427 apps/analyzer/views.py:433
 msgid "The following file or directory does not exists: %(path)"
 msgstr ""
 
-#: apps/analyzer/views.py:438
+#: apps/analyzer/views.py:440
 #, python-format
 msgid ""
 "phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
 msgstr ""
 
-#: apps/analyzer/views.py:449
+#: apps/analyzer/views.py:451
 #, python-format
 msgid "Case study with id:%(id) is being generated ..."
 msgstr ""
 
-#: apps/analyzer/views.py:452
+#: apps/analyzer/views.py:454
 msgid "Some of the attributes are invalid: "
 msgstr ""
 
-#: apps/analyzer/views.py:474
+#: apps/analyzer/views.py:476
 msgid "Case Study with id %(id) not found"
 msgstr ""
 
-#: apps/analyzer/views.py:492
+#: apps/analyzer/views.py:494
 msgid ""
 "The processing of this case study has not yet finished, please try again in "
 "a few minutes"
 msgstr ""
 
-#: apps/analyzer/views.py:495
+#: apps/analyzer/views.py:497
 #, python-format
 msgid "Case Study with id %(id) raised an exception: "
 msgstr ""
 
-#: apps/analyzer/views.py:549 apps/analyzer/views.py:623
+#: apps/analyzer/views.py:551 apps/analyzer/views.py:629
 msgid "You don't have permissions to access this files"
 msgstr ""
 
-#: apps/analyzer/views.py:593 apps/analyzer/views.py:605
+#: apps/analyzer/views.py:595 apps/analyzer/views.py:610
 msgid "This execution doesn't belong to the authenticated user"
 msgstr ""

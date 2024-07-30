@@ -96,8 +96,8 @@ class PrefiltersForm(forms .ModelForm):
             "preloaded",
         )
         labels = {
-            "preloaded_file":"Preload Execution Results",
-            "scale_factor": "Dispersion Scale Factor"
+            "preloaded_file":_("Preload Execution Results"),
+            "scale_factor": _("Dispersion Scale Factor")
         }
 
         widgets = {
@@ -119,6 +119,11 @@ class PrefiltersForm(forms .ModelForm):
         if self.read_only:
             for field_name in self.fields:
                 self.fields[field_name].disabled = True
+                
+        if self.data.get('preloaded') == 'on':
+            self.fields['scale_factor'].required = False
+        else:
+            self.fields['scale_factor'].required = True
 
 class PostfiltersForm(forms .ModelForm):
     class Meta:
@@ -137,9 +142,9 @@ class PostfiltersForm(forms .ModelForm):
         )
         labels = {
             "preloaded_file":"Preload Execution Results",
-            "scale_factor": "Dispersion Scale Factor",
+            "scale_factor": _("Dispersion Scale Factor"),
             # "intersection_area_thresh": "Intersection Area Threshold",
-            "consider_nested_as_relevant": "Consider Nested Components as Relevant"
+            "consider_nested_as_relevant": _("Consider Nested Components as Relevant")
         }
 
         widgets = {
@@ -157,6 +162,11 @@ class PostfiltersForm(forms .ModelForm):
         if self.read_only:
             for field_name in self.fields:
                 self.fields[field_name].disabled = True
+        
+        if self.data.get('preloaded') == 'on':
+            self.fields['scale_factor'].required = False
+        else:
+            self.fields['scale_factor'].required = True
 
 
 

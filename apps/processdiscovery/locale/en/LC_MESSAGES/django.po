@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-20 09:57+0000\n"
+"POT-Creation-Date: 2024-07-30 11:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,30 +70,26 @@ msgstr ""
 msgid "Remove Loops"
 msgstr ""
 
-#: apps/processdiscovery/forms.py:46 apps/processdiscovery/forms.py:87
+#: apps/processdiscovery/forms.py:46 apps/processdiscovery/forms.py:88
 msgid "Text Column"
 msgstr ""
 
-#: apps/processdiscovery/views.py:252
-msgid "You selected a process discovery type that does not exist"
-msgstr ""
-
-#: apps/processdiscovery/views.py:440
+#: apps/processdiscovery/views.py:462
 msgid "CaseStudy with the given ID does not exist."
 msgstr ""
 
-#: apps/processdiscovery/views.py:450 apps/processdiscovery/views.py:556
+#: apps/processdiscovery/views.py:472 apps/processdiscovery/views.py:578
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/processdiscovery/views.py:558
+#: apps/processdiscovery/views.py:580
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/processdiscovery/views.py:560
+#: apps/processdiscovery/views.py:582
 msgid "Monitoring doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/processdiscovery/views.py:562
+#: apps/processdiscovery/views.py:584
 msgid "Monitoring doesn't belong to the Case Study."
 msgstr ""
