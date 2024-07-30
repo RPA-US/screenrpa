@@ -15,7 +15,7 @@
           <div class="pl-lg-2">
               <div class="col-12">
                 <div class="form-group">
-                  <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor {% endblocktranslate %}<b class="text-red">*</b> <small>Scale the dispersion to a reasonable size for the circle. 5 is recommended as first prefiltering execution.</small></label>
+                  <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor{% endblocktranslate %}<b class="text-red">*</b> <small>{% blocktranslate %}Scale the dispersion area circle. The value 5 is recommended as first prefiltering execution. (1-10){% endblocktranslate %}</small></label>
                     {{ form.scale_factor }}
                     <span id="scale_factor_value"></span>
                   <div class="form-validation">{{ form.scale_factor.errors }}</div>
@@ -55,7 +55,7 @@
               {% endif %}
             </label>
             <!-- TODO: Update hint -->
-            <button onclick="alert('|-- zip\n|   |-- scenario_results\n|   |   |-- recortes -> .png\n|   |   |-- components_npy -> .npy\n|   |   |-- components_json\n|   |   |   ->  .json\n|   |   |   |-- soms -> .json')">?</button>
+            <button onclick="alert('|-- *preloaded*.zip\n|   |-- scenario_results\n|   |   |-- borders -> .png\n|   |   |-- components_npy -> .npy\n|   |   |-- components_json\n|   |   |   ->  .json\n|   |   |   |-- soms -> .json')">?</button>
           </div>
         </div>
         <hr>

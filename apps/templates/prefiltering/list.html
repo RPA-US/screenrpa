@@ -47,9 +47,8 @@
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Type{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Dispersion factor{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort=""></th>
@@ -74,8 +73,8 @@
                   <td>
                       {{ prefilter.created_at }}
                   </td>
-                  <td class="type">
-                      {{ prefilter.type }}
+                  <td class="configurations">
+                      {{ prefilter.scale_factor }}
                   </td>
                   <td >
                     {% if prefilter.preloaded %}
@@ -84,9 +83,6 @@
                     {% else %}
                       {% blocktranslate %}No{% endblocktranslate %}
                     {% endif %}
-                  </td>
-                  <td class="configurations">
-                      {{ prefilter.configurations|truncatechars:50 }}
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">

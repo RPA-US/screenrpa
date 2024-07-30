@@ -45,11 +45,11 @@
               <thead class="thead-light">
                 <tr>
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Type{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col">{% blocktranslate %}Dispersion factor{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
-                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Configurations{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Nested UI elements as relevant{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Status{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type"></th>
@@ -74,18 +74,22 @@
                     {{ postfilter.created_at }}
                   </td>
                   <td>
-                    {{ postfilter.type }}
+                    {{ postfilter.scale_factor }}
                   </td>
                   <td >
-                    {% if preloaded.preloaded %}
+                    {% if postfilter.preloaded %}
                       {% blocktranslate %}Yes{% endblocktranslate %} |
-                      {{ preloaded.preloaded_file }}
+                      {{ postfilter.preloaded_file }}
                     {% else %}
                       {% blocktranslate %}No{% endblocktranslate %}
                     {% endif %}
                   </td>
                   <td>
-                    {{ postfilter.configurations|truncatechars:50 }}
+                    {% if postfilter.consider_nested_as_relevant %}
+                      {% blocktranslate %}Yes{% endblocktranslate %}
+                      {% else %}
+                      {% blocktranslate %}No{% endblocktranslate %}
+                      {% endif %}
                   </td>
                   <td>
                     <span class="badge badge-dot mr-4">

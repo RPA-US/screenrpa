@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-24 08:18+0000\n"
+"POT-Creation-Date: 2024-07-30 11:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,50 +18,46 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/decisiondiscovery/forms.py:26
+#: apps/decisiondiscovery/forms.py:25
 msgid "Title"
 msgstr "Título "
 
-#: apps/decisiondiscovery/forms.py:27
-msgid "Decision Point To Study"
-msgstr "Punto de Decisión a Estudiar "
-
-#: apps/decisiondiscovery/forms.py:28 apps/decisiondiscovery/forms.py:30
-#: apps/decisiondiscovery/forms.py:101
+#: apps/decisiondiscovery/forms.py:26 apps/decisiondiscovery/forms.py:28
+#: apps/decisiondiscovery/forms.py:86
 msgid "Columns to drop before decision point"
 msgstr "Columnas a eliminar antes del punto de decisión "
 
-#: apps/decisiondiscovery/forms.py:29
+#: apps/decisiondiscovery/forms.py:27
 msgid "Additional Configurations (JSON)"
 msgstr "Configuración adiccional (JSON)"
 
-#: apps/decisiondiscovery/forms.py:31
-msgid "Target label"
-msgstr "Clase objetivo"
-
-#: apps/decisiondiscovery/forms.py:52
-msgid "Variant"
-msgstr "Variante"
-
-#: apps/decisiondiscovery/forms.py:98
+#: apps/decisiondiscovery/forms.py:83
 msgid "Library"
 msgstr "Librería"
 
-#: apps/decisiondiscovery/forms.py:99
+#: apps/decisiondiscovery/forms.py:84
 msgid "Configuration"
 msgstr "Configuración"
 
-#: apps/decisiondiscovery/forms.py:100
+#: apps/decisiondiscovery/forms.py:85
 msgid "One hot columns"
 msgstr "Columnas one hot"
 
-#: apps/decisiondiscovery/utils.py:211
-msgid "The identifier does not follow the pattern"
-msgstr "El identificador no sigue el patrón"
-
-#: apps/decisiondiscovery/views.py:157
+#: apps/decisiondiscovery/views.py:182
 msgid "Decision model chosen is not an option"
 msgstr "El modelo de decisión elegido no es una opción"
+
+#~ msgid "Decision Point To Study"
+#~ msgstr "Punto de Decisión a Estudiar "
+
+#~ msgid "Target label"
+#~ msgstr "Clase objetivo"
+
+#~ msgid "Variant"
+#~ msgstr "Variante"
+
+#~ msgid "The identifier does not follow the pattern"
+#~ msgstr "El identificador no sigue el patrón"
 
 #~ msgid "User must be authenticated."
 #~ msgstr "El usuario debe estar autenticado."
@@ -69,7 +65,8 @@ msgstr "El modelo de decisión elegido no es una opción"
 #~ msgid "Case Study doesn't belong to the authenticated user."
 #~ msgstr "Este objeto no pertenece al usuario autenticado"
 
-#~ msgid "Extracting_training_dataset doesn't belong to the authenticated user."
+#~ msgid ""
+#~ "Extracting_training_dataset doesn't belong to the authenticated user."
 #~ msgstr "Este objeto no pertenece al usuario autenticado"
 
 #~ msgid "Extracting_training_dataset doesn't belong to the Case Study."
