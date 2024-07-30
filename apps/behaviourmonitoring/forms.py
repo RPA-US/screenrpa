@@ -46,7 +46,7 @@ class MonitoringForm(forms .ModelForm):
         widgets = {
             # Type is a choice field
             "type": forms.Select(
-                choices=[('already_processed', 'Already processed'), ('imotions', 'imotions'), ('webgazer', 'webgazer')],
+                choices=[('imotions', 'iMotions Infrarred Eye tracker'), ('webgazer', 'Webgazer.js Eye tracking software')],
                 attrs={
                     "class": "form-control",
                     "required": "false"
