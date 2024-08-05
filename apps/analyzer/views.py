@@ -75,7 +75,7 @@ def generate_case_study(execution, path_scenario, times):
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
         if getattr(execution, function_to_exec) is not None:
             # We handle fe preloaded because it may have several configuations
-            phase_has_preloaded = (function_to_exec != "feature_extraction_technique" or "postprocessing") and getattr(execution, function_to_exec).preloaded
+            phase_has_preloaded = function_to_exec not in ["feature_extraction_technique", "postprocessing"] and getattr(execution, function_to_exec).preloaded
             if phase_has_preloaded:
                 times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
             else:
@@ -108,7 +108,7 @@ def generate_case_study(execution, path_scenario, times):
                         if pp.preloaded:
                             continue
                         else:
-                            eval(function_to_exec)(log_path, path_scenario, execution, fe)
+                            eval(function_to_exec)(log_path, path_scenario, execution, pp)
                             # Additional feature extraction metrics
                         times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":

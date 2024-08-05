@@ -6,7 +6,7 @@ from shapely.geometry import Polygon, Point
 from tqdm import tqdm
 from apps.featureextraction.utils import read_ui_log_as_dataframe
 
-def combine_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
+def combine_ui_element_centroid(ui_log_path, path_scenario, execution, pp):
     """
     Combine the information of the UI elements and the centroids of the UI elements in the same dataset
     for the same activities
@@ -15,9 +15,6 @@ def combine_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
     execution_root = path_scenario + '_results'
     metadata_json_root = os.path.join(execution_root, 'components_json')
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
-    consider_relevant_compos = fe.consider_relevant_compos
-    relevant_compos_predicate = fe.relevant_compos_predicate
-    id = fe.identifier
     
     log = read_ui_log_as_dataframe(os.path.join(path_scenario + "_results", "pipeline_log.csv"))
     activities = list(set(log.loc[:, execution.case_study.special_colnames["Activity"]].values.tolist()))
@@ -33,13 +30,10 @@ def combine_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
                     data = json.load(f)
                 
                 # Both components and centroids as numpy arrays to make it more performant
-                if consider_relevant_compos:
-                    compos_nparray = np.array([ compo for compo in data["compos"] if eval(relevant_compos_predicate)])
-                else:
-                    compos_nparray = np.array(list(filter(lambda x: x["relevant"] == True, data["compos"])))
+                compos_nparray = np.array(list(filter(lambda x: x["relevant"] == True, data["compos"])))
 
                 # identifier_-centroidY
-                centroid_regex = re.compile(rf"{id}_(\d*\.?\d+)-(\d*\.?\d+)")
+                centroid_regex = re.compile(rf".*_(\d*\.?\d+)-(\d*\.?\d+)")
                 # Get all the columns that match the regex and do not contain only nan values
                 centroid_columns = [col for col in rows.columns if centroid_regex.match(col) and not rows[col].isnull().all()]
                 centroids = np.array([np.array([centroid_regex.match(centroid).groups()[0], centroid_regex.match(centroid).groups()[1]]) for centroid in centroid_columns])

@@ -65,9 +65,9 @@ def feature_extraction_technique(log_path, path_scenario, execution, fe):
     return output
 
 def postprocessing(log_path, path_scenario, execution, pp):
-    tprint(PLATFORM_NAME + " - " + pp.title, "fancy60")
-    print("Postprocessing selected: " + pp.title+"\n")
-    detect_postprocessing_function(pp.title)(log_path, path_scenario, execution, pp)
+    tprint(PLATFORM_NAME + " - " + pp.technique_name, "fancy60")
+    print("Postprocessing selected: " + pp.technique_name+"\n")
+    detect_postprocessing_function(pp.technique_name)(log_path, path_scenario, execution, pp)
     return None
 
 class FeatureExtractionTechniqueCreateView(LoginRequiredMixin, CreateView):
