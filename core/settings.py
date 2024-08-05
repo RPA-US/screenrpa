@@ -54,10 +54,10 @@ PROCESS_DISCOVERY_LOG_FILENAME =            "pd_log.csv"
 
 # System Default Phases
 DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_elements_classification', 'postfilters', 'feature_extraction_technique', 
-                  'process_discovery', 'feature_extraction_technique', 'extract_training_dataset', 'decision_tree_training']
+                  'process_discovery', 'postprocessing', 'extract_training_dataset', 'feature_extraction_technique', 'decision_tree_training']
 # DEFAULT_PHASES = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery',
 #                  'feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
-PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique','ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
+PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique', 'Postprocessing', 'ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
 MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
 #WEBGAZER CONSTANTS
@@ -325,11 +325,12 @@ else:
 #===================================================================================================
 
 # Configuration JSON files Paths
-SINGLE_FE_EXTRACTORS_FILEPATH =     CORE_DIR + sep + "configuration" + sep + "single_feature_extractors.json"
-AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "aggregate_feature_extractors.json"
-MODELS_CLASSES_FILEPATH =           CORE_DIR + sep + "configuration" + sep + "models_classes.json"
-STATUS_VALUES_ID =                  CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
-CDLR =                              CORE_DIR + sep + "configuration" + sep + "cdlr.json"
+SINGLE_FE_EXTRACTORS_FILEPATH =      CORE_DIR + sep + "configuration" + sep + "single_feature_extractors.json"
+AGGREGATE_FE_EXTRACTORS_FILEPATH =   CORE_DIR + sep + "configuration" + sep + "aggregate_feature_extractors.json"
+POSTPROCESSING_TECHNIQUES_FILEPATH = CORE_DIR + sep + "configuration" + sep + "postprocessing_techniques.json"
+MODELS_CLASSES_FILEPATH =            CORE_DIR + sep + "configuration" + sep + "models_classes.json"
+STATUS_VALUES_ID =                   CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
+CDLR =                               CORE_DIR + sep + "configuration" + sep + "cdlr.json"
 
 #to visualize pdf files in the browser
 

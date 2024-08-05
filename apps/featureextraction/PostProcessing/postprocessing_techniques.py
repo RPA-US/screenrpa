@@ -1,0 +1,67 @@
+import os
+import json
+import re
+import numpy as np
+from shapely.geometry import Polygon, Point
+from tqdm import tqdm
+from apps.featureextraction.utils import read_ui_log_as_dataframe
+
+def combine_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
+    """
+    Combine the information of the UI elements and the centroids of the UI elements in the same dataset
+    for the same activities
+    """
+    # Iterate over the images again to find for each centroid the smallest object containing it
+    execution_root = path_scenario + '_results'
+    metadata_json_root = os.path.join(execution_root, 'components_json')
+    screenshot_colname = execution.case_study.special_colnames["Screenshot"]
+    consider_relevant_compos = fe.consider_relevant_compos
+    relevant_compos_predicate = fe.relevant_compos_predicate
+    id = fe.identifier
+    
+    log = read_ui_log_as_dataframe(os.path.join(path_scenario + "_results", "pipeline_log.csv"))
+    activities = list(set(log.loc[:, execution.case_study.special_colnames["Activity"]].values.tolist()))
+
+    for activity in activities:
+        rows = log[log[execution.case_study.special_colnames["Activity"]] == activity]
+        for index, row in tqdm(rows.iterrows(), desc="Updating centroids with classes for each screenshot"):
+            screenshot_filename = os.path.basename(row[screenshot_colname])
+
+            # Check if the file exists, if exists, then we can continue
+            if os.path.exists(os.path.join(metadata_json_root, screenshot_filename + '.json')):
+                with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), 'r') as f:
+                    data = json.load(f)
+                
+                # Both components and centroids as numpy arrays to make it more performant
+                if consider_relevant_compos:
+                    compos_nparray = np.array([ compo for compo in data["compos"] if eval(relevant_compos_predicate)])
+                else:
+                    compos_nparray = np.array(list(filter(lambda x: x["relevant"] == True, data["compos"])))
+
+                # identifier_-centroidY
+                centroid_regex = re.compile(rf"{id}_(\d*\.?\d+)-(\d*\.?\d+)")
+                # Get all the columns that match the regex and do not contain only nan values
+                centroid_columns = [col for col in rows.columns if centroid_regex.match(col) and not rows[col].isnull().all()]
+                centroids = np.array([np.array([centroid_regex.match(centroid).groups()[0], centroid_regex.match(centroid).groups()[1]]) for centroid in centroid_columns])
+
+                # Pre-compute Polygon objects to avoid creating them in each iteration
+                compos_polygons = [(Polygon(compo["points"]), compo) for compo in compos_nparray]
+
+                # Match each centroid with the smallest object containing it using Polygon from shapely
+                for centroid in centroids:
+                    centroid_point = Point(centroid.astype(float))
+                    containing_compos = [(compo, poly.area) for poly, compo in compos_polygons if poly.contains(centroid_point)] 
+                    if len(containing_compos) == 0:
+                        continue
+                    compo = min(containing_compos, key=lambda x: x[1])[0]
+
+                    # Insert the class of the smallest object containing the centroid
+                    log.at[index, f"{id}_{centroid[0]}-{centroid[1]}"] = compo["class"]
+    
+    # Copy trace_id column because it gets deleted sometimes
+    trace = log["trace_id"]
+    # Remove columns with the same values
+    log = log.T.drop_duplicates().T
+    log["trace_id"] = trace
+    log.to_csv(os.path.join(execution_root, "pipeline_log.csv"), index=False)
+    return 0,0,0,0

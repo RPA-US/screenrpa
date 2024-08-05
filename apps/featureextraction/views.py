@@ -12,10 +12,10 @@ from apps.utils import MultiFormsView
 from django.core.exceptions import ValidationError, PermissionDenied
 from apps.analyzer.models import CaseStudy
 from apps.featureextraction.SOM.classification import legacy_ui_elements_classification, uied_ui_elements_classification
-from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique
-from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm, FeatureExtractionTechniqueForm
+from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique, Postprocessing
+from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm, FeatureExtractionTechniqueForm, PostprocessingForm
 from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
-from .utils import detect_single_fe_function, detect_agg_fe_function
+from .utils import detect_single_fe_function, detect_agg_fe_function, detect_postprocessing_function
 from .utils import draw_ui_compos_borders
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -63,6 +63,12 @@ def feature_extraction_technique(log_path, path_scenario, execution, fe):
             print("Aggregate feature extraction selected: " + feature_extraction_technique_name+"\n")
             output = detect_agg_fe_function(feature_extraction_technique_name)(log_path, path_scenario, execution, fe)
     return output
+
+def postprocessing(log_path, path_scenario, execution, pp):
+    tprint(PLATFORM_NAME + " - " + pp.title, "fancy60")
+    print("Postprocessing selected: " + pp.title+"\n")
+    detect_postprocessing_function(pp.title)(log_path, path_scenario, execution, pp)
+    return None
 
 class FeatureExtractionTechniqueCreateView(LoginRequiredMixin, CreateView):
     login_url = "/login/"
@@ -273,6 +279,177 @@ class FeatureExtractionResultDetailView(LoginRequiredMixin, DetailView):
         # Render the HTML template with the context including the CSV data
         return render(request, "feature_extraction_technique/result.html", context)
 
+########################
+# POSTPROCESSING #
+########################
+
+class PostprocessingCreateView(LoginRequiredMixin, CreateView):
+    login_url = "/login/"
+    model = Postprocessing
+    form_class = PostprocessingForm
+    template_name = "postprocessing/create.html"
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_authenticated:
+            raise ValidationError(_("User must be authenticated."))
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Postprocessing' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def post(self, request, *args, **kwargs):
+        if not self.request.user.is_authenticated:
+            raise ValidationError(_("User must be authenticated."))
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if 'Postprocessing' in case_study.available_phases:
+            return super().post(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+    
+    def get_context_data(self, **kwargs):
+        context = super(PostprocessingCreateView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+
+        # Load single and aggregate techniques from configurations
+        techniques_json = json.load(open("configuration/postprocessing_techniques.json"))
+        context["options"] = {
+            # We convert the tuples returned by the items() method to lists so that javascript can correctly parse them
+            "techniques": list(map(lambda x: list(x), techniques_json.items())),
+        }
+        return context
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.case_study = CaseStudy.objects.get(pk=self.kwargs.get('case_study_id'))
+        saved = self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class PostprocessingListView(LoginRequiredMixin, ListView):
+    login_url = "/login/"
+    model = Postprocessing
+    template_name = "postprocessing/list.html"
+    paginate_by = 50
+
+    # Check if the the phase can be interacted with (included in case study available phases)
+    def get(self, request, *args, **kwargs):
+        case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
+        if not case_study:
+            return HttpResponse(status=404, content="Case Study not found.")
+        elif case_study.user != request.user:
+            raise PermissionDenied("Case Study doesn't belong to the authenticated user.")
+        if 'Postprocessing' in case_study.available_phases:
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+
+    def get_context_data(self, **kwargs):
+        context = super(PostprocessingListView, self).get_context_data(**kwargs)
+        context['case_study_id'] = self.kwargs.get('case_study_id')
+        return context
+
+    def get_queryset(self):
+        # Obtiene el ID del Experiment pasado como parámetro en la URL
+        case_study_id = self.kwargs.get('case_study_id')
+
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        # Filtra los objetos por case_study_id
+        if search:
+            queryset = Postprocessing.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user, title__icontains=search).order_by('-created_at')
+        else:
+            queryset = Postprocessing.objects.filter(case_study__id=case_study_id, case_study__user=self.request.user).order_by('-created_at')
+
+        # Filters by execution_id
+        execution_id = self.request.GET.get("exec_id")
+        if execution_id:
+            queryset = queryset.filter(executions__id=execution_id)
+
+        return queryset
+
+class PostprocessingDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+    # Check if the the phase can be interacted with (included in case study available phases)
+ 
+    def get(self, request, *args, **kwargs):
+        postprocessing = get_object_or_404(Postprocessing, id=kwargs["postprocessing_id"])
+        if not postprocessing:
+            return HttpResponse(status=404, content="FE not found.")
+        elif postprocessing.case_study.user != request.user:
+            raise PermissionDenied("Postprocessing doesn't belong to the authenticated user.")
+
+        form = PostprocessingForm(read_only=True, instance=postprocessing)
+        if 'case_study_id' in kwargs:
+            case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
+            if 'Postprocessing' in case_study.available_phases:
+                context= {"postprocessing": postprocessing, 
+                    "case_study_id": case_study.id,
+                    "form": form,}
+        
+                return render(request, "postprocessing/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
+         
+        elif 'execution_id' in kwargs:
+            execution = get_object_or_404(Execution, id=kwargs['execution_id'])
+            if execution.postprocessing:
+                context= {"postprocessing": postprocessing, 
+                            "execution_id": execution.id,
+                            "form": form,}
+            
+                return render(request, "postprocessing/detail.html", context)
+            else:
+                return HttpResponseRedirect(reverse("analyzer:execution_list"))
+
+@login_required(login_url="/login/")
+def set_as_postprocessing_active(request):
+    postprocessing_id = request.GET.get("postprocessing_id")
+    case_study_id = request.GET.get("case_study_id")
+
+    # Now we allow for more than one fe to be active
+        # postprocessing_list = Postprocessing.objects.filter(case_study_id=case_study_id)
+        # for m in postprocessing_list:
+        #     m.active = False
+        #     m.save()
+
+    postprocessing = Postprocessing.objects.get(id=postprocessing_id)
+    postprocessing.active = True
+    postprocessing.save()
+    return HttpResponseRedirect(reverse("featureextraction:postprocessing_list", args=[case_study_id]))
+
+@login_required(login_url="/login/")
+def set_as_postprocessing_inactive(request):
+    postprocessing_id = request.GET.get("postprocessing_id")
+    case_study_id = request.GET.get("case_study_id")
+    # Validations
+    if not request.user.is_authenticated:
+        raise ValidationError(_("User must be authenticated."))
+    if CaseStudy.objects.get(pk=case_study_id).user != request.user:
+        raise ValidationError(_("Case Study doesn't belong to the authenticated user."))
+    if Postprocessing.objects.get(pk=postprocessing_id).user != request.user:  
+        raise ValidationError(_("Postprocessing doesn't belong to the authenticated user."))
+    if Postprocessing.objects.get(pk=postprocessing_id).case_study != CaseStudy.objects.get(pk=case_study_id):
+        raise ValidationError(_("Postprocessing doesn't belong to the Case Study."))
+    postprocessing = Postprocessing.objects.get(id=postprocessing_id)
+    postprocessing.active = False
+    postprocessing.save()
+    return HttpResponseRedirect(reverse("featureextraction:postprocessing_list", args=[case_study_id]))
+    
+@login_required(login_url="/login/")
+def delete_postprocessing(request):
+    postprocessing_id = request.GET.get("postprocessing_id")
+    case_study_id = request.GET.get("case_study_id")
+    postprocessing = Postprocessing.objects.get(id=postprocessing_id)
+    if request.user.id != postprocessing.user.id:
+        raise Exception("This object doesn't belong to the authenticated user")
+    postprocessing.delete()
+    return HttpResponseRedirect(reverse("featureextraction:postprocessing_list", args=[case_study_id]))
+
+#########################################################
 
 #############################################33
 def read_csv_to_json(path_to_csv_file):
@@ -302,9 +479,6 @@ def ResultDownload(path_to_csv_file):
         return response
     
 #############################################################
-
-
-
 
 
 class UIElementsDetectionCreateView(LoginRequiredMixin, MultiFormsView):

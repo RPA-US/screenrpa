@@ -234,3 +234,31 @@ class FeatureExtractionTechnique(models.Model):
 def monitoring_delete(sender, instance, **kwargs):
     if instance.preloaded_file:
         instance.preloaded_file.delete(save=False)
+
+class Postprocessing(models.Model):
+    """
+    Postprocessing techniques to enriched log after process discovery.
+    
+    Ej. Normalize centroids based on image corresponding activity.
+    """
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
+    title = models.CharField(max_length=255)
+    freeze = models.BooleanField(default=False, editable=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
+    executed = models.IntegerField(default=0, editable=True)
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    technique_name = models.CharField(max_length=255, null=True)
+
+    def get_absolute_url(self):
+        return reverse("featureextraction:postprocessing_list", args=[str(self.case_study_id)])
+    
+    def __str__(self):
+        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+
+@receiver(pre_delete, sender=Postprocessing)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)

@@ -9,8 +9,9 @@ from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
 from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
+from apps.featureextraction.PostProcessing.postprocessing_techniques import *
 from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
-from core.settings import SINGLE_FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
+from core.settings import SINGLE_FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH, POSTPROCESSING_TECHNIQUES_FILEPATH
 from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification
 from django.shortcuts import get_object_or_404
 
@@ -85,6 +86,17 @@ def detect_agg_fe_function(text):
     '''
     # Search the function by key in the json
     f = open(AGGREGATE_FE_EXTRACTORS_FILEPATH)
+    json_func = json.load(f)
+    return eval(json_func[text])
+
+def detect_postprocessing_function(text):
+    '''
+    Selecting a function in the system by means of a keyword
+    args:
+        text: function to be detected
+    '''
+    # Search the function by key in the json
+    f = open(POSTPROCESSING_TECHNIQUES_FILEPATH)
     json_func = json.load(f)
     return eval(json_func[text])
 

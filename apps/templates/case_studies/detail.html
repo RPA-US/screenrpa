@@ -135,6 +135,22 @@
                     {% endif %}
                   </div>
                   <div class="col-lg-3 col-md-6">
+                    {% if 'Postprocessing' in case_study.available_phases %}
+                    <a href="/fe/postprocessing/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Postprocessing{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'Postprocessing' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}FE and PD needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
+                  </div>
+                  <div class="col-lg-3 col-md-6">
                     {% if 'ExtractTrainingDataset' in case_study.available_phases %}
                     <a href="/dd/extract-training-dataset/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
                     {% else %}
