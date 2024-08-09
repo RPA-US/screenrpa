@@ -1,0 +1,58 @@
+{
+    "models_path": "checkpoints/screen2som",
+    "img_size": [1920,1080],
+    "sahi_size": [640,360],
+    "models": {
+        "text": {
+            "function": "sahi",
+            "type": "bbox"
+        },
+        "elements": {
+            "function": "sahi",
+            "type": "bbox"
+        },
+        "container": {
+            "function": "yolo",
+            "type": "seg"
+        },
+        "applevel": {
+            "function": "yolo",
+            "type": "bbox"
+        },
+        "toplevel": {
+            "function": "yolo",
+            "type": "seg"
+        }
+    },
+    "classes": {
+        "Application": [32, 200, 255],
+        "FileChooser": [100, 33, 30],
+        "Taskbar": [210, 45, 215],
+        "Header": [55, 155, 255],
+        "Scrollbar": [0, 123, 50],
+        "TabActive": [75, 0, 130],
+        "TabInactive": [238, 130, 238],
+        "DNI": [255, 0, 0],
+        "TarjetaDiscapacidad": [0, 255, 0],
+        "Container": [0, 0, 255],
+        "Image": [255, 255, 0],
+        "FileNotFound": [0, 255, 255],
+        "PopUp": [255, 0, 255],
+        "OptionsSelector": [128, 128, 128],
+        "Icon": [192, 192, 192],
+        "BtnSq": [128, 0, 0],
+        "BtnPill": [128, 128, 0],
+        "CheckboxChecked": [128, 0, 128],
+        "CheckboxUnchecked": [0, 128, 128],
+        "RadiobtnSelected": [0, 0, 128],
+        "RadiobtnUnselected": [255, 165, 0],
+        "TextInput": [255, 20, 147],
+        "Dropdown": [220, 20, 60],
+        "Text": [70, 130, 180]
+    },
+    "top_classes": [
+        "Application",
+        "FileChooser",
+        "Taskbar"
+    ]
+}

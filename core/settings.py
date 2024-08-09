@@ -331,6 +331,7 @@ POSTPROCESSING_TECHNIQUES_FILEPATH = CORE_DIR + sep + "configuration" + sep + "p
 MODELS_CLASSES_FILEPATH =            CORE_DIR + sep + "configuration" + sep + "models_classes.json"
 STATUS_VALUES_ID =                   CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
 CDLR =                               CORE_DIR + sep + "configuration" + sep + "cdlr.json"
+SCREEN2SOM_CONFIG_PATH =                               CORE_DIR + sep + "configuration" + sep + "screen2som.json"
 
 #to visualize pdf files in the browser
 
