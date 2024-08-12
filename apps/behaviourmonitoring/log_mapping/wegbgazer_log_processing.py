@@ -6,7 +6,7 @@ from scipy.spatial.distance import pdist
 
 ################# Constants #################
 INCH_PER_CENTIMETRES = 2.54 #1 inch =  2.54cm
-DEVICE_FREQUENCY = 15 #Hz. Frequency of our Eyetracker software (Webgazer)
+DEVICE_FREQUENCY = 30 #Hz. Frequency of our Eyetracker software (Webgazer)
 FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum Gazepoints, not I-VT)
 
 ################# Constans to introduce by the user #################
