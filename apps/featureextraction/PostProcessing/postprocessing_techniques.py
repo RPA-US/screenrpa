@@ -36,13 +36,13 @@ def combine_ui_element_centroid(ui_log_path, path_scenario, execution, pp):
                 centroid_regex = re.compile(rf".*_(\d*\.?\d+)-(\d*\.?\d+)")
                 # Get all the columns that match the regex and do not contain only nan values
                 centroid_columns = [col for col in rows.columns if centroid_regex.match(col) and not rows[col].isnull().all()]
-                centroids = np.array([np.array([centroid_regex.match(centroid).groups()[0], centroid_regex.match(centroid).groups()[1]]) for centroid in centroid_columns])
 
                 # Pre-compute Polygon objects to avoid creating them in each iteration
                 compos_polygons = [(Polygon(compo["points"]), compo) for compo in compos_nparray]
 
                 # Match each centroid with the smallest object containing it using Polygon from shapely
-                for centroid in centroids:
+                for col in centroid_columns:
+                    centroid = np.array([centroid_regex.match(col).groups()[0], centroid_regex.match(col).groups()[1]])
                     centroid_point = Point(centroid.astype(float))
                     containing_compos = [(compo, poly.area) for poly, compo in compos_polygons if poly.contains(centroid_point)] 
                     if len(containing_compos) == 0:
@@ -50,7 +50,7 @@ def combine_ui_element_centroid(ui_log_path, path_scenario, execution, pp):
                     compo = min(containing_compos, key=lambda x: x[1])[0]
 
                     # Insert the class of the smallest object containing the centroid
-                    log.at[index, f"{id}_{centroid[0]}-{centroid[1]}"] = compo["class"]
+                    log.at[index, col] = compo["class"]
     
     # Copy trace_id column because it gets deleted sometimes
     trace = log["trace_id"]
