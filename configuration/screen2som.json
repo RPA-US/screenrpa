@@ -1,7 +1,7 @@
 {
     "models_path": "checkpoints/screen2som",
-    "img_size": [1920,1080],
-    "sahi_size": [640,360],
+    "img_size": [640,360],
+    "sahi_size": [240,240],
     "models": {
         "text": {
             "function": "sahi",
@@ -13,11 +13,11 @@
         },
         "container": {
             "function": "yolo",
-            "type": "seg"
+            "type": "bbox"
         },
         "applevel": {
             "function": "yolo",
-            "type": "bbox"
+            "type": "seg"
         },
         "toplevel": {
             "function": "yolo",
