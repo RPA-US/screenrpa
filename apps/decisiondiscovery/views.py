@@ -105,8 +105,8 @@ def extract_training_dataset(log_path, root_path, execution):
     
     try:
         log = read_ui_log_as_dataframe(log)
-    except:
-        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results")
+    except Exception as e:
+        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results: " + e)
     
     # We apply filters because iterating and removing will mess up the indices
     columns = list(filter(lambda c: c not in process_columns, log.columns))
@@ -180,12 +180,12 @@ def decision_tree_training(log_path, scenario_path, execution):
         # tree_levels = {}
         
         if implementation == 'sklearn':
-                try:
-                    if implementation == 'sklearn':
-                        res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
-                except:
-                    print(f"No features left after preprocessing.")
-                    continue
+            try:
+                if implementation == 'sklearn':
+                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+            except Exception as e:
+                print("Error: ", e)
+                continue
         elif implementation == 'chefboost':
             res, times = chefboost_decision_tree(flattened_dataset, scenario_path+"_results", algorithms, "Variant", k_fold_cross_validation)
             # TODO: caculate number of tree levels automatically

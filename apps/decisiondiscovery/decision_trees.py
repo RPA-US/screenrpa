@@ -201,7 +201,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
         k_fold_cross_validation = 2
 
     # Extract features and target variable
-    X = df.drop(columns=[special_colnames["Variant"]]).drop(columns=["dp_branch"])
+    X = df.drop(columns=[special_colnames["Variant"]], errors="ignore").drop(columns=["dp_branch"])
 
     #X = X.astype(str)
     y = df["dp_branch"]
