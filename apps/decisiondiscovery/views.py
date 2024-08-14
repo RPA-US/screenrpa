@@ -160,8 +160,8 @@ def decision_tree_training(log_path, scenario_path, execution):
     fe_checker = dict()
     times = dict()
     
+    datasets = []
     for act, _ in activities_before_dps:
-        datasets = []
         datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv'))
         i = 1
         while i != 0:
