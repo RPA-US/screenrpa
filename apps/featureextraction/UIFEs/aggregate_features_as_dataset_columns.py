@@ -1,7 +1,11 @@
 import json
 import os
+import re
+import numpy as np
 from core.settings import STATUS_VALUES_ID, PROCESS_DISCOVERY_LOG_FILENAME
 from core.utils import read_ui_log_as_dataframe
+from tqdm import tqdm
+from shapely.geometry import Polygon, Point
 
 def find_st_id(st_value):
     res = None
@@ -245,3 +249,4 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
         
     # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
+

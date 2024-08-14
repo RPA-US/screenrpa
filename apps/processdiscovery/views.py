@@ -24,7 +24,7 @@ from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
 from apps.decisiondiscovery.utils import rename_columns_with_centroids
 from core.utils import read_ui_log_as_dataframe
-from core.settings import PROCESS_DISCOVERY_LOG_FILENAME
+from core.settings import PROCESS_DISCOVERY_LOG_FILENAME, ENRICHED_LOG_SUFFIX
 from apps.processdiscovery.utils import Process, DecisionPoint, Branch, Rule
 from .models import ProcessDiscovery
 from .forms import ProcessDiscoveryForm
@@ -163,7 +163,8 @@ def scene_level(log_path, scenario_path, execution):
     '''
     Labeling WorkFlow
     '''
-    def auto_labeling(df, remove_loops):
+    def auto_labeling(df, fe_log, remove_loops):
+        if remove_loops: df, fe_log = remove_duplicate_activities(df, fe_log, special_colnames['Activity'])
         activity_inicial = df[special_colnames['Activity']].iloc[0]
         trace_id = 1
         trace_ids = [trace_id]
@@ -173,28 +174,30 @@ def scene_level(log_path, scenario_path, execution):
                     trace_id += 1
                 trace_ids.append(trace_id)
         df['trace_id'] = trace_ids
-        if remove_loops: df = remove_duplicate_activities(df, special_colnames['Activity'])
-        return df
+        return df, fe_log
 
     def manual_labeling(df):
         # Placeholder for manual labeling logic.
         # For now, it simply returns the DataFrame unchanged.
         return df
 
-    def trace_id_assignment(df, remove_loops, labeling_mode='automatic'):
+    def trace_id_assignment(df, fe_log, remove_loops, labeling_mode='automatic'):
         if labeling_mode == 'automatic':
-            df = auto_labeling(df, remove_loops)
+            df, fe_log = auto_labeling(df, fe_log, remove_loops)
         elif labeling_mode == 'manual':
             df = manual_labeling(df)
         else:
             raise ValueError("Unsupported labeling mode. Choose 'automatic' or 'manual'.")
-        return df
+        return df, fe_log
     
-    def remove_duplicate_activities(df, activity_column):
+    def remove_duplicate_activities(df, fe_log, activity_column):
         to_remove = df[activity_column].eq(df[activity_column].shift())
+        index_to_remove = df[to_remove].index
         df = df[~to_remove]
+        if fe_log is not None:
+            fe_log = fe_log[~to_remove]
         
-        return df
+        return df, fe_log
 
     '''
     Dendrogram generation WorkFlow
@@ -247,9 +250,13 @@ def scene_level(log_path, scenario_path, execution):
     Process Discovery Execution Main Workflow
     '''
     ui_log = read_ui_log_as_dataframe(log_path)
+    if execution.feature_extraction_technique:
+        fe_log = read_ui_log_as_dataframe(os.path.join(scenario_path + "_results", 'log' + ENRICHED_LOG_SUFFIX + '.csv'))
+    else:
+        fe_log = None
     ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], text_column, image_weight=image_weight, text_weight=text_weight, model_type=model_type)
     ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)
-    ui_log = trace_id_assignment(ui_log, remove_loops, labeling_mode=labeling)
+    ui_log, fe_log = trace_id_assignment(ui_log, fe_log, remove_loops, labeling_mode=labeling)
 
     folder_path = scenario_path + '_results'
     print(folder_path)
@@ -262,10 +269,10 @@ def scene_level(log_path, scenario_path, execution):
     
     generate_dendrogram(ui_log, show_dendrogram=show_dendrogram)
 
-    return folder_path, ui_log
+    return folder_path, ui_log, fe_log
     
 
-def process_level(folder_path, df, execution):
+def process_level(folder_path, df, fe_log, execution):
     special_colnames = execution.case_study.special_colnames
 
     def petri_net_process(df, special_colnames):
@@ -278,7 +285,7 @@ def process_level(folder_path, df, execution):
         with open(dot_path, 'w') as f:
             f.write(dot.source)
 
-    def bpmn_process(df, special_colnames):
+    def bpmn_process(df, fe_log, special_colnames):
         formatted_df = pm4py.format_dataframe(df, case_id=special_colnames['Case'], activity_key=special_colnames['Activity'], timestamp_key=special_colnames['Timestamp'])
         event_log = pm4py.convert_to_event_log(formatted_df)
         bpmn_model = pm4py.discover_bpmn_inductive(event_log)
@@ -287,13 +294,22 @@ def process_level(folder_path, df, execution):
         with open(dot_path, 'w') as f:
             f.write(dot.source)
         bpmn_exporter.apply(bpmn_model, os.path.join(folder_path, 'bpmn.bpmn'))
+
+        # Give name to gates without
+        i = 0
+        nodes = bpmn_model.get_nodes()
+        for node in nodes:
+            if type(node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway:
+                if node.name == '':
+                    # node.name is a propperty and cannot be set. The class attribute is __name
+                    node._BPMNNode__name = f'xor_{i}'
+                    i += 1
         
         # Get the decision points in the model (diverging exclusive gateways)
-        nodes = bpmn_model.get_nodes()
         node_start = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.StartEvent, nodes))[0]
         node_end = list(filter(lambda node: type(node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, nodes))[0]
 
-        def explore_branch(node_start, visited) -> tuple[Branch, pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway|pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, set]:
+        def explore_branch(node_start, visited, last_act) -> tuple[Branch, pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway|pm4py.objects.bpmn.obj.BPMN.NormalEndEvent, set]:
             branch_start = node_start
             cn = branch_start # Current node
             dps: list[DecisionPoint] = []
@@ -306,43 +322,51 @@ def process_level(folder_path, df, execution):
                 if iteration_count > max_iterations:
                     raise Exception("Infinite loop detected in BPMN exploration. Exceeded maximum iterations.")
 
+                # If the next node is a converging ExclusiveGateway or a NormalEndEvent, the branch is finished
+                if type(cn) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and cn.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING or type(cn) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
+                    return Branch(branch_start.name, branch_start.id, dps), cn, visited
+
                 # The next node is the target of the first outgoing arc from the current node
                 next_node = cn.get_out_arcs()[0].target
 
                 # If the next node has already been visited, an exception is raised
                 # This is because the current implementation does not support loops in the BPMN model
-                if next_node in visited:
+                if cn in visited:
                     raise Exception("error: end node not reached. current bpmn_bfs does not support loops. state:" + cn.name + " " + cn.id + " " + type(cn))
 
                 # If the next node is a Task or a StartEvent, it is added to the visited set and becomes the current node
-                if type(next_node) == pm4py.objects.bpmn.obj.BPMN.Task or type(next_node) == pm4py.objects.bpmn.obj.BPMN.StartEvent:
+                if type(cn) == pm4py.objects.bpmn.obj.BPMN.Task or type(cn) == pm4py.objects.bpmn.obj.BPMN.StartEvent:
                     visited.add(cn)
+                    last_act = cn.name
                     cn = next_node
 
                 # If the next node is a diverging ExclusiveGateway, it is added to the visited set
                 # Then, for each outgoing arc from the gateway, the function recursively explores the branch
                 # A Rule is created for each branch and added to the rules list
                 # A DecisionPoint is created and added to the dps list
-                elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.DIVERGING:
+                elif type(cn) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and cn.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.DIVERGING:
                     visited.add(cn)
                     branches: list[Branch] = []
                     rules: list[Rule] = []
-                    for arc in next_node.get_out_arcs():
-                        branch, converge_gateway, visited = explore_branch(arc.target, visited)
-                        branches.append(branch)
-                        rule = Rule([], arc.target.name)
+                    for arc in cn.get_out_arcs():
+                        ## Handle empty branches 
+                        if type(arc.target) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and \
+                        arc.target.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING:
+                            branch = Branch(arc.target.name, arc.target.id, [])
+                            rule = Rule([], arc.target.name)
+                            converge_gateway = arc.target
+                        else:
+                            branch, converge_gateway, visited = explore_branch(arc.target, visited, last_act)
+                            rule = Rule([], arc.target.name)
                         rules.append(rule)
-                    dps.append(DecisionPoint(next_node.id, cn.name, branches, rules))
+                        branches.append(branch)
+                    dps.append(DecisionPoint(cn.id, last_act, branches, rules))
 
                     # If the gateway at the end of the branch is a NormalEndEvent, the function return because the BPMN discovery has finished
                     if type(converge_gateway) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
                         return Branch(branch_start.name, branch_start.id, dps), next_node, visited
                     else:
                         cn = converge_gateway.get_out_arcs()[0].target
-
-                # If the next node is a converging ExclusiveGateway or a NormalEndEvent, the branch is finished
-                elif type(next_node) == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway and next_node.get_gateway_direction() == pm4py.objects.bpmn.obj.BPMN.ExclusiveGateway.Direction.CONVERGING or type(next_node) == pm4py.objects.bpmn.obj.BPMN.NormalEndEvent:
-                    return Branch(branch_start.name, branch_start.id, dps), next_node, visited
 
                 # Handling any other case
                 else:
@@ -351,7 +375,7 @@ def process_level(folder_path, df, execution):
             return Branch(branch_start.name, branch_start.id, dps), None, visited
 
         def bpmn_bfs(node_start, node_end) -> Process:
-            return Process(explore_branch(node_start, set())[0].decision_points)
+            return Process(explore_branch(node_start, set(), node_start.name)[0].decision_points)
 
         def add_trace_to_log(process, df) -> None:
             # Navigate the log and add to each row info about the branches taken on each decision point
@@ -389,24 +413,38 @@ def process_level(folder_path, df, execution):
                 for dp in dps:
                     if dp.prevAct == act_label:
                         current_dp = dp.id
+
+                # Register trace of the last Case or trace_id
+                last_trace_row = df.loc[df[special_colnames['Case']] == current_trace_id]
+                for index, trace_row in last_trace_row.iterrows():
+                    for passed_dp in current_branches.keys():
+                        df.at[index, passed_dp] = current_branches[passed_dp]
                         
             df = variant_column(df, execution.case_study.special_colnames)
             # Save log to csv
             df.to_csv(os.path.join(folder_path, PROCESS_DISCOVERY_LOG_FILENAME), index=False)
+            return df
 
         try:
             process = bpmn_bfs(node_start, node_end)
             json.dump(process.to_json(), open(os.path.join(folder_path, 'traceability.json'), 'w'))
-            add_trace_to_log(process, df)
+            df = add_trace_to_log(process, df)
         except Exception as e:
             print(e)
 
+        if fe_log is not None:
+            # Save full log (pd + fe)
+            fe_log.drop(columns=df.columns, inplace=True, errors='ignore')
+            df.drop(columns=["index"], inplace=True, errors='ignore')
+            fe_log = fe_log.reset_index(drop=True)
+            full_log = pd.concat([df, fe_log], axis=1)
+            full_log.to_csv(os.path.join(folder_path, 'pipeline_log.csv'), index=False)
+
     petri_net_process(df, special_colnames)
     try:
-        bpmn_process(df, special_colnames)
+        bpmn_process(df, fe_log, special_colnames)
     except Exception as e:
         print(f'Error generating BPMN: {e} Continuing with Petrinet...')
-    
     
 def process_discovery(log_path, scenario_path, execution):
     # log_path -> media/unzipped/exec_1/Nano/log.csv
@@ -415,8 +453,8 @@ def process_discovery(log_path, scenario_path, execution):
 
     # root_path + "results/" + PROCESS_DISCOVERY_LOG_FILENAME
     #Pasar execution.process_discovery
-    folder_path, ui_log = scene_level(log_path, scenario_path, execution)
-    process_level(folder_path, ui_log, execution)
+    folder_path, ui_log, fe_log = scene_level(log_path, scenario_path, execution)
+    process_level(folder_path, ui_log, fe_log, execution)
         
     
 class ProcessDiscoveryCreateView(LoginRequiredMixin, CreateView):

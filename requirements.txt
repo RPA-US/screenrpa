@@ -2,7 +2,7 @@ absl-py==1.2.0
 amqp==5.1.1
 art==5.7
 asgiref==3.5.2
-aspose-words==24.4.0 
+aspose-words==24.4.0
 asttokens==2.2.1
 astunparse==1.6.3
 async-timeout==4.0.2
@@ -47,6 +47,7 @@ django-private-storage==3.0
 django-rest-auth==0.9.5
 djangorestframework==3.14.0
 docx==0.2.4
+docx2pdf==0.1.8
 drf-spectacular==0.24.2
 drf-spectacular-sidecar==2022.10.1
 editdistance==0.6.0
@@ -64,7 +65,6 @@ google-auth==2.12.0
 google-auth-oauthlib==0.4.6
 google-pasta==0.2.0
 graphviz==0.20.1
-pygraphviz==1.13.0
 grpcio==1.49.1
 gunicorn==20.1.0
 h5py==3.7.0
@@ -112,12 +112,12 @@ nvidia-cublas-cu11==11.10.3.66
 nvidia-cuda-cupti-cu11==11.7.101
 nvidia-cuda-nvrtc-cu11==11.7.99
 nvidia-cuda-runtime-cu11==11.7.99
-#nvidia-cudnn-cu11==8.5.0.96
+nvidia-cudnn-cu11==8.5.0.96
 nvidia-cufft-cu11==10.9.0.58
 nvidia-curand-cu11==10.2.10.91
 nvidia-cusolver-cu11==11.4.0.1
 nvidia-cusparse-cu11==11.7.4.91
-#nvidia-nccl-cu11==2.14.3
+nvidia-nccl-cu11==2.14.3
 nvidia-nvtx-cu11==11.7.91
 oauthlib==3.2.1
 opencv-contrib-python==4.6.0.66
@@ -126,7 +126,7 @@ opencv-python==4.6.0.66
 opencv-python-headless==4.6.0.66
 opt-einsum==3.3.0
 packaging==21.3
-pandas==1.5.0
+pandas==2.2.2
 parso==0.8.3
 pathlib==1.0.1
 pathspec==0.11.1
@@ -134,7 +134,8 @@ pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==9.2.0
 platformdirs==3.2.0
-pm4py==2.7.3
+plum-dispatch==1.7.4
+pm4py==2.7.11.11
 prompt-toolkit==3.0.31
 protobuf==3.19.6
 prov==2.0.0
@@ -150,7 +151,9 @@ pycparser==2.21
 pydot==1.4.2
 pydotplus==2.0.2
 Pygments==2.14.0
+pygraphviz==1.13
 PyJWT==2.6.0
+pypandoc==1.13
 pyparsing==3.0.9
 pyrsistent==0.18.1
 python-dateutil==2.8.2
@@ -173,7 +176,9 @@ sahi==0.11.15
 scikit-image==0.19.3
 scikit-learn==1.1.2
 scipy==1.9.2
-Shapely==2.0.2
+seaborn==0.12.0
+semantic-version==2.10.0
+shapely==2.0.2
 simplejson==3.19.1
 six==1.16.0
 sklearn==0.0
@@ -199,20 +204,20 @@ tornado==6.3.1
 tqdm==4.64.1
 traitlets==5.9.0
 traits==6.3.2
-transformers == 4.40.1 
-#triton==2.0.0
-# triton==2.0.0
+transformers==4.40.1
+triton==2.0.0
 typing_extensions==4.4.0
-tzdata==2022.4
+tzdata==2024.1
+uc-micro-py==1.0.3
+ultralytics==8.2.74
 Unipath==1.1
 uritemplate==4.1.1
 urllib3==1.26.12
 validators==0.20.0
 vine==5.0.0
 wcwidth==0.2.5
+websockets==11.0.3
 Werkzeug==2.2.2
 whitenoise==6.2.0
 wrapt==1.14.1
-seaborn>=0.11.0
-gradio==3.35.2
-ultralytics == 8.0.208
+yarl==1.9.4

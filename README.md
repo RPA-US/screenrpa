@@ -32,6 +32,8 @@
 The following software is needed to run this platform:
 - C++ Dev Tools from Visual Studio: ![visual_studio_c++_features](apps\static\assets\img\image.png) 
 
+- If you are on windows, you must install MS Word. On linux, libreoffice writter is needed. To install only the bare necessary you can run `apt install libreoffice-core-nogui libreoffice-writer-nogui --no-install-recommends --no-install-suggests` (Not needed if docker is used)
+
 - Graphviz: 
     - Windows:
     1. Download and install Graphviz 2.46.0 for Windows 10 (64-bit):         [stable_windows_10_cmake_Release_x64_graphviz-install-2.46.0-win64.exe](https://gitlab.com/graphviz/graphviz/-/package_files/6164164/download).
@@ -40,7 +42,7 @@ The following software is needed to run this platform:
         ```ps
         python -m pip install --config-settings="--global-option=build_ext" --config-settings="--global-option=-IC:\Program Files\Graphviz\include" --config-settings="--global-option=-LC:\Program Files\Graphviz\lib" pygraphviz
         ```
-    - Linux: run this command _sudo apt-get install graphviz graphviz-dev_
+    - Linux: run `sudo apt-get install graphviz graphviz-dev` (Not needed if docker is used)
 
 
 ```bash

@@ -15,8 +15,8 @@ from art import tprint
 import pandas as pd
 from apps.chefboost import Chefboost as chef
 from apps.analyzer.models import CaseStudy, Execution
-from apps.processdiscovery.utils import extract_prev_act_labels
-from core.settings import DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME, PROCESS_DISCOVERY_LOG_FILENAME
+from apps.processdiscovery.utils import extract_prev_act_labels, Process
+from core.settings import DECISION_FOLDERNAME, PLATFORM_NAME, FLATTENING_PHASE_NAME, DECISION_MODEL_DISCOVERY_PHASE_NAME, FLATTENED_DATASET_NAME, PROCESS_DISCOVERY_LOG_FILENAME, ENRICHED_LOG_SUFFIX
 from core.utils import read_ui_log_as_dataframe
 from .models import DecisionTreeTraining, ExtractTrainingDataset
 from .forms import DecisionTreeTrainingForm, ExtractTrainingDatasetForm
@@ -85,13 +85,12 @@ def extract_training_dataset(log_path, root_path, execution):
     
     
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
-    aux= os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
-    print(aux+"\n")
+    log = None
+    if os.path.exists(os.path.join(root_path + "_results", 'pipeline_log.csv')):
+        log = os.path.join(root_path + "_results", 'pipeline_log.csv')
+    else:
+        log = os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
 
-    try:
-        log = read_ui_log_as_dataframe(aux)
-    except:
-        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results")
     process_columns = [ 
                         special_colnames["Case"], 
                         special_colnames["Activity"], 
@@ -104,15 +103,20 @@ def extract_training_dataset(log_path, root_path, execution):
                         "time:timestamp" # Timestamp Duplicated in Process Discovery
                     ]
     
+    try:
+        log = read_ui_log_as_dataframe(log)
+    except Exception as e:
+        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results: " + e)
+    
+    # We apply filters because iterating and removing will mess up the indices
+    columns = list(filter(lambda c: c not in process_columns, log.columns))
     # From the columns of the log, the columns that come from the decision point identification are removed
-    for c in log.columns:
-        if "id" in c and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c):
-            process_columns.append(c)
-
-    columns = list(log.columns)
-    for c in process_columns:
-        if c in columns:
-            columns.remove(c)
+    # columns = list(filter(lambda c: not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c), columns))
+    # for c in columns:
+    #     if c in process_columns:
+    #         columns.remove(c)
+    #     elif "id" in c and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', c):
+    #         columns.remove(c)
     
     # Stablish common columns and the rest of the columns are concatinated with "_" + activity
     flat_dataset_row(log, columns, root_path+'_results', special_colnames, actions_columns, execution.process_discovery)
@@ -140,10 +144,35 @@ def decision_tree_training(log_path, scenario_path, execution):
         os.mkdir(os.path.join(scenario_path, DECISION_FOLDERNAME))
         
     tprint(PLATFORM_NAME + " - " + DECISION_MODEL_DISCOVERY_PHASE_NAME, "fancy60")
-    activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
+    # activities_before_dps=extract_prev_act_labels(os.path.join(scenario_path+"_results","bpmn.dot"))
+
+    try:
+        json_traceability = json.load(open(os.path.join(scenario_path + "_results", "traceability.json")))
+        process_tracebility = Process.from_json(json_traceability)
+    except:
+        raise Exception("Tracebility.json not found durring dataset flattening")
+
+    decision_points = process_tracebility.get_non_empty_dp_flattened()
+    # activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
+    activities_before_dps = list(map(lambda dp: (dp.prevAct, dp.id), decision_points))
+
+    res = dict()
+    fe_checker = dict()
+    times = dict()
     
-    for act in activities_before_dps:
-        flattened_csv_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv')
+    datasets = []
+    for act, _ in activities_before_dps:
+        datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv'))
+        i = 1
+        while i != 0:
+            if os.path.exists(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}-{i}.csv')):
+                datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}-{i}.csv'))
+                i += 1
+            else:
+                i = 0 
+    
+    for flattened_csv_log_path in datasets:
+        act = flattened_csv_log_path.split("_")[-1].split(".")[0]
         print(flattened_csv_log_path+"\n")
         
         flattened_dataset = pd.read_csv(flattened_csv_log_path)
@@ -155,19 +184,19 @@ def decision_tree_training(log_path, scenario_path, execution):
         #         columns_to_ignore.append(col)  
         
         # TODO: get type of TextInput column using NLP: convert to categorical variable (conversation, name, email, number, date, etc)
-        flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1)
+        flattened_dataset = flattened_dataset.drop(columns_to_ignore, axis=1, errors='ignore')
         # flattened_dataset.to_csv(os.path.join(scenario_path+"_results",FLATTENED_DATASET_NAME+".csv"))
         columns_len = flattened_dataset.shape[1]
         #flattened_dataset = flattened_dataset.fillna('NaN')
         # tree_levels = {}
         
         if implementation == 'sklearn':
-                try:
-                    if implementation == 'sklearn':
-                        res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
-                except:
-                    print(f"No features left after preprocessing.")
-                    continue
+            try:
+                if implementation == 'sklearn':
+                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+            except Exception as e:
+                print("Error: ", e)
+                continue
         elif implementation == 'chefboost':
             res, times = chefboost_decision_tree(flattened_dataset, scenario_path+"_results", algorithms, "Variant", k_fold_cross_validation)
             # TODO: caculate number of tree levels automatically

@@ -3,8 +3,9 @@
 Copyright (c) RPA-US
 """
 
+import json
 from django import forms
-from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique, CNNModels
+from apps.featureextraction.models import UIElementsDetection, UIElementsClassification, Prefilters, Postfilters, FeatureExtractionTechnique, CNNModels, Postprocessing
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -308,6 +309,57 @@ class FeatureExtractionTechniqueForm(forms.ModelForm):
         
         self.read_only = kwargs.pop('read_only', False)
         super(FeatureExtractionTechniqueForm, self).__init__(*args, **kwargs)
+        if self.read_only:
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
+
+class PostprocessingForm(forms.ModelForm):
+    class Meta:
+        model = Postprocessing
+        exclude = (
+            "user",
+            )
+        fields = (
+            "technique_name",
+            "preloaded_file",
+            "preloaded",
+            "title"
+        )
+        labels = {
+            "technique_name": _("Technique"),
+            "preloaded_file":"Preload Execution Results",
+            "title": "Title "
+        }
+
+        widgets = {
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Postprocessing"
+                    }
+            ),
+            "preloaded_file": forms.FileInput(
+                attrs={
+                    'accept': '.zip'
+                    }   
+            ),
+            "preloaded": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
+            ),
+            "technique_name": forms.Select(
+                attrs={
+                    "class": "form-control",
+                    "required": "true",
+                    "onchange": "changeTechniqueOptions()",
+                    }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.read_only = kwargs.pop('read_only', False)
+        super(PostprocessingForm, self).__init__(*args, **kwargs)
+        techniques_json = json.load(open("configuration/postprocessing_techniques.json"))
+        self.fields['technique_name'].widget.choices = list(map(lambda x: list(x), techniques_json.items()))
         if self.read_only:
             for field_name in self.fields:
                 self.fields[field_name].disabled = True

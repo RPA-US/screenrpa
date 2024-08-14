@@ -54,4 +54,15 @@ urlpatterns = [
     # path('detect-images-components/', views.detect_images_components.as_view(), name='detect-images-components'),
     # path('ocr/', views.get_ocr_image.as_view(),name='ocr'),
     # path('pad/', views.pad.as_view(), name='pad'), 
+
+    ##
+    # Post-Processing Techniques
+    path('postprocessing/list/<int:case_study_id>/', views.PostprocessingListView.as_view(), name='postprocessing_list'),
+    path('postprocessing/new/<int:case_study_id>/', views.PostprocessingCreateView.as_view(), name='postprocessing_create'),
+    path('postprocessing/detail/<int:case_study_id>/<int:postprocessing_id>/', views.PostprocessingDetailView.as_view(), name='postprocessing_detail'),
+    path('ex/postprocessing/detail/<int:execution_id>/<int:postprocessing_id>/', views.PostprocessingDetailView.as_view(), name='postprocessing-execution'),
+
+    path('postprocessing/active/', views.set_as_postprocessing_active, name='postprocessing_set_as_active'),
+    path('postprocessing/inactive/', views.set_as_postprocessing_inactive, name='postprocessing_set_as_inactive'),
+    path('postprocessing/delete/', views.delete_postprocessing, name='postprocessing_delete'),
 ]

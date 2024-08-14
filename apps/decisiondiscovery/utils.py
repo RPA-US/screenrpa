@@ -138,7 +138,7 @@ def def_preprocessor(X):
     # Identificar las columnas que contienen "rpa-us_" en su nombre
     for col in X.columns:
         if 'rpa-us_' in col:
-            sta_columns.append(col)
+            # sta_columns.append(col)
             if 'enabled' in col:
                 mapping_list.append(mapping_dict['enabled'])
             elif 'checked' in col:
@@ -156,10 +156,10 @@ def def_preprocessor(X):
     numeric_features = X.select_dtypes(include=['number']).columns
 
     # Crear cada transformador
-    status_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
-        ('label_encoder', OrdinalEncoder(categories=mapping_list))
-    ])
+    # status_transformer = Pipeline(steps=[
+    #     ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
+    #     ('label_encoder', OrdinalEncoder(categories=mapping_list))
+    # ])
     
     one_hot_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='NaN')),
@@ -175,8 +175,7 @@ def def_preprocessor(X):
     preprocessor = ColumnTransformer(
         transformers=[
             ('numeric', numeric_transformer, numeric_features),
-            ('one_hot_categorical', one_hot_transformer, one_hot_columns),
-            ('status_categorical', status_transformer, sta_columns)
+            ('one_hot_categorical', one_hot_transformer, one_hot_columns)
         ]
     )
     
@@ -362,6 +361,9 @@ def read_feature_column_name(column_name):
     pattern_without_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_]+)_(\d+)(_?[a-zA-Z]?)"
     # Patrón adicional para nombres de columna sin prefijo
     pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+    # Patroón para puntos de decisión
+    # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
+    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)(_?[a-zA-Z]?)"
     
     # Intentamos encontrar coincidencias con los patrones definidos
     coincidences = re.match(pattern_with_centroid, column_name)
@@ -389,6 +391,16 @@ def read_feature_column_name(column_name):
         suffix = None
         feature = coincidences.group(1)
         centroid = [float(coord) for coord in coincidences.group(2).split("-")]
+        activity = coincidences.group(3)
+        if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
+            activity += coincidences.group(4)
+        return suffix, feature, centroid, activity
+
+    coincidences = re.match(pattern_decision_point, column_name)
+    if coincidences:
+        suffix = coincidences.group(1)
+        feature = coincidences.group(2)
+        centroid = None
         activity = coincidences.group(3)
         if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
             activity += coincidences.group(4)

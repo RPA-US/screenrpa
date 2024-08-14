@@ -13,14 +13,13 @@ def get_notifications(request):
     queryset = Notification.objects.filter(user=request.user).order_by('-created_at')
     data = []
     if queryset.exists():
-        time_diff = timezone.now() - queryset[0].created_at
         data = list(map(lambda x: {
             'id': x.id,
             'short': x.short,
             'message': x.message,
             'read': x.read,
             'href': x.href,
-            'timeDiff': time_diff.total_seconds(),
+            'timeDiff': (timezone.now() - x.created_at).total_seconds(),
             'status': x.status
         }, queryset))
     res = {

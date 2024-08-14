@@ -15,7 +15,7 @@ from private_storage.fields import PrivateFileField
 from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES
 from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
-from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
+from apps.featureextraction.models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique, Postprocessing
 from apps.behaviourmonitoring.models import Monitoring
 from apps.reporting.models import PDD
 from django.utils.translation import gettext_lazy as _
@@ -107,6 +107,8 @@ class CaseStudy(models.Model):
                 available_phases.append("FeatureExtractionTechnique")
                 if not Prefilters.objects.filter(case_study=self, active=True).exists():
                     available_phases.append('Postfilters')
+            if FeatureExtractionTechnique.objects.filter(case_study=self, active=True).exists() and ProcessDiscovery.objects.filter(case_study=self, active=True).exists():
+                available_phases.append('Postprocessing')
             available_phases.append("ProcessDiscovery")
             available_phases.append('ExtractTrainingDataset')
             if ExtractTrainingDataset.objects.filter(case_study=self, active=True).exists():
@@ -167,12 +169,13 @@ class CaseStudy(models.Model):
         ui_elements_classification = UIElementsClassification.objects.filter(case_study=self, active=True).first()
         postfilters = Postfilters.objects.filter(case_study=self, active=True).first()
         feature_extraction_technique = FeatureExtractionTechnique.objects.filter(case_study=self, active=True).first()
+        postprocessing = Postprocessing.objects.filter(case_study=self, active=True).first()
         process_discovery = ProcessDiscovery.objects.filter(case_study=self, active=True).first()
         extract_training_dataset = ExtractTrainingDataset.objects.filter(case_study=self, active=True).first()
         decision_tree_training = DecisionTreeTraining.objects.filter(case_study=self, active=True).first()
 
         return any([monitoring, prefilters, ui_elements_detection, ui_elements_classification, postfilters,
-                    feature_extraction_technique, process_discovery, extract_training_dataset, decision_tree_training])
+                    feature_extraction_technique, process_discovery, postprocessing, extract_training_dataset, decision_tree_training])
     
     def __str__(self):
         return self.title + ' - id:' + str(self.id)
@@ -195,6 +198,8 @@ class Execution(models.Model):
     postfilters = models.ForeignKey(Postfilters, null=True, blank=True, on_delete=models.CASCADE)
     feature_extraction_techniques = models.ManyToManyField(FeatureExtractionTechnique, related_name='executions')
     process_discovery = models.ForeignKey(ProcessDiscovery, null=True, blank=True, on_delete=models.CASCADE)
+    postprocessings = models.ManyToManyField(Postprocessing, related_name='executions')
+
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
     
@@ -207,6 +212,14 @@ class Execution(models.Model):
         This is done for the purpose of maintaining compatibility with the previous version of the application where every phase is checked to exist with getatrr()
         """
         return self.feature_extraction_techniques.exists()
+
+    @property
+    def postprocessing(self):
+        """
+        Returns true if there is any postprocessing technique activated
+        This is done for the purpose of maintaining compatibility with the previous version of the application where every phase is checked to exist with getatrr()
+        """
+        return self.postprocessings.exists()
 
     def clean(self):
         # Check if at least one phase is executed
@@ -239,6 +252,9 @@ class Execution(models.Model):
 
         active_feature_extraction_techniques = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True)
         self.feature_extraction_techniques.set(active_feature_extraction_techniques)
+
+        active_postprocessings = Postprocessing.objects.filter(case_study=self.case_study, active=True)
+        self.postprocessings.set(active_postprocessings)
         
         self.clean()
 
@@ -250,6 +266,10 @@ class Execution(models.Model):
                 stage.save()
                 
         for stage in self.feature_extraction_techniques.all():
+            stage.freeze = True
+            stage.save()
+        
+        for stage in self.postprocessings.all():
             stage.freeze = True
             stage.save()
 

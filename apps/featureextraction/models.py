@@ -3,6 +3,7 @@ from django.db import models
 import zipfile
 import os
 import time
+import json
 
 # Create your models here.
 from email.policy import default
@@ -15,7 +16,7 @@ from private_storage.fields import PrivateFileField
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models import JSONField
 from django.urls import reverse
-from core.settings import PRIVATE_STORAGE_ROOT, sep
+from core.settings import PRIVATE_STORAGE_ROOT, sep, SCREEN2SOM_CONFIG_PATH
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -129,7 +130,8 @@ def get_ui_elements_classification_image_shape():
     return [64, 64, 3]
 
 def get_ui_elements_classification_screen2som():
-    return  'Text,WebIcon,Icon,Switch,BtnSq,BtnPill,BtnCirc,CheckboxChecked,CheckboxUnchecked,RadiobtnSelected,RadiobtnUnselected,TextInput,Dropdown,Link,TabActive,TabInactive,Sidebar,Navbar,Container,Image,BrowserURLInput,Header,BrowserToolbar,Toolbar,Scrollbar,Application,Taskbar,Dock'.split(',')
+    classes_json = list(json.load(open(SCREEN2SOM_CONFIG_PATH))["classes"].keys())
+    return  classes_json    
 
 def get_ui_elements_classification_moran():
     return 'x0_Button,x0_CheckBox,x0_CheckedTextView,x0_EditText,x0_ImageButton,x0_ImageView,x0_NumberPicker,x0_RadioButton,x0_RatingBar,x0_SeekBar,x0_Spinner,x0_Switch,x0_TextView,x0_ToggleButton'.split(',') # this returns a list
@@ -138,12 +140,16 @@ def get_ui_elements_classification_uied():
     return "Button,Checkbox,CheckedTextView,EditText,ImageButton,ImageView,NumberPicker,RadioButton,RatingBar,SeekBar,Spinner,Switch,TextView,ToggleButton".split(',') # this returns a list
 
 class CNNModels(models.Model):
-    name = models.CharField(max_length=25, unique=True)
-    path = models.CharField(max_length=255, unique=True, default="checkpoints/uied/custom-v2.h5")
+    name = models.CharField(max_length=25)
+    path = models.CharField(max_length=255, default="checkpoints/uied/custom-v2.h5")
     image_shape = ArrayField(models.IntegerField(blank=True), default=get_ui_elements_classification_image_shape)
     classes = ArrayField(models.CharField(max_length=50), default=get_ui_elements_classification_uied)
     text_classname = models.CharField(max_length=50, default="TextView")
     model_properties = models.JSONField(null=True, blank=True)
+
+    # Unique name + classes
+    class Meta:
+        unique_together = ('name', 'classes')
    
     def clean(self):
         if (self.text_classname not in self.classes):
@@ -231,6 +237,34 @@ class FeatureExtractionTechnique(models.Model):
         return 'technique: ' + self.technique_name + ' - skip? ' + str(self.skip)
 
 @receiver(pre_delete, sender=FeatureExtractionTechnique)
+def monitoring_delete(sender, instance, **kwargs):
+    if instance.preloaded_file:
+        instance.preloaded_file.delete(save=False)
+
+class Postprocessing(models.Model):
+    """
+    Postprocessing techniques to enriched log after process discovery.
+    
+    Ej. Normalize centroids based on image corresponding activity.
+    """
+    preloaded = models.BooleanField(default=False, editable=True)
+    preloaded_file = PrivateFileField("File", null=True, blank=True)
+    title = models.CharField(max_length=255)
+    freeze = models.BooleanField(default=False, editable=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=False, editable=True)
+    executed = models.IntegerField(default=0, editable=True)
+    case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    technique_name = models.CharField(max_length=255, null=True)
+
+    def get_absolute_url(self):
+        return reverse("featureextraction:postprocessing_list", args=[str(self.case_study_id)])
+    
+    def __str__(self):
+        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+
+@receiver(pre_delete, sender=Postprocessing)
 def monitoring_delete(sender, instance, **kwargs):
     if instance.preloaded_file:
         instance.preloaded_file.delete(save=False)

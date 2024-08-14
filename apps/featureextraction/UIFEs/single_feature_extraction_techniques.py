@@ -1,9 +1,13 @@
 import os
 import json
+import re
 import pandas as pd
+import numpy as np
+from shapely import Polygon, Point
 from core.utils import read_ui_log_as_dataframe
 from core.settings import STATUS_VALUES_ID, ENRICHED_LOG_SUFFIX, sep
 from core.utils import read_ui_log_as_dataframe
+from tqdm import tqdm
 
 
 def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
@@ -190,15 +194,19 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         column_as_vector.append(compos_list[j]["centroid"])
                         info_to_join[column_name] = column_as_vector
                         
-                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "classplaintext_as_colname":
                     if compo_class == text_classname:
-                        aux = compos_list[j]["text"]
+                        aux = compos_list[j][text_classname]
+                        column_name = f"{id}_{aux}_{str(screenshot_compos_frec[aux])}"
                     else:
                         aux = compo_class
+                        column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
+
+                    screenshot_compos_frec[aux] += 1
                     
                     if aux not in screenshot_compos_frec.keys():
                         screenshot_compos_frec[aux] = 1
@@ -221,14 +229,14 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         column_as_vector.append(compos_list[j]["centroid"])
                         info_to_join[column_name] = column_as_vector
                         
-                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                 
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_class":
                     centroid = compos_list[j]["centroid"]
-#                    activity = log.at[i, activity_colname]
+                    # activity = log.at[i, activity_colname]
                     column_name = f"{id}_{centroid[0]}-{centroid[1]}"
                     
                     if column_name in info_to_join:
@@ -246,7 +254,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         info_to_join[column_name] = column_as_vector
                         
                         if column_name not in new_columns:
-                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                            enriched_log[column_name] = "" # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
 # ========================================================================================================
 # ========================================================================================================
@@ -278,7 +286,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         column_as_vector.append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
                         info_to_join[column_name] = column_as_vector
                         
-                        enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
 # ========================================================================================================
 # ========================================================================================================
@@ -301,7 +309,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         info_to_join[column_name] = column_as_vector
                         
                         if column_name not in new_columns:
-                            enriched_log[column_name] = [''] * num_screenshots  # Inicializa la nueva columna con valores vacíos
+                            enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
                         enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
 
                 else:
@@ -316,12 +324,11 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 json.dump(data, jsonFile)
                 
             # print("\n\n=========== ENRICHED LOG GENERATED: path=" + enriched_log_output)
-            enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
                 
         else:
             print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
 
-    
+    enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
     
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 

@@ -28,7 +28,7 @@ from django.template import loader
 from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY, LOG_FILENAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique
+from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, postprocessing
 from apps.featureextraction.SOM.detection import ui_elements_detection
 from apps.featureextraction.relevantinfoselection.prefilters import prefilters
 from apps.featureextraction.relevantinfoselection.postfilters import postfilters
@@ -75,7 +75,7 @@ def generate_case_study(execution, path_scenario, times):
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
         if getattr(execution, function_to_exec) is not None:
             # We handle fe preloaded because it may have several configuations
-            phase_has_preloaded = function_to_exec != "feature_extraction_technique" and getattr(execution, function_to_exec).preloaded
+            phase_has_preloaded = function_to_exec not in ["feature_extraction_technique", "postprocessing"] and getattr(execution, function_to_exec).preloaded
             if phase_has_preloaded:
                 times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
             else:
@@ -93,13 +93,23 @@ def generate_case_study(execution, path_scenario, times):
                     for fe in execution.feature_extraction_techniques.all():
                         if fe.preloaded:
                             continue
-                        if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 8):
+                        if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 9):
                             num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
                             # Additional feature extraction metrics
                             times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
                             times[n][function_to_exec]["num_screenshots"] = num_screenshots
                             times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
                             times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                elif function_to_exec == "postprocessing":
+                    start_t = time.time()
+                    times[n][function_to_exec] = dict()
+                    for pp in execution.postprocessings.all():
+                        if pp.preloaded:
+                            continue
+                        else:
+                            eval(function_to_exec)(log_path, path_scenario, execution, pp)
+                            # Additional feature extraction metrics
                         times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
                 elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
                 # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):

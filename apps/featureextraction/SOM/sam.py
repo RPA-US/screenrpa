@@ -9,7 +9,7 @@ from art import tprint
 from tqdm import tqdm
 from .segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from ultralytics import FastSAM
-from ultralytics.models.fastsam.prompt import FastSAMPrompt
+from ultralytics.models.fastsam import FastSAMPredictor
 from .ip_draw import draw_bounding_box
 from .UiComponent import UiComponent #QUIT
 from django.utils.translation import gettext_lazy as _
@@ -230,18 +230,24 @@ def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
             sam_checkpoint = "FastSAM-x.pt"
             logging.info("Defaulting to checkpoint type 'x'")
 
-    fast_sam = FastSAM(checkpoint_path+sam_checkpoint)
-
     # Define parameters for prediction
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
-    everything_results = fast_sam(source=image_copy, device=device, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
+    overrides = {
+        "model": checkpoint_path+sam_checkpoint,
+        "mode": "segment",
+        "device": device,
+        "imgsz": 1024,
+        "conf": 0.4,
+        "iou": 0.9,
+        "retina_masks": True
+    }
+    fast_sam = FastSAMPredictor(overrides=overrides)
 
-    # Run fastSAM over the image
-    prompt_process = FastSAMPrompt(image_copy, everything_results, device=device)
+    everything_results = fast_sam(image_copy)
 
     ### GENERATE MASK ###
-    result = prompt_process.results[0]
-    masks = prompt_process._format_results(result)
+    result = everything_results.results[0]
+    masks = everything_results._format_results(result)
 
     for i, ann in enumerate(masks):
         ann['bbox'] = [int(result.boxes.xyxy[i].tolist()[0]), int(result.boxes.xyxy[i].tolist()[1]),
