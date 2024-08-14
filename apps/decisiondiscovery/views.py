@@ -169,7 +169,7 @@ def decision_tree_training(log_path, scenario_path, execution):
                 datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}-{i}.csv'))
                 i += 1
             else:
-                i != 0 
+                i = 0 
     
     for flattened_csv_log_path in datasets:
         act = flattened_csv_log_path.split("_")[-1].split(".")[0]
