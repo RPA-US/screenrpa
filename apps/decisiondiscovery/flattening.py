@@ -68,7 +68,8 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                         if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
                         and feat not in current_post_dps:
                             log_dict[c][feat] = log.at[index, feat]
-                        elif feat not in actions_columns:
+                        elif feat not in actions_columns \
+                        and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
                             log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
                     before_DP = False
                 else:
@@ -76,7 +77,8 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                         if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
                         and feat not in current_post_dps:
                             log_dict[c][feat] = log.at[index, feat]
-                        elif feat not in actions_columns:
+                        elif feat not in actions_columns \
+                        and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
                             log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
 
             # Extraer el valor único para cada columna que sigue el patrón especificado y añadirlo al diccionario
@@ -95,10 +97,22 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
         json_object = json.dumps(log_dict, cls=NumpyEncoder, indent=4)
 
         # Writing to one_row_per_case.json
-        aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}")
-        with open(aux_path+".json", "w") as outfile:
-            outfile.write(json_object)
-        flattened_dataset = pd.read_json(aux_path+".json", orient ='index')
-        flattened_dataset.to_csv(aux_path + ".csv", index=False)
+        if os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}.csv")):
+            i = 1
+            while True:
+                if not os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")):
+                    aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")
+                    with open(aux_path+".json", "w") as outfile:
+                        outfile.write(json_object)
+                    flattened_dataset = pd.read_json(aux_path+".json", orient ='index')
+                    flattened_dataset.to_csv(aux_path + ".csv", index=False)
+                    break
+                i += 1
+        else:
+            aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}")
+            with open(aux_path+".json", "w") as outfile:
+                outfile.write(json_object)
+            flattened_dataset = pd.read_json(aux_path+".json", orient ='index')
+            flattened_dataset.to_csv(aux_path + ".csv", index=False)
 
     return log_dict

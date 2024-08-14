@@ -161,7 +161,18 @@ def decision_tree_training(log_path, scenario_path, execution):
     times = dict()
     
     for act, _ in activities_before_dps:
-        flattened_csv_log_path = os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv')
+        datasets = []
+        datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv'))
+        i = 1
+        while i != 0:
+            if os.path.exists(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}-{i}.csv')):
+                datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}-{i}.csv'))
+                i += 1
+            else:
+                i != 0 
+    
+    for flattened_csv_log_path in datasets:
+        act = flattened_csv_log_path.split("_")[-1].split(".")[0]
         print(flattened_csv_log_path+"\n")
         
         flattened_dataset = pd.read_csv(flattened_csv_log_path)
