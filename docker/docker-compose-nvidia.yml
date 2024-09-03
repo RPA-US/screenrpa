@@ -57,8 +57,8 @@ services:
       - ./nginx:/etc/nginx/conf.d
     networks:
       - web_network
-    depends_on: 
-      - screen-rpa
+    depends_on:
+      - screenrpa
 networks:
   db_network:
     driver: bridge

@@ -1,6 +1,4 @@
 FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
-# ARG postgresuser=root
-# ARG postgrespassword=root
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
