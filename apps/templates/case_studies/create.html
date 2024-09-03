@@ -1,7 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -9,17 +10,19 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <h6 class="h2 text-white d-inline-block mb-0">Case studies</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+          <div class="col-12">
+            <a href="/case-study/list/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Case Studies{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}New Case Study{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="#">New case study</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}New case study{% endblocktranslate %}</a></li>
               </ol>
             </nav>
           </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
+          <div class="col-12 text-right">
+            <a href="/case-study/new/" class="btn btn btn-light"><i class="fas fa-broom" style="margin-right: 5px;"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
           </div>
         </div>
       </div>
@@ -33,165 +36,10 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Case study details</h3>
+            <h3 class="mb-0">{% blocktranslate %}Create a new Case Study{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <!-- General information -->
-              <h6 class="heading-small text-muted mb-4">General information</h6>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.title.label_tag }}
-                      {{ form.title }}
-                      <div class="form-validation">{{ form.title.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      {{ form.description.label_tag }}
-                      {{ form.description }}
-                      <div class="form-validation">{{ form.description.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.exp_file.label_tag }}
-                      {{ form.exp_file }}
-                      <div class="form-validation">{{ form.exp_file.errors }}</div>
-                    </div>
-                  </div>
-                  {% comment %} <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.exp_folder_complete_path.label_tag }}
-                      {{ form.exp_folder_complete_path }}
-                      <div class="form-validation">{{ form.exp_folder_complete_path.errors }}</div>
-                    </div>
-                  </div> {% endcomment %}
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.decision_point_activity.label_tag }}
-                      {{ form.decision_point_activity }}
-                      <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.gui_class_success_regex.label_tag }}
-                      {{ form.gui_class_success_regex }}
-                      <div class="form-validation">{{ form.gui_class_success_regex.errors }}</div>  
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr class="my-4" />
-              <!-- Configuration -->
-              <h6 class="heading-small text-muted mb-4">Configuration</h6>
-              <div class="pl-lg-4">
-                <div class="form-group">
-                  {{ form.special_colnames.label_tag }}
-                  {{ form.special_colnames }}
-                  <div class="form-validation">{{ form.special_colnames.errors }}</div>
-                </div>
-              </div>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      {{ form.ui_elements_classification_image_shape.label_tag }}
-                      {{ form.ui_elements_classification_image_shape }}
-                      <div class="form-validation">{{ form.ui_elements_classification_image_shape.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      {{ form.ui_elements_classification_classes.label_tag }}
-                      {{ form.ui_elements_classification_classes }}
-                      <div class="form-validation">{{ form.ui_elements_classification_classes.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.text_classname.label_tag }}
-                      {{ form.text_classname }}
-                      <div class="form-validation">{{ form.text_classname.errors }}</div>
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      {{ form.target_label.label_tag }}
-                      {{ form.target_label }}
-                      <div class="form-validation">{{ form.target_label.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      {{ form.scenarios_to_study.label_tag }}
-                      {{ form.scenarios_to_study }}
-                      <div class="form-validation">{{ form.scenarios_to_study.errors }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr class="my-4" />
-              <!-- Phases to execute -->
-              <h6 class="heading-small text-muted mb-4">Phases to execute</h6>
-              <div class="pl-lg-4">
-                <div class="form-group">
-                  {{ form.ui_elements_detection.label_tag }}
-                  {{ form.ui_elements_detection }}
-                  <div class="form-validation">{{ form.ui_elements_detection.errors }}</div>
-                </div>
-                <div class="form-group">
-                  
-                  {{ form.monitoring.label_tag }}
-                  {{ form.monitoring }}
-                  <div class="form-validation">{{ form.monitoring.errors }}</div>
-                </div>
-                <div class="form-group">
-                  {{ form.ui_elements_classification.label_tag }}
-                  {{ form.ui_elements_classification }}
-                  <div class="form-validation">{{ form.ui_elements_classification.errors }}</div>                 
-                </div>
-
-                <!--div class="form-group">
-                  {{ form.feature_extraction_technique.label_tag }}
-                  {{ form.feature_extraction_technique }}
-                  <div class="form-validation">{{ form.feature_extraction_technique.errors }}</div>
-                </div-->
-                <div class="form-group">
-                  <div class="form-group">
-                    {{ form.extract_training_dataset.label_tag }}
-                    {{ form.extract_training_dataset }}
-                    <div class="form-validation">{{ form.extract_training_dataset.errors }}</div>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="form-group">
-                    {{ form.decision_tree_training.label_tag }}
-                    {{ form.decision_tree_training }}
-                    <div class="form-validation">{{ form.decision_tree_training.errors }}</div>
-                  </div>
-                </div>
-              </div>
-              <button type="submit" value="submit" class="close" >
-                Save
-              </button>
-              
-            </form>
+            {% include "case_studies/form.html" %}
           </div>
         </div>
       </div>
@@ -204,4 +52,5 @@
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+{% endblock javascripts %}

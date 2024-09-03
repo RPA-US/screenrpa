@@ -1,0 +1,343 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+{% load static %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="{% static 'assets/css/loading.css'%}">
+{% endblock stylesheets %}
+
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12">
+            <a href="/case-study/execution/detail/{{ execution_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to UI Elements Detection Details {% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}UI Elements Detection Results{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/list">{% blocktranslate %}Execution{% endblocktranslate %} {{ execution_id }}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}/">{% blocktranslate %}Execution Details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %} Detections {% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Detections{% endblocktranslate %}</h3>
+          </div>
+          <div class="card-body d-flex flex-column" style="gap:12px">
+            <section for="content" class="col-12 p-0 d-flex justify-content-between">
+              <!-- Dropdown to select imgages with back and forth buttons -->
+              <div for="controls" class="col-4 p-0 d-flex justify-content-between">
+                <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
+                <select id="imgList" class="form-control outline-light" style="border-color:#adb5bd;" onchange="changeImage(this.value)">
+                  {% for som in soms.soms %}
+                    <option value="{{ som.img_path }}">{{ som.img }}</option>
+                  {% endfor %}
+                </select>
+                <button id="next" class="btn btn-outline-light ml-2" onclick="nextImage()">></button>
+              </div>
+              <h3 class="col-6 p-0 align-self-end">Screen Object Model</h3>
+            </section>
+            <section for="som-content" class="col-12 p-0 d-flex justify-content-between">
+              <div class="col-6 pl-0">
+                <div style="position: relative; overflow:hidden">
+                  <img onload="adjustContainerHeight()" id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ soms.soms.0.img_path }}"/>
+                  <svg id="svg-masks" style="position: absolute; top: 0px; left: 0px"></svg>
+                </div>
+              </div>
+              <!--The som is in json format, and it must be contained and be scrollable-->
+              <textarea id="json-input" autocomplete="off" hidden>
+              </textarea>
+              <pre id="json-display" class="col-6" style="overflow-y:scroll;height: inherit;" contenteditable="false">
+              </pre>
+            </section>
+            <!--img src="/case-study/private-data/{{ soms.soms.0.img_path }}"/-->
+          </div>
+          <section>
+            <div class="col-12 pl-4 pr-4 d-flex justify-content-between">
+              <h3>{%blocktranslate %}Show detections from classes:{% endblocktranslate %}</h3>
+              <!-- Show all detections switch -->
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="show-all" onclick="toggleAllMasks(this)">
+                <label class="custom-control-label" for="show-all">{% blocktranslate %}Show all{% endblocktranslate %}</label>
+              </div>
+            </div>
+            <div class="card-body d-flex flex-wrap col-12 pt-0 justify-content-sm-between" style="gap:8px">
+              {% for class, color in soms.classes.items %}
+                <!-- Stylized checkbox for each class made with a button -->
+                <button id="toggle-class-{{class}}" onclick="toggleClassMask(this, '{{class}}')" class="btn m-0 flex-grow-1" style="border-radius: 15px;">{{ class }}</button>
+              {% endfor %}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div id="loading-overlay">
+      <div class="d-flex flex-column align-items-center">
+        <div id="spinner"></div>
+        <h2 class="text-white">{% blocktranslate %}Loading Screen Object Model...{% endblocktranslate %}</h2>
+      </div>
+    </div>
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+    <!-- Import a code block library to render and navigate a json object-->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" 
+        crossorigin="anonymous"></script>
+    <script src="{% static 'assets/js/scripts/json-editor.min.js'%}"></script>
+    <script>
+    // Set json viewer height
+    function adjustContainerHeight() {
+      var section = document.querySelector('section[for="som-content"]');
+      var image = document.getElementById('bordered-img');
+      var imageHeight = image.clientHeight;
+      section.style.height = imageHeight + 'px';
+      updatePolygons(showMasks, imgList.selectedIndex);
+    }
+
+    window.addEventListener('resize', function() {
+        adjustContainerHeight();
+    });
+
+    // Declare list of images from soms json replacing None with empty string
+    soms = {{ soms|handle_none|safe }};
+    imgList = soms.soms.map(som => som.img_path ? som.img_path : '');
+
+    // Get the classes of the classification method
+    classes = soms.classes;
+    showMasks = []
+    polygons = []
+
+    // initialize json visualizer
+    // get JSON 
+    function getJson() {
+      try {
+        return JSON.parse($('#json-input').val());
+      } catch (ex) {
+        alert('Wrong JSON Format: ' + ex);
+      }
+    }
+
+    function showLoadingOverlay() {
+      document.getElementById('loading-overlay').style.display = 'flex';
+    }
+
+    function hideLoadingOverlay() {
+      document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    function toggleClassMask(button, className) {
+      if (button.style.backgroundColor !== 'rgba(255, 255, 255, 0)') {
+        button.style.backgroundColor = '#ffffff' + '00';
+        showMasks = showMasks.filter(mask => mask !== className);
+      } else {
+        button.style.backgroundColor = classes[className] + '60';
+        showMasks.push(className);
+      }
+      // Get selected image index
+      imgList = document.getElementById('imgList');
+      selectedIndex = imgList.selectedIndex;
+      updatePolygons(showMasks, selectedIndex)
+    }
+
+    function toggleAllMasks(switchInput) {
+      if (switchInput.checked) {
+        showMasks = Object.keys(classes);
+        document.querySelectorAll('button[id^="toggle-class-"]').forEach(button => {
+          button.style.backgroundColor = classes[button.id.split('-')[2]] + '60';
+        });
+      } else {
+        showMasks = [];
+        document.querySelectorAll('button[id^="toggle-class-"]').forEach(button => {
+          button.style.backgroundColor = '#ffffff' + '00';
+        });
+      }
+      updatePolygons(showMasks, imgList.selectedIndex);
+    }
+
+    function updatePolygons(showMasks, selectedIndex) {
+      // Remove all polygons
+      polygons.forEach(polygon => polygon.remove());
+      polygons = [];
+      // Add polygons for each class
+      compos = soms.soms.at(selectedIndex).som.compos;
+
+      selectedCompos = Object.values(compos).filter(compo =>
+        showMasks.includes(compo.class)
+      );
+
+      function scalePoints(points, originalWidth, originalHeight, imageWidth, imageHeight) {
+        scaledPoints = []
+        points.forEach(point => {
+          scaledPoints.push(point[0] * imageWidth / originalWidth, point[1] * imageHeight / originalHeight)
+        })
+        return scaledPoints
+      }
+
+      var svg = document.querySelector('svg[id="svg-masks"]');
+      svg.style.width = borderedImg.clientWidth + "px";
+      svg.style.height = borderedImg.clientHeight + "px";
+
+      selectedCompos.forEach(compo => {
+        var polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        var className = compo.class;
+        var scaledPoints = scalePoints(compo.points, originalWidth, originalHeight, borderedImg.clientWidth, borderedImg.clientHeight);
+        polygon.setAttribute('points', scaledPoints);
+        polygon.setAttribute('fill', classes[className] + '40');
+        polygon.setAttribute('stroke', classes[className]);
+        polygon.setAttribute('stroke-width', '2');
+        polygon.setAttribute('id', `polygon-id-${compo.id}`)
+        // Change fill color on hover to make it more visible 
+        polygon.addEventListener('mouseover', function() {
+          polygon.setAttribute('fill', classes[className] + '60');
+        });
+        polygon.addEventListener('mouseout', function() {
+          polygon.setAttribute('fill', classes[className] + '40');
+        });
+
+        var linktojsonelement = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+        linktojsonelement.setAttribute('style', 'height: fit-content; width: fit-content; cursor: pointer;');
+        linktojsonelement.appendChild(polygon);
+        linktojsonelement.setAttribute('onclick', `gotoJsonCompo(${compo.id})`);
+        svg.appendChild(linktojsonelement);
+        polygons.push(linktojsonelement);
+      })
+    }
+
+    function gotoJsonCompo(compoId) {
+      var jsoncompo = document.getElementById(`json-compo-${compoId}`);
+      var topPos = jsoncompo.offsetTop;
+      document.getElementById('json-display').scrollTop = topPos;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Create classes for the buttons
+        for (const [key, value] of Object.entries(classes)) {
+          var button = document.getElementById('toggle-class-' + key);
+          // Semi-transparent background
+          button.style.backgroundColor = '#ffffff' + '00'; 
+          // color borders
+          button.style.borderColor = value;
+          button.style.borderWidth = '2px';
+        }
+
+        setTimeout(function() {
+          adjustContainerHeight();
+        }, 0);
+        // Disable prev or next btn if needed
+        imgList = document.getElementById('imgList');
+        imgList.value = imgList.options[0].value;
+        document.getElementById('prev').disabled = true
+
+        borderedImg = document.getElementById('bordered-img');
+        somWindow = document.getElementById('json-input');
+        somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+        editor = new JsonEditor('#json-display', getJson());
+        editor.load(getJson())
+
+        originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+        originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
+        updatePolygons(showMasks, imgList.selectedIndex);
+    })
+
+    function prevImage() {
+      showLoadingOverlay();
+      imgList = document.getElementById('imgList');
+      imgPath = document.getElementById('imgPath');
+      somWindow = document.getElementById('json-input');
+      if (imgList.selectedIndex > 0) {
+        imgList.selectedIndex = imgList.selectedIndex - 1;
+        borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+        somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+        setTimeout(function() {
+          editor.load(getJson());
+          adjustContainerHeight();
+          hideLoadingOverlay();
+        }, 0);
+      }
+      updateControls(imgList.selectedIndex);
+      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
+      updatePolygons(showMasks, imgList.selectedIndex);
+    }
+
+    function nextImage() {
+      showLoadingOverlay();
+      imgList = document.getElementById('imgList');
+      imgPath = document.getElementById('imgPath');
+      somWindow = document.getElementById('json-input');
+      if (imgList.selectedIndex < imgList.options.length - 1) {
+          imgList.selectedIndex = imgList.selectedIndex + 1;
+          borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+          somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+          setTimeout(function() {
+            editor.load(getJson());
+            adjustContainerHeight();
+            hideLoadingOverlay();
+          }, 0);
+      }
+      updateControls(imgList.selectedIndex);
+      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
+      updatePolygons(showMasks, imgList.selectedIndex);
+    }
+
+    function changeImage(value) {
+      showLoadingOverlay();
+      imgList = document.getElementById('imgList');
+      imgPath = document.getElementById('imgPath');
+      somWindow = document.getElementById('json-input');
+      borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+      somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+      setTimeout(function() {
+        editor.load(getJson());
+        adjustContainerHeight();
+        hideLoadingOverlay();
+      }, 0);
+      updateControls(imgList.selectedIndex);
+      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
+      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
+      updatePolygons(showMasks, imgList.selectedIndex);
+    }
+
+    function updateControls(selectedIndex) {
+        imgList = document.getElementById('imgList');
+        prev = document.getElementById('prev');
+        next = document.getElementById('next');
+        if (selectedIndex == 0) {
+            prev.disabled = true;
+        } else {
+            prev.disabled = false;
+        }
+        if (selectedIndex == imgList.options.length - 1) {
+            next.disabled = true;
+        } else {
+            next.disabled = false;
+        }
+    }
+  </script>
+{% endblock javascripts %}

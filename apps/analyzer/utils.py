@@ -6,59 +6,28 @@ import re
 import datetime
 import email
 import base64
-from django.shortcuts import get_object_or_404
 import lxml.etree as ET
 from lxml import html
-from core.settings import FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH
-from .models import FeatureExtractionTechnique
-from apps.featureextraction.UIFEs.feature_extraction_techniques import *
+import pytz
+from dateutil.parser import parse
+# from apps.featureextraction.utils import case_study_has_feature_extraction_technique, get_feature_extraction_technique, case_study_has_ui_elements_detection, get_ui_elements_detection, case_study_has_ui_elements_classification, get_ui_elements_classification, case_study_has_postfilters, get_postfilters, case_study_has_prefilters, get_prefilters
+# from apps.behaviourmonitoring.utils import get_monitoring, case_study_has_monitoring
+# from apps.processdiscovery.utils import get_process_discovery, case_study_has_process_discovery
+# from apps.decisiondiscovery.utils import get_extract_training_dataset, case_study_has_extract_training_dataset, get_decision_tree_training, case_study_has_decision_tree_training
+from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
 from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
+from django.utils.translation import gettext_lazy as _
 
-def get_foldernames_as_list(path, sep):
+def get_foldernames_as_list(path):
     folders_and_files = os.listdir(path)
     foldername_logs_with_different_size_balance = []
     for f in folders_and_files:
-        if os.path.isdir(path+sep+f):
+        # path+sep+f
+        aux = os.path.join(path, f)
+        if os.path.isdir(aux):
             foldername_logs_with_different_size_balance.append(f)
     return foldername_logs_with_different_size_balance
 
-###########################################################################################################################
-# Feature extraction techniques ###########################################################################################
-###########################################################################################################################
-
-def case_study_has_feature_extraction_technique(case_study, type="ANY"):
-    if type=="SINGLE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE").exists()
-    elif type=="AGGREGATE":
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE").exists()
-    else:
-      res = FeatureExtractionTechnique.objects.filter(case_study=case_study).exists()
-    return res
-
-def get_feature_extraction_technique_from_cs(case_study):
-  return get_object_or_404(FeatureExtractionTechnique, case_study=case_study)
-
-def detect_fe_function(text):
-    '''
-    Selecting a function in the system by means of a keyword
-    args:
-        text: function to be detected
-    '''
-    # Search the function by key in the json
-    f = open(FE_EXTRACTORS_FILEPATH)
-    json_func = json.load(f)
-    return eval(json_func[text])
-
-def detect_agg_fe_function(text):
-    '''
-    Selecting a function in the system by means of a keyword
-    args:
-        text: function to be detected
-    '''
-    # Search the function by key in the json
-    f = open(AGGREGATE_FE_EXTRACTORS_FILEPATH)
-    json_func = json.load(f)
-    return eval(json_func[text])
 
 ###########################################################################################################################
 # MHT to XES/CSV ##########################################################################################################
@@ -75,8 +44,8 @@ def store_screenshots(payload, path_to_store_screenshots):
     if "Content-Location" in payload[i]:
       filename = part["Content-Location"]
     else:
-      logging.exception("analyzer/utils/store_screenshots. line 49. MIME Html format not contains Content-Location header in screenshots")
-      raise Exception("MIME Html format not contains Content-Location header in screenshots")
+      logging.exception(_("analyzer/utils/store_screenshots. line 49. MIME Html format not contains Content-Location header in screenshots"))
+      raise Exception(_("MIME Html format not contains Content-Location header in screenshots"))
     image_data = part.get_payload()
 
     # Decode the image data from base64 encoding
@@ -86,7 +55,7 @@ def store_screenshots(payload, path_to_store_screenshots):
         os.mkdir(path_to_store_screenshots)
 
     # Save the image to a file
-    with open(path_to_store_screenshots + filename, 'wb') as f:
+    with open(os.path.join(path_to_store_screenshots ,filename), 'wb') as f:
         f.write(image_data_decoded)
         print(f"Saved image file {filename}")
 
@@ -145,7 +114,7 @@ def from_html_to_xes(org_resource, myhtml, root_file_path, output_filename):
       ET.SubElement(event, 'string', {'key': 'FileId'}).text = each_action.get("FileId")
       ET.SubElement(event, 'string', {'key': 'FileVersion'}).text = each_action.get("FileVersion")
 
-    res_path = root_file_path + output_filename + '.xes'
+    res_path =os.path.join( root_file_path,output_filename + '.xes')
     # Write the XES document to a file
     with open(res_path, 'wb') as f:
         f.write(ET.tostring(xes, pretty_print=True))
@@ -190,7 +159,7 @@ def from_html_to_csv(org_resource, myhtml, root_file_path, output_filename):
         event['FileVersion'] = each_action.get("FileVersion")
         events.append(event)
 
-    res_path = root_file_path + output_filename + '.csv'
+    res_path = os.path.join(root_file_path, output_filename + '.csv')
 
     # Write the events to a CSV file
     df = pd.DataFrame(events)
@@ -214,13 +183,20 @@ def format_mht_file(mht_file_path, output_format, output_path, output_filename, 
   elif output_format == "mht_csv":
     res_path = from_html_to_csv(org_resource, myhtml, output_path, output_filename)
   else:
-    logging.exception("analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt exists")
-    raise Exception("You select a format mht file that doesnt exists")
+    logging.exception(_("analyzer/utils/format_mht_file. line 187. MHT file format selected doesnt exists"))
+    raise Exception(_("You select a format mht file that doesnt exists"))
   
   return res_path
 ###########################################################################################################################
 ###########################################################################################################################
 ###########################################################################################################################
+def get_format_pattern(datetime_parenthesis, sep):
+    if "â€Ž" in datetime_parenthesis:
+      format_pattern = 'â€Ž%d'+sep+'â€Ž%m'+sep+'â€Ž%Y %H:%M:%S'
+    elif "/" in datetime_parenthesis:
+      format_pattern = '\u200e%d'+sep+'\u200e%m'+sep+'\u200e%Y %H:%M:%S'
+    return format_pattern
+
 
 def get_mht_log_start_datetime(mht_file_path, pattern):
     with open(mht_file_path) as mht_file: 
@@ -237,17 +213,37 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
     if dateRegistered:
         datetime_parenthesis = dateRegistered.group(1)
     else:
-        logging.exception("analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the format:'Step 1: (datetime)'")
-        raise Exception("The MHT file doesnt have '(datetime)' after 'Step 1:'")
+        logging.exception(_("analyzer/utils/format_mht_file. line 211. The MHT file doesnt follows the format:'Step 1: (datetime)'"))
+        raise Exception(_("The MHT file doesnt have '(datetime)' after 'Step 1:'"))
       
     if pattern:
       format_pattern = pattern
     elif "/" in datetime_parenthesis:
-      format_pattern = '\u200e%d/\u200e%m/\u200e%Y %H:%M:%S'
-    else: 
-      format_pattern = '\u200e%d-\u200e%m-\u200e%Y %H:%M:%S'
+      format_pattern = get_format_pattern(datetime_parenthesis, "/")
+    elif "-" in datetime_parenthesis: 
+      format_pattern = get_format_pattern(datetime_parenthesis, "-")
+    else:
+      raise Exception(_("The MHT file doesnt have a valid datetime format"))
 
     return datetime.datetime.strptime(datetime_parenthesis, format_pattern)
+  
+  
+def get_csv_log_start_datetime(csv_file_path,pattern):
+  log_csv = pd.read_csv(csv_file_path)
+  first_timestamp = parse(log_csv["time:timestamp"].iloc[0])
+  timezone = pytz.timezone("Etc/GMT")
+  first_timestamp = first_timestamp.astimezone(timezone)
+  first_timestamp = first_timestamp.replace(tzinfo=None) 
+  return first_timestamp
+
+def convert_timestamps_and_clean_screenshot_name_in_csv(csv_file_path):
+    df = pd.read_csv(csv_file_path)
+    df['time:timestamp'] = pd.to_datetime(df['time:timestamp']).dt.strftime('%H:%M:%S')
+    df['screenshot'] = df['screenshot'].apply(lambda x: re.split(r'[\\/]+', x)[-1])
+    # Save and apply this changes
+    df.to_csv(csv_file_path, index=False)
+    return df
+    
 
 ###########################################################################################################################
 ###########################################################################################################################

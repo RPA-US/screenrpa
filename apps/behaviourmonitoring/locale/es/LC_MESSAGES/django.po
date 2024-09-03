@@ -1,0 +1,86 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-06-24 08:18+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/behaviourmonitoring/forms.py:33
+msgid "Type"
+msgstr "Tipo"
+
+#: apps/behaviourmonitoring/forms.py:34
+msgid "UI Log Filename"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:35
+msgid "UI Log Separator"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:36
+msgid "Gaze Log Filename"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:37
+msgid "Gaze Log Adjustment"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:38
+msgid "System Info. Log"
+msgstr ""
+
+#: apps/behaviourmonitoring/forms.py:40
+msgid "Screen Inches"
+msgstr "Pulgadas de la pantalla"
+
+#: apps/behaviourmonitoring/forms.py:41
+msgid "Observer to Webcam distance (in cm)"
+msgstr "Distancia del observador a la webcam (cm)"
+
+#: apps/behaviourmonitoring/forms.py:42
+msgid "Screen Width (in pixels)"
+msgstr "Anchura de la pantalla (en píxeles)"
+
+#: apps/behaviourmonitoring/forms.py:43
+msgid "Screen Height (in pixels)"
+msgstr "Altura de la pantalla (en píxeles)"
+
+#: apps/behaviourmonitoring/models.py:53
+msgid "There is already an active monitoring for this case study."
+msgstr "Ya existe un monitoreo activo para este caso de estudio."
+
+#: apps/behaviourmonitoring/views.py:110 apps/behaviourmonitoring/views.py:133
+msgid "User must be authenticated."
+msgstr "El usuario debe estar autenticado."
+
+#: apps/behaviourmonitoring/views.py:112 apps/behaviourmonitoring/views.py:135
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr "El caso de estudio no pertenece al usuario autenticado."
+
+#: apps/behaviourmonitoring/views.py:114 apps/behaviourmonitoring/views.py:137
+msgid "Monitoring doesn't belong to the authenticated user."
+msgstr "El monitoreo no pertenece al usuario autenticado."
+
+#: apps/behaviourmonitoring/views.py:116 apps/behaviourmonitoring/views.py:139
+msgid "Monitoring doesn't belong to the Case Study."
+msgstr "El monitoreo no pertenece al caso de estudio."
+
+#: apps/behaviourmonitoring/views.py:155
+msgid "This object doesn't belong to the authenticated user"
+msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Configurations"
+#~ msgstr "Configuraciones"

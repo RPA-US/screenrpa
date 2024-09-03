@@ -6,6 +6,7 @@ import imp
 from apps.chefboost.commons import functions, evaluate
 from apps.chefboost.training import Preprocess, Training
 from apps.chefboost import Chefboost as cb
+from django.utils.translation import gettext_lazy as _
 
 from tqdm import tqdm
 
@@ -156,11 +157,11 @@ def regressor(df, config, header, dataset_features, validation_df = None, proces
 		
 	#---------------------------------
 	
-	print("The best epoch is ", best_epoch_idx," with ", best_epoch_loss," loss value")
+	print(_("The best epoch is %(best_epoch_idx) with %(best_epoch_loss) loss value") % {'best_epoch_idx': best_epoch_idx, 'best_epoch_loss': best_epoch_loss})
 	models = models[0:best_epoch_idx]
 	config["epochs"] = best_epoch_idx
 	
-	print("MSE of ",num_of_instances," instances are boosted from ",boosted_from," to ",best_epoch_loss," in ",epochs," epochs")
+	print(_("MSE of %(num_of_instances) instances are boosted from %(boosted_from) to %(best_epoch_loss) in %(epochs) epochs") % {'num_of_instances': num_of_instances, 'boosted_from': boosted_from, 'best_epoch_loss': best_epoch_loss, 'epochs': best_epoch_idx})
 	
 	return models
 
@@ -301,13 +302,13 @@ def classifier(df, config, header, dataset_features, validation_df = None, proce
 		
 		#print(worksheet.head())
 		#print("round ",epoch+1)
-		pbar.set_description("Epoch %d. Accuracy: %d. Process: " % (epoch+1, accuracy))
+		pbar.set_description(_("Epoch %(ep)d. Accuracy: %(ac)d. Process: ") % {"ep": epoch+1, "ac": accuracy})
 		
 		gc.collect()
 		
 	#--------------------------------
 	
-	print("The best accuracy got in ",best_accuracy_idx," epoch with the score ", best_accuracy_value)
+	print(_("The best accuracy got in %(best_accuracy_idx) epoch with the score %(best_accuracy_value)") % {'best_accuracy_idx': best_accuracy_idx, 'best_accuracy_value': best_accuracy_value})
 	
 	models = models[0: best_accuracy_idx * len(classes) + len(classes)]
 	

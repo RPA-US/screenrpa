@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters
+from .models import Prefilters, UIElementsDetection, UIElementsClassification, Postfilters, FeatureExtractionTechnique
 
 class PrefiltersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,4 +19,10 @@ class UIElementsClassificationSerializer(serializers.ModelSerializer):
 class PostfiltersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Postfilters
+        fields = '__all__'
+        
+
+class FeatureExtractionTechniqueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeatureExtractionTechnique
         fields = '__all__'

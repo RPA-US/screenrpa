@@ -1,0 +1,66 @@
+{% load i18n %}
+
+<form method="POST" enctype="multipart/form-data">{% csrf_token %}
+    <!-- Introduction section -->
+    <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Introduction{% endblocktranslate %}</h6>
+    <div class="pl-lg-4">
+        <div class="form-group">
+            {{ form.purpose.label_tag }}
+            {{ form.purpose }}
+            <div class="form-validation">{{ form.purpose.errors }}</div>
+        </div>
+        <div class="form-group">
+            {{ form.objective.label_tag }}
+            {{ form.objective }}
+            <div class="form-validation">{{ form.objective.errors }}</div>
+        </div>
+    </div>
+    <!-- Add new section for PDD Boolean Fields -->
+    <h6 class="heading-small text-muted mb-4">{% blocktranslate %}AS IS Process Description{% endblocktranslate %}</h6>
+      <div class="pl-lg-4">
+          <div class="row">
+              <div class="col-lg-6">
+                {% if execution.process_discovery != None %}
+                  <div class="form-check">
+                      {{ form.process_overview }}
+                      {{ form.process_overview.label_tag }} 
+                      <span class="ml-2">(Locked: Process Discovery)</span>
+                  </div>
+                  {% endif %}
+                  <div class="form-check">
+                      {{ form.applications_used }}
+                      {{ form.applications_used.label_tag }} 
+                      <span class="ml-2">(No Locked)</span>
+                  </div>    
+                   {% if execution.process_discovery != None %}                          
+                  <div class="form-check">
+                      {{ form.as_is_process_map }}
+                      {{ form.as_is_process_map.label_tag }} 
+                      <span class="ml-2">(Locked: Process Discovery)</span>
+                  </div>
+                  {% endif %} 
+                  {% if execution.decision_tree_training != None %}
+                  <div class="form-check">
+                      {{ form.detailed_as_is_process_actions }}
+                      {{ form.detailed_as_is_process_actions.label_tag }} 
+                      <span class="ml-2">(Locked: Decision Tree Training)</span>
+                  </div>
+                   {% endif %} 
+                  <div class="form-check">
+                      {{ form.input_data_description }}
+                      {{ form.input_data_description.label_tag }} 
+                      <span class="ml-2">(No Locked)</span>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+       <!-- Submit button -->
+    {% if not form.read_only %}
+       <hr class="my-4" />
+       <button id="mainSubmitButton" class="btn btn-success" type="submit" value="submit" style="float: right;">
+           <i class="fas fa-save"></i>
+           {% blocktranslate %}Generate{% endblocktranslate %}
+       </button>
+       {% endif %}
+</form>

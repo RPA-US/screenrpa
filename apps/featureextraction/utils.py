@@ -1,15 +1,109 @@
 import os
 import cv2
+import copy
 import numpy as np
 import json
 from core.settings import sep
 from PIL import Image, ImageDraw
 from shapely.geometry.base import BaseGeometry
 from apps.featureextraction.SOM.Component import Component
+from apps.featureextraction.UIFEs.aggregate_features_as_dataset_columns import *
+from apps.featureextraction.UIFEs.single_feature_extraction_techniques import *
+from apps.featureextraction.PostProcessing.postprocessing_techniques import *
+from apps.featureextraction.SOM.screen2som.hierarchy_constructor import labels_to_output
+from core.settings import SINGLE_FE_EXTRACTORS_FILEPATH, AGGREGATE_FE_EXTRACTORS_FILEPATH, POSTPROCESSING_TECHNIQUES_FILEPATH
+from .models import FeatureExtractionTechnique, Prefilters, Postfilters, UIElementsDetection, UIElementsClassification
+from django.shortcuts import get_object_or_404
 
-# #######################
-# CONFIG
-# #######################
+###########################################################################################################################
+# case study get phases data  ###########################################################################################
+###########################################################################################################################
+
+def get_prefilters(case_study):
+  return get_object_or_404(Prefilters, case_study=case_study, active=True)
+
+def get_ui_elements_detection(case_study):
+  return get_object_or_404(UIElementsDetection, case_study=case_study, active=True)
+
+def get_ui_elements_classification(case_study):
+  return get_object_or_404(UIElementsClassification, case_study=case_study, active=True)
+
+def get_postfilters(case_study):
+  return get_object_or_404(Postfilters, case_study=case_study, active=True)
+
+def get_feature_extraction_technique(case_study):
+  return get_object_or_404(FeatureExtractionTechnique, case_study=case_study, active=True)
+
+###########################################################################################################################
+# case study has phases data  ###########################################################################################
+###########################################################################################################################
+
+# def case_study_has_prefilters(case_study):
+#   return Prefilters.objects.filter(case_study=case_study, active=True).exists()
+
+# def case_study_has_ui_elements_detection(case_study):
+#   return UIElementsDetection.objects.filter(case_study=case_study, active=True).exists()
+
+# def case_study_has_ui_elements_classification(case_study):
+#   return UIElementsClassification.objects.filter(case_study=case_study, active=True).exists()
+
+# def case_study_has_postfilters(case_study):
+#   return Postfilters.objects.filter(case_study=case_study, active=True).exists()
+
+# def case_study_has_feature_extraction_technique(case_study):
+#   return FeatureExtractionTechnique.objects.filter(case_study=case_study, active=True).exists()
+
+
+###########################################################################################################################
+# Feature extraction techniques ###########################################################################################
+###########################################################################################################################
+
+def execution_has_feature_extraction_technique(execution, type="ANY"):
+    if type=="SINGLE":
+        res = execution.feature_extraction_technique and execution.feature_extraction_technique.type=="SINGLE"
+    elif type=="AGGREGATE":
+        res = execution.feature_extraction_technique and execution.feature_extraction_technique.type=="AGGREGATE"
+    else:
+        res = execution.feature_extraction_technique
+    return res
+
+def detect_single_fe_function(text):
+    '''
+    Selecting a function in the system by means of a keyword
+    args:
+        text: function to be detected
+    '''
+    # Search the function by key in the json
+    f = open(SINGLE_FE_EXTRACTORS_FILEPATH)
+    json_func = json.load(f)
+    return eval(json_func[text])
+
+def detect_agg_fe_function(text):
+    '''
+    Selecting a function in the system by means of a keyword
+    args:
+        text: function to be detected
+    '''
+    # Search the function by key in the json
+    f = open(AGGREGATE_FE_EXTRACTORS_FILEPATH)
+    json_func = json.load(f)
+    return eval(json_func[text])
+
+def detect_postprocessing_function(text):
+    '''
+    Selecting a function in the system by means of a keyword
+    args:
+        text: function to be detected
+    '''
+    # Search the function by key in the json
+    f = open(POSTPROCESSING_TECHNIQUES_FILEPATH)
+    json_func = json.load(f)
+    return eval(json_func[text])
+
+
+###########################################################################################################################
+# UIED CONFIG            ##################################################################################################
+###########################################################################################################################
 
 class Config:
 
@@ -26,9 +120,9 @@ class Config:
         self.THRESHOLD_TOP_BOTTOM_BAR = (0.045, 0.94)  # (36/800, 752/800) height ratio of top and bottom bar
         self.THRESHOLD_BLOCK_MIN_HEIGHT = 0.03  # 24/800
 
-# ########################
-# PREPROCESSING
-# ########################    
+###########################################################################################################################
+# PREPROCESSING          ##################################################################################################
+########################################################################################################################### 
 def read_img(path, resize_height=None, kernel_size=None):
 
     def resize_by_height(org):
@@ -100,7 +194,7 @@ def compos_update(compos, org_shape):
 # FILE
 # #######################
 
-def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_classname):
+def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_classname, applied_ocr):
     img_shape = compos[0].image_shape
     output = {'img_shape': img_shape, 'compos': []}
     f_out = open(file_path, 'w')
@@ -112,27 +206,28 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
     words = {}
     words[img_index] = {}
 
-    for j in range(0, len(texto_detectado_ocr[img_index])):
-        coordenada_y = []
-        coordenada_x = []
+    if applied_ocr:
+        for j in range(0, len(texto_detectado_ocr[img_index])):
+            coordenada_y = []
+            coordenada_x = []
 
-        for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
-            coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
-            coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
+            for i in range(0, len(texto_detectado_ocr[img_index][j][1])):
+                coordenada_y.append(texto_detectado_ocr[img_index][j][1][i][1])
+                coordenada_x.append(texto_detectado_ocr[img_index][j][1][i][0])
 
-        word = texto_detectado_ocr[img_index][j][0]
-        centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
-        if word in words[img_index]:
-            words[img_index][word] += [centroid]
-        else:
-            words[img_index][word] = [centroid]
+            word = texto_detectado_ocr[img_index][j][0]
+            centroid = (np.mean(coordenada_x), np.mean(coordenada_y))
+            if word in words[img_index]:
+                words[img_index][word] += [centroid]
+            else:
+                words[img_index][word] = [centroid]
 
-        global_y.append(coordenada_y)
-        global_x.append(coordenada_x)
-        # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
-        # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
+            global_y.append(coordenada_y)
+            global_x.append(coordenada_x)
+            # print('Coord y, cuadro texto ' +str(j+1)+ str(global_y[j]))
+            # print('Coord x, cuadro texto ' +str(j+1)+ str(global_x[j]))
 
-    print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index])))
+    print("Number of text boxes detected (iteration " + str(img_index) + "): " + str(len(texto_detectado_ocr[img_index]) if applied_ocr else 0))
 
     # Interval calculation of the text boxes
     intervalo_y = []
@@ -146,12 +241,18 @@ def save_corners_json(file_path, compos, img_index, texto_detectado_ocr, text_cl
         text = [word for word in words[img_index] if len([coord for coord in words[img_index][word] if x <= coord[0] <= w and y <= coord[1] <= h]) > 0]
         is_text = True if len(text)>0 else False
         c = {'id': compo.id, 'class': compo.category}
-        c[text_classname] = str(' '.join(text)) if is_text else None
-        (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
-        c['width'] = compo.width
-        c['height'] = compo.height
+        c["text"] = str(' '.join(text)) if is_text else ""
+        c["points"] = [(x, y), (w, y), (w, h), (x, h)]
+        c["centroid"] = ((x + w) / 2, (y + h) / 2)
+        c["xpath"] = []
+        c["relevant"] = True
+        # (c['column_min'], c['row_min'], c['column_max'], c['row_max']) = (x, y, w, h)
+        # c['width'] = compo.width
+        # c['height'] = compo.height
         c['contain'] = [contain_compo.id for contain_compo in compo.contain]
         output['compos'].append(c)
+    
+    output = labels_to_output(copy.deepcopy(output), text_classname)
 
     json.dump(output, f_out, indent=4)
 
@@ -471,19 +572,19 @@ def scale_coordinates(coord, src_resolution, dest_resolution):
 
 
 def draw_ui_compos_borders(exp_path):
-    root_path = exp_path + sep + "components_json" + sep
+    root_path = os.path.join(exp_path + "_results", "components_json")
     arr = os.listdir(root_path)
 
-    if not os.path.exists(exp_path + sep + "compo_json_borders"):
-        os.mkdir(exp_path + sep + "compo_json_borders")
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
     
     for compo_json_filename in arr:
-        with open(root_path + compo_json_filename, 'r') as f:
+        with open(os.path.join(root_path, compo_json_filename), 'r') as f:
             print(compo_json_filename)
             compo_json = json.load(f)
             
         # Load image
-        image = cv2.imread(exp_path + sep + compo_json_filename[:19])
+        image = cv2.imread(os.path.join(exp_path, compo_json_filename[:19]))
         
         for compo in compo_json["compos"]:
             # Extract component properties
@@ -518,12 +619,12 @@ def draw_ui_compos_borders(exp_path):
 
             
         # Save the image with component borders
-        output_path = exp_path + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        output_path = os.path.join(exp_path + "_results", "compo_json_borders", compo_json_filename[:19])  # Replace with your desired output file path
         cv2.imwrite(output_path, image)
         image = None
 
 
-        with open(root_path + compo_json_filename, "w") as outfile:
+        with open(os.path.join(root_path, compo_json_filename), "w") as outfile:
             json.dump(compo_json, outfile, indent=4)
             
 def get_geometry_list_points(coords, geometry):
@@ -564,3 +665,33 @@ def draw_geometry_over_image(background_image_path, circles, rectangles, output_
 
     # Save the result image
     result_image_rgb.save(output_image_path)
+
+
+##########################################################################
+##    FEATURE EXTRACTION    ##############################################
+##########################################################################
+
+def get_compo_from_xpath(path_scenario: str, img_name: str, xpath: list[str]) -> dict | None:
+    """
+    This function returns the solicitated detected component from the som given an xpath
+
+    params:
+        path_scenario: path to the scenario
+        img_name: name of the image
+        xpath: xpath to the component
+
+    return:
+        json with the component information
+    """
+    som = json.load(open(os.path.join(path_scenario, img_name + ".json")))
+    
+    # Matching compo does not contain information about the children
+    matching_compos = list(filter(lambda x: x["xpath"]==xpath, som["compos"]))
+
+    match(len(matching_compos)):
+        case 0:
+            return None
+        case 1:
+            return matching_compos[0]
+        case _:
+            raise Exception(f"More than one component with the same xpath in img {img_name}, scenario {path_scenario}, xpath {xpath}")

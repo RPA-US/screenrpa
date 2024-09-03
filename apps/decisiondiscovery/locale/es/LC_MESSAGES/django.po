@@ -1,0 +1,110 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-30 11:17+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/decisiondiscovery/forms.py:25
+msgid "Title"
+msgstr "Título "
+
+#: apps/decisiondiscovery/forms.py:26 apps/decisiondiscovery/forms.py:28
+#: apps/decisiondiscovery/forms.py:86
+msgid "Columns to drop before decision point"
+msgstr "Columnas a eliminar antes del punto de decisión "
+
+#: apps/decisiondiscovery/forms.py:27
+msgid "Additional Configurations (JSON)"
+msgstr "Configuración adiccional (JSON)"
+
+#: apps/decisiondiscovery/forms.py:83
+msgid "Library"
+msgstr "Librería"
+
+#: apps/decisiondiscovery/forms.py:84
+msgid "Configuration"
+msgstr "Configuración"
+
+#: apps/decisiondiscovery/forms.py:85
+msgid "One hot columns"
+msgstr "Columnas one hot"
+
+#: apps/decisiondiscovery/views.py:182
+msgid "Decision model chosen is not an option"
+msgstr "El modelo de decisión elegido no es una opción"
+
+#~ msgid "Decision Point To Study"
+#~ msgstr "Punto de Decisión a Estudiar "
+
+#~ msgid "Target label"
+#~ msgstr "Clase objetivo"
+
+#~ msgid "Variant"
+#~ msgstr "Variante"
+
+#~ msgid "The identifier does not follow the pattern"
+#~ msgstr "El identificador no sigue el patrón"
+
+#~ msgid "User must be authenticated."
+#~ msgstr "El usuario debe estar autenticado."
+
+#~ msgid "Case Study doesn't belong to the authenticated user."
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid ""
+#~ "Extracting_training_dataset doesn't belong to the authenticated user."
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Extracting_training_dataset doesn't belong to the Case Study."
+#~ msgstr "Esta configuracion no pertenece al caso de estudio"
+
+#~ msgid "Decision Tree Training doesn't belong to the authenticated user."
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Decision Tree Training doesn't belong to the Case Study."
+#~ msgstr "Esta configuracion no pertenece al caso de estudio"
+
+#~ msgid "This object doesn't belong to the authenticated user"
+#~ msgstr "Este objeto no pertenece al usuario autenticado"
+
+#~ msgid "Grid Search Best Params:\n"
+#~ msgstr "Mejores parámetros de búsqueda en cuadrícula:\n"
+
+#~ msgid "Fold %(i):"
+#~ msgstr "Iteración %(i):"
+
+#~ msgid "  Train: index=%(train_index)"
+#~ msgstr "  Entrenamiento: índice=%(train_index)"
+
+#~ msgid "  Test:  index=%(test_index)"
+#~ msgstr "  Prueba:  índice=%(test_index)"
+
+#~ msgid "Decision Model Option Not Valid"
+#~ msgstr "Opción de modelo de decisión no válida"
+
+#~ msgid "  Stratified K-Fold:  accuracy=%(acc) f1_score=%(f1) "
+#~ msgstr "  K-Fold Estratificado:  precisión=%(acc) puntaje_f1=%(f1) "
+
+#~ msgid ""
+#~ "To be able to apply decision tree training, a extract training dataset "
+#~ "has to exist"
+#~ msgstr ""
+#~ "Para poder aplicar el entrenamiento del árbol de decisiones, tiene que "
+#~ "existir un conjunto de datos de entrenamiento extraído"
+
+#~ msgid "Columns to drop"
+#~ msgstr "Columnas a eliminar"

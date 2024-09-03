@@ -1,41 +1,54 @@
+import re
 import pandas as pd
 import json
+import os
 from numpyencoder import NumpyEncoder
 
-def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column_name, activity_column_name, timestamp_column_name, 
-                          decision_point_activity, actions_columns):
+from apps.decisiondiscovery.utils import find_prev_act
+from apps.processdiscovery.utils import extract_prev_act_labels, Process
+
+
+
+def flat_dataset_row(log, columns, path_dataset_saved, special_colnames, 
+                          actions_columns, process_discovery):
     """
     This function convert the log into a dataset, that is, to flat all the existing events over the same case,
     resulting on a single row per case. For this flattening only those events relative to the activities previous
     to the one indicated in decision_point_activity are taken in account. The names of the activities colums are concatinated
     with their activity id, for example, timestamp_A, timestamp_B, etc.
-    :param log_dict: dict which keys correspond to the identification of each case and which values are the activies asociated to said case, along with their information
-    :type log_dict: dict
-    :param columns: Names of the dataset colums wanted to be stored for each activity
-    :type columns: list
-    :param target_label: name of the column where classification target label is stored
-    :type target_label: str
-    :param path_dataset_saved: path where files that results from the flattening are stored
-    :type path_dataset_saved: str
-    :param case_column_name: name of the column where case is stored
-    :type case_column_name: str
-    :param activity_column_name: name of the column where activity is stored
-    :type activity_column_name: str
-    :param timestamp_column_name: name of the column where timestamp is stored
-    :type timestamp_column_name: str
-    :param decision_point_activity: id of the activity inmediatly previous to the decision point which "why" wants to be discovered
-    :type decision_point_activity: str
-    :param actions_columns: list that contains column names that wont be added to the event information just before the decision point
-    :type actions_columns: list
-    :returns: Dataset
-    :rtype: DataFrame
-    """
-    cases = log.loc[:, case_column_name].values.tolist()
 
-    last_case = cases[0]
-    before_DP = True
-    log_dict = {}
-    for index, c in enumerate(cases, start=0):
+    """
+    case_column_name = special_colnames["Case"]
+    activity_column_name = special_colnames["Activity"]
+    timestamp_column_name = special_colnames["Timestamp"]
+    variant_colname = special_colnames["Variant"]
+    cases = log.loc[:, case_column_name].values.tolist()
+    #activities_before_dps = process_discovery.activities_before_dps
+
+    try:
+        json_traceability = json.load(open(os.path.join(path_dataset_saved, "traceability.json")))
+        process_tracebility = Process.from_json(json_traceability)
+    except:
+        raise Exception("Tracebility.json not found durring dataset flattening")
+    
+    decision_points = process_tracebility.get_non_empty_dp_flattened()
+    # activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
+    activities_before_dps = list(map(lambda dp: (dp.prevAct, dp.id), decision_points))
+
+    if not activities_before_dps or len(activities_before_dps) == 0:
+        raise ValueError("The activities_before_dps list is empty. Please, provide a valid list of activities before the decision point or check the process model discovered.")
+    
+    for i, (act, dp) in enumerate(activities_before_dps):
+        last_case = cases[0]
+        before_DP = True
+        log_dict = {}
+        current_post_dps = list(map(lambda dp: dp.id, decision_points[i:]))
+
+        # If the previous activity is the start event, there are no features to base ourselves on
+        if act == "start":
+            before_DP = False
+
+        for index, c  in enumerate(cases):
             activity = log.at[index, activity_column_name]
 
             # Set the timestamp for the last event associated to the case
@@ -48,25 +61,58 @@ def flat_dataset_row(log, columns, target_label, path_dataset_saved, case_column
                     last_case = c
                     log_dict[c] = {
                             "Timestamp_start": log.at[index, timestamp_column_name],
-                            target_label: log.at[index, target_label]
+                            variant_colname: log.at[index, variant_colname]
                         }
-                if activity != decision_point_activity:
-                    for h in columns:
-                        log_dict[c][h+"_"+activity] = log.at[index, h]
-                else:
-                    for h in columns:
-                        if h not in actions_columns:
-                            log_dict[c][h+"_"+activity] = log.at[index, h]
+                if str(act) == str(activity):
+                    for feat in columns:
+                        if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
+                        and feat not in current_post_dps:
+                            log_dict[c][feat] = log.at[index, feat]
+                        elif feat not in actions_columns \
+                        and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
+                            log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
                     before_DP = False
-    
-    log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
+                else:
+                    for feat in columns:
+                        if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
+                        and feat not in current_post_dps:
+                            log_dict[c][feat] = log.at[index, feat]
+                        elif feat not in actions_columns \
+                        and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
+                            log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
+
+            # Extraer el valor único para cada columna que sigue el patrón especificado y añadirlo al diccionario
+            for col in log.columns:
+                if "id" in col and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', col):
+                    if col == dp:
+                        branch = log.at[index, col]
+                        #unique_value = log[col,c].unique()[0]  # Suponiendo que hay un único valor
+                        prev_act = find_prev_act(os.path.join(path_dataset_saved, "traceability.json"), col)
+                        if prev_act == act:
+                            log_dict[c]["dp_branch"] = branch
+
+        log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
         
+        # Serializing json
+        json_object = json.dumps(log_dict, cls=NumpyEncoder, indent=4)
 
-    # Serializing json
-    json_object = json.dumps(log_dict, cls=NumpyEncoder, indent=4)
-
-    # Writing to one_row_per_case.json
-    with open(path_dataset_saved + "flattened_dataset.json", "w") as outfile:
-        outfile.write(json_object)
+        # Writing to one_row_per_case.json
+        if os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}.csv")):
+            i = 1
+            while True:
+                if not os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")):
+                    aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")
+                    with open(aux_path+".json", "w") as outfile:
+                        outfile.write(json_object)
+                    flattened_dataset = pd.read_json(aux_path+".json", orient ='index')
+                    flattened_dataset.to_csv(aux_path + ".csv", index=False)
+                    break
+                i += 1
+        else:
+            aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}")
+            with open(aux_path+".json", "w") as outfile:
+                outfile.write(json_object)
+            flattened_dataset = pd.read_json(aux_path+".json", orient ='index')
+            flattened_dataset.to_csv(aux_path + ".csv", index=False)
 
     return log_dict

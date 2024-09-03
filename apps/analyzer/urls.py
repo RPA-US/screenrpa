@@ -24,4 +24,10 @@ urlpatterns = [
     path('<int:case_study_id>', views.SpecificCaseStudyView.as_view(), name='get-case-study'),
     path('<int:case_study_id>/result', views.ResultCaseStudyView.as_view(), name='get-case-study-result'),
     re_path('^private-data/', include(private_storage.urls)),
+    # Executions
+    path('execution/list/', views.ExecutionListView.as_view(), name='execution_list'),
+    path('execution/delete/', views.deleteExecution, name='execution_delete'),
+    path('execution/detail/<int:execution_id>/', views.ExecutionDetailView.as_view(), name='execution_detail'),
+    path('execution/files/download/<int:execution_id>/', views.exec_file_download, name='results_download'),
 ]
+

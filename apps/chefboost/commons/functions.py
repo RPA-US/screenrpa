@@ -5,6 +5,7 @@ import os
 from os import path
 import multiprocessing
 from apps.chefboost import Chefboost as cb
+from django.utils.translation import gettext_lazy as _
 
 def bulk_prediction(df, model):
 
@@ -73,7 +74,7 @@ def initializeFolders():
 				if ".py" in file or ".json" in file or ".txt" in file or ".pkl" in file or ".csv" in file:
 					os.remove(outputs_path+"rules"+os.path.sep+file)
 	except Exception as err:
-		print("WARNING: ", str(err))
+		print(_("WARNING: "), str(err))
 
 	#------------------------------------
 

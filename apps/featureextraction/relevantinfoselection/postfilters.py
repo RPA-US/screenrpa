@@ -10,8 +10,10 @@ from tqdm import tqdm
 from shapely.ops import unary_union
 from shapely.geometry import Point, Polygon, box
 from core.utils import read_ui_log_as_dataframe
-from core.settings import platform_name, info_postfiltering_phase_name, sep
+from core.settings import PLATFORM_NAME, INFO_POSTFILTERING_PHASE_NAME, sep
 from apps.featureextraction.utils import draw_geometry_over_image
+from django.utils.translation import gettext_lazy as _
+
 
 def calculate_intersection_area_v1(rect_x, rect_y, rect_width, rect_height, circle_x, circle_y, circle_radius):
     # Calcular las coordenadas del rectángulo y el círculo
@@ -129,170 +131,175 @@ def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_p
     return res
 
 
-def gaze_filtering(log_path, root_path, special_colnames, configurations, key):
+# def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, !!!!intersection_area_thresh, consider_nested_as_relevant):
+def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, consider_nested_as_relevant):
     """
-    This function remove from 'screenshot000X.JPG' the compos that do not receive attention by the user (there's no fixation point that matches compo area)
-    """
-    ui_log = read_ui_log_as_dataframe(log_path) 
-    # fixation.json -> previous, screenshot001, screenshot002, screenshot003, ... , subsequent
-    with open(root_path + 'fixation.json', 'r') as f:
-        fixation_json = json.load(f)
+    This function removes from 'screenshot000X.JPG' the components that do not receive attention by the user 
+    (there's no fixation point that matches component area)
     
-    for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
-        # screenshot.json -> compos: [
-        #     "column_min": 0,
-        #     "row_min": 5,
-        #     "column_max": 5,
-        #     "row_max": 24,
-        # ]
+    Parameters:
+    log_path (str): Path to the log file
+    path_scenario (str): Path to the scenario
+    special_colnames (dict): Dictionary of special column names
+    scale_factor (int): Scale factor for the fixation dispersion
+    ui_selector (str): UI Components selector
+    intersection_area_thresh (float): Threshold for the intersection area
+    consider_nested_as_relevant (bool): Flag to consider nested components as relevant   
+    Returns:
+    None
+    """
+
+    # Read the UI log as a dataframe
+    ui_log = read_ui_log_as_dataframe(log_path)
+    
+    # Define the path for the scenario results
+    scenario_results_path = path_scenario + '_results'
+    print("UI Element Detection Path Results: "+scenario_results_path)
+    
+    # Open the fixation.json file and load its content
+    with open(os.path.join(path_scenario , 'fixation.json'), 'r') as f:
+        fixation_json = json.load(f)
         
-        with open(root_path + "components_json" + sep + screenshot_filename + '.json', 'r') as f:
+    # Iterate over each screenshot filename in the UI log
+    for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
+        
+        # If the screenshot filename is not in the fixation.json keys, skip this iteration
+        if screenshot_filename not in fixation_json.keys() or fixation_json[screenshot_filename] == {}:
+            continue
+        
+        # Open the corresponding screenshot.json file and load its content
+        with open(os.path.join(scenario_results_path,"components_json", screenshot_filename +'.json'), 'r') as f:
             screenshot_json = json.load(f)
         
-        if configurations[key]["predicate"] == "is_component_relevant":
-            polygon_circles = []
-            polygon_rectangles = []
-            for fixation_point in fixation_json[screenshot_filename]["fixation_points"]:
-                fixation_coordinates = fixation_point.split("#")
-                fixation_obj = fixation_json[screenshot_filename]["fixation_points"][fixation_point]
-                fixation_point_x = float(fixation_coordinates[0])
-                fixation_point_y = float(fixation_coordinates[1])     
-                centre = Point(fixation_point_x, fixation_point_y)
-                radio = fixation_obj["dispersion"] * float(configurations[key]["scale_factor"])
-                if not pd.isna(radio):
-                    polygon_circle = centre.buffer(radio)
-                    polygon_circles.append(polygon_circle)
-
-                fixation_mask = unary_union(polygon_circles)
-          
-            for compo in screenshot_json["compos"]:
-                compo["relevant"] = "NaN"
-                # compo matches UI selector
-                if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
-                    (screenshot_filename in fixation_json): # screenshot has fixation
-                        
-                    x_min = compo['row_min']
-                    y_min = compo['column_min']
-                    x_max = compo['row_max']
-                    y_max = compo['column_max']
-                    
-                    polygon_rect = box(x_min, y_min, x_max, y_max)
-                    intersection = polygon_rect.intersection(fixation_mask)
-
-                    compo["intersection_area"] = intersection.area
-                    
-                    if polygon_rect.area > 0 and (intersection.area / polygon_rect.area) > float(configurations[key]["intersection_area_thresh"]):
-                        nested = bool(configurations[key]["only_leaf"])
-                        if nested and (len(compo["contain"]) > 0 or compo["label"] == "UIGroup"):
-                            compo["relevant"] = "Nested"
-                            if configurations[key]["consider_nested_as_relevant"] == "True":
-                                polygon_rectangles.append(polygon_rect)
-                        else:
-                            compo["relevant"] = "True"
-                            polygon_rectangles.append(polygon_rect)
-                            
-                    else:
-                        compo["relevant"] = "False"
-                                    
-                else:
-                    compo["relevant"] = "False"
-                    
-            if configurations[key]["mode"] == "draw":
-                if not os.path.exists(root_path + "postfilter_attention_maps" + sep):
-                    os.makedirs(root_path + "postfilter_attention_maps" + sep)
-                draw_geometry_over_image(root_path + screenshot_filename, polygon_circles, polygon_rectangles, root_path + "postfilter_attention_maps" + sep + screenshot_filename)
+        polygon_circles = []
+        polygon_rectangles = []
             
-        else:
-            for compo in screenshot_json["compos"]:
-                compo["relevant"] = "NaN"
-                # compo matches UI selector
-                if (configurations[key]["UI_selector"] == "all" or (compo["category"] in configurations[key]["UI_selector"])) and + \
-                    (screenshot_filename in fixation_json): # screenshot has fixation
-                        
-                    last_intersection_area = 0
-                    previous_coincident_areas = []
-                    polygons = []
+            # Iterate over each fixation point in the fixation.json file for the current screenshot
+        for fixation_point in fixation_json[screenshot_filename]["fixation_points"]:
+                # Split the fixation point into coordinates and load the corresponding fixation object
+            fixation_coordinates = fixation_point.split("#")
+            fixation_obj = fixation_json[screenshot_filename]["fixation_points"][fixation_point]
+            fixation_point_x = float(fixation_coordinates[0])
+            fixation_point_y = float(fixation_coordinates[1])     
+                
+            # Create a circle polygon around the fixation point with a radius based on the dispersion and scale factor
+            centre = Point(fixation_point_x, fixation_point_y)
+            #El radio relevante es el radio de la dispersion del punto de fijación multiplicado por el factor de escala
+            #El scale_factor es un valor que si puede ser modificable por el usuario.
+            radio = float(fixation_obj["imotions_dispersion"]) * (500 * float(scale_factor))
+            if not pd.isna(radio):
+                polygon_circle = centre.buffer(radio)
+                polygon_circles.append(polygon_circle)
+
+            # Create a union of all the circle polygons
+            #The fixation mask is created by taking the union of all the fixation circles
+            fixation_mask = unary_union(polygon_circles)
+          
+        # Iterate over each component in the screenshot.json file
+        for compo in screenshot_json["compos"]:
+            # Initialize the "relevant" field of the component as "NaN"
+            compo["relevant"] = "NaN"
+
+            # If the component matches the UI selector and the screenshot has fixation, execute the following code
+            if (screenshot_filename in fixation_json): 
+                                      
+                # Create a polygon from the component points
+                points = compo['points']
+                polygon = Polygon(points)
                     
-                    for fixation_point in fixation_json[screenshot_filename]["fixation_points"]:
-                        fixation_coordinates = fixation_point.split("#")
-                        fixation_obj = fixation_json[screenshot_filename]["fixation_points"][fixation_point]
-                        fixation_point_x = float(fixation_coordinates[0])
-                        fixation_point_y = float(fixation_coordinates[1])                    
-                        # predicate: "(compo['row_min'] <= fixation_point_x) and (fixation_point_x <= compo['row_max']) and (compo['column_min'] <= fixation_point_y) and (fixation_point_y <= compo['column_max'])"
-                        # predicate: is_component_relevant_option2(compo, fixation_obj, fixation_point_x, fixation_point_y)
+                # Calculate the intersection of the component polygon with the fixation mask
+                intersection = polygon.intersection(fixation_mask)
+                compo["intersection_area"] = intersection.area
 
-                        if compo["relevant"] == "True" or compo["relevant"] == "Nested":
-                            pass
-                        else:
-                            cond = eval(configurations[key]["predicate"])
+                # If the instersection area correspond to more than the threshold percentage of the component area, mark the component as relevant
+                # if polygon.area > 0 and (intersection.area / polygon.area) > float(intersection_area_thresh):
+                if polygon.area > 0 and (intersection.area / polygon.area) > 0:
+                    consider_nodes = consider_nested_as_relevant
+                    if consider_nodes and compo["type"] == "node":
+                         # compo["relevant"] = "Nested"
+                        compo["relevant"] = True
+                        polygon_rectangles.append(polygon)
+                    elif compo["type"] == "leaf":
+                        compo["relevant"] = True
+                        polygon_rectangles.append(polygon)
+                    else:
+                        compo["relevant"] = False
                             
-                            if cond:
-                                nested = bool(configurations[key]["only_leaf"])
-                                if nested and (len(compo["contain"]) > 0):
-                                    compo["relevant"] = "Nested"
-                                else:
-                                    compo["relevant"] = "True"
-                            else:
-                                compo["relevant"] = "False"
-                                
-                    if configurations[key]["mode"] == "draw":
-                        if not os.path.exists(root_path + "postfilter_attention_maps/"):
-                            os.makedirs(root_path + "postfilter_attention_maps/")
-                        draw_geometry_over_image(root_path + screenshot_filename, polygons, root_path + "postfilter_attention_maps/" + screenshot_filename)
-                        
                 else:
-                    compo["relevant"] = "False"
-
-        with open(root_path + "components_json" + sep + screenshot_filename + '.json', "w") as jsonFile:
-            json.dump(screenshot_json, jsonFile, indent=4)
-    print("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
-    logging.info("apps/featureextraction/postfilters.py Postfilter '" + key + "' finished!!")
-
-def apply_filters(log_path, root_path, special_colnames, configurations):
-    times = {}
-    for key in tqdm(configurations, desc="Postfilters have been processed: "):
-        # ui_selector = configurations["key"]["UI_selector"]
-        # predicate = configurations["key"]["predicate"]
-        # remove_nested = configurations["key"]["remove_nested"]
-        s = "and applied!"
-        start_t = time.time()
-        match key:
-            case "gaze":
-                gaze_filtering(log_path, root_path, special_colnames, configurations, "gaze")
-            case _:
-                s = "but not executed. It's not one of the possible filters to apply!"
-                pass
+                    compo["relevant"] = False
+                                    
+            else:
+                compo["relevant"] = False
+            # If the mode in the configurations is "draw", draw the polygons over the image        
         
-        print("Filter '" + key + "' detected " + s)
-        logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
-        times[key] = {"duration": float(time.time()) - float(start_t)}
+        if not os.path.exists(os.path.join(scenario_results_path ,"postfilter_attention_maps")):
+            os.makedirs(os.path.join(scenario_results_path ,"postfilter_attention_maps"))
+        # draw_geometry_over_image(os.path.join(path_scenario,screenshot_filename), polygon_circles, polygon_rectangles, os.path.join(scenario_results_path ,"postfilter_attention_maps",screenshot_filename))
+        draw_geometry_over_image(os.path.join(scenario_results_path,'borders',screenshot_filename+'_bordered.png'), polygon_circles, polygon_rectangles, os.path.join(scenario_results_path ,"postfilter_attention_maps",screenshot_filename))
+            
+        
+        # Save the updated screenshot.json file
+        with open(os.path.join(scenario_results_path , "components_json" , screenshot_filename + '.json'), "w") as jsonFile:
+            json.dump(screenshot_json, jsonFile, indent=4)
+   # Print and log the completion of the postfilter
+    print("apps/featureextraction/postfilters.py Postfilter finished!!")
+    logging.info("apps/featureextraction/postfilters.py Postfilter finished!!")
+
+def apply_filters(log_path, path_scenario, execution):
+    
+    special_colnames = execution.case_study.special_colnames
+    scale_factor = execution.postfilters.scale_factor
+    # intersection_area_thresh = execution.postfilters.intersection_area_thresh
+    consider_nested_as_relevant = execution.postfilters.consider_nested_as_relevant 
+    times = {}
+    # for key in tqdm(configurations, desc="Postfilters have been processed: "):
+    #     # ui_selector = configurations["key"]["UI_selector"]
+    #     # predicate = configurations["key"]["predicate"]
+    #     # remove_nested = configurations["key"]["remove_nested"]
+    #     s = "and applied!"
+    #     start_t = time.time()
+    #     match key:
+    #         case "gaze":
+    #             gaze_filtering(log_path, path_scenario, special_colnames, configurations, "gaze")
+    #         case _:
+    #             s = "but not executed. It's not one of the possible filters to apply!"
+    #             pass
+        
+    #     print("Filter '" + key + "' detected " + s)
+    #     logging.info("apps/featureextraction/filters.py Filter '" + key + "' detected " + s)
+    #     times[key] = {"duration": float(time.time()) - float(start_t)}
+    print("Postfiltering phase started...")
+    start_t = time.time()
+    # gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,!!!intersection_area_thresh,consider_nested_as_relevant)
+    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,consider_nested_as_relevant)
+    print("Postfiltering phase finished satisfactory!")
+    times["postfiltering"] = {"duration": float(time.time()) - float(start_t)}
 
     return times
 
-def info_postfiltering(*data):
-    data_list = list(data)
-    filters_format_type = data_list.pop()
-    skip = data_list.pop()
-    data = tuple(data_list)
+def postfilters(log_path, path_scenario, execution):
+    skip = execution.postfilters.preloaded
+    
     if not skip:  
-        tprint(platform_name + " - " + info_postfiltering_phase_name, "fancy60")
+        tprint(PLATFORM_NAME + " - " + INFO_POSTFILTERING_PHASE_NAME, "fancy60")
         
-        match filters_format_type:
-            case "rpa-us":
-                output = apply_filters(*data)
-            case _:
-                raise Exception("You select a type of filter that doesnt exists")
+        # match filters_format_type:
+        #     case "rpa-us":
+        #         output = apply_filters(log_path, path_scenario, execution)
+        output = apply_filters(log_path, path_scenario, execution)
+        #     case _:
+        #         raise Exception(_("You select a type of filter that doesnt exists"))
     else:
-        logging.info("Phase " + info_postfiltering_phase_name + " skipped!")
-        output = "Phase " + info_postfiltering_phase_name + " skipped!"
+        logging.info("Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!")
+        output = "Phase " + INFO_POSTFILTERING_PHASE_NAME + " skipped!"
     return output
 
 def draw_postfilter_relevant_ui_compos_borders(exp_path):
-    root_path = exp_path + sep + "components_json" + sep
+    root_path = os.path.join(exp_path + "_results" , "components_json")
     arr = os.listdir(root_path)
 
-    if not os.path.exists(exp_path + sep + "compo_json_borders"):
-        os.mkdir(exp_path + sep + "compo_json_borders")
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
     
     for compo_json_filename in arr:
         with open(root_path + compo_json_filename, 'r') as f:
@@ -300,11 +307,11 @@ def draw_postfilter_relevant_ui_compos_borders(exp_path):
             compo_json = json.load(f)
             
         # Load image
-        image = cv2.imread(exp_path + sep + compo_json_filename[:19])
+        image = cv2.imread(os.path.join(exp_path) ,compo_json_filename[:19])
         
         
         for compo in compo_json["compos"]:
-            if ("relevant" in compo) and compo["relevant"] == "True":
+            if ("relevant" in compo) and compo["relevant"] == True:
                 # Extract component properties
                 column_min = int(compo['column_min'])
                 row_min = int(compo['row_min'])
@@ -325,10 +332,10 @@ def draw_postfilter_relevant_ui_compos_borders(exp_path):
 
             
         # Save the image with component borders
-        output_path = exp_path + sep + "compo_json_borders" + sep + compo_json_filename[:19]  # Replace with your desired output file path
+        output_path =os.path.join(exp_path+" _results", "compo_json_borders",compo_json_filename[:19])  # Replace with your desired output file path
         cv2.imwrite(output_path, image)
         image = None
 
 
-        with open(root_path + compo_json_filename, "w") as outfile:
+        with open(os.path.join(root_path , compo_json_filename), "w") as outfile:
             json.dump(compo_json, outfile, indent=4)

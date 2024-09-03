@@ -1,4 +1,5 @@
 import numpy as np
+from .screen2som.hierarchy_constructor import *
 
 class UiComponent:
     def __init__(self,id,area,bbox_list,category='UI_Element', contain=[]):
@@ -17,6 +18,10 @@ class UiComponent:
         self.crop_box=crop_box
         self.image_shape=image_shape
 
+    @property
+    def points(self):
+        x,y,w,h = self.bbox
+        return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]]
 
     def put_bbox(self):
         x,y,w,h = self.bbox
@@ -45,16 +50,27 @@ class UiComponent:
 
         
     def to_dict(self):
+        # Old format
+        # return {
+        #     'id':self.id,
+        #     'image_shape':self.image_shape,
+        #     'area':self.area,
+        #     'bbox':self.bbox,
+        #     'bbox_area':self.bbox_area,
+        #     'category':self.category,
+        #     'contain':self.contain
+        # }
         return {
             'id':self.id,
-            'image_shape':self.image_shape,
             'area':self.area,
-            'bbox':self.bbox,
-            'bbox_area':self.bbox_area,
-            'category':self.category,
-            'contain':self.contain
+            'class': "Compo",
+            "text": "",
+            'points':self.points,
+            'centroid': [self.bbox[0]+self.bbox[2]/2,self.bbox[1]+self.bbox[3]/2],
+            'xpath': [],
+            "relevant": True,
         }
-    
+
     def compo_clipping(self, img, pad=0, show=False):
         column_min, row_min, column_max, row_max = self.put_bbox()
         column_min = max(column_min - pad, 0)
@@ -160,3 +176,15 @@ class UiComponent:
             return 2
         # if iou == 0:
         return 0
+
+    @staticmethod
+    def to_som(img_shape, compos):
+        """
+        Create SOM from a list of UI components
+        """
+        compos = list(map(lambda x: x.to_dict(), compos))
+        res = {
+            "img_shape": img_shape,
+            "compos": compos
+        }
+        return labels_to_output(res)

@@ -10,6 +10,7 @@ import sys
 import environ
 from django.core.management.utils import get_random_secret_key
 import logging.config
+from django.utils.translation import gettext_lazy as _
 
 #===================================================================================================
 #===================================================================================================
@@ -25,33 +26,44 @@ DB_PORT =                       env('DB_PORT')
 DB_USER =                       env('DB_USER')
 DB_PASSWORD =                   env('DB_PASSWORD')
 API_VERSION =                   env('API_VERSION')
-active_celery =                 config('DISABLE_MULTITHREADING', default=False, cast=bool)
-scenario_nested_folder =        config('SCENARIO_NESTED_FOLDER', default=False, cast=bool)
-metadata_location =             env('METADATA_PATH')
-fixation_duration_threshold =   int(env('FIXATION_DURATION_THRESHOLD')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
-cropping_threshold =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
-gui_quantity_difference =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
-flattened_dataset_name =        env('FLATTENED_DATASET_NAME')
-several_iterations =            int(env('DECISION_TREE_TRAINING_ITERATIONS'))
-decision_foldername =           env('DECISION_TREE_TRAINING_FOLDERNAME')
-plot_decision_trees =           config('PLOT_DECISION_TREES', default=False, cast=bool)
+ACTIVE_CELERY =                 config('DISABLE_MULTITHREADING', default=False, cast=bool)
+SCENARIO_NESTED_FOLDER =        config('SCENARIO_NESTED_FOLDER', default=False, cast=bool)
+METADATA_LOCATION =             env('METADATA_PATH')
+FIXATION_DURATION_THRESHOLD =   int(env('FIXATION_DURATION_THRESHOLD')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
+CROPPING_THRESHOLD =            int(env('GUI_COMPONENTS_DETECTION_CROPPING_THRESHOLD')) # umbral en el solapamiento de contornos de los gui components al recortarlos
+GUI_QUANTITY_DIFFERENCE =       int(env('GUI_QUANTITY_DIFFERENCE')) # minimum time units user must spend staring at a gui component to take this gui component as a feature from the screenshot
+FLATTENED_DATASET_NAME =        env('FLATTENED_DATASET_NAME')
+SEVERAL_ITERATIONS =            int(env('DECISION_TREE_TRAINING_ITERATIONS'))
+DECISION_FOLDERNAME =           env('DECISION_TREE_TRAINING_FOLDERNAME')
+PLOT_DECISION_TREES =           config('PLOT_DECISION_TREES', default=False, cast=bool)
 
 # Framework Phases names
-platform_name =                         "SCREEN RPA"
-monitoring_phase_name =                 "monitoring"
-info_prefiltering_phase_name =          "preselection"
-detection_phase_name =                  "detection"
-classification_phase_name =             "classification"
-info_postfiltering_phase_name =             "selection"
-feature_extraction_phase_name =         "feature extraction"
-flattening_phase_name =                 "flattening"
-aggregate_feature_extraction_phase_name =         "aggreate feature extraction"
-decision_model_discovery_phase_name =   "decision model discovery"
+PLATFORM_NAME =                             "  SCREEN RPA"
+MONITORING_PHASE_NAME =                     _("monitoring")
+INFO_PREFILTERING_PHASE_NAME =              _("preselection")
+DETECTION_PHASE_NAME =                      _("detection")
+CLASSIFICATION_PHASE_NAME =                 _("classification")
+INFO_POSTFILTERING_PHASE_NAME =             _("selection")
+SINGLE_FEATURE_EXTRACTION_PHASE_NAME =      _("feature extraction")
+FLATTENING_PHASE_NAME =                     _("flattening")
+AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME =   _("aggregate feature extraction")
+DECISION_MODEL_DISCOVERY_PHASE_NAME =       _("decision model discovery")
+ENRICHED_LOG_SUFFIX =                       "_enriched"
+LOG_FILENAME =                              "log.csv"
+PROCESS_DISCOVERY_LOG_FILENAME =            "pd_log.csv"
 
 # System Default Phases
-default_phases = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery','feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
-monitoring_imotions_needded_columns = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
+DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_elements_classification', 'postfilters', 'feature_extraction_technique', 
+                  'process_discovery', 'postprocessing', 'extract_training_dataset', 'feature_extraction_technique', 'decision_tree_training']
+# DEFAULT_PHASES = ['monitoring','info_prefiltering','ui_elements_detection','ui_elements_classification','info_postfiltering','process_discovery',
+#                  'feature_extraction_technique','extract_training_dataset','aggregate_features_as_dataset_columns','decision_tree_training']
+PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique', 'Postprocessing', 'ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
+MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
+#WEBGAZER CONSTANTS
+INCH_PER_CENTIMETRES = 2.54 #1 inch =  2.54cm
+DEVICE_FREQUENCY = 15 #Hz. Frequency of our Eyetracker software (Webgazer)
+FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum G
 #===================================================================================================
 #===================================================================================================
 
@@ -91,6 +103,7 @@ INSTALLED_APPS = [
     'apps.processdiscovery', # Local App
     'apps.decisiondiscovery', # Local App
     'apps.reporting', # Local App
+    'apps.notification', # Local App
     'drf_spectacular', # Swagger
     'drf_spectacular_sidecar',  # Swagger. required for Django collectstatic discovery
 ]
@@ -99,6 +112,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -124,6 +138,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -178,11 +193,26 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
+LANGUAGE_CODE = 'en'
+LANGUAGES = [
+    ('en', _('English')),
+    ('es', _('Spanish'))
+]
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'analyzer', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'authentication', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'behaviourmonitoring', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'chefboost', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'decisiondiscovery', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'featureextraction', 'locale'),
+    os.path.join(CORE_DIR, 'locale'),
+]
+
 USE_TZ = True
+TIME_ZONE = 'UTC'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -244,7 +274,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # Private storage config
-PRIVATE_STORAGE_ROOT = 'media/'
+PRIVATE_STORAGE_ROOT = 'media'
 PRIVATE_STORAGE_AUTH_FUNCTION = 'apps.analyzer.permissions.allow_staff'
 
 
@@ -263,7 +293,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'rim.log',
+            'filename': 'screenrpa.log',
         },
     },
     'loggers': {
@@ -295,7 +325,14 @@ else:
 #===================================================================================================
 
 # Configuration JSON files Paths
-FE_EXTRACTORS_FILEPATH = CORE_DIR + sep + "configuration" + sep + "feature_extractors.json"
-AGGREGATE_FE_EXTRACTORS_FILEPATH =  CORE_DIR + sep + "configuration" + sep + "aggreate_feature_extractors.json"
-STATUS_VALUES_ID = CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
-CDLR = CORE_DIR + sep + "configuration"+sep+"cdlr.json"
+SINGLE_FE_EXTRACTORS_FILEPATH =      CORE_DIR + sep + "configuration" + sep + "single_feature_extractors.json"
+AGGREGATE_FE_EXTRACTORS_FILEPATH =   CORE_DIR + sep + "configuration" + sep + "aggregate_feature_extractors.json"
+POSTPROCESSING_TECHNIQUES_FILEPATH = CORE_DIR + sep + "configuration" + sep + "postprocessing_techniques.json"
+MODELS_CLASSES_FILEPATH =            CORE_DIR + sep + "configuration" + sep + "models_classes.json"
+STATUS_VALUES_ID =                   CORE_DIR + sep + "configuration" + sep + "status_values_id.json"
+CDLR =                               CORE_DIR + sep + "configuration" + sep + "cdlr.json"
+SCREEN2SOM_CONFIG_PATH =                               CORE_DIR + sep + "configuration" + sep + "screen2som.json"
+
+#to visualize pdf files in the browser
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

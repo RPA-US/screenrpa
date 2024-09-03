@@ -1,7 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load extras %}
+{% load i18n %}
 
-{% block title %} Case studies {% endblock title %}
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
 
 {% block content %}
 
@@ -9,17 +10,16 @@
     <div class="container-fluid">
       <div class="header-body">
         <div class="row align-items-center py-4">
-          <div class="col-lg-6 col-7">
-            <h6 class="h2 text-white d-inline-block mb-0">Case studies</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/list/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Case Studies{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Case Study {{ case_study_id }} details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
               <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                 <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
-                <li class="breadcrumb-item"><a href="#">{{ case_study.title }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Case study {{ case_study_id }}{% endblocktranslate %}</a></li>
               </ol>
             </nav>
-          </div>
-          <div class="col-lg-6 col-5 text-right">
-            <a href="/case-study/new/" class="btn btn-sm btn-neutral">New</a>
           </div>
         </div>
       </div>
@@ -33,217 +33,158 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Case study details</h3>
+            <h3 class="mb-0">{% blocktranslate %}Case study {{ case_study_id }} details{% endblocktranslate %}</h3>
           </div>
           <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
-              <!-- General information -->
-              <h6 class="heading-small text-muted mb-4">General information</h6>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-title">Title</label>
-                      <input type="text" id="input-title" class="form-control" placeholder="Nice Case Study" value="{{ case_study.title }}">
-                    </div>
+            {% include "case_studies/form.html" %}
+            <hr class="my-4" />
+            <!-- Phases to execute -->
+            <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Set Up Phases{% endblocktranslate %}</h6>
+            <div class="pl-lg-4">
+              <div class="card-body">
+                <div class="row icon-examples">
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'Monitoring' in case_study.available_phases %}
+                    <a href="/monitoring/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
+                      </div>
+                    </a>
                   </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-title">Author</label>
-                      <input type="text" class="form-control" disabled value="{{ case_study.user.username }}">
-                    </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'Prefilters' in case_study.available_phases %}
+                    <a href="/fe/prefiltering/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'Prefilters' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Log Processing needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-description">Description</label>
-                      <textarea id="input-description" class="form-control" description="This is a case study full of data...">{{ case_study.description }}</textarea>
-                    </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'UIElementsDetection' in case_study.available_phases %}
+                    <a href="/fe/ui-element-detection/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-image"></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'UIElementsDetection' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Log Processing needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-exp_foldername">Folder name</label>
-                      <input type="text" id="input-exp_foldername" class="form-control" placeholder="folder_containing_exp" value="{{ case_study.exp_foldername }}">
-                    </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'Postfilters' in case_study.available_phases %}
+                    <a href="/fe/postfiltering/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                      <i class="ni ni-zoom-split-in"></i> <span>Post-filtering</span>
+                      </div>
+                    </a>
+                    {% if not 'Postfilters' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}UI Elements Detection needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-exp_folder_complete_path">Folder path</label>
-                      <input type="text" id="input-exp_folder_complete_path" class="form-control" placeholder="/rim/resources/folder_containing_exp" value="{{ case_study.exp_folder_complete_path }}">
-                    </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'FeatureExtractionTechnique' in case_study.available_phases %}
+                    <a href="/fe/feature-extraction-technique/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'FeatureExtractionTechnique' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}UI Elements Detection needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-decision_point_activity">Decision-point to study</label>
-                      <input type="text" id="input-decision_point_activity" class="form-control" placeholder="4_D" value="{{ case_study.decision_point_activity }}">
-                    </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'ProcessDiscovery' in case_study.available_phases %}
+                    <a href="/pd/bpmn/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-sound-wave"></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'ProcessDiscovery' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Log Processing needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-gui_class_success_regex">Regular expression to evaluate decision discovered</label>
-                      <input type="text" id="input-gui_class_success_regex" class="form-control" placeholder="CheckBox_4_D and ImageView_2_B" value="{{ case_study.gui_class_success_regex }}">
-                    </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'Postprocessing' in case_study.available_phases %}
+                    <a href="/fe/postprocessing/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Postprocessing{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'Postprocessing' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}FE and PD needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
+                  </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'ExtractTrainingDataset' in case_study.available_phases %}
+                    <a href="/dd/extract-training-dataset/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-settings"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'ExtractTrainingDataset' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Process Discovery needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
+                  </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'DecisionTreeTraining' in case_study.available_phases %}
+                    <a href="/dd/decision-tree-training/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                    <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                      <div>
+                        <i class="ni ni-vector"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
+                      </div>
+                    </a>
+                    {% if not 'DecisionTreeTraining' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Extract Training Dataset needed{% endblocktranslate %}
+                      </p>
+                    {% endif %}
                   </div>
                 </div>
               </div>
-              <hr class="my-4" />
-              <!-- Configuration -->
-              <h6 class="heading-small text-muted mb-4">Configuration</h6>
-              <div class="pl-lg-4">
-                <div class="form-group">
-                  <label class="form-control-label">Special columns names</label>
-                  <textarea rows="4" class="form-control" 
-                  placeholder="{
-                    'Case': 'Case',
-                    'Activity': 'Activity',
-                    'Screenshot': 'Screenshot', 
-                    'Variant': 'Variant',
-                    'Timestamp': 'Timestamp',
-                    'eyetracking_recording_timestamp': 'Recording timestamp',
-                    'eyetracking_gaze_point_x': 'Gaze point X',
-                    'eyetracking_gaze_point_y': 'Gaze point Y'
-                  }">
-                  {{ case_study.special_colnames }}
-                  </textarea>
-                </div>
-              </div>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_image_shape">UI Elements image shape (for classificaiton)</label>
-                      <input id="input-ui_elements_classification_image_shape" class="form-control" placeholder="[64, 64, 3]" value="{{ case_study.ui_elements_classification_image_shape }}" type="text">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-ui_elements_classification_classes">UI Elements image shape (for classificaiton)</label>
-                      <textarea id="input-ui_elements_classification_classes" class="form-control" value="{{ case_study.ui_elements_classification_classes }}" type="text" 
-                      placeholder="[
-                        'Button',
-                        'Checkbox',
-                        'CheckedTextView',
-                        'EditText',
-                        'ImageButton',
-                        'ImageView',
-                        'NumberPicker',
-                        'RadioButton',
-                        'RatingBar',
-                        'SeekBar',
-                        'Spinner',
-                        'Switch',
-                        'TextView',
-                        'ToggleButton'
-                      ]"
-                      >{{ case_study.ui_elements_classification_classes }}
-                    </textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-text_classname">Text UI elements class name</label>
-                      <input type="text" id="input-text_classname" class="form-control" placeholder="text" value="{{ case_study.text_classname }}">
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-target_label">Target label column name</label>
-                      <input type="text" id="input-target_label" class="form-control" placeholder="Variant" value="{{ case_study.target_label }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group">
-                      <label class="form-control-label" for="input-scenarios_to_study">Scenarios to study</label>
-                      <input type="text" id="input-scenarios_to_study" class="form-control" placeholder="['scenario1', 'scenario2']" value="{{ case_study.scenarios_to_study }}">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr class="my-4" />
-              <!-- Phases to execute -->
-              <h6 class="heading-small text-muted mb-4">Phases to execute</h6>
-              <div class="pl-lg-4">
-                <div class="form-group">
-                  <label class="form-control-label">Behaviour Monitoring</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.monitoring | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">Pre-Filtering</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.prefilters | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">UI Elements detection</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.ui_elements_detection | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">UI Elements classification</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.ui_elements_classification | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">Post-filtering</label>
-                  <textarea rows="4" class="form-control" placeholder="A few words about you ...">{{ case_study.postfilters | pretty_json  }}</textarea>
-                </div>
-                
-                {% for s_fe in single_fe %}
-                  <div class="form-group">
-                    <label class="form-control-label">Single Feature extraction technique</label>
-                    <textarea rows="4" class="form-control" 
-                      placeholder="{
-                        'technique_name': 'status',
-                        'gui_quantity_difference': 1,
-                        'identifier': 'sta_'
-                      }">
-                      {{ s_fe | pretty_json  }}</textarea>
-                  </div>
-                {% endfor %}
-                
-                {% for agg_fe in aggregate_fe %}
-                  <div class="form-group">
-                    <label class="form-control-label">Aggregate Feature extraction technique</label>
-                    <textarea rows="4" class="form-control" 
-                      placeholder="{
-                        'technique_name': 'status',
-                        'gui_quantity_difference': 1,
-                        'identifier': 'sta_'
-                      }">
-                      {{ agg_fe | pretty_json  }}</textarea>
-                  </div>
-                {% endfor %}
-                
-                <div class="form-group">
-                  <label class="form-control-label">Extract training dataset</label>
-                  <textarea rows="4" class="form-control" 
-                    placeholder="{
-                    'columns_to_drop': ['Case','Activity','Timestamp','Screenshot','Variant'],
-                    'columns_to_drop_before_decision_point': ['Coor_X', 'Coor_Y', 'MorKeyb', 'TextInput', 'Click']
-                    }">
-                    {{ case_study.extract_training_dataset | pretty_json  }}</textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label">Decision tree training</label>
-                  <textarea rows="4" class="form-control" 
-                    placeholder="{
-                      'library': 'chefboost',
-                      'algorithms': ['CHAID'],
-                      'target_label': 'Variant',
-                      'one_hot_columns': ['NameApp'],
-                      'columns_to_drop': ['Timestamp_start', 'Timestamp_end']
-                    }">
-                  {{ case_study.decision_tree_training | pretty_json  }}</textarea>
-                </div>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>

@@ -1,19 +1,21 @@
-from typing import List
+import json
+import math
 import os
 import time
 import shutil
 import graphviz
-import pandas as pd
-import matplotlib.image as plt_img
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
+import pandas as pd
+from django.utils.translation import gettext_lazy as _
+from typing import List
+import matplotlib.image as plt_img
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
+import scipy
+from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
+from .utils import def_preprocessor, best_model_grid_search, cross_validation, extract_tree_rules, prev_preprocessor
 from apps.chefboost import Chefboost as chef
-from .utils import preprocess_data, create_and_fit_pipeline, def_preprocessor
-from core.settings import plot_decision_trees, several_iterations
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
+import pickle
 
 # def chefboost_decision_tree(df, param_path, algorithms, target_label):
 #     """
@@ -37,9 +39,9 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 #         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
 #         enableParallelism = False
 #         config = {'algorithm': alg, 'enableParallelism': enableParallelism, 'max_depth': 4}# 'num_cores': 2, 
-#         if several_iterations:
+#         if SEVERAL_ITERATIONS:
 #             durations = []
-#             for i in range(0, int(several_iterations)):
+#             for i in range(0, int(SEVERAL_ITERATIONS)):
 #                 start_t = time.time()
 #                 model, accuracy_score = chef.fit(df, config = config)
 #                 durations.append(float(time.time()) - float(start_t))
@@ -59,7 +61,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 #         # file.write(output)
 #         # file.close()
 #         # Saving model
-#         # model = chef.fit(df, config = config, target_label = 'Variant')
+#         # model = chef.fit(df, config = config, target_label = special_colnames["Variant"])
 #         # chef.save_model(model, alg+'model.pkl')
 #         # TODO: feature importance
 #         fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
@@ -72,7 +74,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 #     return accuracy_score, times
 
 
-def chefboost_decision_tree(df, param_path, configuration, target_label, cv):
+def chefboost_decision_tree(df, param_path, configuration, target_label, k_fold_cross_validation):
     """
     
     config = {
@@ -98,9 +100,9 @@ def chefboost_decision_tree(df, param_path, configuration, target_label, cv):
         df['Decision'] = df['Decision'].astype(str) # which will by default set the length to the max len it encounters
         enableParallelism = False
         config = {'algorithm': alg, 'enableParallelism': enableParallelism }# 'num_cores': 2, 
-        if several_iterations:
+        if SEVERAL_ITERATIONS:
             durations = []
-            for i in range(0, int(several_iterations)):
+            for i in range(0, int(SEVERAL_ITERATIONS)):
                 start_t = time.time()
                 model = chef.fit(df, config = config, target_label = "Decision")
                 durations.append(float(time.time()) - float(start_t))
@@ -117,7 +119,7 @@ def chefboost_decision_tree(df, param_path, configuration, target_label, cv):
 
         X = df_aux.drop(columns=[target_label])
         y = df_aux[target_label]
-        accuracies[alg] = cross_validation(X, y, config, target_label, "chefboost", None, cv)
+        accuracies[alg] = cross_validation(X, y, config, target_label, "chefboost", None, k_fold_cross_validation)
         
         # => Feature importance
         fi = chef.feature_importance('outputs/rules/rules.py').set_index("feature")
@@ -162,7 +164,28 @@ def plot_decision_tree(path: str,
 
     return image
 
-def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target_label, cv):
+def update_json_with_rules(json_data, rules_class):
+    # Convertir las claves de rules_class a enteros (o cadenas) y luego a cadenas
+    rules_class_str_keys = {str(int(float(key))): value for key, value in rules_class.items()}
+    
+    # Recorrer los puntos de decisión
+    for decision_point in json_data["decision_points"]:
+        # Recorrer las ramas del punto de decisión
+        for branch in decision_point["branches"]:
+            label = branch["label"]
+            
+            # Si hay reglas para esta rama en rules_class_str_keys, actualizar el JSON
+            if label in rules_class_str_keys:
+                if label in decision_point["rules"]:
+                    # Añadir nuevas reglas a la lista existente
+                    decision_point["rules"][label].extend(rules_class_str_keys[label])
+                else:
+                    # Crear una nueva lista de reglas si no existe
+                    decision_point["rules"][label] = rules_class_str_keys[label]
+    
+    return json_data
+
+def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
     times = {}
     accuracies = {}
     
@@ -175,23 +198,50 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     #     df = pd.get_dummies(df, columns=columns_to_encode_one_hot)
     
     if "e50_" in param_path:
-        cv = 2
+        k_fold_cross_validation = 2
 
     # Extract features and target variable
-    X = df.drop(columns=['Variant'])
-    y = df['Variant']
+    X = df.drop(columns=[special_colnames["Variant"]], errors="ignore").drop(columns=["dp_branch"])
+
+    #X = X.astype(str)
+    y = df["dp_branch"]
+    y = y.astype(str)
+    X = prev_preprocessor(X)
+    if isinstance(X, str):
+        raise Exception(X)
+        return
     
     preprocessor = def_preprocessor(X)
-    X = preprocessor.fit_transform(X)
-    X_df = pd.DataFrame(X)
-    feature_names = list(preprocessor.get_feature_names_out())
-    X_df.to_csv(param_path + "preprocessed_df.csv", header=feature_names)
+    
+    #df.head()
+    try:
+        X = preprocessor.fit_transform(X)
+    except Exception as e:
+        raise Exception(e)
+        return
+    
+    # X es una sparse_matrix
+    # if a dataframe has a high number of columns, may be it has to be treated as a sparse matrix
+    if isinstance(X, scipy.sparse.spmatrix):
+        X = X.toarray()
+    
+    X_df = pd.DataFrame(X, columns=preprocessor.get_feature_names_out())
+
+    postprocessor= X_df.columns[X_df.nunique() == 1].tolist()
+
+    if len(postprocessor) != 0:
+        X_df= X_df.drop(columns=postprocessor)
+    else:
+        Exception("No features left after preprocessing.")
+    
+    feature_names = X_df.columns.tolist()
+    X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
     tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
-    tree_classifier, best_params = best_model_grid_search(X, y, tree_classifier, cv)
+    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
 
-    accuracies = cross_validation(X_df,pd.DataFrame(y),None,"Variant","sklearn",tree_classifier,cv)
+    accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # times["sklearn"]["encoders"] = {
     #     "enabled": status_encoder.fit_transform(["enabled"])[0], 
@@ -203,7 +253,7 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     text_representation = export_text(tree_classifier, feature_names=feature_names)
     print("Decision Tree Rules:\n", text_representation)
     
-    with open(param_path + "decision_tree.log", "w") as fout:
+    with open(os.path.join(param_path, "decision_tree_"+prevact+".log"), "w") as fout:
         fout.write(text_representation)
         
     # estimator = clf_model.estimators_[5]
@@ -220,12 +270,36 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     # # Display in jupyter notebook
     # from IPython.display import Image
     # Image(filename = 'tree.png')
+
     
-    if plot_decision_trees:
+    saved_data = {
+        'classifier': tree_classifier,
+        'feature_names': feature_names,
+        'class_names': np.unique(y),
+    }
+    with open(os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'), 'wb') as fid:
+        pickle.dump(saved_data, fid)
+
+    rules_class=extract_tree_rules(os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'))
+    print(rules_class)
+
+    traceability_path= (os.path.join(param_path, 'traceability.json'))
+
+    if rules_class is not None:
+        with open(traceability_path, 'r') as f:
+            json_data = json.load(f)
+        
+        updated_json = update_json_with_rules(json_data, rules_class)
+        
+        with open(traceability_path, 'w') as f:
+            json.dump(updated_json, f, indent=2)
+
+
+    if PLOT_DECISION_TREES:
         target = list(df[target_label].unique())
         target_casted = [str(t) for t in target]
         img = plot_decision_tree(
-            param_path + "decision_tree", tree_classifier, feature_names, target_casted)
+            os.path.join(param_path, 'decision_tree_'+prevact+'.pkl'), tree_classifier, feature_names, target_casted)
         plt.imshow(img)
         plt.show()
 
@@ -233,73 +307,3 @@ def sklearn_decision_tree(df, param_path, configuration, one_hot_columns, target
     accuracies["selected_params"] = best_params
 
     return accuracies, times
-
-def best_model_grid_search(X_train, y_train, tree_classifier, cv):
-    # Define the hyperparameter grid for tuning
-    param_grid = {
-        'criterion': ['gini', 'entropy'],
-        'splitter': ['best', 'random'],
-        'max_depth': [None, 5, 10, 15],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 5]
-    }
-
-    # Perform GridSearchCV to find the best hyperparameters
-    grid_search = GridSearchCV(estimator=tree_classifier, param_grid=param_grid, cv=cv)
-    grid_search.fit(X_train, y_train)
-
-    # Get the best hyperparameters and train the final model
-    best_tree_classifier = grid_search.best_estimator_
-    print("Grid Search Best Params:\n", grid_search.best_params_)
-    
-    best_tree_classifier.fit(X_train, y_train)
-    
-    return best_tree_classifier, grid_search.best_params_
-
-def cross_validation(X, y, config, target_label, library, model, cv):
-    # Cross-validation: accurracy + f1 score
-    accuracies = {}
-    
-    skf = StratifiedKFold(n_splits=cv)
-    # skf.get_n_splits(X, y)
-
-    for i, (train_index, test_index) in enumerate(skf.split(X, y)):
-        print(f"Fold {i}:")
-        print(f"  Train: index={train_index}")
-        print(f"  Test:  index={test_index}")
-        X_train_fold, X_test_fold = X.iloc[train_index], X.iloc[test_index]
-        y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
-        
-        if library == "chefboost":
-            current_iteration_model, acc = chef.fit(X_train_fold+X_test_fold, config, target_label)
-        elif library == "sklearn":
-            current_iteration_model = model.fit(X_train_fold, y_train_fold)
-        else:
-            raise Exception("Decision Model Option Not Valid")
-
-        metrics_acc = []
-        metrics_precision = []
-        metrics_recall = []
-        metrics_f1 = []
-        
-        if library == "chefboost":
-            y_pred = []
-            for _, X_test_instance in X_test_fold.iterrows():
-                y_pred.append(chef.predict(current_iteration_model, X_test_instance))
-        elif library == "sklearn":
-            y_pred = current_iteration_model.predict(X_test_fold)
-        else:
-            raise Exception("Decision Model Option Not Valid")
-            
-        metrics_acc.append(accuracy_score(y_test_fold, y_pred))
-        metrics_precision.append(precision_score(y_test_fold, y_pred, average='weighted'))
-        metrics_recall.append(recall_score(y_test_fold, y_pred, average='weighted'))
-        metrics_f1.append(f1_score(y_test_fold, y_pred, average='weighted'))
-
-    accuracies['accuracy'] = np.mean(metrics_acc)
-    accuracies['precision'] = np.mean(metrics_precision)
-    accuracies['recall'] = np.mean(metrics_recall)
-    accuracies['f1_score'] = np.mean(metrics_f1)
-    
-    print(f"  Stratified K-Fold:  accuracy={accuracies['accuracy']} f1_score={accuracies['f1_score']} ")
-    return accuracies

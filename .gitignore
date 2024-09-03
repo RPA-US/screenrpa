@@ -137,8 +137,10 @@ dmypy.json
 # Custom Folders
 CSV_exit
 resources/
+metadata/
 mockups
 privatefiles/
+checkpoints/
 
 # SQLite Database
 loggenerator.db
@@ -171,6 +173,8 @@ staticfiles/*
 !staticfiles/.gitkeep 
 .vscode/symbols.json
 
+YOLO_Datasets/
+
 apps/static/assets/node_modules
 apps/static/assets/yarn.lock
 apps/static/assets/.temp
@@ -181,3 +185,7 @@ apps/featureextraction/SOM/checkpoints/
 #notebooks
 apps/processdiscovery/notebooks/
 apps/notebooks
+apps/decisiondiscovery/notebooks/*.csv
+apps/decisiondiscovery/notebooks/*.txt
+apps/decisiondiscovery/notebooks/*.json
+apps/decisiondiscovery/notebooks/test.ipynb

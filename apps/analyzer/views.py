@@ -1,6 +1,10 @@
+import csv
 import os
 import json
+import random
 import time
+import threading
+import traceback
 from tqdm import tqdm
 from art import tprint
 from django.core.exceptions import ValidationError
@@ -10,176 +14,113 @@ from django.urls import reverse
 from django.db import transaction
 import zipfile
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
-from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView
+from django.core.exceptions import PermissionDenied
+from django.views.generic import ListView, DetailView, CreateView, FormView, DeleteView, UpdateView
+from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status, viewsets #, permissions
 from rest_framework.response import Response
 # Home pages imports
 from django import template
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template import loader
 # Settings variables
-from core.settings import PRIVATE_STORAGE_ROOT, metadata_location, sep, default_phases, scenario_nested_folder, active_celery
+from core.settings import PRIVATE_STORAGE_ROOT, DEFAULT_PHASES, SCENARIO_NESTED_FOLDER, ACTIVE_CELERY, LOG_FILENAME
 # Apps imports
 from apps.decisiondiscovery.views import decision_tree_training, extract_training_dataset
-from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, aggregate_features_as_dataset_columns
+from apps.featureextraction.views import ui_elements_classification, feature_extraction_technique, postprocessing
 from apps.featureextraction.SOM.detection import ui_elements_detection
-from apps.featureextraction.relevantinfoselection.prefilters import info_prefiltering
-from apps.featureextraction.relevantinfoselection.postfilters import info_postfiltering
+from apps.featureextraction.relevantinfoselection.prefilters import prefilters
+from apps.featureextraction.relevantinfoselection.postfilters import postfilters
 from apps.processdiscovery.views import process_discovery
 from apps.behaviourmonitoring.log_mapping.gaze_monitoring import monitoring
-from apps.analyzer.models import CaseStudy, FeatureExtractionTechnique
+from apps.analyzer.models import CaseStudy, Execution   
 from apps.behaviourmonitoring.models import Monitoring
-from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters
+from apps.reporting.models import PDD
+from apps.featureextraction.models import Prefilters, UIElementsClassification, UIElementsDetection, Postfilters, FeatureExtractionTechnique
+from apps.processdiscovery.models import ProcessDiscovery
 from apps.decisiondiscovery.models import ExtractTrainingDataset, DecisionTreeTraining
 from apps.analyzer.forms import CaseStudyForm
-from apps.analyzer.serializers import CaseStudySerializer, FeatureExtractionTechniqueSerializer
-from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, PostfiltersSerializer
+from apps.analyzer.serializers import CaseStudySerializer
+from apps.featureextraction.serializers import PrefiltersSerializer, UIElementsDetectionSerializer, UIElementsClassificationSerializer, PostfiltersSerializer, FeatureExtractionTechniqueSerializer
 from apps.behaviourmonitoring.serializers import MonitoringSerializer
 from apps.processdiscovery.serializers import ProcessDiscoverySerializer
 from apps.decisiondiscovery.serializers import DecisionTreeTrainingSerializer, ExtractTrainingDatasetSerializer
-from apps.analyzer.tasks import init_generate_case_study
-from apps.analyzer.utils import get_foldernames_as_list, case_study_has_feature_extraction_technique, get_feature_extraction_technique_from_cs
+from apps.analyzer.tasks import celery_task_process_case_study
+from apps.analyzer.utils import get_foldernames_as_list
 from apps.analyzer.collect_results import experiments_results_collectors
+from apps.notification.models import Status as NotifStatus
+from apps.notification.views import create_notification
+# Result Treeimport json
+import matplotlib.pyplot as plt
+from sklearn import tree
+import io
+import pickle
+import base64
+import pickle
+import base64
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
+from sklearn.tree import _tree
 
 #============================================================================================================================
 #============================================================================================================================
 #============================================================================================================================
 
-def generate_case_study(case_study, path_scenario, times, n):
-    times[n] = {}
-    to_exec_args = {
-        'monitoring': (path_scenario +'log.csv',
-                                        path_scenario,
-                                        case_study.special_colnames,
-                                        case_study.monitoring.type,
-                                        case_study.monitoring.configurations)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.monitoring else None,
-        'info_prefiltering': (path_scenario +'log.csv',
-                                        path_scenario,
-                                        case_study.special_colnames,
-                                        case_study.prefilters.configurations,
-                                        case_study.prefilters.skip,
-                                        case_study.prefilters.type)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.prefilters else None,
-        'ui_elements_detection': (path_scenario +'log.csv',
-                                        path_scenario,
-                                        case_study.ui_elements_detection.input_filename,
-                                        case_study.special_colnames,
-                                        case_study.ui_elements_detection.configurations,
-                                        case_study.ui_elements_detection.skip,
-                                        case_study.ui_elements_detection.type,
-                                        case_study.text_classname)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.ui_elements_detection else None,
-        'ui_elements_classification': (case_study.ui_elements_classification.model, # specific extractors
-                                        case_study.ui_elements_classification.model_properties,
-                                        path_scenario + 'components_npy' + sep,
-                                        path_scenario + 'components_json' + sep,
-                                        path_scenario + 'log.csv',
-                                        case_study.special_colnames["Screenshot"],
-                                        case_study.text_classname,
-                                        case_study.ui_elements_classification.skip,
-                                        case_study.ui_elements_classification_classes,
-                                        case_study.ui_elements_classification_image_shape,
-                                        case_study.ui_elements_classification.type)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.ui_elements_classification else None,
-        'info_postfiltering': (path_scenario +'log.csv',
-                                        path_scenario,
-                                        case_study.special_colnames,
-                                        case_study.postfilters.configurations,
-                                        case_study.postfilters.skip,
-                                        case_study.postfilters.type)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study.postfilters else None,
-        'feature_extraction_technique': (case_study.ui_elements_classification_classes,
-                                        case_study.decision_point_activity,
-                                        case_study.special_colnames["Case"],
-                                        case_study.special_colnames["Activity"],
-                                        case_study.special_colnames["Screenshot"],
-                                        path_scenario + 'components_json' + sep,
-                                        path_scenario + 'flattened_dataset.json',
-                                        path_scenario + 'log.csv',
-                                        path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
-                                        case_study.text_classname,
-                                        get_feature_extraction_technique_from_cs(case_study).consider_relevant_compos,
-                                        get_feature_extraction_technique_from_cs(case_study).relevant_compos_predicate,
-                                        get_feature_extraction_technique_from_cs(case_study).identifier,
-                                        get_feature_extraction_technique_from_cs(case_study).skip,
-                                        get_feature_extraction_technique_from_cs(case_study).technique_name)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study_has_feature_extraction_technique(case_study, "SINGLE") else None,
-        'process_discovery': (path_scenario +'log.csv',
-                                        path_scenario,
-                                        case_study.special_colnames,
-                                        case_study.process_discovery.configurations,
-                                        case_study.process_discovery.skip,
-                                        case_study.process_discovery.type)
-                                    # We check this phase is present in case_study to avoid exceptions
-                                    if case_study.process_discovery else None,
-        'extract_training_dataset': (case_study.decision_point_activity, 
-                                        case_study.target_label,
-                                        case_study.special_colnames,
-                                        case_study.extract_training_dataset.columns_to_drop,
-                                        path_scenario + 'log.csv',
-                                        path_scenario, 
-                                        case_study.extract_training_dataset.columns_to_drop_before_decision_point,
-                                    )
-                                    # We check this phase is present in case_study to avoid exceptions
-                                    if case_study.extract_training_dataset else None,
-        'aggregate_features_as_dataset_columns': (case_study.ui_elements_classification_classes,
-                                        case_study.decision_point_activity,
-                                        case_study.special_colnames["Case"],
-                                        case_study.special_colnames["Activity"],
-                                        case_study.special_colnames["Screenshot"],
-                                        path_scenario,
-                                        path_scenario + 'flattened_dataset.json',
-                                        path_scenario + 'log.csv',
-                                        path_scenario + get_feature_extraction_technique_from_cs(case_study).technique_name+'_enriched_log.csv',
-                                        case_study.text_classname,
-                                        get_feature_extraction_technique_from_cs(case_study).consider_relevant_compos,
-                                        get_feature_extraction_technique_from_cs(case_study).relevant_compos_predicate,
-                                        get_feature_extraction_technique_from_cs(case_study).identifier,
-                                        get_feature_extraction_technique_from_cs(case_study).skip,
-                                        get_feature_extraction_technique_from_cs(case_study).technique_name)
-                                        # We check this phase is present in case_study to avoid exceptions
-                                        if case_study_has_feature_extraction_technique(case_study, "AGGREGATE") else None,
-        'decision_tree_training': (case_study, path_scenario)
-                                    # We check this phase is present in case_study to avoid exceptions
-                                    if case_study.decision_tree_training  else None
-        }
+def generate_case_study(execution, path_scenario, times):
+    log_path = os.path.join(path_scenario, LOG_FILENAME)
+    
+    n = 0
+    for i, function_to_exec in enumerate(DEFAULT_PHASES):
+        if getattr(execution, function_to_exec) is not None:
+            # We handle fe preloaded because it may have several configuations
+            phase_has_preloaded = function_to_exec not in ["feature_extraction_technique", "postprocessing"] and getattr(execution, function_to_exec).preloaded
+            if phase_has_preloaded:
+                times[n] = {function_to_exec: {"duration": None, "preloaded": True}}
+            else:
+                times[n] = {}
+                if function_to_exec == "decision_tree_training":
+                    res, fe_checker, tree_times, columns_len = eval(function_to_exec)(log_path, path_scenario, execution)
+                    times[n][function_to_exec] = tree_times
+                    times[n][function_to_exec]["columns_len"] = columns_len
+                    # times[n][function_to_exec]["tree_levels"] = tree_levels
+                    times[n][function_to_exec]["accuracy"] = res
+                    times[n][function_to_exec]["feature_checker"] = fe_checker
+                elif function_to_exec == "feature_extraction_technique":
+                    start_t = time.time()
+                    times[n][function_to_exec] = dict()
+                    for fe in execution.feature_extraction_techniques.all():
+                        if fe.preloaded:
+                            continue
+                        if (fe.type == "SINGLE" and i == 5) or (fe.type == "AGGREGATE" and i == 9):
+                            num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(log_path, path_scenario, execution, fe)
+                            # Additional feature extraction metrics
+                            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
+                            times[n][function_to_exec]["num_screenshots"] = num_screenshots
+                            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
+                            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
+                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                elif function_to_exec == "postprocessing":
+                    start_t = time.time()
+                    times[n][function_to_exec] = dict()
+                    for pp in execution.postprocessings.all():
+                        if pp.preloaded:
+                            continue
+                        else:
+                            eval(function_to_exec)(log_path, path_scenario, execution, pp)
+                            # Additional feature extraction metrics
+                        times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
+                elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or function_to_exec == "ui_elements_detection":
+                # elif function_to_exec == "prefilters" or function_to_exec == "postfilters" or (function_to_exec == "ui_elements_detection" and to_exec_args["ui_elements_detection"][-1] == False):
+                    filtering_times = eval(function_to_exec)(log_path, path_scenario, execution)
+                    times[n][function_to_exec] = filtering_times
+                else:
+                    start_t = time.time()
+                    output = eval(function_to_exec)(log_path, path_scenario, execution)
+                    times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
 
-    # We go over the keys of to_exec_args, and call the corresponding functions passing the corresponding parameters
-    for function_to_exec in [key for key in to_exec_args.keys() if to_exec_args[key] is not None]:
-        if function_to_exec == "decision_tree_training":
-            res, fe_checker, tree_times, columns_len = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = tree_times
-            times[n][function_to_exec]["columns_len"] = columns_len
-            # times[n][function_to_exec]["tree_levels"] = tree_levels
-            times[n][function_to_exec]["accuracy"] = res
-            times[n][function_to_exec]["feature_checker"] = fe_checker
-        elif function_to_exec == "feature_extraction_technique" or function_to_exec == "aggregate_features_as_dataset_columns":
-            start_t = time.time()
-            num_UI_elements, num_screenshots, max_ui_elements, min_ui_elements = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-            # Additional feature extraction metrics
-            times[n][function_to_exec]["num_UI_elements"] = num_UI_elements
-            times[n][function_to_exec]["num_screenshots"] = num_screenshots
-            times[n][function_to_exec]["max_#UI_elements"] = max_ui_elements
-            times[n][function_to_exec]["min_#UI_elements"] = min_ui_elements
-        elif function_to_exec == "info_prefiltering" or function_to_exec == "info_postfiltering" or function_to_exec == "ui_elements_detection":
-            filtering_times = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = filtering_times
-        else:
-            start_t = time.time()
-            output = eval(function_to_exec)(*to_exec_args[function_to_exec])
-            times[n][function_to_exec] = {"duration": float(time.time()) - float(start_t)}
-
-        # TODO: accurracy_score
-        # if index == len(to_exec)-1:
-        #     times[n][index]["decision_model_accuracy"] = output
+            n += 1
         
     return times
 
@@ -187,95 +128,85 @@ def generate_case_study(case_study, path_scenario, times, n):
 #============================================================================================================================
 #============================================================================================================================
 
-def celery_task_process_case_study(case_study_id):
+def case_study_generator_execution(user_id: int, case_study_id: int):
     """
-    This function process input data and generates the case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
+    This function process input data and generates the execution for a case study. It executes all phases specified in 'to_exec' and it stores enriched log and decision tree extracted from the initial UI log in the same folder it is.
 
     Args:
-        exp_foldername (string): name of the folder where all case study data is stored. Example 'case_study_data'
-        exp_folder_complete_path (string): complete path to the folder where all case study data is stored, including the name of the folder in this path. Example 'C:\\John\\Desktop\\case_study_data'
-        decision_activity (string): activity where decision we want to study is taken. Example: 'B'
-        scenarios (list): list with all foldernames corresponding to the differents scenarios that will be studied in this case study
-        special_colnames (dict): a dict with the keys "Case", "Activity", "Screenshot", "Variant", "Timestamp", "eyetracking_recording_timestamp", "eyetracking_gaze_point_x", "eyetracking_gaze_point_y", specifiyng as their values each column name associated of your UI log.
-        to_exec (list): list of the phases we want to execute. The possible phases to include are configured in settings.py: default_phases
+        user_id (int): The user id of the user that is executing the case study
+        case_study_id (int): The case study id of the case study to be executed
     """
     case_study = CaseStudy.objects.get(id=case_study_id)
-    times = {}
-    metadata_path = metadata_location + sep # folder to store metadata that will be used in "results" mode
+    create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Started"), _("Case study execution has started"), reverse("analyzer:execution_list"), status=NotifStatus.PROCESSING.value)
+    try:
+        execution = Execution(user=User.objects.get(id=user_id), case_study=case_study)
+        execution.save()
+        execution.check_preloaded_file()
 
-    if not os.path.exists(metadata_path):
-        os.makedirs(metadata_path)
- 
+        times = {}
 
-    # year = datetime.now().date().strftime("%Y")
-    tprint("RPA-US     SCREEN RPA", "tarty1")
-    # tprint("Relevance Information Miner", "pepper")
-    if case_study.scenarios_to_study:
-        aux_path = case_study.exp_folder_complete_path + sep + case_study.scenarios_to_study[0]
-    else:
-        aux_path = case_study.exp_folder_complete_path
-    foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path, sep)
-    
-    for scenario in tqdm(case_study.scenarios_to_study, desc="Scenarios that have been processed: "):
-        # time.sleep(.1)
-        # print("\nActual Scenario: " + str(scenario))
-        # We check there is at least 1 phase to execute
-        
-        pred = case_study.ui_elements_detection or case_study.ui_elements_classification or case_study.prefilters or case_study.postfilters or case_study.monitoring or case_study.extract_training_dataset or case_study.decision_tree_training or case_study.process_discovery or case_study.report or case_study_has_feature_extraction_technique(case_study)
-        if pred:
-            if scenario_nested_folder:
-                path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep + n + sep 
-                for n in foldername_logs_with_different_size_balance:
-                    generate_case_study(case_study, path_scenario, times, n)
+        # year = datetime.now().date().strftime("%Y")
+        tprint("RPA-US     SCREEN RPA", "tarty1")
+        # tprint("Relevance Information Miner", "pepper")
+        if execution:
+            if len(execution.scenarios_to_study) > 0:
+                aux_path = os.path.join(execution.exp_folder_complete_path, execution.scenarios_to_study[0])
             else:
-                path_scenario = case_study.exp_folder_complete_path + sep + scenario + sep
-                generate_case_study(case_study, path_scenario, times, scenario)
+                aux_path = execution.exp_folder_complete_path
+            # if not os.path.exists(aux_path):
+            #     os.makedirs(aux_path)
         else:
-            raise Exception("There's no phase to execute or the specified phase doesnt corresponds to a supported one")
-                
-
-    # Serializing json
-    json_object = json.dumps(times, indent=4)
-    # Writing to .json
-
-    case_study.executed = 100
-    case_study.save()
-    
-    metadata_final_path = metadata_path + str(case_study.id) + "-metainfo.json"
-    with open(metadata_final_path, "w") as outfile:
-        outfile.write(json_object)
+            aux_path = execution.exp_folder_complete_path
         
-    return "Case study '"+case_study.title+"' executed!!. Case study foldername: "+case_study.exp_foldername+". Metadata saved in: "+metadata_final_path
+        # For BPM LOG GENERATOR (old AGOSUIRPA) files
+        foldername_logs_with_different_size_balance = get_foldernames_as_list(aux_path)
+        
+        for scenario in tqdm(execution.scenarios_to_study, desc=_("Scenarios that have been processed: ")):
+            # For BPM LOG GENERATOR (old AGOSUIRPA) files
+            if SCENARIO_NESTED_FOLDER:
+                path_scenario = os.path.join(execution.exp_folder_complete_path, scenario, n)
+                for n in foldername_logs_with_different_size_balance:
+                    generate_case_study(execution, path_scenario, times)
+            else:
+                path_scenario = os.path.join(execution.exp_folder_complete_path, scenario)
+                generate_case_study(execution, path_scenario, times)
+            execution.executed = (execution.scenarios_to_study.index(scenario) + 1 / len(execution.scenarios_to_study)) * 100
+            execution.save()
+
+        # Serializing json
+        json_object = json.dumps(times, indent=4)
+        # Writing to .json
+        
+        metadata_final_path = os.path.join(
+            execution.exp_folder_complete_path,
+            f"times-cs_{execution.case_study.id}-exec_{execution.id}-metainfo.json"
+            )
+
+        with open(metadata_final_path, "w") as outfile:
+            outfile.write(json_object)
+            
+        print(f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}")
+        create_notification(User.objects.get(id=user_id), _(f"{execution.case_study.title} Execution Completed"), _("Case study executed successfully"), reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}), status=NotifStatus.SUCCESS.value)
+    except Exception as e:
+        print(traceback.format_exc())
+        # TODO: View the error trace in the frontend or link to gtihub issues with description filled
+        case_study=CaseStudy.objects.get(id=case_study_id)
+        create_notification(User.objects.get(id=user_id), _(f"{case_study.title} Execution Error"), str(e), reverse("analyzer:casestudy_list"), status=NotifStatus.ERROR.value)
+        execution.errored = True
+        execution.save()
 
 #============================================================================================================================
 #============================================================================================================================
 #============================================================================================================================
 
 def case_study_generator(data):
-    '''
-    Mandatory Attributes: title, exp_foldername, phases_to_execute, decision_point_activity, exp_folder_complete_path, gui_class_success_regex, gui_quantity_difference, scenarios_to_study, drop, special_colnames
-    Example values:
-    title = "case study 1"
-    decision_point_activity = "D"
-    path_to_save_experiment = None
-    gui_class_success_regex = "CheckBox_D or ImageView_D or TextView_D" # "(CheckBox_D or ImageView_D or TextView_D) and (ImageView_B or TextView_B)"
-    gui_quantity_difference = 1
-    drop = None  # Example: ["Advanced_10_Balanced", "Advanced_10_Imbalanced"]
-    interactive = False
-    phases_to_execute = {'ui_elements_detection': {},
-                   'ui_elements_classification': {},
-                   'extract_training_dataset': {},
-                   'decision_tree_training': {}
-                   }
-    scenarios = None # ["scenario_10","scenario_11","scenario_12","scenario_13"]
-    '''
     transaction_works = False
 
     with transaction.atomic():
 
         # Introduce a default value for scencarios_to_study if there is none
         if not data['scenarios_to_study']:
-            data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'], sep)
+            data['scenarios_to_study'] = get_foldernames_as_list(data['exp_folder_complete_path'])
 
         phases = data["phases_to_execute"].copy()
         cs_serializer = CaseStudySerializer(data=data)
@@ -287,58 +218,81 @@ def case_study_generator(data):
             match phase:
                 case "monitoring":
                     serializer = MonitoringSerializer(data=phases[phase])
+                    # Guarda el objeto de Monitoring de serializer, y asigna el objeto de case_study al campo case_study de Monitoring y el user a user de Monitoring
                     serializer.is_valid(raise_exception=True)
-                    case_study.monitoring = serializer.save()
-                case "info_prefiltering":
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
+                case "prefilters":
                     serializer = PrefiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.prefilters = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "ui_elements_detection":
                     serializer = UIElementsDetectionSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.ui_elements_detection = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "ui_elements_classification":
                     serializer = UIElementsClassificationSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.ui_elements_classification = serializer.save()
-                case "info_postfiltering":
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
+                case "postfilters":
                     serializer = PostfiltersSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.postfilters = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "feature_extraction_technique":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
                     serializer.validated_data['type'] = "SINGLE"
                     serializer.save()
                 case "process_discovery":
                     serializer = ProcessDiscoverySerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.process_discovery = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "extract_training_dataset":
                     serializer = ExtractTrainingDatasetSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.extract_training_dataset = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case "aggregate_features_as_dataset_columns":
                     serializer = FeatureExtractionTechniqueSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
                     serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
                     serializer.validated_data['type'] = "AGGREGATE"
                     serializer.save()
                 case "decision_tree_training":
                     serializer = DecisionTreeTrainingSerializer(data=phases[phase])
                     serializer.is_valid(raise_exception=True)
-                    case_study.decision_tree_training = serializer.save()
+                    serializer.validated_data['case_study'] = case_study
+                    serializer.validated_data['user'] = case_study.user
+                    serializer.save()
                 case _:
                     pass
 
         # Updating the case study with the foreign keys of the phases to execute
-        case_study.save()
+        # case_study.save()
         transaction_works = True
-    if active_celery:
-        init_generate_case_study.delay(case_study.id)
-    else:
-        celery_task_process_case_study(case_study.id)
+    with transaction.atomic():
+        execution = Execution(user=case_study.user, case_study=case_study)
+        execution.save()
+
+        if ACTIVE_CELERY:
+            celery_task_process_case_study.delay(case_study.user.id, case_study.id)
+        else:
+            case_study_generator_execution(case_study.user.id, case_study.id)
         
     return transaction_works, case_study
 
@@ -350,58 +304,94 @@ def case_study_generator(data):
 #============================================================================================================================
 #============================================================================================================================
 
-class CaseStudyCreateView(CreateView):
+class CaseStudyCreateView(LoginRequiredMixin, CreateView):
+    login_url = "/login/"
     model = CaseStudy
     form_class = CaseStudyForm
     template_name = "case_studies/create.html"
 
     def form_valid(self, form):
         if not self.request.user.is_authenticated:
-            raise ValidationError("User must be authenticated.")
+            raise ValidationError(_("User must be authenticated."))
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         saved = self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class CaseStudyListView(ListView):
+class CaseStudyListView(LoginRequiredMixin, ListView):
+    login_url = "/login/"
     model = CaseStudy
     template_name = "case_studies/list.html"
     paginate_by = 50
 
     def get_queryset(self):
-        return CaseStudy.objects.filter(active=True, user=self.request.user)
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return CaseStudy.objects.filter(active=True, user=self.request.user, title__icontains=search).order_by("-created_at")
+        return CaseStudy.objects.filter(active=True, user=self.request.user).order_by("-created_at")
 
-    
+
+@login_required(login_url="/login/")
 def executeCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        raise Exception("This case study doesn't belong to the authenticated user")
-    if active_celery:
-        init_generate_case_study.delay(case_study_id)
+        # 403 Forbidden
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
+    elif ACTIVE_CELERY:
+        celery_task_process_case_study.delay(request.user.id, case_study_id)
     else:
-        celery_task_process_case_study(case_study_id)
+        threading.Thread(target=case_study_generator_execution, args=(request.user.id, case_study_id,)).start()
+
+    # Return a response immediately, without waiting for the execution to finish
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
+@login_required(login_url="/login/")
 def deleteCaseStudy(request):
     case_study_id = request.GET.get("id")
     cs = CaseStudy.objects.get(id=case_study_id)
     if request.user.id != cs.user.id:
-        raise Exception("This case study doesn't belong to the authenticated user")
+        raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
+    if cs.num_executions > 0:
+        return HttpResponse(status=422, content=_("This case study cannot be deleted because it has already been excecuted"))
     cs.delete()
     return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
     
-class CaseStudyDetailView(DetailView):
-    def get(self, request, *args, **kwargs):
+class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
+    login_url = "/login/"
+    model = CaseStudy
+    form_class = CaseStudyForm
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        if user.id != case_study.user.id:
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
+        form = CaseStudyForm(request.POST, instance=case_study)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("analyzer:casestudy_detail", kwargs={"case_study_id": case_study.id}))
+        else:
+            return render(request, "case_studies/detail.html", {"form": form})
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
+        if user.id != case_study.user.id:
+            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
+        form = CaseStudyForm(instance=case_study)
         context = {
-            "case_study": case_study, 
+            "form": form, 
+            "case_study": case_study,
             "single_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="SINGLE"), 
-            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE")
+            "aggregate_fe": FeatureExtractionTechnique.objects.filter(case_study=case_study, type="AGGREGATE"),
+            "case_study_id": case_study.id
             }
         return render(request, "case_studies/detail.html", context)
 
-class CaseStudyView(generics.ListCreateAPIView):
+class CaseStudyView(LoginRequiredMixin, generics.ListCreateAPIView):
+    login_url = "/login/"
     # permission_classes = [IsAuthenticatedUser]
     serializer_class = CaseStudySerializer
 
@@ -418,23 +408,25 @@ class CaseStudyView(generics.ListCreateAPIView):
             response_content = case_study_serialized.errors
             st=status.HTTP_400_BAD_REQUEST
         else:
+            # asignar el usuario al caso de estudio
+            case_study_serialized.validated_data['user'] = request.user
             execute_case_study = True
             try:
                 if not isinstance(case_study_serialized.data['phases_to_execute'], dict):
-                    response_content = {"message": f"phases_to_execute must be of type dict!!!!! and must be composed by phases contained in {default_phases}"}
+                    response_content = {"message": _("phases_to_execute must be of type dict!!!!! and must be composed by phases contained in %(DEFAULT_PHASES)s")} % {"DEFAULT_PHASES": DEFAULT_PHASES}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_detection') and (not case_study_serialized.data['phases_to_execute']['ui_elements_detection']['type'] in ["legacy", "uied"]):
-                    response_content = {"message": "Elements Detection algorithm must be one of ['legacy', 'uied']"}
+                    response_content = {"message": _("Elements Detection algorithm must be one of ['legacy', 'uied']")}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 if hasattr(case_study_serialized.data['phases_to_execute'], 'ui_elements_classification'):
                     if (not case_study_serialized.data['phases_to_execute']['ui_elements_classification']['type'] in ["legacy", "uied"]):
-                        response_content = {"message": "Elements Classification algorithm must be one of ['legacy', 'uied']"}
+                        response_content = {"message": _("Elements Classification algorithm must be one of ['legacy', 'uied']")}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
@@ -442,36 +434,34 @@ class CaseStudyView(generics.ListCreateAPIView):
                     for path in [case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model'],
                              case_study_serialized.data['phases_to_execute']['ui_elements_classification']['model_properties']]:
                         if not os.path.exists(path):
-                            response_content = {"message": f"The following file or directory does not exists: {path}"}
+                            response_content = {"message": _("The following file or directory does not exists: %(path)") % {"path": path}}
                             st = status.HTTP_422_UNPROCESSABLE_ENTITY
                             execute_case_study = False
                             return Response(response_content, st)
 
                 if not os.path.exists(case_study_serialized.data['exp_folder_complete_path']):
-                    response_content = {"message": f"The following file or directory does not exists: {case_study_serialized.data['exp_folder_complete_path']}"}
+                    response_content = {"message": _("The following file or directory does not exists: %(path)") % {"path": case_study_serialized.data['exp_folder_complete_path']}}
                     st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     execute_case_study = False
                     return Response(response_content, st)
 
                 for phase in dict(case_study_serialized.data['phases_to_execute']).keys():
-                    if not(phase in default_phases):
-                        response_content = {"message": f"phases_to_execute must be composed by phases contained in {default_phases}"}
+                    if not(phase in DEFAULT_PHASES):
+                        response_content = {"message": _("phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s") % {"DEFAULT_PHASES": DEFAULT_PHASES}}
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                         execute_case_study = False
                         return Response(response_content, st)
-
                 
-
                 if execute_case_study:
                     # init_case_study_task.delay(request.data)
                     transaction_works, case_study = case_study_generator(case_study_serialized.data)
                     if not transaction_works:
                         st = status.HTTP_422_UNPROCESSABLE_ENTITY
                     else:    
-                        response_content = {"message": f"Case study with id:{case_study.id} is being generated ..."}
+                        response_content = {"message": _("Case study with id:%(id) is being generated ...") % {"id": case_study.id}}
 
             except Exception as e:
-                response_content = {"message": "Some of the attributes are invalid: " + str(e) }
+                response_content = {"message": _("Some of the attributes are invalid: ") + str(e) }
                 st = status.HTTP_422_UNPROCESSABLE_ENTITY
 
         # # item = CaseStudy.objects.create(serializer)
@@ -484,34 +474,37 @@ class SpecificCaseStudyView(generics.ListCreateAPIView):
     def get(self, request, case_study_id, *args, **kwargs):
         st = status.HTTP_200_OK
         try:
-            case_study = CaseStudy.objects.get(id=case_study_id)
+            user = request.user
+            case_study = get_object_or_404(CaseStudy, id=case_study_id, active=True)
+            if case_study.user.id != user.id:
+                raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
             serializer = CaseStudySerializer(instance=case_study)
             response = serializer.data
             return Response(response, status=st)
 
         except Exception as e:
-            response = {f"Case Study with id {case_study_id} not found"}
+            response = {_("Case Study with id %(id) not found") % {"id": case_study_id}}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
 
 class ResultCaseStudyView(generics.ListCreateAPIView):
-    def get(self, request, case_study_id, *args, **kwargs):
+    def get(self, request, execution_id, *args, **kwargs):
         st = status.HTTP_200_OK
         
         try:
-            case_study = CaseStudy.objects.get(id=case_study_id)
-            if case_study.executed:
-                csv_data, csv_filename = experiments_results_collectors(case_study, "descision_tree.log")
+            execution = Execution.objects.get(id=execution)
+            if execution.executed:
+                csv_data, csv_filename = experiments_results_collectors(execution, "descision_tree.log")
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = 'attachment; filename="'+case_study.title+'.csv"'
+                response["Content-Disposition"] = 'attachment; filename="'+execution.case_study.title+'.csv"'
                 csv_data.to_csv(response, index=False)
                 return response
             else:
-                response = {"message": 'The processing of this case study has not yet finished, please try again in a few minutes'}
+                response = {"message": _('The processing of this case study has not yet finished, please try again in a few minutes')}
 
         except Exception as e:
-            response = {"message": f"Case Study with id {case_study_id} raise an exception: " + str(e)}
+            response = {"message": _("Case Study with id %(id) raised an exception: ") % {"id": execution.case_study.id} + str(e)}
             st = status.HTTP_404_NOT_FOUND
 
         return Response(response, status=st)
@@ -565,7 +558,85 @@ def exp_file_download(request, case_study_id):
     if cs.exists():
         unzipped_folder = cs[0].exp_folder_complete_path
     else:
-        raise Exception("You don't have permissions to access this files")
+        raise PermissionDenied(_("You don't have permissions to access this files"))
+    
+    # Create a temporary zip file containing the contents of the unzipped folder
+    zip_filename = os.path.basename(unzipped_folder) + ".zip"
+    zip_file_path = os.path.join(PRIVATE_STORAGE_ROOT, zip_filename)
+    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
+        for root, dirs, files in os.walk(unzipped_folder):
+            # Ignore executions folder
+            if "executions" in root:
+                continue
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, unzipped_folder)
+                zip_ref.write(file_path, arcname=rel_path)
+    # Serve the zip file as a download response
+    response = FileResponse(open(zip_file_path, "rb"), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+    
+    return response
+
+
+
+# ============================================================================================================================
+# Executions
+# ============================================================================================================================
+class ExecutionListView(LoginRequiredMixin, ListView):
+    login_url = "/login/"
+    model = Execution
+    template_name = "executions/list.html"
+    paginate_by = 50
+
+    def get_queryset(self):
+        # Search if s is a query parameter
+        search = self.request.GET.get("s")
+        if search:
+            return Execution.objects.filter(user=self.request.user, case_study__title__icontains=search).order_by("-created_at")
+        return Execution.objects.filter(user=self.request.user).order_by("-created_at")
+  
+@login_required
+def deleteExecution(request):
+    execution_id = request.GET.get("id")
+    cs = Execution.objects.get(id=execution_id)
+    if request.user.id != cs.user.id:
+        raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
+    cs.delete()
+    return HttpResponseRedirect(reverse("analyzer:execution_list"))
+    
+class ExecutionDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+    model = Execution
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution = get_object_or_404(Execution, id=kwargs["execution_id"])
+
+        feature_extraction_technique=execution.feature_extraction_techniques.first() #parche para que no de error en la vista
+
+        if user.id != execution.user.id:
+            raise PermissionDenied(_("This execution doesn't belong to the authenticated user"))
+        reports = PDD.objects.filter(execution=execution).order_by('-created_at') #lo que caben en 2 filas enteras
+        
+        context = {
+            "reports": reports,
+            "execution_id": execution.id, 
+            "execution": execution, 
+            "feature_extraction_technique": feature_extraction_technique,
+            }
+        return render(request, "executions/detail.html", context)
+
+@login_required(login_url="/login/")
+def exec_file_download(request, execution_id):
+    user = request.user
+    execution = Execution.objects.filter(user=user, id=execution_id)
+    if execution.exists():
+        # Build zip file from the execution folder in exp_folder_complete_path
+        unzipped_folder = execution[0].exp_folder_complete_path
+    else:
+        raise Exception(_("You don't have permissions to access this files"))
     
     # Create a temporary zip file containing the contents of the unzipped folder
     zip_filename = os.path.basename(unzipped_folder) + ".zip"
