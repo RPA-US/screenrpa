@@ -41,13 +41,3 @@ RUN apt install libcudnn8 libcudnn8-dev -y
 RUN apt-get update && apt-get install -y graphviz graphviz-dev
 # Install libreoffice
 RUN apt-get install libreoffice-core-nogui libreoffice-writer-nogui --no-install-recommends --no-install-suggests
-
-# Install latex dependencies for pandoc
-# Make django migrations
-COPY ./docker/.env ./core/.env
-RUN ./venv/bin/python manage.py makemigrations apps_analyzer apps_behaviourmonitoring apps_decisiondiscovery apps_featureextraction apps_processdiscovery apps_reporting
-
-# Internationalization
-RUN apt-get install -y gettext
-RUN ./venv/bin/python manage.py compilemessages
-RUN ./venv/bin/python manage.py collectstatic --noinput
