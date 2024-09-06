@@ -1,6 +1,7 @@
 name: Build and publish
 
-on: 
+on:
+  workflow_dispatch:
   push:
     branches:
     - "main" # Running this workflow only for main branch
