@@ -1,0 +1,199 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Case Studies{% endblocktranslate %}
+              <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+                <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                  <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                </ol>
+              </nav>
+            </h6>
+          </div>
+          <div class="col-12 text-right">
+            <a href="/case-study/new/" class="btn btn-success"><i class="fas fa-plus" style="margin-right: 5px;">
+            </i>{% blocktranslate %}New Case Study{% endblocktranslate %}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Your case studies{% endblocktranslate %}</h3>
+          </div>
+          <!-- Light table -->
+          <div class="table-responsive">
+            <table class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="title">{% blocktranslate %}Title{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col">{% blocktranslate %}Foldername{% endblocktranslate %}</th>
+                  <th scope="col" class="num_executions" data-sort="num_executions">{% blocktranslate %}Executions{% endblocktranslate %}</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for case_study in object_list %}
+                <tr>
+                  <th scope="row">
+                    <div class="media align-items-center">
+                      <div class="media-body">
+                        <span class="id mb-0 text-sm">
+                        {{ case_study.id }}
+                        </span>
+                      </div>
+                    </div>
+                  </th>
+                  <td class="title">
+                    <a href="/case-study/detail/{{ case_study.id }}/">
+                      {{ case_study.title }}
+                    </a>
+                  </td>
+                  <td class="created_at">
+                    {{ case_study.created_at }}
+                  </td>
+                  <td>
+                    {{ case_study.exp_foldername }}
+                  </td>
+                  <td>
+                    <a href="/case-study/execution/list?s={{case_study.title}}">
+                      {{ case_study.num_executions }}
+                    </a>
+                  </td>
+                  <td class="text-right">
+                    <div class="dropdown">
+                      <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </a>
+                      <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                        <div style="display: flex;">
+                          <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
+                            <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                          {% if case_study.num_executions > 0 %}
+                          <a class="dropdown-item" title="{% blocktranslate %}Cannot delete an executed case study{% endblocktranslate %}">
+                            <i class="fas fa-trash" style="color: lightgrey; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                          {% else %}
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this case study?{% endblocktranslate %}')" href="/case-study/delete/?id={{ case_study.pk }}">
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>
+                          {% endif %}
+                          <a class="dropdown-item" href="/case-study/files/download/{{ case_study.pk }}" onclick="() => alert('Esta operación puede tardar un rato')">
+                            <i class="fas fa-file-archive align-icon" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Download .zip{% endblocktranslate %}</a>
+                          {% if case_study.any_active %}
+                          <a class="dropdown-item" href="/case-study/execute/?id={{ case_study.pk }}">
+                            <i class="fas fa-play align-icon" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Execute{% endblocktranslate %}</a>
+                          {% else %}
+                          <a class="dropdown-item" href="/case-study/detail/{{ case_study.pk }}/">
+                            <i class="fas fa-tools align-icon" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Set up at least one setup phase as active for execution.{% endblocktranslate %}</a>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <!-- Card footer -->
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination justify-content-end mb-0">
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_previous %} href="?page=1" {% endif %}>
+                    <i class="fas fa-angle-double-left"></i>
+                    <span class="sr-only">{% blocktranslate %}Previous{% endblocktranslate %}</span>
+                  </a>
+                </li>
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_previous %} href="?page={{ page_obj.previous_page_number}}" {% endif %}>
+                    <i class="fas fa-angle-left"></i>
+                    <span class="sr-only">{% blocktranslate %}Previous{% endblocktranslate %}</span>
+                  </a>
+                </li>
+
+                {% for i in page_obj.paginator.page_range %}
+                <!-- Show maximum 3 numbers, either two left, two right or one left one right -->
+                {% if i == page_obj.number or i == page_obj.number|add:"-1" or page_obj.number == page_obj.paginator.num_pages and i == page_obj.number|add:"-2" or i == page_obj.number|add:"1" or page_obj.number == 1 and i == page_obj.number|add:"2" %}
+                  <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                    <a class="page-link" href="?page={{ i }}">{{ i }} <span class="sr-only">{% blocktranslate %}current{% endblocktranslate %}</span></a>
+                  </li>
+                {% endif %}
+                {% endfor %}
+
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_next %} href="?page={{ page_obj.next_page_number }}" {% endif %}>
+                    <i class="fas fa-angle-right"></i>
+                    <span class="sr-only">{% blocktranslate %}Next{% endblocktranslate %}</span>
+                  </a>
+                </li>
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_next %} href="?page={{ page_obj.paginator.num_pages }}" {% endif %}>
+                    <i class="fas fa-angle-double-right"></i>
+                    <span class="sr-only">{% blocktranslate %}Next{% endblocktranslate %}</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include "includes/footer.html" %}
+
+  </div>
+  
+<!-- Webgazer PopUp -->
+<div id="popup" style="display: none; position: fixed; top: 85%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background-color: #ffffff; border-radius: 0.25rem; width: 45%; height: 25%; align-items: center; justify-content: center; margin-bottom: 5%;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <strong><i class="fa fa-glasses" style="margin-right: 5px;"></i>Eye tracking feature</strong>
+      <button type="button" onclick="closePopup()" class="btn btn-danger"><i class="fas fa-times"></i></button>
+    </div>
+    <br>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <span>You can generate your own case study with the Eye Tracking Webgazer software by clicking the button below. &nbsp;
+      Remember, you must run the StepRecorders program on your machine while using Webgazer to generate your case study. </span>
+      <div>
+        <a class="btn btn-primary" target="_blank" href="/case-study/webgazer.html">Access to Webgazer</a>
+      </div>  
+  </div>
+</div>
+</div>
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+<script>
+  // Show the pop-up with a fade in transition when the document is ready
+  $(document).ready(function(){
+    // Check if the cookie 'popupClosed' exists and if it's not 'true'
+    if (document.cookie.replace(/(?:(?:^|.*;\s*)popupClosed\s*\=\s*([^;]*).*$)|^.*$/, "$1") !== "true") {
+      $("#popup").fadeIn(1500);
+    }
+  });
+  
+  // Function to close the pop-up
+  function closePopup() {
+    $("#popup").hide();
+    // Set a cookie 'popupClosed' to 'true' when the pop-up is closed
+    document.cookie = "popupClosed=true; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+  }
+  </script>
+  {% endblock javascripts %}

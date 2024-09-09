@@ -1,0 +1,166 @@
+{% load i18n %}
+<nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
+  <div class="scrollbar-inner">
+    <!-- Brand -->
+    <div class="sidenav-header  align-items-center">
+      <a class="navbar-brand" href="/">
+        <img src="/static/assets/img/brand/logo.png" class="navbar-brand-img" alt="ScreenRPA Logo">
+      </a>
+    </div>
+  </br>
+  </br>
+    <div class="navbar-inner">
+      <!-- Collapse -->
+      <div class="collapse navbar-collapse" id="sidenav-collapse-main">
+        <!-- Nav items -->
+        <h6 class="navbar-heading p-0 text-muted">
+          <span class="docs-normal">{% blocktranslate %}Menu{% endblocktranslate %}</span>
+        </h6>
+        <ul class="navbar-nav">
+
+          <!--li class="nav-item">
+            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href="/profile">
+              <i class="ni ni-single-02 text-yellow"></i>
+              <span class="nav-link-text">Profile</span>
+            </a>
+          </li-->
+          <li class="nav-item">
+            <a class="nav-link" href="/case-study/list/">
+              <i class="ni ni-bullet-list-67 text-default"></i>
+              <span class="nav-link-text">{% blocktranslate %}My Case Studies{% endblocktranslate %}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/case-study/execution/list/">
+              <i class="ni ni-button-play text-red"></i>
+              <span class="nav-link-text">{% blocktranslate %}My executions{% endblocktranslate %}</span>
+            </a>
+          </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="/case-study/files/list/">
+              <i class="ni ni-folder-17 text-pink"></i>
+              <span class="nav-link-text">{% blocktranslate %}My files{% endblocktranslate %}</span>
+            </a>
+          </li> -->
+          {% comment %} <li class="nav-item">
+            <a class="nav-link" href="/monitoring/list/">
+              <i class="ni ni-laptop text-blue"></i>
+              <span class="nav-link-text">Log Processing</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/fe/prefiltering/list/">
+              <i class="ni ni-zoom-split-in text-orange"></i>
+              <span class="nav-link-text">Pre-Filtering</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/fe/ui-element-detection/list/">
+              <i class="ni ni-image text-orange"></i>
+              <span class="nav-link-text">UI Elements Detection</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/fe/ui-element-classification/list/">
+              <i class="ni ni-album-2 text-orange"></i>
+              <span class="nav-link-text">UI Elements Classification</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/fe/feature-extraction-technique/list/">
+              <i class="ni ni-money-coins text-orange"></i>
+              <span class="nav-link-text">Feature Extraction Technique</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/fe/postfiltering/list/">
+              <i class="ni ni-zoom-split-in text-orange"></i>
+              <span class="nav-link-text">Post-filtering</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/pd/bpmn/list/">
+              <i class="ni ni-sound-wave text-yellow"></i>
+              <span class="nav-link-text">Process discovery</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/dd/extract-training-dataset/list/">
+              <i class="ni ni-settings text-green"></i>
+              <span class="nav-link-text">Extract training dataset</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/dd/decision-tree-training/list/">
+              <i class="ni ni-vector text-green"></i>
+              <span class="nav-link-text">Decision tree training</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/reporting/pdd/list/">
+              <i class="ni ni-single-copy-04 text-purple"></i>
+              <span class="nav-link-text">Reporting</span>
+            </a>
+          </li> {% endcomment %}        
+        </ul>
+        <!-- Divider -->
+        <hr class="my-3">
+        <!-- Heading -->
+        <h6 class="navbar-heading p-0 text-muted">
+          <span class="docs-normal">{% blocktranslate %}Resources{% endblocktranslate %}</span>
+        </h6>
+        <!-- Navigation -->
+        <ul class="navbar-nav mb-md-3">
+          <li class="nav-item">
+            <a class="nav-link" 
+               target="_blank" 
+               href="https://canela.lsi.us.es">
+              <i class="ni ni-archive-2"></i>
+              <span class="nav-link-text">{% blocktranslate %}More solutions{% endblocktranslate %}</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" 
+               target="_blank" 
+               href="/case-study/webgazer.html">
+               <i class="fa fa-glasses text-blue"></i>
+              <span class="nav-link-text">{% blocktranslate %}Access to Webgazer{% endblocktranslate %}</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" 
+               target="_blank" 
+               href="https://grupo.us.es/es3uses/contacto/">
+              <i class="ni ni-spaceship text-red"></i>
+              <span class="nav-link-text text-red">{% blocktranslate %}PRO Version{% endblocktranslate %}</span>
+            </a>
+          </li>
+        </ul>
+        <!-- Divider -->
+        <hr class="my-3">
+        <ul class="navbar-nav mb-md-3">
+          <li class="nav-item">
+            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href="/profile">
+              <i class="ni ni-single-02"></i>
+              <span class="nav-link-text">{% blocktranslate %}My profile{% endblocktranslate %}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/RPA-US/screenrpa/wiki" target="_blank">
+              <i class="ni ni-book-bookmark text-green"></i>
+              <span class="nav-link-text">{% blocktranslate %}Documentation{% endblocktranslate %}</span>
+            </a>
+          </li>          
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">
+              <i class="ni ni-user-run text-red"></i>
+              <span class="nav-link-text">{% blocktranslate %}Logout{% endblocktranslate %}</span>
+            </a>
+          </li>    
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,89 @@
+{% load i18n %}
+
+<form method="POST" enctype="multipart/form-data" >{% csrf_token %}
+    <div class="pl-lg-4">
+        <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
+        <div class="pl-lg-2">
+            <div class="col-12">
+                <div class="form-group">
+                    <label class="form-control-label" for="input-title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+                    {{ form.title }}
+                    <div class="form-validation">{{ form.title.errors }}</div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group">
+                    <label class="form-control-label" for="input-title">{% blocktranslate %}Scale Dispersion{% endblocktranslate %}<b class="text-red">*</b> <small>{% blocktranslate %}Scale the dispersion area circle . The value 3 is recommended as first prefiltering execution. (1-5){% endblocktranslate %}</small></label>
+                    {{ form.scale_factor }}
+                    <span id="scale_factor_value"></span>
+                    <div class="form-validation">{{ form.scale_factor.errors }}</div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+        <div class="col-12">
+            <div class="form-group" id="preloaded">
+                {{form.preloaded}}
+                <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+            </div>
+            <div class="form-group" id="preloaded_file">
+                {{form.preloaded_file}}
+                <label class="form-control-label" for="preloaded_file">
+                    {% if form.preloaded == True %}
+                        {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
+                    {% endif %}
+                </label>
+                <button type="button" onclick="alert('|-- *preloaded*.zip\n|   |-- scenario_results\n|   |   |-- prefilter_img -> screenshotXXXX.JPEG')">?</button>
+            </div>
+        </div>
+    </div>
+    {% if not form.read_only %}
+    <button class="btn btn-success" style="float: right;" type="submit" value="submit">
+        <i class="fas fa-save"></i> 
+        {% blocktranslate %}Save{% endblocktranslate %}
+    </button>
+    {% endif %}
+</form>
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const preloaded = document.getElementById('id_preloaded');  
+    const preloaded_file = document.getElementById('id_preloaded_file');  
+    const scale_factor = document.getElementById('id_scale_factor');
+    const scale_factor_value = document.getElementById('scale_factor_value');
+
+    if (scale_factor) {
+        scale_factor.type = 'range';
+        scale_factor.min = 1;
+        scale_factor.max = 5;
+        scale_factor.step = 1;
+        scale_factor.value = 3; // Default value
+        scale_factor_value.innerText = `${scale_factor.value}`;
+
+        scale_factor.oninput = function() {
+            scale_factor_value.innerText = `${this.value}`;
+        }
+    }
+    
+    function toggleFields(isPreloadedChecked) {
+        preloaded_file.disabled = !isPreloadedChecked;
+        scale_factor.disabled = isPreloadedChecked;
+    }
+
+    preloaded.addEventListener('change', () => {
+        toggleFields(preloaded.checked);
+    });
+
+    toggleFields(preloaded.checked);
+
+    document.getElementById('form').onsubmit = function() {
+        document.getElementById('id_preloaded').readOnly = false;
+    }
+})
+</script>
+
+{% endblock javascripts %}

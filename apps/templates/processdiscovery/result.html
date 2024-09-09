@@ -1,0 +1,132 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} Case studies {% endblock title %}
+
+{% block content %}
+
+<div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/execution/detail/{{ execution_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Process Discovery Results Details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+                <li value="{{execution_id}}" class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}">{% blocktranslate %}Execution {{ execution_id}} {% endblocktranslate %}</a> </li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Process Discovery result{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>         
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <!-- Display the bpmn image -->
+            <div class="card-body">
+              <img src="{{ variant_image }}" alt="Grafo del Proceso">
+          </div>
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{scenario}}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for scenario in scenarios %}
+                    <a class="dropdown-item" href="/pd/bpmn/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                    {% endfor %}
+                  </div>
+                  
+                </div>
+
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      {% if selected_variant %}
+                          Variante {{ selected_variant }}
+                      {% else %}
+                          Seleccionar Variantes presentes en el log
+                      {% endif %}
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      {% for variant in variants %}
+                          <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?scenario={{scenario}}&variant={{ variant }}">Variante {{ variant }}</a>
+                      {% endfor %}
+                  </div>
+              </div>
+
+                
+                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
+                <a href="/pd/bpmn/result/download/{{execution_id}}/?scenario={{scenario}}">
+                  <button class="btn btn-success" style="float: right;" type="button">
+                    <i class="ni ni-cloud-download-95"></i> 
+                    {% blocktranslate %}Download{% endblocktranslate %}
+                  </button>
+                </a>
+              </ul>
+            </nav>
+          </div>
+          </div>
+        </div>
+      </div> 
+      {% include "includes/footer.html" %}
+    </div>
+
+    
+
+
+
+  {% endblock content %}
+
+  <!-- Specific JS goes HERE --> 
+{% block javascripts %}
+<!-- <style>
+  #bpmn-diagram {
+      width: 100%;       /* O un ancho fijo en píxeles si es necesario */
+      height: 500px;     /* Ajusta la altura según sea necesario */
+  }
+  </style>
+  
+
+<script src="https://cdn.jsdelivr.net/npm/bpmn-js@9.2.0/dist/bpmn-viewer.production.min.js"></script>
+<script>
+function renderBPMNDiagram(diagramXML) {
+    var viewer = new BpmnJS({
+        container: '#bpmn-diagram'
+    });
+
+    viewer.importXML(diagramXML).then(function() {
+        var canvas = viewer.get('canvas');
+        canvas.zoom('fit-viewport'); // Esta línea ajustará el zoom del diagrama
+        console.log('BPMN diagram rendered successfully');
+    }).catch(function(err) {
+        console.error('Failed to render BPMN diagram', err);
+    });
+}
+
+</script>
+<script>
+// Define the content of 'prueba' variable
+var prueba = '{{ prueba|escapejs }}';  // Asegúrate de cerrar correctamente la línea con un punto y coma
+
+// Call the function to render BPMN diagram with the content of 'prueba' variable
+renderBPMNDiagram(prueba);
+</script> -->
+
+
+
+
+{% endblock javascripts %}
+
+
+

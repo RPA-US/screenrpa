@@ -1,0 +1,57 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} {% blocktranslate %}Generate Report Configuration{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/execution/detail/{{execution.id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Execution {% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Generate Report Configuration{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution.id}}"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Generate Report Configuration{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>
+          <div class="col-12 text-right">
+            <a href="/reporting/pdd/generate/{{execution.id}}" class="btn btn btn-light"><i class="fas fa-broom" style="margin-right: 5px;"></i>{% blocktranslate %}Restart fields{% endblocktranslate %}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Generate a new Report{% endblocktranslate %}</h3>
+          </div>
+          <div class="card-body">            
+            {% include "reporting/form.html" %}
+          </div>
+             
+        </div>
+      </div>
+    </div>
+
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+{% endblock javascripts %}

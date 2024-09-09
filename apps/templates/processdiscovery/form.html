@@ -1,0 +1,223 @@
+{% load i18n %}
+{% load static %}
+<form id="processDiscoveryForm" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <!-- General Config Section -->
+
+  <h6 class="heading-small text-muted mb-4">{% trans "General Config" %}</h6>
+
+  <div class="pl-lg-4">
+    <div class="form-group" id ="title">
+      <label class="form-control-label" for="id_title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+      {{ form.title }}
+      <div class="form-validation">{{ form.title.errors }}</div>
+    </div>
+  </div>
+
+  <div class="pl-lg-4">
+    <div class="form-group" id ="type">
+      <label class="form-control-label" for="id_type">{{ form.type.label }}<b class="text-red">*</b></label>
+      {{ form.type }}
+      <div class="form-validation">{{ form.type.errors }}</div>
+    </div>
+  </div>
+
+  <!-- Model Config Section -->
+  <hr class="my-4" />
+  <h6 class="heading-small text-muted mb-4">{% trans "Model Config" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="id_model_type">
+        {{ form.model_type.label }}
+      </label>
+      <div class="dropdown-select">
+        {{ form.model_type }}
+      </div>
+      <div class="form-validation">{{ form.model_type.errors }}</div>
+    </div>
+  
+    <!-- Weight Fields, hidden by default and shown when 'Clip' is selected -->
+    <div class="row" id="weightsRow" style="display: none;">
+      <div class="col-lg-4">
+        <div class="form-group">
+          {{ form.text_weight.label_tag }}
+          {{ form.text_weight }}
+          <div class="form-validation">{{ form.text_weight.errors }}</div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="form-group">
+          {{ form.image_weight.label_tag }}
+          {{ form.image_weight }}
+          <div class="form-validation">{{ form.image_weight.errors }}</div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="form-group">
+          <label class="form-control-label" for="id_text_column">
+            {{ form.text_column.label }}
+          </label>
+          <div class="dropdown-select">
+            {{ form.text_column }}
+          </div>
+          <div class="form-validation">{{ form.text_column.errors }}</div>
+        </div>
+      </div>
+  </div>
+    
+    <div class="form-group">
+      <label class="form-control-label" for="id_labeling">
+        {{ form.labeling.label }}
+      </label>
+      {{ form.labeling }}
+      <div class="form-validation">{{ form.labeling.errors }}</div>
+    </div>
+  
+
+    <div class="form-group d-flex align-items-center justify-content-start">
+      <label class="mr-2" for="{{ form.remove_loops.id_for_label }}">
+        {{ form.remove_loops.label }}
+      </label>
+      <div class="custom-control custom-switch ml-4">
+        <input type="checkbox" class="custom-control-input" id="{{ form.remove_loops.id_for_label }}" name="remove_loops" {% if form.remove_loops.value %} checked {% endif %}>
+        <label class="custom-control-label" for="{{ form.remove_loops.id_for_label }}"></label>
+      </div>
+      <div class="form-validation ml-2">{{ form.remove_loops.errors }}</div>
+    </div>
+  </div>
+
+  <!-- Clustering Config Section -->
+  <hr class="my-4" />
+  <h6 class="heading-small text-muted mb-4">{% trans "Clustering Config" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.clustering_type.id_for_label }}">
+        {{ form.clustering_type.label }}
+      </label>
+      {{ form.clustering_type }}
+      <div class="form-validation">{{ form.clustering_type.errors }}</div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.n_components.id_for_label }}">
+        {{ form.n_components.label }}
+      </label>
+      {{ form.n_components }}
+      <div class="form-validation">{{ form.n_components.errors }}</div>
+    </div>
+
+    <div class="form-group d-flex align-items-center justify-content-start">
+      <label class="mr-2" for="{{ form.use_pca.id_for_label }}">
+        {{ form.use_pca.label }}
+      </label>
+      <div class="custom-control custom-switch ml-4">
+        <input type="checkbox" class="custom-control-input" id="{{ form.use_pca.id_for_label }}" name="use_pca" {% if form.use_pca.value %} checked {% endif %}>
+        <label class="custom-control-label" for="{{ form.use_pca.id_for_label }}"></label>
+      </div>
+      <div class="form-validation ml-2">{{ form.use_pca.errors }}</div>
+    </div>
+    
+    <div class="form-group d-flex align-items-center justify-content-start">
+      <label class="mr-2" for="{{ form.show_dendrogram.id_for_label }}">
+        {{ form.show_dendrogram.label }}
+      </label>
+      <div class="custom-control custom-switch ml-4">
+        <input type="checkbox" class="custom-control-input" id="{{ form.show_dendrogram.id_for_label }}" name="show_dendrogram" {% if form.show_dendrogram.value %} checked {% endif %}>
+        <label class="custom-control-label" for="{{ form.show_dendrogram.id_for_label }}"></label>
+      </div>
+      <div class="form-validation ml-2">{{ form.show_dendrogram.errors }}</div>
+    </div>
+  </div>
+  <!-- Preloaded -->
+  <hr>
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+  <div class="col-12">
+    <div class="form-group" id="id_preload">
+      {{form.preloaded}}
+      <label class="form-control-label" for="id_preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+    </div>
+    <div class="form-group" id="preloaded_file">
+      {{form.preloaded_file}}
+      <label class="form-control-label" for="preloaded_file">
+        {% if form.preloaded == True %}
+          {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
+        {% endif %}
+      </label>
+      <button onclick="alert('|-- zip\n|   |-- scenario_results\n|   |   |-- pd_log.csv')">?</button>
+    </div>
+  </div>
+  <hr>
+    
+  <!-- Configurations JSON Section -->
+  <hr class="my-4" />
+  <h6 class="heading-small text-muted mb-4">{% trans "Configurations" %}</h6>
+  <div class="pl-lg-4">
+    <div class="form-group">
+      <label class="form-control-label" for="{{ form.configurations.id_for_label }}">
+        {{ form.configurations.label }}
+      </label>
+      {{ form.configurations }}
+      <div class="form-validation">{{ form.configurations.errors }}</div>
+    </div>
+  </div>
+
+  <!-- Submit Button -->
+  
+
+  
+  <button class="btn btn-success" style="float: right;" type="submit" value="submit" id="id_button" >
+    <i class="fas fa-save"></i> 
+    {% blocktranslate %}Save{% endblocktranslate %}
+    </button>
+
+  
+
+ 
+  
+</form>
+
+<style>
+  .custom-control-label {
+  margin-left: 0.5rem;
+  margin-bottom: 1.8rem; 
+}
+</style>
+
+{% block javascripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+
+    
+    const title = document.getElementById('id_title');
+    const type = document.getElementById('id_type');
+    //const skip = document.getElementById('id_skip');
+    const preloaded = document.getElementById('id_preloaded');  
+    const preloaded_file = document.getElementById('id_preloaded_file');  
+    //const configurations = document.getElementById('id_configurations');
+  
+    // Función para habilitar/deshabilitar campos
+    function toggleFields(isPreloadedChecked) {
+      type.disabled = isPreloadedChecked;
+      //skip.disabled = isPreloadedChecked;
+      //configurations.disabled = isPreloadedChecked;
+      preloaded_file.disabled = !isPreloadedChecked;
+    }
+  
+    // Controlador de eventos para el checkbox 'preloaded'
+    preloaded.addEventListener('change', () => {
+      toggleFields(preloaded.checked);
+    });
+  
+    // Inicializar los campos al cargar la página
+    toggleFields(preloaded.checked);
+  
+    document.getElementById('processDiscoveryForm').onsubmit = function() {
+      document.getElementById('id_preloaded').readOnly = false;
+    }
+  })
+
+  </script>
+
+<script src="{% static 'assets/js/processdiscovery/weights_fields.js' %}" defer></script>
+{% endblock javascripts %}

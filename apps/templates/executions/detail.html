@@ -1,0 +1,445 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} {% blocktranslate %}Executions{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/case-study/execution/list/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Executions{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Execution {{ execution_id }} details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content .) -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Execution {{ execution_id }} details{% endblocktranslate %}</h3>
+          </div>
+          <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" >{% csrf_token %}
+              <!-- General information -->
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
+              <div class="pl-lg-4">
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-title">{% blocktranslate %}Title{% endblocktranslate %}</label>
+                      <input type="text" id="input-title" class="form-control" placeholder="{% blocktranslate %}Nice Execution{% endblocktranslate %}" disabled value="{{ execution.case_study.title }}">
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-title">{% blocktranslate %}Author{% endblocktranslate %}</label>
+                      <input type="text" class="form-control" disabled value="{{ execution.user.username }}">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-description">{% blocktranslate %}Description{% endblocktranslate %}</label>
+                      <textarea id="input-description" class="form-control" disabled description="{% blocktranslate %}This is a execution full of data...{% endblocktranslate %}"> {{ execution.case_study.description }}</textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-exp_folder_complete_path">{% blocktranslate %}Folder path{% endblocktranslate %}</label>
+                      <input type="text" id="input-exp_folder_complete_path" class="form-control" disabled placeholder="/rim/resources/folder_containing_exp" disabled value="{{ execution.exp_folder_complete_path }}">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-gui_class_success_regex">{% blocktranslate %}Decision Oracle{% endblocktranslate %}</label> <!-- Regular expression to evaluate decision discovered -->
+                      <input type="text" id="input-gui_class_success_regex" class="form-control" disabled placeholder="{% blocktranslate %}CheckBox_4_D and ImageView_2_B{% endblocktranslate %}" disabled value="{{ execution.case_study.gui_class_success_regex }}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr class="my-4" />
+              <!-- Configuration -->
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
+              <div class="pl-lg-4">
+                <div class="form-group">
+                  <label class="form-control-label">{% blocktranslate %}Special columns names{% endblocktranslate %}</label>
+                  <textarea rows="4" class="form-control" 
+                  disabled placeholder="{
+                    'Case': 'Case',
+                    'Activity': 'Activity',
+                    'Screenshot': 'Screenshot', 
+                    'Variant': 'Variant',
+                    'Timestamp': 'Timestamp'
+                  }">
+                  {{ execution.case_study.special_colnames }}
+                  </textarea>
+                </div>
+              </div>
+              <div class="pl-lg-4">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-scenarios_to_study">{% blocktranslate %}Scenarios to study{% endblocktranslate %}</label>
+                      <input type="text" id="input-scenarios_to_study" class="form-control" disabled placeholder="{% blocktranslate %}['scenario1', 'scenario2']{% endblocktranslate %}" disabled value="{{ execution.scenarios_to_study }}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr class="my-4" />
+              <!-- Phases to execute -->
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Set Up Phases{% endblocktranslate %}</h6>
+              <div class="pl-lg-4">
+                <div class="card-body">
+                  <div class="row icon-examples">
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.monitoring == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-laptop" style="color: grey "></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Log Processing{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.monitoring != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/monitoring/ex/detail/{{execution_id}}/{{ execution.monitoring.id }}">Configurations</a>
+                          <a class="dropdown-item" href="/monitoring/result/{{execution_id }}">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                                       
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.prefilters == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-zoom-split-in" style="color: grey "></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.prefilters != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/fe/ex/prefiltering/detail/{{execution_id}}/{{execution.prefilters.id}}">Configurations</a>
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.ui_elements_detection == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-image" style="color: grey "></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-image"></i> <span>{% blocktranslate %}UI Elements Detection{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.ui_elements_detection != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/fe/ex/ui-element-detection/detail/{{execution_id}}/{{execution.ui_elements_detection.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/fe/ex/ui-element-detection/result/{{execution_id}}">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.postfilters == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-zoom-split-in" style="color: grey "></i> <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Post-filtering{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.postfilters != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/fe/ex/posfiltering/detail/{{execution_id}}/{{execution.postfilters.id}}">Configurations</a>
+                          <a class="dropdown-item" href="#">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+
+
+                    <div class="col-lg-3 col-md-6" >
+                      {% if not execution.feature_extraction_techniques %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-money-coins" style="color: grey "></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-money-coins"></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.feature_extraction_techniques %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links 'ex/feature-extraction-technique/detail/<int:execution_id>/<int:feature_extraction_technique_id>/-->
+                          <a class="dropdown-item" href="/fe/ex/feature-extraction-technique/detail/{{execution_id}}/{{feature_extraction_technique.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/fe/feature-extraction-technique/result/{{execution_id}}/">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>               
+
+                    <div class="col-lg-3 col-md-6" >
+                      {% if execution.process_discovery == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-sound-wave" style="color: grey "></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-sound-wave"></i> <span>{% blocktranslate %}Process Discovery{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.process_discovery != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/pd/ex/bpmn/detail/{{execution_id}}/{{execution.process_discovery.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/pd/bpmn/result/{{execution_id}}/">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+
+
+                    <div class="col-lg-3 col-md-6">
+                      {% if execution.extract_training_dataset == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-settings" style="color: grey;"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-settings"></i> <span>{% blocktranslate %}Extract training dataset{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                        
+                      </a>
+                      {% if execution.extract_training_dataset != None %}
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="/dd/ex/extract-training-dataset/detail/{{execution_id}}/{{execution.extract_training_dataset.id}}/">Configurations</a>
+                          <a class="dropdown-item" href="/dd/extract-training-dataset/result/{{execution_id}}/">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                    
+
+                    <div class="col-lg-3 col-md-6">
+                        {% if execution.decision_tree_training == None %}
+                        <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <div>
+                            <i class="ni ni-vector" style="color: grey;"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
+                          </div>
+                        {% else %}
+                        <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <div>
+                            <i class="ni ni-vector"></i> <span>{% blocktranslate %}Decision tree training{% endblocktranslate %}</span>
+                          </div>
+                        {% endif %}
+                          
+                        </a>
+                        {% if execution.decision_tree_training != None %}
+                          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <!-- Dropdown menu links -->
+                            <a class="dropdown-item" href="/dd/ex/decision-tree-training/detail/{{execution_id}}/{{execution.decision_tree_training.id}}/">Configurations</a>
+                            <a class="dropdown-item" href="/dd/decision-tree-training/result/{{execution_id}}/">Results</a>
+                          </div>
+                        {% endif %}
+                      </div> 
+                      
+                  </div>
+                  
+                </div>
+              </div>
+              <hr class="my-4" />
+
+
+              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Reports{% endblocktranslate %}</h6>
+                <div class="card-body">
+                  <div class="row icon-examples" id="reports-container">
+                    {% for report in reports %}
+                      <div class="col-lg-2 col-md-4 mb-2 report-item">  
+                        
+                        
+                        <div class="card-body p-2">
+                          <a href="#" class="btn btn-primary btn-block" id="dropdownMenuLink{{ report.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <i class="ni ni-cloud-download-95"></i> Reporte {{ report.id }}
+                          </a>
+                          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ report.id }}">
+                              <div style="padding:10px;">
+                                  <iframe src="{% url 'reporting:visualize-reports' report.id %}" width="100%" height="500px">
+                                      This browser does not support PDFs. Please download the PDF to view it: <a href="{% url 'reporting:visualize-reports' report.id %}">Download PDF</a>
+                                  </iframe>
+                              </div>
+                              <a class="dropdown-item" href="#" data-url="{% url 'reporting:visualize-reports' report.id %}" onclick="openPdfFullScreen(this);">Previsualize</a>
+                              <a class="dropdown-item" href="/reporting/pdd/configuration/{{report.id}}">Configuration</a>
+                              <a class="dropdown-item" href="/reporting/pdd/download-reports/{{report.id}}/">Download</a>
+                              <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this report?{% endblocktranslate %}')" href="/reporting/pdd/delete/?report_id={{ report.id }}">
+                                  <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}
+                              </a>
+                              
+                          </div>                                                                 
+                      </div>
+
+                      
+                      </div> 
+                    {% empty %}
+                      <div class="col-12">
+                        <p>There are no reports of this execution.</p>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <!-- Contenedor de paginación -->
+                  <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center"></ul>
+                  </nav>
+                </div>
+
+
+                <div class="card-body">
+                  <a class="btn btn-success" style="float: right;" href="/reporting/pdd/generate/{{execution_id}}">
+                      <i class="ni ni-chart-bar-32"></i> 
+                      {% blocktranslate %}Create{% endblocktranslate %}
+                  </a>
+              </div>
+            </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const itemsPerPage = 12;
+    const container = document.getElementById('reports-container');
+    const pagination = document.querySelector('.pagination');
+    const reports = Array.from(container.getElementsByClassName('report-item'));
+    const pageCount = Math.ceil(reports.length / itemsPerPage);
+  
+    function renderPage(pageNumber) {
+      const start = (pageNumber - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      reports.forEach((report, index) => {
+        if (index >= start && index < end) {
+          report.style.display = '';
+        } else {
+          report.style.display = 'none';
+        }
+      });
+    }
+  
+    function setupPagination() {
+      for (let i = 1; i <= pageCount; i++) {
+        const pageItem = document.createElement('li');
+        pageItem.className = 'page-item';
+        const pageLink = document.createElement('a');
+        pageLink.className = 'page-link';
+        pageLink.href = '#';
+        pageLink.innerText = i;
+        pageLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          renderPage(i);
+        });
+        pageItem.appendChild(pageLink);
+        pagination.appendChild(pageItem);
+      }
+      renderPage(1); // Start from the first page
+    }
+  
+    if (pageCount > 1) {
+      setupPagination();
+    }
+  });
+  </script>
+
+<script>
+  function openPdfFullScreen(element) {
+      var url = element.getAttribute('data-url'); // Get the URL from data-url attribute
+      var win = window.open(url, '_blank');
+      win.focus();
+  }
+  </script>
+
+
+
+
+
+
+
+
+
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const monitoring = document.getElementById('id_prefiltering');
+      
+      // Función para habilitar/deshabilitar campos
+      function toggleFields(existPhase) {
+        monitoring.disabled = existPhase;
+      }
+  
+      // Inicializar los campos al cargar la página
+      toggleFields(execution.monitoring == null);
+  
+    
+    })  
+  </script> -->
+
+
+{% endblock javascripts %}

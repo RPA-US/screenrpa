@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-30 11:17+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/processdiscovery/forms.py:33
+msgid "Type"
+msgstr "Tipo"
+
+#: apps/processdiscovery/forms.py:34
+msgid "Configurations"
+msgstr "Configuraciones"
+
+#: apps/processdiscovery/forms.py:35
+msgid "Preload Execution Results"
+msgstr "Precargar Resultados de Ejecución"
+
+#: apps/processdiscovery/forms.py:36
+msgid "Title"
+msgstr "Título"
+
+#: apps/processdiscovery/forms.py:37
+msgid "Model Type"
+msgstr "Tipo de Modelo"
+
+#: apps/processdiscovery/forms.py:38
+msgid "Text Weight"
+msgstr "Peso del Texto"
+
+#: apps/processdiscovery/forms.py:39
+msgid "Image Weight"
+msgstr "Anchura de la imágen"
+
+#: apps/processdiscovery/forms.py:40
+msgid "Clustering Type"
+msgstr "Tipo de Clustering"
+
+#: apps/processdiscovery/forms.py:41
+msgid "Labeling"
+msgstr "Anotación"
+
+#: apps/processdiscovery/forms.py:42
+msgid "Use PCA"
+msgstr "Usar PCA"
+
+#: apps/processdiscovery/forms.py:43
+msgid "N Components"
+msgstr "Número de Componentes"
+
+#: apps/processdiscovery/forms.py:44
+msgid "Show Dendrogram"
+msgstr "MostrarDendrograma"
+
+#: apps/processdiscovery/forms.py:45
+msgid "Remove Loops"
+msgstr "Eliminar Bucles"
+
+#: apps/processdiscovery/forms.py:46 apps/processdiscovery/forms.py:88
+msgid "Text Column"
+msgstr "Columna de Texto"
+
+#: apps/processdiscovery/views.py:462
+msgid "CaseStudy with the given ID does not exist."
+msgstr "El Caso de Estudio no existe"
+
+#: apps/processdiscovery/views.py:472 apps/processdiscovery/views.py:578
+msgid "User must be authenticated."
+msgstr "El usuario debe estar autenticado."
+
+#: apps/processdiscovery/views.py:580
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr "El usuario debe estar autenticado."
+
+#: apps/processdiscovery/views.py:582
+msgid "Monitoring doesn't belong to the authenticated user."
+msgstr "La configuracion no pertenece al usuario"
+
+#: apps/processdiscovery/views.py:584
+msgid "Monitoring doesn't belong to the Case Study."
+msgstr "La configuracion no pertenece al usuario"
+
+#~ msgid "You selected a process discovery type that does not exist"
+#~ msgstr "Ha seleccionado un tipo de descubrimiento de procesos que no existe"
+
+#~ msgid "Screenshots"
+#~ msgstr "Capturas de pantalla"
+
+#~ msgid "Distance"
+#~ msgstr "Distancia"
+
+#~ msgid "Threshold: "
+#~ msgstr "Umbral: "

@@ -1,0 +1,170 @@
+{% load i18n %}
+
+<form method="POST" enctype="multipart/form-data" >{% csrf_token %}
+    <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
+    <div class="pl-lg-4">
+      <div class="col-lg-12">
+        <div class="form-group" id ="title">
+          <label class="form-control-label" for="title">{% blocktranslate %}Title {% endblocktranslate %}<b class="text-red">*</b></label>
+          {{ form.title }}
+          <div class="form-validation">{{ form.title.errors }}</div>
+        </div>
+      </div>
+    <div class="col-lg-12">
+        <div class="form-group">
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Identifier {% endblocktranslate %}<b class="text-red">*</b></label>
+        {{ form.identifier }}
+        <div class="form-validation">{{ form.identifier.errors }}</div>
+        </div>
+    </div>
+    <div class="col-lg-12">
+      <div class="form-group">
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Type {% endblocktranslate %}<b class="text-red">*</b></label>
+        {{ form.type }}
+        <div class="form-validation">{{ form.type.errors }}</div>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <div class="form-group">
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Technique {% endblocktranslate %}<b class="text-red">*</b></label>
+        {{ form.technique_name }}
+        <div class="form-validation">{{ form.technique_name.errors }}</div>
+      </div>
+    </div>
+    {% comment %} <div class="col-lg-12">
+        <div class="form-group">
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Decision Point Activity to study {% endblocktranslate %}</label>
+        {{ form.decision_point_activity }}
+        <div class="form-validation">{{ form.decision_point_activity.errors }}</div>
+        </div>
+    </div> {% endcomment %}
+  </div>
+  <hr>
+  <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
+  <div class="col-12">
+    <div class="form-group" id="preloaded">
+      {{form.preloaded}}
+      <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
+    </div>
+          <div class="form-group" id="preloaded_file">
+            {{form.preloaded_file}}
+            <label class="form-control-label" for="preloaded_file">
+              {% if form.preloaded == True %}
+                {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %}
+              {% endif %}
+            </label>
+            <button onclick="event.preventDefault(); alert('|-- zip\n|   |-- scenario_results\n|   |   |-- enriched_log.csv')">?</button>
+          </div>
+        </div>
+    <hr>
+    <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configurations{% endblocktranslate %}</h6>
+    <div class="pl-lg-4">
+    <div class="col-lg-12">
+        <div class="form-group">
+        {{ form.consider_relevant_compos }}
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Apply filtering (Relevant Component Selection){% endblocktranslate %}</label>
+        <div class="form-validation">{{ form.consider_relevant_compos.errors }}</div>
+        </div>
+        <div class="form-group">
+        <label class="form-control-label" for="input-title">{% blocktranslate %}Condition for a UI component to be relevant{% endblocktranslate %}</label>
+        {{ form.relevant_compos_predicate }}
+        <div class="form-validation">{{ form.relevant_compos_predicate.errors }}</div>
+        </div>
+    </div>
+    </div>
+    {% if not form.read_only %}
+       <hr class="my-4" />
+       <button id="mainSubmitButton" class="btn btn-success" type="submit" value="submit" style="float: right;">
+           <i class="fas fa-save"></i>
+           {% blocktranslate %}Generate{% endblocktranslate %}
+       </button>
+       {% endif %}
+</form>
+
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const title = document.getElementById('id_title');
+    const type = document.getElementById('id_type');
+    const preloaded = document.getElementById('id_preloaded');  
+    const preloaded_file = document.getElementById('id_preloaded_file');  
+    const identifier = document.getElementById('id_identifier');
+    const technique_name = document.getElementById('id_technique_name');
+    const apply_filter_checkbox = document.getElementById('id_consider_relevant_compos');
+    const relevant_compos_predicate = document.getElementById('id_relevant_compos_predicate');  
+  
+    // Función para habilitar/deshabilitar campos
+    function toggleFields(isPreloadedChecked) {
+      if (!document.getElementById('form').readOnly) {
+        type.disabled = isPreloadedChecked;
+        identifier.disabled = isPreloadedChecked;
+        technique_name.disabled = isPreloadedChecked || !type.value;  // Deshabilitar si no se ha seleccionado un tipo
+        preloaded_file.disabled = !isPreloadedChecked;
+      }
+    }
+
+    //Checkbox de 'apply_filter_checkbox' para habilitar/deshabilitar el campo 'relevant_compos_predicate'
+    function toggleFieldsFilterRelevants(isChecked) {
+      relevant_compos_predicate.disabled = !isChecked;
+    }
+    
+    apply_filter_checkbox.addEventListener('change', () => {
+      toggleFieldsFilterRelevants(apply_filter_checkbox.checked);
+    });
+
+    const feTechniques = {{ options|safe }};
+    console.log({{feTechniques}});
+  
+    // Función para cambiar las opciones de 'technique_name' basado en el valor de 'type'
+    function changeTechniqueOptions() {
+      const selectedType = type.value;
+      technique_name.options.length = 0;
+  
+      let options = [];
+      if (selectedType === 'SINGLE') {
+          options = feTechniques.single;
+          // options = [ ('ui_elem_location-class','ui_elem_location-class'),
+          // ('ui_elem_location-class_plaintext', 'ui_elem_location-class_plaintext'),
+          // ('class-ui_elem_location', 'class-ui_elem_location'),
+          // ('class_plaintext-ui_elem_location', 'class_plaintext-ui_elem_location'),
+          // ('xpath-class', 'xpath-class'),
+          // ('xpath+ui_elem_class-existence', 'xpath+ui_elem_class-existence'),
+          // ('ui_compo-existence', 'ui_compo-existence'),
+          // ('xpath-class_filtered_by_attention', 'xpath-class_filtered_by_attention'),
+          // ('ui_compos_stats', 'ui_compos_stats')
+          // ];
+      } else if (selectedType === 'AGGREGATE') {
+          options = feTechniques.aggregate;
+          // options = [
+          // ('status', 'status'),
+          // ('quantity', 'quantity')
+          // ];
+      }
+  
+      options.forEach(option => {
+          const opt = new Option(option.at(1), option.at(0));
+          technique_name.add(opt);
+      });
+  
+      // Habilitar el campo 'technique_name' si se ha seleccionado un tipo
+      technique_name.disabled = !selectedType;
+    }
+  
+    preloaded.addEventListener('change', () => {
+      toggleFields(preloaded.checked);
+    });
+  
+    type.addEventListener('change', changeTechniqueOptions);
+  
+    changeTechniqueOptions();
+    toggleFields(preloaded.checked);  // Llamar a toggleFields después de changeTechniqueOptions
+  
+    document.getElementById('form').onsubmit = function() {
+      document.getElementById('id_preloaded').readOnly = false;
+    }
+  });
+  </script>
+{% endblock javascripts %}

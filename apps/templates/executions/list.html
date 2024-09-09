@@ -1,0 +1,206 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %} {% blocktranslate %}Executions{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Executions{% endblocktranslate %}
+              <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+                <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                  <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+                </ol>
+              </nav>
+            </h6>
+          </div>
+          <div class="col-12 text-right">
+            <a href="/case-study/new/" class="btn btn-success"><i class="fas fa-plus" style="margin-right: 5px;">
+            </i>{% blocktranslate %}New Case Study{% endblocktranslate %}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Your executions{% endblocktranslate %}</h3>
+          </div>
+          <!-- Light table -->
+          <div class="table-responsive">
+            <table class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="title">{% blocktranslate %}Title{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
+                  <th scope="col">{% blocktranslate %}Foldername{% endblocktranslate %}</th>
+                  <th scope="col" class="sort" data-sort="status">{% blocktranslate %}Status{% endblocktranslate %}</th>
+                  <th scope="col">{% blocktranslate %}Progress{% endblocktranslate %}</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for execution in object_list %}
+                <tr>
+                  <th scope="row">
+                    <div class="media align-items-center">
+                      <div class="media-body">
+                        <span class="id mb-0 text-sm">
+                        {{ execution.id }}
+                        </span>
+                      </div>
+                    </div>
+                  </th>
+                  <td class="title">
+                    <a href="/case-study/execution/detail/{{ execution.id }}/">
+                      {{ execution.case_study.title }}
+                    </a>
+                  </td>
+                  <td class="created_at">
+                    {{ execution.created_at }}
+                  </td>
+                  <td>
+                    {{ execution.exp_foldername }}
+                  </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      {% if execution.errored %}
+                      <i class="bg-danger"></i>
+                      <span class="status">{% blocktranslate %}errored{% endblocktranslate %}</span>
+                      {% elif execution.executed == 0 %}
+                      <i class="bg-warning"></i>
+                      <span class="status">{% blocktranslate %}not executed{% endblocktranslate %}</span>
+                      {% elif execution.executed == 100 %}
+                      <i class="bg-success"></i>
+                      <span class="status">{% blocktranslate %}executed{% endblocktranslate %}</span>
+                      {% elif execution.executed > 0 %}
+                      <i class="bg-warning"></i>
+                      <span class="status">{% blocktranslate %}pending{% endblocktranslate %}</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <span class="completion mr-2">{{ execution.executed }}</span>
+                      <div>
+                        {% if execution.errored %}
+                        <div class="progress">
+                          <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                        </div>
+                        {% elif execution.executed == 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"></div>
+                        </div>
+                        {% elif execution.executed == 100 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+                        </div>
+                        {% elif execution.executed > 0 %}
+                        <div class="progress">
+                          <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ execution.executed }}" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-right">
+                    <div class="dropdown">
+                      <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </a>
+                      <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                        <div style="display: flex;">
+                        {% if execution.errored %}
+                          <a class="dropdown-item" title="{%blocktranslate%}Cannot be generated due to an error during the execution{%endblocktranslate%}">
+                            <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                          <a class="dropdown-item" title="{%blocktranslate%}Cannot be generated due to an error during the execution{%endblocktranslate%}">                   
+                            <i class="fas fa-download" style="color: light-gray; vertical-align: 0%;"></i>{% blocktranslate %}Download results{% endblocktranslate %}</a>           
+                          <a class="dropdown-item" title="{%blocktranslate%}Cannot be generated due to an error during the execution{%endblocktranslate%}">                   
+                            <i class="fas fa-file" style="color: light-gray; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this execution?{% endblocktranslate %}')" href="/case-study/execution/delete/?id={{ execution.pk }}">
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>    
+                        {% elif execution.executed == 100 %}
+                          <a class="dropdown-item" href="/case-study/execution/detail/{{ execution.pk }}/">
+                            <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
+                          <a class="dropdown-item" href="/case-study/execution/files/download/{{execution.id}}">                   
+                            <i class="fas fa-download" style="color: blue; vertical-align: 0%;"></i>{% blocktranslate %}Download results{% endblocktranslate %}</a>           
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to generate the report?{% endblocktranslate %}')" href="/reporting/pdd/generate/{{execution.id}}">                   
+                            <i class="fas fa-file" style="color: gray; vertical-align: 0%;"></i>{% blocktranslate %}Generate report{% endblocktranslate %}</a>           
+                          <a class="dropdown-item" onclick="return confirm('{% blocktranslate %}Are you sure you want to delete this execution?{% endblocktranslate %}')" href="/case-study/execution/delete/?id={{ execution.pk }}">
+                            <i class="fas fa-trash" style="color: red; vertical-align: 0%;"></i>{% blocktranslate %}Delete{% endblocktranslate %}</a>    
+                        {% else %}
+                          <a class="dropdown-item disabled" style="color: gray;">{% blocktranslate %}Executing...{% endblocktranslate %}</a>
+                        {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <!-- Card footer -->
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination justify-content-end mb-0">
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_previous %} href="?page=1" {% endif %}>
+                    <i class="fas fa-angle-double-left"></i>
+                    <span class="sr-only">{% blocktranslate %}Previous{% endblocktranslate %}</span>
+                  </a>
+                </li>
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_previous %} href="?page={{ page_obj.previous_page_number}}" {% endif %}>
+                    <i class="fas fa-angle-left"></i>
+                    <span class="sr-only">{% blocktranslate %}Previous{% endblocktranslate %}</span>
+                  </a>
+                </li>
+
+                {% for i in page_obj.paginator.page_range %}
+                <!-- Show maximum 3 numbers, either two left, two right or one left one right -->
+                {% if i == page_obj.number or i == page_obj.number|add:"-1" or page_obj.number == page_obj.paginator.num_pages and i == page_obj.number|add:"-2" or i == page_obj.number|add:"1" or page_obj.number == 1 and i == page_obj.number|add:"2" %}
+                  <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                    <a class="page-link" href="?page={{ i }}">{{ i }} <span class="sr-only">{% blocktranslate %}current{% endblocktranslate %}</span></a>
+                  </li>
+                {% endif %}
+                {% endfor %}
+
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_next %} href="?page={{ page_obj.next_page_number }}" {% endif %}>
+                    <i class="fas fa-angle-right"></i>
+                    <span class="sr-only">{% blocktranslate %}Next{% endblocktranslate %}</span>
+                  </a>
+                </li>
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                  <a class="page-link" {% if page_obj.has_next %} href="?page={{ page_obj.paginator.num_pages }}" {% endif %}>
+                    <i class="fas fa-angle-double-right"></i>
+                    <span class="sr-only">{% blocktranslate %}Next{% endblocktranslate %}</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}

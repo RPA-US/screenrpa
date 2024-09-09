@@ -1,0 +1,225 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %}Case Studies{% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+    <div class="container-fluid">
+        <div class="header-body">
+            <div class="row align-items-center py-4">
+                <div class="col-12 d-flex justify-content-between align-items-center">
+                    <a href="/case-study/execution/detail/{{ execution_id }}" class="btn btn-neutral">
+                        <i class="fas fa-arrow-left mr-2"></i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}
+                    </a>
+                    <h6 class="h2 text-white mb-0">{% blocktranslate %}Decision Tree Training Results Details{% endblocktranslate %}</h6>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                            <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Decision Tree Training Result{% endblocktranslate %}</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mt--6">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">{% blocktranslate %}Decision Tree {{decision_point}} of {{ scenario }} {% endblocktranslate %}</h3>
+                    <div>
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="scenarioDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{scenario}}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="scenarioDropdown">
+                                {% for scenario in scenarios %}
+                                    <a class="dropdown-item" href="/dd/decision-tree-training/result/{{execution_id}}/?scenario={{scenario}}">{{scenario}}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="decisionPointDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Decision Point: {{decision_point}}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="decisionPointDropdown">
+                                {% for decision_point in decision_points %}
+                                    <a class="dropdown-item" href="/dd/decision-tree-training/result/{{execution_id}}/?scenario={{scenario}}&decision_point={{decision_point}}">Decision Point: {{decision_point}}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <a href="/dd/decision-tree-training/result/download/{{execution_id}}/?scenario={{scenario}}&decision_point={{decision_point}}">
+                            <button class="btn btn-success" type="button">
+                                <i class="ni ni-cloud-download-95"></i>{% blocktranslate %}Download{% endblocktranslate %}
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 text-center" id="treeImage" style="cursor: pointer;">
+                            {% if tree_to_png %}
+                                <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+                            {% else %}
+                                <p>No sufficient information is available to obtain a classification tree</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6" id="classRules" style="cursor: pointer;">
+                            {% if tree_rules or tree_overlapping_rules %}
+                                <h5 class="h3 mb-0">Deterministic Rules</h5>
+                                {% for class, rules in tree_rules.items %}
+                                    <div class="mb-3">
+                                        <h4 class="mt-2">Branch {{ class }}</h4>
+                                        {% if rules %}
+                                            <ul class="list-group list-group-flush">
+                                                {% for rule in rules %}
+                                                    <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p>No deterministic rules for this branch</p>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                
+                                <h5 class="h3 mb-0 mt-4">Overlapping Rules</h5>
+                                {% for class, overlapping_rules in tree_overlapping_rules.items %}
+                                    <div class="mb-3">
+                                        <h4 class="mt-2">Branch {{ class }}</h4>
+                                        {% if overlapping_rules %}
+                                            <ul class="list-group list-group-flush">
+                                                {% for overlapping_rule in overlapping_rules %}
+                                                    <li class="list-group-item"><strong>Rule:</strong> {{ overlapping_rule }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p>No overlapping rules for this branch</p>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No sufficient information is available to obtain a classification tree</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Tree Image -->
+<div class="modal fade" id="treeImageModal" tabindex="-1" role="dialog" aria-labelledby="treeImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="treeImageModalLabel">{% blocktranslate %}Decision Tree{% endblocktranslate %}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                {% if tree_to_png %}
+                    <img src="{{ tree_to_png }}" alt="Decision Tree Image" class="img-fluid">
+                {% else %}
+                    <p>No sufficient information is available to obtain a classification tree</p>
+                {% endif %}
+                <div class="mt-4">
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="modalScenarioDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{scenario}}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="modalScenarioDropdown">
+                            {% for scenario in scenarios %}
+                                <a class="dropdown-item" href="/dd/decision-tree-training/result/{{execution_id}}/?scenario={{scenario}}">{{scenario}}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="dropdown d-inline-block">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="modalDecisionPointDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Decision Point: {{decision_point}}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="modalDecisionPointDropdown">
+                            {% for decision_point in decision_points %}
+                                <a class="dropdown-item" href="/dd/decision-tree-training/result/{{execution_id}}/?scenario={{scenario}}&decision_point={{decision_point}}">Decision Point: {{decision_point}}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Class Rules -->
+<div class="modal fade" id="classRulesModal" tabindex="-1" role="dialog" aria-labelledby="classRulesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="classRulesModalLabel">{% blocktranslate %}Rules of Branches{% endblocktranslate %}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="modalDeterministicRules">
+                    <h5 class="h3 mb-0">Deterministic Rules</h5>
+                    {% for class, rules in tree_rules.items %}
+                        <div class="mb-3">
+                            <h4 class="mt-2">Branch {{ class }}</h4>
+                            {% if rules %}
+                                <ul class="list-group list-group-flush">
+                                    {% for rule in rules %}
+                                        <li class="list-group-item"><strong>Rule:</strong> {{ rule }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No deterministic rules for this branch</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div id="modalNonDeterministicRules" class="mt-4">
+                    <h5 class="h3 mb-0">Overlapping Rules</h5>
+                    {% for class, overlapping_rules in tree_overlapping_rules.items %}
+                        <div class="mb-3">
+                            <h4 class="mt-2">Branch {{ class }}</h4>
+                            {% if overlapping_rules %}
+                                <ul class="list-group list-group-flush">
+                                    {% for overlapping_rule in overlapping_rules %}
+                                        <li class="list-group-item"><strong>Rule:</strong> {{ overlapping_rule }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No overlapping rules for this branch</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "includes/footer.html" %}
+
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    document.getElementById('treeImage').addEventListener('click', function() {
+        $('#treeImageModal').modal('show');
+    });
+
+    document.getElementById('classRules').addEventListener('click', function() {
+        $('#classRulesModal').modal('show');
+    });
+</script>
+{% endblock javascripts %}

@@ -1,0 +1,89 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+
+{% block title %} Case studies {% endblock title %}
+
+{% block content %}
+
+
+{% if execution_id %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="/case-study/execution/detail/{{execution_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+          </i>{% blocktranslate %}Go Back to Execution {{execution_id}}{% endblocktranslate %}</a>
+          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Log Processing Configuration Details{% endblocktranslate %}</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{execution_id}}">{% blocktranslate %}Execution {{ execution_id }}{% endblocktranslate %}</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Log Processing Configuration Details{% endblocktranslate %}</a></li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/monitoring/list/{{ monitoring.case_study_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Log Processing Configurations{% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Log Processing Configuration Details{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{ monitoring.case_study_id }}">{% blocktranslate %}Case Study {{ monitoring.case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="/monitoring/list/{{ monitoring.case_study_id }}">{% blocktranslate %}Log Processing{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Monitoring {{ monitoring.id }}{% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>
+          <div class="col-12 text-right">
+            <a href="#" class="btn btn btn-info"><i class="fas fa-broom"></i>{% blocktranslate %}Edit fields{% endblocktranslate %}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Log Processing Configuration Details{% endblocktranslate %}</h3>
+          </div>
+          <div class="card-body">
+            {% include "monitoring/form.html" %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+<script>
+  // Espera a que el contenido de form.html se cargue completamente
+  document.addEventListener("DOMContentLoaded", function() {
+      // Oculta el botón del formulario
+      var preload = document.getElementById("preloaded_file");
+      preload.style.display = "none";
+  });
+</script>{% endblock javascripts %}

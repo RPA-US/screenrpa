@@ -1,0 +1,60 @@
+version: '3.7'
+
+# Volumes
+volumes:
+  db_data:
+    name: ${DOCKERNAME}db_data
+  screenrpa_data:
+    name: ${DOCKERNAME}screenrpa_data
+
+services:
+  db:
+    image: postgres
+    container_name: ${DOCKERNAME}screenrpa-db-dev
+    restart: always
+    env_file: ./.env
+    hostname: db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - db_network
+
+  screen-rpa:
+    container_name: ${DOCKERNAME}screenrpa-dev
+    restart: unless-stopped
+    env_file: ./.env
+    command: tail -F anything
+    build:
+      context: ../.
+      dockerfile: ./docker/Dockerfile
+      args:
+        branch: ${BRANCH_DOCKER}
+        target: dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - screenrpa_data:/screenrpa
+    networks:
+      - db_network
+      - web_network
+
+  nginx:
+    container_name: screenrpa-nginx-dev
+    restart: always
+    image: "nginx:latest"
+    ports:
+      - "85:85"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on: 
+      - screen-rpa
+networks:
+  db_network:
+    driver: bridge
+  web_network:
+    driver: bridge
+ 

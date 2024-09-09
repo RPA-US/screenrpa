@@ -10,14 +10,11 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
-sdist/
 var/
 wheels/
 pip-wheel-metadata/
@@ -140,8 +137,10 @@ dmypy.json
 # Custom Folders
 CSV_exit
 resources/
+metadata/
 mockups
 privatefiles/
+checkpoints/
 
 # SQLite Database
 loggenerator.db
@@ -154,3 +153,39 @@ staticfiles/
 landing/
 
 dump.rdb
+
+# database & logs
+*.db
+*.sqlite3
+*.log
+
+# other
+.DS_Store
+
+# javascript
+package-lock.json
+
+# database backup
+backup.json
+
+media/
+staticfiles/*
+!staticfiles/.gitkeep 
+.vscode/symbols.json
+
+YOLO_Datasets/
+
+apps/static/assets/node_modules
+apps/static/assets/yarn.lock
+apps/static/assets/.temp
+
+#checkpoints
+apps/featureextraction/SOM/checkpoints/
+
+#notebooks
+apps/processdiscovery/notebooks/
+apps/notebooks
+apps/decisiondiscovery/notebooks/*.csv
+apps/decisiondiscovery/notebooks/*.txt
+apps/decisiondiscovery/notebooks/*.json
+apps/decisiondiscovery/notebooks/test.ipynb

@@ -1,0 +1,154 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-30 12:31+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps/featureextraction/SOM/CNN/CompDetCNN.py:25
+msgid "*** No model loaded ***"
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:590
+msgid ""
+"apps/featureextraction/SOM/detection.py Log already exists, it's not needed "
+"to execute format conversor"
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:591
+msgid "Log already exists, it's not needed to execute format conversor"
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:593
+msgid ""
+"apps/featureextraction/SOM/detection.py Format conversor executed! Type: "
+"%(format), Filename: %(filename)"
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:610
+msgid ""
+"\n"
+"\n"
+"Reading images OCR info from file..."
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:647
+msgid "Enter path to images numpy arrays location: "
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:648
+msgid "Enter numpy array file name: "
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:651
+msgid "Length: "
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:653
+msgid ""
+"\n"
+"Component: "
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:657
+msgid "Empty component"
+msgstr ""
+
+#: apps/featureextraction/SOM/detection.py:660
+msgid ""
+"Do you want to check another image components? Indicate another npy file "
+"name: "
+msgstr ""
+
+#: apps/featureextraction/SOM/sam.py:189
+msgid "You selected a type of sam's checkpoint that does not exists"
+msgstr ""
+
+#: apps/featureextraction/forms.py:26 apps/featureextraction/forms.py:197
+msgid "Type"
+msgstr ""
+
+#: apps/featureextraction/forms.py:27 apps/featureextraction/forms.py:198
+msgid "Skip"
+msgstr ""
+
+#: apps/featureextraction/forms.py:99
+msgid "Preload Execution Results"
+msgstr ""
+
+#: apps/featureextraction/forms.py:100 apps/featureextraction/forms.py:145
+msgid "Dispersion Scale Factor"
+msgstr ""
+
+#: apps/featureextraction/forms.py:147
+msgid "Consider Nested Components as Relevant"
+msgstr ""
+
+#: apps/featureextraction/forms.py:234
+msgid "Identifier"
+msgstr ""
+
+#: apps/featureextraction/forms.py:235
+msgid "Feature extraction type"
+msgstr ""
+
+#: apps/featureextraction/forms.py:236
+msgid "Technique"
+msgstr ""
+
+#: apps/featureextraction/forms.py:237
+msgid "Apply Filtering (Relevant Component Selection)"
+msgstr ""
+
+#: apps/featureextraction/forms.py:238
+msgid "Condition for a UI Component to be relevant"
+msgstr ""
+
+#: apps/featureextraction/models.py:39
+msgid "exp_folder_complete_path separators not coherent"
+msgstr ""
+
+#: apps/featureextraction/models.py:213
+msgid "Only lowercase, uppercase letters, and hyphen are allowed"
+msgstr ""
+
+#: apps/featureextraction/views.py:76 apps/featureextraction/views.py:85
+#: apps/featureextraction/views.py:213 apps/featureextraction/views.py:898
+#: apps/featureextraction/views.py:915
+msgid "User must be authenticated."
+msgstr ""
+
+#: apps/featureextraction/views.py:215 apps/featureextraction/views.py:900
+#: apps/featureextraction/views.py:917
+msgid "Case Study doesn't belong to the authenticated user."
+msgstr ""
+
+#: apps/featureextraction/views.py:217
+msgid "Feature Extraction Technique doesn't belong to the authenticated user."
+msgstr ""
+
+#: apps/featureextraction/views.py:219
+msgid ""
+"Feature Extraction Technique Tree Training doesn't belong to the Case Study."
+msgstr ""
+
+#: apps/featureextraction/views.py:902 apps/featureextraction/views.py:919
+msgid "Postfiltering doesn't belong to the authenticated user."
+msgstr ""
+
+#: apps/featureextraction/views.py:904 apps/featureextraction/views.py:921
+msgid "Postfiltering doesn't belong to the Case Study."
+msgstr ""
