@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "Checking authentication to ghcr.io"
           docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GITHUB_TOKEN }}
-          docker inspect ghcr.io/RPA-US/screenrpa:latest || echo "Image may not exist, but authentication is working"
+          docker inspect ghcr.io/rpa-us/screenrpa:latest || echo "Image may not exist, but authentication is working"
 
       - name: Build and push Docker image
         id: push
@@ -40,7 +40,7 @@ jobs:
           context: /screenrpa
           push: true
           file: /screenrpa/docker/nvidia.Dockerfile
-          tags: ghcr.io/RPA-US/screenrpa:latest
+          tags: ghcr.io/rpa-us/screenrpa:latest
           build-args: |
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
