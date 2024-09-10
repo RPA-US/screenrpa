@@ -25,7 +25,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: /screenrpa
           push: true
           file: docker/nvidia.Dockerfile
           tags: ghcr.io/a8081/screenrpa:latest
