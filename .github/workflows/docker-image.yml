@@ -20,14 +20,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+      
+      - name: Print working directory
+        run: pwd
+
+      - name: List files in working directory
+        run: ls -la
+        
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
         with:
           context: /screenrpa
           push: true
-          file: docker/nvidia.Dockerfile
+          file: /screenrpa/docker/nvidia.Dockerfile
           tags: ghcr.io/a8081/screenrpa:latest
           build-args: |
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
