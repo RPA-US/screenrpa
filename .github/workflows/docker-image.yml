@@ -21,18 +21,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Print working directory
-        run: pwd
-
-      - name: List files in working directory
-        run: ls -la
-
-      - name: Verify login to GitHub Container Registry
-        run: |
-          echo "Checking authentication to ghcr.io"
-          docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GITHUB_TOKEN }}
-          docker inspect ghcr.io/rpa-us/screenrpa:latest || echo "Image may not exist, but authentication is working"
-
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
