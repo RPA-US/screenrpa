@@ -9,8 +9,11 @@ on:
 jobs:
   build-and-publish-latest:
     runs-on: self-hosted
-
     steps:
+      
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -20,7 +23,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+      
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
@@ -28,4 +31,15 @@ jobs:
           context: .
           push: true
           file: docker/nvidia.Dockerfile
-          tags: ghcr.io/a8081/screenrpa:latest
+          tags: ghcr.io/rpa-us/screenrpa:latest
+          build-args: |
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+            EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
