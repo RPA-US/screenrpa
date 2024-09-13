@@ -9,8 +9,14 @@ on:
 jobs:
   build-and-publish-latest:
     runs-on: self-hosted
-
     steps:
+
+      - name: Print current directory
+        run: pwd
+
+      - name: List files in the current directory
+        run: ls -R
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
