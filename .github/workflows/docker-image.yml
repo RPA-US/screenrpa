@@ -14,15 +14,6 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Verifica el directorio de trabajo y el contenido del repositorio
-        run: |
-          echo "Directorio actual:"
-          pwd
-          echo "Archivos en el directorio actual:"
-          ls -la
-          echo "Archivos en el directorio docker:"
-          ls -la docker
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
