@@ -31,9 +31,9 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: ../../screenrpa
+          context: /home/iwt2/canela/screenrpa
           push: true
-          file: deploy/dev.nvidia.Dockerfile
+          file: /home/iwt2/canela/screenrpa/deploy/dev.nvidia.Dockerfile
           tags: ghcr.io/rpa-us/screenrpa:latest
           build-args: |
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
