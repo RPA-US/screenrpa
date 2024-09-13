@@ -22,6 +22,11 @@ RUN apt-get install -y postgresql postgresql-client
 WORKDIR /screenrpa
 COPY . .
 
+# Install graphviz
+RUN apt-get update && apt-get install -y graphviz graphviz-dev
+# Install libreoffice
+RUN apt-get install libreoffice-core-nogui libreoffice-writer-nogui --no-install-recommends --no-install-suggests -y
+
 # Installs python dependencies
 RUN python3.10 -m venv venv
 RUN ./venv/bin/python -m pip install --upgrade pip
@@ -37,7 +42,3 @@ RUN apt upgrade libstdc++6 -y
 # Installs cudnn8
 RUN apt install libcudnn8 libcudnn8-dev -y
 
-# Install graphviz
-RUN apt-get update && apt-get install -y graphviz graphviz-dev
-# Install libreoffice
-RUN apt-get install libreoffice-core-nogui libreoffice-writer-nogui --no-install-recommends --no-install-suggests -y
