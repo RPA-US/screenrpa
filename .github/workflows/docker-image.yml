@@ -33,7 +33,7 @@ jobs:
         with:
           context: ../../screenrpa
           push: true
-          file: /deploy/dev.nvidia.Dockerfile
+          file: deploy/dev.nvidia.Dockerfile
           tags: ghcr.io/rpa-us/screenrpa:latest
           build-args: |
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
