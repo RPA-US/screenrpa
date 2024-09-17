@@ -740,7 +740,10 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
                 break
 
         tree_rules = decision_point_data["rules"]
-        tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        if "overlapping_rules" in decision_point_data:
+            tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        else:
+            tree_overlapping_rules = {}
         
         # Include CSV data in the context for the template
         context = {
