@@ -854,7 +854,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                     if len(variable_parts) > 1:
                                         last_part = variable_parts[-1]
                                         
-                                        first_part_split = variable_parts[0].split('_')
+                                        first_part_split = variable_parts[-2].split('_')
                                         last_part_split = last_part.split('_')
                                         
                                         first_element = first_part_split[-1]
@@ -1294,7 +1294,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
     #df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
     #colnames['Variant'] es auto_variant
-    df_pd_log.groupby(colnames['Variant']).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log))
+    df_pd_log.groupby(colnames['Variant'], as_index=False).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log))
 
 
 ###################################################################
