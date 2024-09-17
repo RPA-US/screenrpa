@@ -35,12 +35,22 @@ class Component:
         self.line_ = None
         self.redundant = False
 
-    def compo_update(self, id, org_shape):
+    def compo_update(self, id, org_shape, og_shape):
         self.id = id
-        self.image_shape = org_shape
+        self.image_shape = og_shape
+
+        region = []
+        for point in self.region:
+            region.append((point[0] * og_shape[0] / org_shape[0], point[1] * og_shape[1] / org_shape[1]))
+        self.region = region
+        self.region_area = len(region)
+
+        self.boundary = self.compo_get_boundary()
+        self.bbox = self.compo_get_bbox()
+        self.bbox_area = self.bbox.box_area
+
         self.width = self.bbox.width
         self.height = self.bbox.height
-        self.bbox_area = self.bbox.box_area
         self.area = self.width * self.height
 
     def put_bbox(self):
@@ -209,7 +219,7 @@ class Component:
 
     def compo_merge(self, compo_b):
         self.bbox = self.bbox.bbox_merge(compo_b.bbox)
-        self.compo_update(self.id, self.image_shape)
+        self.compo_update(self.id, self.image_shape, self.image_shape)
 
     def compo_clipping(self, img, pad=0, show=False):
         (column_min, row_min, column_max, row_max) = self.put_bbox()
