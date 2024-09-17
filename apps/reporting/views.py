@@ -70,9 +70,9 @@ def get_som_json_from_screenshots_in_components(screenshot_filename, scenario_re
     return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
 
 
-def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path) -> dict:
     ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
-    som_json = get_som_json_from_screenshots_in_components(screenshot_filename, scenario_results_path, special_colnames, action)
+    som_json = get_som_json_from_screenshots_in_components(screenshot_filename, scenario_results_path)
 
     uicompo_json = None
     min_distance = float('inf')
@@ -1019,7 +1019,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
             else:
                     # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
-                text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
+                text_input_cat_name = execution.ui_elements_classification.model.text_classname
+                text_input = action[text_input_cat_name].iloc[0] if text_input_cat_name in action.columns and not pd.isnull(action[text_input_cat_name].iloc[0]) else f"No {text_input_cat_name}"
                 event_description = f'The user writes "{text_input}"'
                 screenshot_filename = action[colnames['Screenshot']].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
@@ -1112,7 +1113,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
           
 ############################################################3
     
-    def process_variant_group(group, traceability, path_to_dot_file, colnames,df_pd_log):
+    def process_variant_group(group, traceability, path_to_dot_file, colnames,df_pd_log, variant):
     
         #prev_act = traceability['decision_points'][0]['prevAct']
         decision_point = traceability['decision_points'][0]
@@ -1127,7 +1128,6 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         #añadir el primer punto de decision al diccionario
         variant_decision_points[decision_point['prevAct']]= decision_point
         
-        variant = group[colnames['Variant']].iloc[0]
         decision_tree.add_run().add_break()
         decision_tree.add_run(f'Variant {variant}\n', style='Título 3 Car')
         decision_tree.add_run().add_break()
@@ -1223,7 +1223,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                                 # Insertar la imagen en el documento
                                 ui_compo_centroid=variable
                                 
-                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'))
                                 if compo_ui:
                                     compo_ui["color"] = color  # Asignar color al polígono
                                     compo_ui_json.append(compo_ui)
@@ -1270,7 +1270,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
                                     # Insertar la imagen en el documento
                                     ui_compo_centroid = variable
-                                    compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                    compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'))
 
                                     if compo_ui:
                                         compo_ui["color"] = color  # Asignar color al polígono
@@ -1294,7 +1294,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
     #df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
     #colnames['Variant'] es auto_variant
-    df_pd_log.groupby(colnames['Variant'], as_index=False).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log))
+    df_pd_log.groupby(colnames['Variant'], as_index=False).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log, group.name))
 
 
 ###################################################################
