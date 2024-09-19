@@ -483,7 +483,7 @@ def detect_images_components(scenario_path,param_img_root, log, special_colnames
                 path=path_to_save_mask_npy
                 for n in ['segmentation','crop_box']:
                     path_element = path+'_'+n+'.npy'
-                    aux = np.array(arrays_dict[n])
+                    aux = np.array(arrays_dict[n], dtype=object)
                     np.save(path_element,aux)
 
                 # save texts npy
