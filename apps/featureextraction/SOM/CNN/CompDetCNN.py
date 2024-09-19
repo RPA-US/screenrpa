@@ -26,8 +26,11 @@ class CompDetCNN:
             return
         result = []
         for i in range(len(imgs)):
-            X = self.preprocess_img(imgs[i])
-            Y = self.class_map[np.argmax(self.model.predict(X, verbose=0))]
-            result.append(Y)
+            try:
+                X = self.preprocess_img(imgs[i])
+                Y = self.class_map[np.argmax(self.model.predict(X, verbose=0))]
+                result.append(Y)
+            except Exception as e:
+                result.append('unknown')
         return result
             
