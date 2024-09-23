@@ -146,6 +146,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
+    headers["unknown"] = 0
 
     new_columns = pd.DataFrame(index=log.index)
     num_screenshots = len(screenshot_filenames)
