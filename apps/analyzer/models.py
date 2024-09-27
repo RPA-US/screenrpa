@@ -300,7 +300,7 @@ class Execution(models.Model):
 
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
-            source = os.path.join('../../', scenario)
+            source = os.path.join('..', '..', scenario)
             destination = os.path.join(self.exp_folder_complete_path, scenario)
             if os.name == 'nt':
                 command = f'cmd /c mklink /D "{destination}" "{source}"'
