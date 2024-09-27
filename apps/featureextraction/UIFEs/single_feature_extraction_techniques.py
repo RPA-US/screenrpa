@@ -33,7 +33,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     headers = dict()
-    info_to_join: dict[str:list] = {}
+    feature_columns: dict[str:list] = {}
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
@@ -70,17 +70,17 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
             
             column_name = compos_list[j]["class"]+"_"+str(screenshot_compos_frec[compos_list[j]["class"]])
 
-            if column_name in info_to_join:
-                if not len(info_to_join[column_name]) == i:
-                    for k in range(len(info_to_join[column_name]),i):
-                        info_to_join[column_name].append("")
-                info_to_join[column_name].append(compos_list[j]["centroid"])
+            if column_name in feature_columns:
+                if not len(feature_columns[column_name]) == i:
+                    for k in range(len(feature_columns[column_name]),i):
+                        feature_columns[column_name].append("")
+                feature_columns[column_name].append(compos_list[j]["centroid"])
             else:
                 column_as_vector = []
                 for k in range(0,i):
                     column_as_vector.append("")
                 column_as_vector.append(compos_list[j]["centroid"])
-                info_to_join[column_name] = column_as_vector
+                feature_columns[column_name] = column_as_vector
             
             if len(compos_list[j]["type"]) != "leaf":
                 num_UI_groups+=1
@@ -92,7 +92,6 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
         if not "features" in data:
             data["features"] = {}
             
-        data["features"]["location"] = info_to_join
         data["features"]["#UICompos"] = num_UI_compos
         data["features"]["#UIElements"] = num_UI_elements
         data["features"]["#UIGroups"] = num_UI_groups
@@ -142,7 +141,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     headers = dict()
-    info_to_join: dict[str:list] = {}
+    feature_columns: set = set()
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
@@ -154,7 +153,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     max_num_UI_elements = 0
     min_num_UI_elements = 99999999999999999
 
-    for i, screenshot_filename in enumerate(screenshot_filenames):
+    for i, screenshot_filename in tqdm(enumerate(screenshot_filenames), desc="Extracting features from screenshots", position=tqdm._get_free_pos()):
         screenshot_filename = os.path.basename(screenshot_filename)
         
         # Check if the file exists, if exists, then we can continue
@@ -181,22 +180,13 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 if centroid_columnname_type == "class_as_colname":
                     column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["centroid"])
-                
+                    if column_name in feature_columns:                
                         enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["centroid"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pd.DataFrame([""] * i + [compos_list[j]["centroid"]], columns=[column_name])
                         
-                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "classplaintext_as_colname":
@@ -216,23 +206,13 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 
                     column_name = f"{id}_{aux}_{screenshot_compos_frec[aux]}"
 
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["centroid"])
-                        
+                    if column_name in feature_columns:
                         enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["centroid"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pd.DataFrame([""] * i + [compos_list[j]["centroid"]], columns=[column_name])
                         
-                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
-                
+                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_class":
@@ -240,23 +220,13 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     # activity = log.at[i, activity_colname]
                     column_name = f"{id}_{centroid[0]}-{centroid[1]}"
                     
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["class"])
-                        
+                    if column_name in feature_columns:
                         enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["class"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pd.DataFrame([""] * i + [compos_list[j]["class"]], columns=[column_name])
                         
-                        if column_name not in new_columns:
-                            enriched_log[column_name] = "" # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
@@ -273,53 +243,34 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     else:
                         screenshot_compos_frec[aux] += 1
 
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
-                        
+                    if column_name in feature_columns:
                         enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pd.DataFrame([""] * i + [f"{compo_class}_{screenshot_compos_frec[compo_class]}"], columns=[column_name])
                         
-                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "xpath_class":
                     xpath = compos_list[j]["xpath"]
                     column_name = f"{id}_{xpath}"
                     
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["class"])
-                        
+                    if column_name in feature_columns:
                         enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["class"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pd.DataFrame([""] * i + [compos_list[j]["class"]], columns=[column_name])
                         
-                        if column_name not in new_columns:
-                            enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
-
+                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
                 else:
                     raise Exception("UIFE: centroid_columnname_type not recognized")
                 # num_UI_elements += 1
-            if "features" in data:
-                data["features"]["location"] = info_to_join
-            else:
-                data["features"] = { "location": info_to_join }
+            # OLD: feature extractor splitted to aggregate after extracting dataset
+            # if "features" in data:
+            #     data["features"]["location"] = feature_columns
+            # else:
+            #     data["features"] = { "location": feature_columns }
             
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile)
