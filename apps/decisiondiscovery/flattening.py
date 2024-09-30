@@ -87,8 +87,7 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                     if col == dp:
                         branch = log.at[index, col]
                         #unique_value = log[col,c].unique()[0]  # Suponiendo que hay un único valor
-                        prev_act = find_prev_act(os.path.join(path_dataset_saved, "traceability.json"), col)
-                        if prev_act == act:
+                        if str(activity) == act:
                             log_dict[c]["dp_branch"] = branch
 
         log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
@@ -100,7 +99,7 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
         if os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}.csv")):
             i = 1
             while True:
-                if not os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")):
+                if not os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}.csv")):
                     aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")
                     with open(aux_path+".json", "w") as outfile:
                         outfile.write(json_object)
