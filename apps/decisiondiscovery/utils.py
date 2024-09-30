@@ -362,8 +362,8 @@ def read_feature_column_name(column_name):
     # Patrón adicional para nombres de columna sin prefijo
     pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
     # Patroón para puntos de decisión
-    # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
-    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)(_?[a-zA-Z]?)"
+    # one_hot_categorical__idc2257948-fb8b-4a60-8ea6-1fdce0c602a1_*
+    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)"
     
     # Intentamos encontrar coincidencias con los patrones definidos
     coincidences = re.match(pattern_with_centroid, column_name)
@@ -401,9 +401,9 @@ def read_feature_column_name(column_name):
         suffix = coincidences.group(1)
         feature = coincidences.group(2)
         centroid = None
-        activity = coincidences.group(3)
-        if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
-            activity += coincidences.group(4)
+        activity = coincidences.group(4) # Actividad o numero de puerta xor
+        if coincidences.group(3):  # Si hay un grupo 3 adicional (opcional, significa xor)
+            activity = f"{coincidences.group(3)}_{activity}"
         return suffix, feature, centroid, activity
     
     # Si no coincide con ninguno de los patrones
@@ -471,7 +471,7 @@ def find_prev_act(json_path, decision_point_id):
         print(f"File not found: {e}")
         return None
 
-    for dp in traceability.get("decision_points", []):
+    for dp in traceability.get_non_empty_dp_flattened():
         if dp["id"] == decision_point_id:
             return dp["prevAct"]
     
