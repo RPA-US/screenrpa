@@ -52,7 +52,7 @@ def combine_ui_element_centroid_aux(ui_log_path, path_scenario, execution, pp, u
 
                     # Insert the class of the smallest object containing the centroid
                     if use_text and compo["class"] == text_classname:
-                        log.at[index, col] = compo["Text"]
+                        log.at[index, col] = compo["text"]
                     else:
                         log.at[index, col] = compo["class"]
     
