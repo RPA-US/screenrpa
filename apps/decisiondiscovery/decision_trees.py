@@ -165,9 +165,6 @@ def plot_decision_tree(path: str,
     return image
 
 def update_json_with_rules(json_data, rules_class):
-    # Convertir las claves de rules_class a enteros (o cadenas) y luego a cadenas
-    rules_class_str_keys = {str(int(float(key))): value for key, value in rules_class.items()}
-    
     # Recorrer los puntos de decisión
     for decision_point in json_data["decision_points"]:
         # Recorrer las ramas del punto de decisión
@@ -175,13 +172,13 @@ def update_json_with_rules(json_data, rules_class):
             label = branch["label"]
             
             # Si hay reglas para esta rama en rules_class_str_keys, actualizar el JSON
-            if label in rules_class_str_keys:
+            if label in rules_class:
                 if label in decision_point["rules"]:
                     # Añadir nuevas reglas a la lista existente
-                    decision_point["rules"][label].extend(rules_class_str_keys[label])
+                    decision_point["rules"][label].extend(rules_class[label])
                 else:
                     # Crear una nueva lista de reglas si no existe
-                    decision_point["rules"][label] = rules_class_str_keys[label]
+                    decision_point["rules"][label] = rules_class[label]
     
     return json_data
 
