@@ -2,11 +2,11 @@ import os
 import json
 import re
 import pandas as pd
+import polars as pl
 import numpy as np
 from shapely import Polygon, Point
-from core.utils import read_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe, detect_separator
 from core.settings import STATUS_VALUES_ID, ENRICHED_LOG_SUFFIX, sep
-from core.utils import read_ui_log_as_dataframe
 from tqdm import tqdm
 
 
@@ -131,14 +131,17 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     enriched_log_output = os.path.join(execution_root, fe.technique_name + '_enriched_log.csv')
     text_classname = execution.ui_elements_classification.model.text_classname
     
+    # Use polars to read fe_log and use polars' DataFrame
     if os.path.exists(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv")):
-        log = read_ui_log_as_dataframe(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"))
+        separator = detect_separator(ui_log_path)
+        log = pl.read_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), separator=separator)#, index_col=0)
     else:
-        log = read_ui_log_as_dataframe(ui_log_path)
+        separator = detect_separator(ui_log_path)
+        log = pl.read_csv(ui_log_path, separator=separator)#, index_col=0)
 
-    enriched_log = log.copy()
+    enriched_log = log.clone()
     
-    screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
+    screenshot_filenames = log[:, screenshot_colname].to_list()
 
     headers = dict()
     feature_columns: set = set()
@@ -147,7 +150,6 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
         headers[elem] = 0
     headers["unknown"] = 0
 
-    new_columns = pd.DataFrame(index=log.index)
     num_screenshots = len(screenshot_filenames)
     num_UI_elements = 0
     max_num_UI_elements = 0
@@ -181,12 +183,12 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
                     if column_name in feature_columns:                
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                     else:
                         feature_columns.add(column_name)
-                        new_column = pd.DataFrame([""] * i + [compos_list[j]["centroid"]], columns=[column_name])
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["centroid"]]})
                         
-                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "classplaintext_as_colname":
@@ -207,12 +209,12 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     column_name = f"{id}_{aux}_{screenshot_compos_frec[aux]}"
 
                     if column_name in feature_columns:
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                     else:
                         feature_columns.add(column_name)
-                        new_column = pd.DataFrame([""] * i + [compos_list[j]["centroid"]], columns=[column_name])
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["centroid"]]})
                         
-                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_class":
@@ -221,12 +223,12 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     column_name = f"{id}_{centroid[0]}-{centroid[1]}"
                     
                     if column_name in feature_columns:
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
                     else:
                         feature_columns.add(column_name)
-                        new_column = pd.DataFrame([""] * i + [compos_list[j]["class"]], columns=[column_name])
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["class"]]})
                         
-                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
@@ -238,18 +240,17 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     else:
                         aux = compo_class
                     
-                    if aux not in screenshot_compos_frec.keys():
-                        screenshot_compos_frec[aux] = 1
-                    else:
-                        screenshot_compos_frec[aux] += 1
+                    # if aux not in screenshot_compos_frec.keys():
+                    #     screenshot_compos_frec[aux] = 1
+                    # else:
+                    #     screenshot_compos_frec[aux] += 1
 
-                    if column_name in feature_columns:
-                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+                    if column_name in enriched_log.columns:
+                        enriched_log[i, column_name] = f"{aux}"
                     else:
-                        feature_columns.add(column_name)
-                        new_column = pd.DataFrame([""] * i + [f"{compo_class}_{screenshot_compos_frec[compo_class]}"], columns=[column_name])
+                        new_column = pl.DataFrame({column_name: [""] * i + [aux]})
                         
-                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "xpath_class":
@@ -257,12 +258,12 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     column_name = f"{id}_{xpath}"
                     
                     if column_name in feature_columns:
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
                     else:
                         feature_columns.add(column_name)
-                        new_column = pd.DataFrame([""] * i + [compos_list[j]["class"]], columns=[column_name])
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["class"]]})
                         
-                        enriched_log = pd.concat([enriched_log, new_column], axis=1)
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
                 else:
                     raise Exception("UIFE: centroid_columnname_type not recognized")
                 # num_UI_elements += 1
@@ -280,7 +281,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
         else:
             print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
 
-    enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
+    enriched_log.write_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), separator=";")
     
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
