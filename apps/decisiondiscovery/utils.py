@@ -479,7 +479,7 @@ def find_prev_act(json_path, decision_point_id):
 
 def extract_tree_rules(path_to_tree_file):
     try:
-        with open('/screenrpa/' + path_to_tree_file, 'rb') as archivo:
+        with open(path_to_tree_file, 'rb') as archivo:
             loaded_data = pickle.load(archivo)
         # Obtener el clasificador y los nombres de las características del diccionario cargado
         tree = loaded_data['classifier']
