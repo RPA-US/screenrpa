@@ -152,6 +152,9 @@ def def_preprocessor(X):
                 
     # Identificar columnas de tipo objeto y numéricas
     types_obj = X.select_dtypes(include=['object']).columns
+    # Convertir estas columnas a string
+    for obj_col in types_obj:
+        X[obj_col] = X[obj_col].astype(str)
     one_hot_columns = list(types_obj.drop(sta_columns, errors='ignore'))
     numeric_features = X.select_dtypes(include=['number']).columns
 
