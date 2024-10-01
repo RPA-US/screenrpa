@@ -154,14 +154,14 @@ def decision_tree_training(log_path, scenario_path, execution):
 
     decision_points = process_tracebility.get_non_empty_dp_flattened()
     # activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
-    activities_before_dps = list(map(lambda dp: (dp.prevAct, dp.id), decision_points))
+    activities_before_dps = list(set(map(lambda dp: dp.prevAct, decision_points)))
 
     res = dict()
     fe_checker = dict()
     times = dict()
     
     datasets = []
-    for act, _ in activities_before_dps:
+    for act in activities_before_dps:
         datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv'))
         i = 1
         while i != 0:
