@@ -816,6 +816,30 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 ##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
 ##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'aqui va el centroid en tupla']], 3: [['numeric__Coor_Y_3 > 491.51', 'aqui va el centroid en tupla']]}}
     def get_branch_condition2(rules, pre_pd_activities):
+        def coordinate_rule(variable, condition, condition_dict):
+            # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
+            for act in pre_pd_activities:
+                pattern = re.compile(f"_{act}(?:_.*)?$")
+                if pattern.search(variable):
+                    variable_parts = variable.split('-')
+                    
+                    if len(variable_parts) > 1:
+                        last_part = variable_parts[-1]
+                        
+                        first_part_split = variable_parts[-2].split('_')
+                        last_part_split = last_part.split('_')
+                        
+                        first_element = first_part_split[-1]
+                        second_element = last_part_split[0]
+                        
+                        if act not in condition_dict:
+                            condition_dict[act] = []
+                        condition_dict[act].append([condition, (first_element, second_element)])
+
+        def decision_rule(variable, condition, condition_dict):
+            # TODO: Implementar la lógica para las reglas de decisión como condition
+            pass
+
         result_dict = {}
         for rule in rules:
             condition_dict = {}
@@ -825,29 +849,16 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 variable = elements[0].strip()
                 condition = part.strip()
                 
-                # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
-                matched = False
-                for act in pre_pd_activities:
-                    pattern = re.compile(f"_{act}(?:_.*)?$")
-                    if pattern.search(variable):
-                        matched = True
-                        variable_parts = variable.split('-')
-                        
-                        if len(variable_parts) > 1:
-                            last_part = variable_parts[-1]
-                            
-                            first_part_split = variable_parts[-2].split('_')
-                            last_part_split = last_part.split('_')
-                            
-                            first_element = first_part_split[-1]
-                            second_element = last_part_split[0]
-                            
-                            if act not in condition_dict:
-                                condition_dict[act] = []
-                            condition_dict[act].append([condition, (first_element, second_element)])
-                #el caso por ejemplo en el que una regla sea de una actividad previa al punto de decision pero que no sea de esa variante (que sea ausencia de icono)
-                if not matched:
-                    pass
+                # Patrón para los nombres de columna que contienen centroid
+                pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+                # Patrón para puntos de decisión
+                # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
+                pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)(_?[a-zA-Z]?)"
+
+                if re.match(pattern_with_centroid, variable):
+                    coordinate_rule(variable, condition, condition_dict)
+                elif re.match(pattern_decision_point, variable):
+                    decision_rule(variable, condition, condition_dict)
             result_dict[rule.strip()] = condition_dict
         return result_dict
 
