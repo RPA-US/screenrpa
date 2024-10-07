@@ -495,7 +495,7 @@ def monitoring(log_path, root_path, execution):
       preprocessed_webgazer_fixations_saccade_index_log_build.to_csv(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"))
       ##### Preprocessing WebGazer Log End #####
       if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,"webgazer_gazeData_preprocessed.csv")):
-          gazeanalysis_log = pd.read_csv(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"), sep=sep)
+          gazeanalysis_log = read_ui_log_as_dataframe(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"))
       else:
           logging.exception("behaviourmonitoring/monitoring/monitoring line:180. PREPROCESSED Eyetracking  webgazerlog cannot be read: " + root_path + "webgazer_gazeData_preprocessed.csv")
           raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)

@@ -1,3 +1,4 @@
 {
-    "centroid": "combine_ui_element_centroid"
+    "centroid": "combine_ui_element_centroid",
+    "centroid_plaintext": "combine_ui_element_centroid_and_text"
 }

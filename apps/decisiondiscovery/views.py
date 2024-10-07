@@ -133,6 +133,7 @@ def decision_tree_training(log_path, scenario_path, execution):
     special_colnames = execution.case_study.special_colnames                           
     implementation = execution.decision_tree_training.library
     configuration = execution.decision_tree_training.configuration
+    balance_weights = execution.decision_tree_training.balance_weights
     columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
     one_hot_columns = execution.decision_tree_training.one_hot_columns
     k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
@@ -154,14 +155,14 @@ def decision_tree_training(log_path, scenario_path, execution):
 
     decision_points = process_tracebility.get_non_empty_dp_flattened()
     # activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
-    activities_before_dps = list(map(lambda dp: (dp.prevAct, dp.id), decision_points))
+    activities_before_dps = list(set(map(lambda dp: dp.prevAct, decision_points)))
 
     res = dict()
     fe_checker = dict()
     times = dict()
     
     datasets = []
-    for act, _ in activities_before_dps:
+    for act in activities_before_dps:
         datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv'))
         i = 1
         while i != 0:
@@ -193,7 +194,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         if implementation == 'sklearn':
             try:
                 if implementation == 'sklearn':
-                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, balance_weights, one_hot_columns, "Variant", k_fold_cross_validation, execution)
             except Exception as e:
                 print("Error: ", e)
                 continue
@@ -740,7 +741,10 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
                 break
 
         tree_rules = decision_point_data["rules"]
-        tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        if "overlapping_rules" in decision_point_data:
+            tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        else:
+            tree_overlapping_rules = {}
         
         # Include CSV data in the context for the template
         context = {

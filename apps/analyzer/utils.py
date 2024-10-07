@@ -229,7 +229,7 @@ def get_mht_log_start_datetime(mht_file_path, pattern):
   
   
 def get_csv_log_start_datetime(csv_file_path,pattern):
-  log_csv = pd.read_csv(csv_file_path)
+  log_csv = read_ui_log_as_dataframe(csv_file_path)
   first_timestamp = parse(log_csv["time:timestamp"].iloc[0])
   timezone = pytz.timezone("Etc/GMT")
   first_timestamp = first_timestamp.astimezone(timezone)
@@ -237,7 +237,7 @@ def get_csv_log_start_datetime(csv_file_path,pattern):
   return first_timestamp
 
 def convert_timestamps_and_clean_screenshot_name_in_csv(csv_file_path):
-    df = pd.read_csv(csv_file_path)
+    df = read_ui_log_as_dataframe(csv_file_path)
     df['time:timestamp'] = pd.to_datetime(df['time:timestamp']).dt.strftime('%H:%M:%S')
     df['screenshot'] = df['screenshot'].apply(lambda x: re.split(r'[\\/]+', x)[-1])
     # Save and apply this changes

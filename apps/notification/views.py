@@ -55,4 +55,15 @@ def delete_notification(request):
 ## Utils for other modules
 
 def create_notification(user, short, message, href, status=Status.INFO.value):
+    match(status):
+        case "success":
+            status = Status.SUCCESS.value
+        case "warning":
+            status = Status.WARNING.value
+        case "error":
+            status = Status.ERROR.value
+        case "processing":
+            status = Status.PROCESSING.value
+        case "info":
+            status = Status.INFO.value
     Notification.objects.create(user=user, short=short, message=message, href=href, status=status).save()

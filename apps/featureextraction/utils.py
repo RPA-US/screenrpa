@@ -133,15 +133,16 @@ def read_img(path, resize_height=None, kernel_size=None):
 
     try:
         img = cv2.imread(path)
+        og_shape = img.shape
         if kernel_size is not None:
             img = cv2.medianBlur(img, kernel_size)
         if img is None:
             print("*** Image does not exist ***")
             return None, None
         if resize_height is not None:
-            img = resize_by_height(img)
+            org = resize_by_height(img)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        return img, gray
+        return img, org, gray, og_shape
 
     except Exception as e:
         print(e)
@@ -185,10 +186,10 @@ def binarization(org, grad_min, show=False, write_path=None, wait_key=0):
 # COMPONENT functions copy
 # ######################
 
-def compos_update(compos, org_shape):
+def compos_update(compos, org_shape, og_shape):
     for i, compo in enumerate(compos):
         # start from 1, id 0 is background
-        compo.compo_update(i + 1, org_shape)
+        compo.compo_update(i + 1, org_shape, og_shape)
 
 # #######################
 # FILE

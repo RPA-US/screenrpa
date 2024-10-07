@@ -29,7 +29,7 @@ def predict(image_path, img_index, path_to_save_bordered_images, text_detected_b
     image_pil_resized  = cv2.resize(image_pil, resize_img_size)
 
     for model_name, properties in models.items():
-        id_start = 0 if len(detections) == 0 else len(detections) + 1
+        id_start = 0 if len(detections["compos"]) == 0 else len(detections["compos"]) + 1
         if properties["function"] == "yolo":
             compos = yolo_prediction(os.path.join(json_config["models_path"], model_name + ".pt"), image_pil_resized, properties["type"], id_start)
             detections["compos"].extend(compos)

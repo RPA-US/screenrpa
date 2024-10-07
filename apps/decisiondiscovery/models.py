@@ -129,6 +129,7 @@ class DecisionTreeTraining(models.Model):
     columns_to_drop_before_decision_point = ArrayField(models.CharField(max_length=50), default=get_default_decision_tree_columns_to_ignore, null=True, blank=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    balance_weights = models.BooleanField(default=False, editable=True)
     
     def clean(self):
         cleaned_data = super().clean()

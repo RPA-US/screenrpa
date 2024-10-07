@@ -291,6 +291,12 @@ class Execution(models.Model):
                 unzip_file(preloaded_file_path, self.exp_folder_complete_path)
                 print("Preloaded file unzipped!:", self.exp_folder_complete_path)
 
+        for pp in self.postprocessings.all():
+            if hasattr(pp, "preloaded") and pp.preloaded:
+                preloaded_file_path = os.path.join(PRIVATE_STORAGE_ROOT, pp.preloaded_file.name)
+                unzip_file(preloaded_file_path, self.exp_folder_complete_path)
+                print("Preloaded file unzipped!:", self.exp_folder_complete_path)
+
     def create_folder_structure(self):
         self.exp_foldername = f"exec_{self.id}"
         self.exp_folder_complete_path = os.path.join(self.case_study.exp_folder_complete_path, 'executions', self.exp_foldername)
@@ -300,7 +306,7 @@ class Execution(models.Model):
 
         # Create a symbolic link to the case study scenarios to study inside the execution folder
         for scenario in self.scenarios_to_study:
-            source = os.path.join('../../', scenario)
+            source = os.path.join('..', '..', scenario)
             destination = os.path.join(self.exp_folder_complete_path, scenario)
             if os.name == 'nt':
                 command = f'cmd /c mklink /D "{destination}" "{source}"'

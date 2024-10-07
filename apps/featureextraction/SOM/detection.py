@@ -175,7 +175,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
 
     start_get_binary_map_time = time.time()
     # *** Step 1 *** pre-processing: read img -> get binary map
-    org, grey = utils.read_img(input_img_path, resize_by_height)
+    img, org, grey, og_shape = utils.read_img(input_img_path, resize_by_height)
     binary = utils.binarization(org, grad_min=int(uied_params['min-grad']))
     times["get_binary_map_time"] = time.time() - start_get_binary_map_time
 
@@ -183,6 +183,13 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     start_get_component_detection = time.time()
     utils.rm_line(binary, show=False, wait_key=0)
     uicompos = utils.component_detection(binary, min_obj_area=int(uied_params['min-ele-area']), uied_params=uied_params)
+    new_uicompos = []
+
+    # Resize to original image size
+    for compo in uicompos:
+        compo.compo_update(compo.id, org.shape, og_shape)
+        new_uicompos.append(compo)
+    uicompos = new_uicompos
     times["get_component_detection"] = time.time() - start_get_component_detection
     
 
@@ -207,15 +214,15 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
 
     # *** Step 4 ** nesting inspection: check if big compos have nesting element
     start_nesting_inspection = time.time()
-    uicompos, times = nesting_inspection(org, grey, uicompos, uied_params, times)
+    uicompos, times = nesting_inspection(img, grey, uicompos, uied_params, times)
     times["nesting_inspection"] = time.time() - start_nesting_inspection
 
     # *** Step 5 *** save detection result
-    start_save_detection_result = time.time()
-    utils.compos_update(uicompos, org.shape)
-    times["save_detection_result"] = time.time() - start_save_detection_result
+    # start_save_detection_result = time.time()
+    # utils.compos_update(uicompos, img.shape, og_shape)
+    # times["save_detection_result"] = time.time() - start_save_detection_result
 
-    draw.draw_bounding_box(org, uicompos, show=False, name='merged compo', 
+    draw.draw_bounding_box(img, uicompos, show=False, name='merged compo', 
                            write_path=pjoin(ip_root, name + '.jpg'), 
                            wait_key=0)
 
@@ -224,7 +231,7 @@ def get_uied_gui_components_crops(input_imgs_path, path_to_save_bordered_images,
     # ##########################
 
     start_compo_clipping = time.time()
-    clips = [compo.compo_clipping(org) for compo in uicompos]
+    clips = [compo.compo_clipping(img) for compo in uicompos]
     times["compo_clipping"] = time.time() - start_compo_clipping
 
     return clips, uicompos, times
@@ -476,7 +483,7 @@ def detect_images_components(scenario_path,param_img_root, log, special_colnames
                 path=path_to_save_mask_npy
                 for n in ['segmentation','crop_box']:
                     path_element = path+'_'+n+'.npy'
-                    aux = np.array(arrays_dict[n])
+                    aux = np.array(arrays_dict[n], dtype=object)
                     np.save(path_element,aux)
 
                 # save texts npy

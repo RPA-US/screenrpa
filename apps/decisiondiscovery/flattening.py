@@ -2,6 +2,7 @@ import re
 import pandas as pd
 import json
 import os
+import numpy as np
 from numpyencoder import NumpyEncoder
 
 from apps.decisiondiscovery.utils import find_prev_act
@@ -53,7 +54,8 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
 
             # Set the timestamp for the last event associated to the case
             if c != last_case:
-                log_dict[cases[index-1]]["Timestamp_end"] = log.at[index-1, timestamp_column_name]
+                if cases[index-1] in log_dict.keys():
+                    log_dict[cases[index-1]]["Timestamp_end"] = log.at[index-1, timestamp_column_name]
                 before_DP = True
 
             if before_DP:
@@ -63,35 +65,32 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
                             "Timestamp_start": log.at[index, timestamp_column_name],
                             variant_colname: log.at[index, variant_colname]
                         }
-                if str(act) == str(activity):
-                    for feat in columns:
-                        if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
-                        and feat not in current_post_dps:
-                            log_dict[c][feat] = log.at[index, feat]
-                        elif feat not in actions_columns \
-                        and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
-                            log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
-                    before_DP = False
+                for feat in columns:
+                    if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
+                    and feat not in current_post_dps and type(log.at[index, feat])==str:
+                        log_dict[c][feat] = log.at[index, feat]
+                    elif feat not in actions_columns \
+                    and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
+                        log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
+
+            if str(activity) == act:
+                branch = log.at[index, dp]
+                before_DP = False
+                if str(branch)!="nan":
+                    log_dict[c]["dp_branch"] = branch
                 else:
-                    for feat in columns:
-                        if re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat) \
-                        and feat not in current_post_dps:
-                            log_dict[c][feat] = log.at[index, feat]
-                        elif feat not in actions_columns \
-                        and not re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', feat):
-                            log_dict[c][feat+"_"+str(activity)] = log.at[index, feat]
-
+                    del log_dict[c]
+                    continue
             # Extraer el valor único para cada columna que sigue el patrón especificado y añadirlo al diccionario
-            for col in log.columns:
-                if "id" in col and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', col):
-                    if col == dp:
-                        branch = log.at[index, col]
-                        #unique_value = log[col,c].unique()[0]  # Suponiendo que hay un único valor
-                        prev_act = find_prev_act(os.path.join(path_dataset_saved, "traceability.json"), col)
-                        if prev_act == act:
-                            log_dict[c]["dp_branch"] = branch
-
-        log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
+            # for col in log.columns:
+            #     if "id" in col and re.match(r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+', col):
+            #         if col == dp:
+            #             branch = log.at[index, col]
+            #             #unique_value = log[col,c].unique()[0]  # Suponiendo que hay un único valor
+            #             if str(activity) == act:
+            #                 log_dict[c]["dp_branch"] = branch
+        if cases[len(cases)-1] in log_dict.keys():
+            log_dict[cases[len(cases)-1]]["Timestamp_end"] = log.at[len(cases)-1, timestamp_column_name]
         
         # Serializing json
         json_object = json.dumps(log_dict, cls=NumpyEncoder, indent=4)
@@ -100,7 +99,7 @@ def flat_dataset_row(log, columns, path_dataset_saved, special_colnames,
         if os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}.csv")):
             i = 1
             while True:
-                if not os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")):
+                if not os.path.exists(os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}.csv")):
                     aux_path = os.path.join(path_dataset_saved, f"flattened_dataset_{act}-{i}")
                     with open(aux_path+".json", "w") as outfile:
                         outfile.write(json_object)
