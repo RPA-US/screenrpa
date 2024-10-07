@@ -57,10 +57,12 @@ def combine_ui_element_centroid_aux(ui_log_path, path_scenario, execution, pp, u
                         log.at[index, col] = compo["class"]
     
     # Copy trace_id column because it gets deleted sometimes
-    trace = log["trace_id"]
+    trace = log[execution.case_study.special_colnames["Case"]]
+    variant = log[execution.case_study.special_colnames["Variant"]]
     # Remove columns with the same values
     log = log.T.drop_duplicates().T
-    log["trace_id"] = trace
+    log[execution.case_study.special_colnames["Case"]] = trace
+    log[execution.case_study.special_colnames["Variant"]] = variant
     log.to_csv(os.path.join(execution_root, "pipeline_log.csv"), index=False)
     return 0,0,0,0
 
