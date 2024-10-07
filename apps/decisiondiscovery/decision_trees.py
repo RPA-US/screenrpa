@@ -183,7 +183,7 @@ def update_json_with_rules(json_data, rules_class):
     
     return json_data
 
-def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation, execution):
+def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, balance_weights, one_hot_columns, target_label, k_fold_cross_validation, execution):
     times = {}
     accuracies = {}
     
@@ -235,7 +235,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     feature_names = X_df.columns.tolist()
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
-    tree_classifier = DecisionTreeClassifier(class_weight="balanced")
+    tree_classifier = DecisionTreeClassifier(class_weight=balance_weights)
     start_t = time.time()
     try:
         tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)

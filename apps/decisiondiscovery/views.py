@@ -133,6 +133,7 @@ def decision_tree_training(log_path, scenario_path, execution):
     special_colnames = execution.case_study.special_colnames                           
     implementation = execution.decision_tree_training.library
     configuration = execution.decision_tree_training.configuration
+    balance_weights = execution.decision_tree_training.balance_weights
     columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
     one_hot_columns = execution.decision_tree_training.one_hot_columns
     k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
@@ -193,7 +194,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         if implementation == 'sklearn':
             try:
                 if implementation == 'sklearn':
-                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation, execution)
+                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, balance_weights, one_hot_columns, "Variant", k_fold_cross_validation, execution)
             except Exception as e:
                 print("Error: ", e)
                 continue
