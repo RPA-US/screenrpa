@@ -14,6 +14,7 @@ import scipy
 from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 from .utils import def_preprocessor, best_model_grid_search, cross_validation, extract_tree_rules, prev_preprocessor
 from apps.chefboost import Chefboost as chef
+from apps.notification.views import create_notification
 from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 import pickle
 
@@ -182,7 +183,7 @@ def update_json_with_rules(json_data, rules_class):
     
     return json_data
 
-def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
+def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation, execution):
     times = {}
     accuracies = {}
     
@@ -234,9 +235,14 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     feature_names = X_df.columns.tolist()
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
-    tree_classifier = DecisionTreeClassifier()
+    tree_classifier = DecisionTreeClassifier(class_weight="balanced")
     start_t = time.time()
-    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
+    try:
+        tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
+    except Exception as e:
+        scenario = os.path.basename(param_path).split("_results")[0]
+        create_notification(execution.user, "Dataset too small", f"Scenario: {scenario} does not have enough data to train a decision tree", "/", status="warning")
+        raise e
 
     accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}

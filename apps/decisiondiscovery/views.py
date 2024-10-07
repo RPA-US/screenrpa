@@ -193,7 +193,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         if implementation == 'sklearn':
             try:
                 if implementation == 'sklearn':
-                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation, execution)
             except Exception as e:
                 print("Error: ", e)
                 continue
