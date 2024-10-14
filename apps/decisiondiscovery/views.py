@@ -87,9 +87,26 @@ def extract_training_dataset(log_path, root_path, execution):
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
     log = None
     if os.path.exists(os.path.join(root_path + "_results", 'pipeline_log.csv')):
-        log = os.path.join(root_path + "_results", 'pipeline_log.csv')
+        log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", 'pipeline_log.csv'))
     else:
-        log = os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
+        # Have a fallback log. This one is very light so won't take more than a few miliseconds to read
+        try:
+            pd_log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME))
+        except Exception as e:
+            raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results: " + e)
+        try:
+            fe_log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", "log_enriched.csv"))
+            pd_log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", "pd_log.csv"))
+            cols_to_drop = pd_log.columns.tolist()
+            cols_to_drop.remove(execution.case_study.special_colnames["Screenshot"])
+            fe_log = fe_log.drop(columns=cols_to_drop, errors="ignore")
+            log = pd.merge(pd_log, fe_log, how='inner', on=execution.case_study.special_colnames["Screenshot"])
+            log.to_csv(os.path.join(root_path + "_results", 'pipeline_log.csv'))
+            del fe_log
+            del pd_log
+        except Exception as _:
+            log = pd_log
+            del pd_log
 
     process_columns = [ 
                         special_colnames["Case"], 
@@ -102,11 +119,6 @@ def extract_training_dataset(log_path, root_path, execution):
                         "concept:name", # Activity ID Duplicated in Process Discovery
                         "time:timestamp" # Timestamp Duplicated in Process Discovery
                     ]
-    
-    try:
-        log = read_ui_log_as_dataframe(log)
-    except Exception as e:
-        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results: " + e)
     
     # We apply filters because iterating and removing will mess up the indices
     columns = list(filter(lambda c: c not in process_columns, log.columns))
