@@ -150,6 +150,11 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
         headers[elem] = 0
     headers["unknown"] = 0
 
+    if centroid_columnname_type == "class_and_checked_status_quantity" and "Checkbox" in headers:
+        del headers["Checkbox"]
+        headers["Checkbox_checked"] = 0
+        headers["Checkbox_unchecked"] = 0
+
     num_screenshots = len(screenshot_filenames)
     num_UI_elements = 0
     max_num_UI_elements = 0
@@ -173,7 +178,12 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
             for j in range(0, len(compos_list)):
                 compo_class = compos_list[j]["class"]
                 try:
-                    screenshot_compos_frec[compo_class] += 1
+                    if centroid_columnname_type == "class_and_checked_status_quantity" and compo_class == "Checkbox":
+                        if not "status" in compos_list[j]:
+                            raise Exception("UIFE: UI Components provided do not have status")
+                        screenshot_compos_frec[f"{compo_class}_{compos_list[j]['status']}"] += 1
+                    else:   
+                        screenshot_compos_frec[compo_class] += 1
                 except:
                     raise Exception("UI Elements Detection model classes not compatible with Preloaded FE files ones: please select the correct model")
 
@@ -264,7 +274,20 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                         new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["class"]]})
                         
                         enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
-                else:
+# ========================================================================================================
+# ========================================================================================================
+                elif centroid_columnname_type == "status_centroid":
+                    if not "status" in compos_list[j]:
+                        raise Exception("UIFE: UI Components provided do not have status")
+                    column_name = f"{id}_{compos_list[j]['status']}"
+
+                    if column_name in enriched_log.columns:
+                        enriched_log[i, column_name] = f"{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"
+                    else:
+                        new_column = pl.DataFrame({column_name: [""] * i + [f"{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"]})
+                        
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
+                elif centroid_columnname_type != "class_quantity" and centroid_columnname_type != "class_and_checked_status_quantity":
                     raise Exception("UIFE: centroid_columnname_type not recognized")
                 # num_UI_elements += 1
             # OLD: feature extractor splitted to aggregate after extracting dataset
@@ -273,6 +296,20 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
             # else:
             #     data["features"] = { "location": feature_columns }
             
+            if centroid_columnname_type == "class_quantity" or centroid_columnname_type == "class_and_checked_status_quantity":
+                match(centroid_columnname_type):
+                    case "class_quantity": num = 1
+                    case "class_and_checked_status_quantity": num = 2
+
+                colnames = list(map(lambda c: f"qua{num}_{c}", screenshot_compos_frec.keys()))
+                if not all(col in enriched_log.columns for col in colnames):
+                    new_columns = pl.DataFrame({f"qua{num}_{c}": [0] for c in screenshot_compos_frec.keys()})
+                    enriched_log = pl.concat([enriched_log, new_columns], how="horizontal", )
+                
+                for c, quant in screenshot_compos_frec.items():
+                    enriched_log[i, f"qua{num}_{c}"] = quant
+                column_name = f"{id}_{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"
+
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile)
                 
@@ -313,6 +350,32 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
     Column value: compoclass+int or (if it is text) plaintext+int
     """
     return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "centroid_classplaintext")
+
+# ========================================================================================================
+# Legacy functions from agosuirpa
+# ========================================================================================================
+
+def status_centroid_ui_element(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: status 
+    Column value: centroid
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "status_centroid")
+
+def class_quantity(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: class 
+    Column value: quantity
+    """
+
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "class_quantity")
+
+def class_and_checked_status_quantity(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: class (checkbox added status) 
+    Column value: quantity
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "class_and_checked_status_quantity")
 
 # ========================================================================================================
 # Class as value / xpath to reach ui element as column name
