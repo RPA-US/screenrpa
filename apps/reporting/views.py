@@ -1189,14 +1189,14 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         compo_ui_json.append(compo_ui)
 
                         run = decision_tree.add_run(f'Existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
-                        run.font.color.rgb = color
+                        run.font.color.rgb = RGBColor(*color)
                         color_index += 1
                     else:
                         compo_ui = {"points": [[int(float(coord)) for coord in ui_compo_centroid]], "color": color}
                         compo_ui_json.append(compo_ui)
 
                         run = decision_tree.add_run(f'Non-existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
-                        run.font.color.rgb = color
+                        run.font.color.rgb = RGBColor(*color)
                         color_index += 1
                 if compo_ui_json:
                     draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
@@ -1210,7 +1210,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                     run = decision_tree.add_run(f'Took the branch "{branch}" in a previous decision point\n')
                 else:
                     run = decision_tree.add_run(f'Did not take the branch "{branch}" in a previous decision point\n')
-                run.font.color.rgb = color
+                run.font.color.rgb = RGBColor(*color)
 
         activities = group[colnames['Activity']].unique().tolist() #en funcion de si las activity label se pueden repetir
 
@@ -1340,7 +1340,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                             for condition, variable in condition_list:
                                 color = colors[color_index % len(colors)]
                                 run = decision_tree.add_run(f'Activity {act}: {condition}\n')
-                                run.font.color.rgb = color
+                                run.font.color.rgb = RGBColor(*color)
                                 color_index += 1
 
                                 # Insertar la imagen en el documento
