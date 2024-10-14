@@ -81,7 +81,7 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, ui_compo_c
 
     class_compos = list(filter(lambda compo: compo['class'] == ui_compo_class_or_text, som_json['compos']))
     # If none is found, that means the class is actually a text, or NaN
-    if len(class_compos) == 0 and ui_compo_class_or_text != "NaN":
+    if len(class_compos) == 0 and ui_compo_class_or_text not in ["NaN", "nan"]:
         class_compos = list(filter(lambda compo: compo['text'] == ui_compo_class_or_text, som_json['compos']))
     # It could happen that in this specific instance, the object was not detected. In this case we will just get the closest one
     if len(class_compos) == 0:
@@ -105,6 +105,9 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, ui_compo_c
 
     # Si no se encontró una coincidencia exacta, usar el más cercano
     if uicompo_json is None and closest_compo is not None:
+        uicompo_json = closest_compo
+    else:
+        closest_compo = min(class_compos, key=lambda c: abs(np.linalg.norm(np.array([int(float((coord))) for coord in compo['centroid']]) - np.array(ui_compo_centroid))))
         uicompo_json = closest_compo
     return uicompo_json
 
@@ -519,20 +522,21 @@ def dot_to_png(dot_path):
     # Cargar el contenido del archivo .dot
     with open(dot_path, 'r') as file:
         dot_content = file.read()
-    try:
-        graph = Source(dot_content)
-        graph.format = 'png'
+        try:
+            graph = Source(dot_content)
+            graph.format = 'png'
+            
+            # Guardar la imagen a un archivo temporal
+            temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+            temp_file.close()
+            graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
+            
+            return graph_path 
         
-        # Guardar la imagen a un archivo temporal
-        temp_file = NamedTemporaryFile(delete=False, suffix='.png')
-        graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
-        
-        return graph_path 
-    
-    except Exception as e:
+        except Exception as e:
 
-        print(f"Error al procesar el gráfico: {e}")
-        return None
+            print(f"Error al procesar el gráfico: {e}")
+            return None
 
 #############################################################################################
 class ReportCreateView(CreateView):
@@ -1452,7 +1456,7 @@ def preview_pdf(request, report_id):
     
     report = get_object_or_404(PDD, pk=report_id)
     execution = report.execution
-    pdf_path = os.path.join('/screenrpa',execution.exp_folder_complete_path, execution.scenarios_to_study[0]+'_results', f'report_{report.id}.pdf')
+    pdf_path = os.path.join(execution.exp_folder_complete_path, execution.scenarios_to_study[0]+'_results', f'report_{report.id}.pdf')
     #pdf_path = '/screenrpa/media/unzipped/datos_inciiales_j49gvQs_1714120837/executions/exec_41/sc_0_size50_Balanced_results/calendario-academico.pdf'
 
     return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
