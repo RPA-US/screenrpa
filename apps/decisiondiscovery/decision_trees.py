@@ -235,7 +235,10 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     feature_names = X_df.columns.tolist()
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
-    tree_classifier = DecisionTreeClassifier(class_weight=balance_weights)
+    if balance_weights:
+        tree_classifier = DecisionTreeClassifier(class_weight='balance')
+    else:
+        tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
     try:
         tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
