@@ -408,7 +408,7 @@ def process_level(folder_path, df, fe_log, execution):
                 if current_dp is not None:
                     if any(str(branch.label) == str(act_label) for branch in branches):
                         # Compute the value for the row on column dp_id
-                        branch_label = (list(filter(lambda branch: branch.label == act_label, branches))[0].label)
+                        branch_label = (list(filter(lambda branch: str(branch.label) == str(act_label), branches))[0].label)
                         current_branches[current_dp] = branch_label
                 for dp in dps:
                     if str(dp.prevAct) == str(act_label):
