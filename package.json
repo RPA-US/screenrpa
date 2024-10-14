@@ -2,7 +2,7 @@
     "name": "screen-rpa",
     "mastertemplate": "boilerplate-code-django-dashboard",
     "version": "1.0.2",
-    "description": "ScreenRPA - a RPA-US platform",
+    "description": "DISCOVERY ScreenRPA - a DISCOVERY platform",
     "scripts": {},
     "repository": {
         "type": "git",
@@ -12,7 +12,7 @@
         "url": "https://github.com/RPA-US/screenrpa/issues",
         "email": "amrojas@us.es"
     },
-    "author": "RPA-US / Antonio Martínez Rojas",
+    "author": "CENIT - ES3",
     "engines": {
         "node": ">=10.0.0"
     },

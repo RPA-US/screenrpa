@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 """
-Copyright (c) RPA-US
+Copyright (c) CENIT-ES3
 """
 
 from django.test import TestCase

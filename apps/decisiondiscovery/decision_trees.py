@@ -241,7 +241,7 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
     if balance_weights:
-        tree_classifier = DecisionTreeClassifier(class_weight='balance')
+        tree_classifier = DecisionTreeClassifier(class_weight='balanced')
     else:
         tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
