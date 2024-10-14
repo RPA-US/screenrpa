@@ -87,9 +87,26 @@ def extract_training_dataset(log_path, root_path, execution):
     tprint("  " + PLATFORM_NAME + " - " + FLATTENING_PHASE_NAME, "fancy60")
     log = None
     if os.path.exists(os.path.join(root_path + "_results", 'pipeline_log.csv')):
-        log = os.path.join(root_path + "_results", 'pipeline_log.csv')
+        log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", 'pipeline_log.csv'))
     else:
-        log = os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME)
+        # Have a fallback log. This one is very light so won't take more than a few miliseconds to read
+        try:
+            pd_log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", PROCESS_DISCOVERY_LOG_FILENAME))
+        except Exception as e:
+            raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results: " + e)
+        try:
+            fe_log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", "log_enriched.csv"))
+            pd_log = read_ui_log_as_dataframe(os.path.join(root_path + "_results", "pd_log.csv"))
+            cols_to_drop = pd_log.columns.tolist()
+            cols_to_drop.remove(execution.case_study.special_colnames["Screenshot"])
+            fe_log = fe_log.drop(columns=cols_to_drop, errors="ignore")
+            log = pd.merge(pd_log, fe_log, how='inner', on=execution.case_study.special_colnames["Screenshot"])
+            log.to_csv(os.path.join(root_path + "_results", 'pipeline_log.csv'))
+            del fe_log
+            del pd_log
+        except Exception as _:
+            log = pd_log
+            del pd_log
 
     process_columns = [ 
                         special_colnames["Case"], 
@@ -102,11 +119,6 @@ def extract_training_dataset(log_path, root_path, execution):
                         "concept:name", # Activity ID Duplicated in Process Discovery
                         "time:timestamp" # Timestamp Duplicated in Process Discovery
                     ]
-    
-    try:
-        log = read_ui_log_as_dataframe(log)
-    except Exception as e:
-        raise Exception("The " + PROCESS_DISCOVERY_LOG_FILENAME + " file has not been generated in the path: " + root_path + "_results: " + e)
     
     # We apply filters because iterating and removing will mess up the indices
     columns = list(filter(lambda c: c not in process_columns, log.columns))
@@ -133,6 +145,7 @@ def decision_tree_training(log_path, scenario_path, execution):
     special_colnames = execution.case_study.special_colnames                           
     implementation = execution.decision_tree_training.library
     configuration = execution.decision_tree_training.configuration
+    balance_weights = execution.decision_tree_training.balance_weights
     columns_to_ignore = execution.decision_tree_training.columns_to_drop_before_decision_point
     one_hot_columns = execution.decision_tree_training.one_hot_columns
     k_fold_cross_validation = configuration["cv"] if "cv" in configuration else 3
@@ -154,14 +167,14 @@ def decision_tree_training(log_path, scenario_path, execution):
 
     decision_points = process_tracebility.get_non_empty_dp_flattened()
     # activities_before_dps= extract_prev_act_labels(os.path.join(path_dataset_saved,"bpmn.dot"))
-    activities_before_dps = list(map(lambda dp: (dp.prevAct, dp.id), decision_points))
+    activities_before_dps = list(set(map(lambda dp: dp.prevAct, decision_points)))
 
     res = dict()
     fe_checker = dict()
     times = dict()
     
     datasets = []
-    for act, _ in activities_before_dps:
+    for act in activities_before_dps:
         datasets.append(os.path.join(scenario_path+"_results", f'flattened_dataset_{act}.csv'))
         i = 1
         while i != 0:
@@ -193,7 +206,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         if implementation == 'sklearn':
             try:
                 if implementation == 'sklearn':
-                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, one_hot_columns, "Variant", k_fold_cross_validation)
+                    res, times = sklearn_decision_tree(flattened_dataset, act, scenario_path+"_results", special_colnames, configuration, balance_weights, one_hot_columns, "Variant", k_fold_cross_validation, execution)
             except Exception as e:
                 print("Error: ", e)
                 continue
@@ -740,7 +753,10 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
                 break
 
         tree_rules = decision_point_data["rules"]
-        tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        if "overlapping_rules" in decision_point_data:
+            tree_overlapping_rules = decision_point_data["overlapping_rules"]
+        else:
+            tree_overlapping_rules = {}
         
         # Include CSV data in the context for the template
         context = {

@@ -394,7 +394,7 @@ def process_level(folder_path, df, fe_log, execution):
                 df[dp.id] = None
 
             for index, row in df.iterrows():
-                if row[special_colnames['Case']] != current_trace_id:
+                if str(row[special_colnames['Case']]) != str(current_trace_id):
                     # Insert the branches taken in the previous trace
                     current_trace_rows = df.loc[df[special_colnames['Case']] == current_trace_id]
                     for index, trace_row in current_trace_rows.iterrows():
@@ -406,12 +406,12 @@ def process_level(folder_path, df, fe_log, execution):
 
                 act_label = row[special_colnames['Activity']]
                 if current_dp is not None:
-                    if any(branch.label == act_label for branch in branches):
+                    if any(str(branch.label) == str(act_label) for branch in branches):
                         # Compute the value for the row on column dp_id
-                        branch_label = (list(filter(lambda branch: branch.label == act_label, branches))[0].label)
+                        branch_label = (list(filter(lambda branch: str(branch.label) == str(act_label), branches))[0].label)
                         current_branches[current_dp] = branch_label
                 for dp in dps:
-                    if dp.prevAct == act_label:
+                    if str(dp.prevAct) == str(act_label):
                         current_dp = dp.id
 
                 # Register trace of the last Case or trace_id

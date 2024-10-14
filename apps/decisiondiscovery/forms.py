@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 """
-Copyright (c) RPA-US
+Copyright (c) CENIT-ES3
 """
 
 from django import forms
@@ -77,7 +77,8 @@ class DecisionTreeTrainingForm(forms.ModelForm):
             "columns_to_drop_before_decision_point",
              "preloaded_file",
             "preloaded",
-            "title"
+            "title",
+            "balance_weights"
         )
         labels = {
             "library": _("Library"),
@@ -85,7 +86,8 @@ class DecisionTreeTrainingForm(forms.ModelForm):
             "one_hot_columns": _("One hot columns"),
             "columns_to_drop_before_decision_point": _("Columns to drop before decision point"),
             "preloaded_file":"Preload Execution Results",
-            "title": "Title "
+            "title": "Title ",
+            "balance_weights": "Balance Weights"
         }
 
         widgets = {
@@ -99,6 +101,9 @@ class DecisionTreeTrainingForm(forms.ModelForm):
                 attrs={
                     'accept': '.zip'
                     }   
+            ),
+            "balance_weights": forms.CheckboxInput(
+                attrs={"class": "primary-checkbox"}
             ),
             "preloaded": forms.CheckboxInput(
                 attrs={"class": "primary-checkbox"}

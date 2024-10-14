@@ -2,11 +2,11 @@ import os
 import json
 import re
 import pandas as pd
+import polars as pl
 import numpy as np
 from shapely import Polygon, Point
-from core.utils import read_ui_log_as_dataframe
+from core.utils import read_ui_log_as_dataframe, detect_separator
 from core.settings import STATUS_VALUES_ID, ENRICHED_LOG_SUFFIX, sep
-from core.utils import read_ui_log_as_dataframe
 from tqdm import tqdm
 
 
@@ -33,7 +33,7 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
     screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
 
     headers = dict()
-    info_to_join: dict[str:list] = {}
+    feature_columns: dict[str:list] = {}
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
@@ -70,17 +70,17 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
             
             column_name = compos_list[j]["class"]+"_"+str(screenshot_compos_frec[compos_list[j]["class"]])
 
-            if column_name in info_to_join:
-                if not len(info_to_join[column_name]) == i:
-                    for k in range(len(info_to_join[column_name]),i):
-                        info_to_join[column_name].append("")
-                info_to_join[column_name].append(compos_list[j]["centroid"])
+            if column_name in feature_columns:
+                if not len(feature_columns[column_name]) == i:
+                    for k in range(len(feature_columns[column_name]),i):
+                        feature_columns[column_name].append("")
+                feature_columns[column_name].append(compos_list[j]["centroid"])
             else:
                 column_as_vector = []
                 for k in range(0,i):
                     column_as_vector.append("")
                 column_as_vector.append(compos_list[j]["centroid"])
-                info_to_join[column_name] = column_as_vector
+                feature_columns[column_name] = column_as_vector
             
             if len(compos_list[j]["type"]) != "leaf":
                 num_UI_groups+=1
@@ -92,7 +92,6 @@ def ui_compos_stats(ui_log_path, path_scenario, execution, fe):
         if not "features" in data:
             data["features"] = {}
             
-        data["features"]["location"] = info_to_join
         data["features"]["#UICompos"] = num_UI_compos
         data["features"]["#UIElements"] = num_UI_elements
         data["features"]["#UIGroups"] = num_UI_groups
@@ -132,28 +131,36 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
     enriched_log_output = os.path.join(execution_root, fe.technique_name + '_enriched_log.csv')
     text_classname = execution.ui_elements_classification.model.text_classname
     
+    # Use polars to read fe_log and use polars' DataFrame
     if os.path.exists(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv")):
-        log = read_ui_log_as_dataframe(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"))
+        separator = detect_separator(ui_log_path)
+        log = pl.read_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), separator=separator)#, index_col=0)
     else:
-        log = read_ui_log_as_dataframe(ui_log_path)
+        separator = detect_separator(ui_log_path)
+        log = pl.read_csv(ui_log_path, separator=separator)#, index_col=0)
 
-    enriched_log = log.copy()
+    enriched_log = log.clone()
     
-    screenshot_filenames = log.loc[:, screenshot_colname].values.tolist()
+    screenshot_filenames = log[:, screenshot_colname].to_list()
 
     headers = dict()
-    info_to_join: dict[str:list] = {}
+    feature_columns: set = set()
 
     for elem in ui_elements_classification_classes:
         headers[elem] = 0
+    headers["unknown"] = 0
 
-    new_columns = pd.DataFrame(index=log.index)
+    if centroid_columnname_type == "class_and_checked_status_quantity" and "Checkbox" in headers:
+        del headers["Checkbox"]
+        headers["Checkbox_checked"] = 0
+        headers["Checkbox_unchecked"] = 0
+
     num_screenshots = len(screenshot_filenames)
     num_UI_elements = 0
     max_num_UI_elements = 0
     min_num_UI_elements = 99999999999999999
 
-    for i, screenshot_filename in enumerate(screenshot_filenames):
+    for i, screenshot_filename in tqdm(enumerate(screenshot_filenames), desc="Extracting features from screenshots", position=tqdm._get_free_pos()):
         screenshot_filename = os.path.basename(screenshot_filename)
         
         # Check if the file exists, if exists, then we can continue
@@ -171,7 +178,12 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
             for j in range(0, len(compos_list)):
                 compo_class = compos_list[j]["class"]
                 try:
-                    screenshot_compos_frec[compo_class] += 1
+                    if centroid_columnname_type == "class_and_checked_status_quantity" and compo_class == "Checkbox":
+                        if not "status" in compos_list[j]:
+                            raise Exception("UIFE: UI Components provided do not have status")
+                        screenshot_compos_frec[f"{compo_class}_{compos_list[j]['status']}"] += 1
+                    else:   
+                        screenshot_compos_frec[compo_class] += 1
                 except:
                     raise Exception("UI Elements Detection model classes not compatible with Preloaded FE files ones: please select the correct model")
 
@@ -180,22 +192,13 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                 if centroid_columnname_type == "class_as_colname":
                     column_name = f"{id}_{compo_class}_{str(screenshot_compos_frec[compo_class])}"
 
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["centroid"])
-                
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
+                    if column_name in feature_columns:                
+                        enriched_log[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["centroid"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["centroid"]]})
                         
-                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "classplaintext_as_colname":
@@ -215,23 +218,13 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
 
                     column_name = f"{id}_{aux}_{screenshot_compos_frec[aux]}"
 
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["centroid"])
-                        
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
+                    if column_name in feature_columns:
+                        enriched_log[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["centroid"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["centroid"]]})
                         
-                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["centroid"]  # Añade el centroide a la fila y columna correspondiente
-                
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_class":
@@ -239,23 +232,13 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     # activity = log.at[i, activity_colname]
                     column_name = f"{id}_{centroid[0]}-{centroid[1]}"
                     
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["class"])
-                        
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                    if column_name in feature_columns:
+                        enriched_log[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["class"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["class"]]})
                         
-                        if column_name not in new_columns:
-                            enriched_log[column_name] = "" # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "centroid_classplaintext":
@@ -267,59 +250,66 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
                     else:
                         aux = compo_class
                     
-                    if aux not in screenshot_compos_frec.keys():
-                        screenshot_compos_frec[aux] = 1
-                    else:
-                        screenshot_compos_frec[aux] += 1
+                    # if aux not in screenshot_compos_frec.keys():
+                    #     screenshot_compos_frec[aux] = 1
+                    # else:
+                    #     screenshot_compos_frec[aux] += 1
 
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
-                        
-                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+                    if column_name in enriched_log.columns:
+                        enriched_log[i, column_name] = f"{aux}"
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(f"{compo_class}_{screenshot_compos_frec[compo_class]}")
-                        info_to_join[column_name] = column_as_vector
+                        new_column = pl.DataFrame({column_name: [""] * i + [aux]})
                         
-                        enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = f"{aux}_{screenshot_compos_frec[aux]}"
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
 # ========================================================================================================
 # ========================================================================================================
                 elif centroid_columnname_type == "xpath_class":
                     xpath = compos_list[j]["xpath"]
                     column_name = f"{id}_{xpath}"
                     
-                    if column_name in info_to_join:
-                        if not len(info_to_join[column_name]) == i:
-                            for k in range(len(info_to_join[column_name]),i):
-                                info_to_join[column_name].append("")
-                        info_to_join[column_name].append(compos_list[j]["class"])
-                        
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                    if column_name in feature_columns:
+                        enriched_log[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
                     else:
-                        column_as_vector = []
-                        for k in range(0,i):
-                            column_as_vector.append("")
-                        column_as_vector.append(compos_list[j]["class"])
-                        info_to_join[column_name] = column_as_vector
+                        feature_columns.add(column_name)
+                        new_column = pl.DataFrame({column_name: [""] * i + [compos_list[j]["class"]]})
                         
-                        if column_name not in new_columns:
-                            enriched_log[column_name] = '' # Inicializa la nueva columna con valores vacíos
-                        enriched_log.at[i, column_name] = compos_list[j]["class"]  # Añade el centroide a la fila y columna correspondiente
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
+# ========================================================================================================
+# ========================================================================================================
+                elif centroid_columnname_type == "status_centroid":
+                    if not "status" in compos_list[j]:
+                        raise Exception("UIFE: UI Components provided do not have status")
+                    column_name = f"{id}_{compos_list[j]['status']}"
 
-                else:
+                    if column_name in enriched_log.columns:
+                        enriched_log[i, column_name] = f"{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"
+                    else:
+                        new_column = pl.DataFrame({column_name: [""] * i + [f"{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"]})
+                        
+                        enriched_log = pl.concat([enriched_log, new_column], how="horizontal")
+                elif centroid_columnname_type != "class_quantity" and centroid_columnname_type != "class_and_checked_status_quantity":
                     raise Exception("UIFE: centroid_columnname_type not recognized")
                 # num_UI_elements += 1
-            if "features" in data:
-                data["features"]["location"] = info_to_join
-            else:
-                data["features"] = { "location": info_to_join }
+            # OLD: feature extractor splitted to aggregate after extracting dataset
+            # if "features" in data:
+            #     data["features"]["location"] = feature_columns
+            # else:
+            #     data["features"] = { "location": feature_columns }
             
+            if centroid_columnname_type == "class_quantity" or centroid_columnname_type == "class_and_checked_status_quantity":
+                match(centroid_columnname_type):
+                    case "class_quantity": num = 1
+                    case "class_and_checked_status_quantity": num = 2
+
+                colnames = list(map(lambda c: f"qua{num}_{c}", screenshot_compos_frec.keys()))
+                if not all(col in enriched_log.columns for col in colnames):
+                    new_columns = pl.DataFrame({f"qua{num}_{c}": [0] for c in screenshot_compos_frec.keys()})
+                    enriched_log = pl.concat([enriched_log, new_columns], how="horizontal", )
+                
+                for c, quant in screenshot_compos_frec.items():
+                    enriched_log[i, f"qua{num}_{c}"] = quant
+                column_name = f"{id}_{compos_list[j]['centroid'][0]}-{compos_list[j]['centroid'][1]}"
+
             with open(os.path.join(metadata_json_root, screenshot_filename + '.json'), "w") as jsonFile:
                 json.dump(data, jsonFile)
                 
@@ -328,7 +318,7 @@ def aux_iterate_compos(ui_log_path, path_scenario, execution, fe, centroid_colum
         else:
             print("File not found: " + os.path.join(metadata_json_root, screenshot_filename + '.json'))
 
-    enriched_log.to_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), index=False)
+    enriched_log.write_csv(os.path.join(execution_root, "log" + ENRICHED_LOG_SUFFIX + ".csv"), separator=";")
     
     return num_UI_elements, num_screenshots, max_num_UI_elements, min_num_UI_elements
 
@@ -360,6 +350,32 @@ def centroid_ui_element_class_or_plaintext(ui_log_path, path_scenario, execution
     Column value: compoclass+int or (if it is text) plaintext+int
     """
     return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "centroid_classplaintext")
+
+# ========================================================================================================
+# Legacy functions from agosuirpa
+# ========================================================================================================
+
+def status_centroid_ui_element(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: status 
+    Column value: centroid
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "status_centroid")
+
+def class_quantity(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: class 
+    Column value: quantity
+    """
+
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "class_quantity")
+
+def class_and_checked_status_quantity(ui_log_path, path_scenario, execution, fe):
+    """
+    Column name: class (checkbox added status) 
+    Column value: quantity
+    """
+    return aux_iterate_compos(ui_log_path, path_scenario, execution, fe, "class_and_checked_status_quantity")
 
 # ========================================================================================================
 # Class as value / xpath to reach ui element as column name

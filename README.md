@@ -324,14 +324,13 @@ If you have questions or need help integrating the product please [contact us](m
 
 ## Licensing
 
-- Copyright [RPA-US](https://github.com/RPA-US)
+- Copyright CENIT-ES3
 - Licensed under [CC BY-NC](https://creativecommons.org/licenses/by-nc/4.0/)
 
 <br />
 
 ## Useful Links
 
-- [More solutions](https://canela.lsi.us.es/) from RPA-US
 - [Tutorials](https://www.youtube.com/channel/UCq9H-Yj-C9nFifDsH5JwoeA)
 
 <br />

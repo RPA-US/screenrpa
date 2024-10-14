@@ -14,6 +14,8 @@ import scipy
 from sklearn.tree import DecisionTreeClassifier, export_graphviz, export_text
 from .utils import def_preprocessor, best_model_grid_search, cross_validation, extract_tree_rules, prev_preprocessor
 from apps.chefboost import Chefboost as chef
+from apps.notification.views import create_notification
+from apps.processdiscovery.utils import Process, Rule
 from core.settings import PLOT_DECISION_TREES, SEVERAL_ITERATIONS
 import pickle
 
@@ -164,28 +166,29 @@ def plot_decision_tree(path: str,
 
     return image
 
-def update_json_with_rules(json_data, rules_class):
-    # Convertir las claves de rules_class a enteros (o cadenas) y luego a cadenas
-    rules_class_str_keys = {str(int(float(key))): value for key, value in rules_class.items()}
-    
+def update_json_with_rules(process: Process, rules_class):
+    rules_class = {str(k): v for k, v in rules_class.items()}
     # Recorrer los puntos de decisión
-    for decision_point in json_data["decision_points"]:
+    for decision_point in process.get_non_empty_dp_flattened():
         # Recorrer las ramas del punto de decisión
-        for branch in decision_point["branches"]:
-            label = branch["label"]
+        for branch in decision_point.branches:
+            label = branch.label
             
             # Si hay reglas para esta rama en rules_class_str_keys, actualizar el JSON
-            if label in rules_class_str_keys:
-                if label in decision_point["rules"]:
+            if str(label) in rules_class.keys():
+                contained = list(map(lambda r: str(r.target) == str(label), decision_point.rules))
+                if any(contained):
                     # Añadir nuevas reglas a la lista existente
-                    decision_point["rules"][label].extend(rules_class_str_keys[label])
+                    rule = decision_point.rules[contained.index(True)]
+                    rule.condition.extend(rules_class[str(label)])
                 else:
                     # Crear una nueva lista de reglas si no existe
-                    decision_point["rules"][label] = rules_class_str_keys[label]
+                    rule = Rule(rules_class[str(label)], str(label))
+                    decision_point.rules.append(rule)
     
-    return json_data
+    return process
 
-def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, one_hot_columns, target_label, k_fold_cross_validation):
+def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuration, balance_weights, one_hot_columns, target_label, k_fold_cross_validation, execution):
     times = {}
     accuracies = {}
     
@@ -237,9 +240,17 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     feature_names = X_df.columns.tolist()
     X_df.to_csv(os.path.join(param_path, "preprocessed_df.csv"), header=feature_names)
     # Define the tree decision tree model
-    tree_classifier = DecisionTreeClassifier()
+    if balance_weights:
+        tree_classifier = DecisionTreeClassifier(class_weight='balanced')
+    else:
+        tree_classifier = DecisionTreeClassifier()
     start_t = time.time()
-    tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
+    try:
+        tree_classifier, best_params = best_model_grid_search(X_df, y, tree_classifier, k_fold_cross_validation)
+    except Exception as e:
+        scenario = os.path.basename(param_path).split("_results")[0]
+        create_notification(execution.user, "Dataset too small", f"Scenario: {scenario} does not have enough data to train a decision tree", "/", status="warning")
+        raise e
 
     accuracies = cross_validation(X_df,pd.DataFrame(y),None,special_colnames["Variant"],"sklearn",tree_classifier,k_fold_cross_validation)
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
@@ -288,11 +299,12 @@ def sklearn_decision_tree(df,prevact, param_path, special_colnames, configuratio
     if rules_class is not None:
         with open(traceability_path, 'r') as f:
             json_data = json.load(f)
+            process = Process.from_json(json_data)
         
-        updated_json = update_json_with_rules(json_data, rules_class)
+        process = update_json_with_rules(process, rules_class)
         
         with open(traceability_path, 'w') as f:
-            json.dump(updated_json, f, indent=2)
+            json.dump(process.to_json(), f, indent=2)
 
 
     if PLOT_DECISION_TREES:

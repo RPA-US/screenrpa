@@ -25,6 +25,7 @@ from django.views.generic import ListView, DetailView, CreateView
 import numpy as np
 import pandas as pd
 from sklearn.tree import export_graphviz
+from shapely.geometry import Polygon, Point
 
 #from SOM.utils import get_uicompo_from_centroid
 from apps.decisiondiscovery.utils import truncar_a_dos_decimales
@@ -53,7 +54,7 @@ import aspose.words as aw
 ##################################
 from graphviz import Source
 from tempfile import NamedTemporaryFile
-from apps.processdiscovery.utils import extract_all_activities_labels, extract_prev_act_labels
+from apps.processdiscovery.utils import Process, extract_all_activities_labels, extract_prev_act_labels
 
 import pygraphviz as pgv 
 from docx.shared import RGBColor
@@ -70,15 +71,23 @@ def get_som_json_from_screenshots_in_components(screenshot_filename, scenario_re
     return json.load(open(os.path.join(scenario_results_path, "components_json", f"{screenshot_filename}.json")))
 
 
-def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_results_path, special_colnames, action=0) -> dict:
+def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, ui_compo_class_or_text, scenario_results_path) -> dict:
     ui_compo_centroid = [int(float(coord)) for coord in ui_compo_centroid]
-    som_json = get_som_json_from_screenshots_in_components(screenshot_filename, scenario_results_path, special_colnames, action)
+    som_json = get_som_json_from_screenshots_in_components(screenshot_filename, scenario_results_path)
 
     uicompo_json = None
     min_distance = float('inf')
     closest_compo = None
 
-    for compo in som_json['compos']:
+    class_compos = list(filter(lambda compo: compo['class'] == ui_compo_class_or_text, som_json['compos']))
+    # If none is found, that means the class is actually a text, or NaN
+    if len(class_compos) == 0 and ui_compo_class_or_text not in ["NaN", "nan"]:
+        class_compos = list(filter(lambda compo: compo['text'] == ui_compo_class_or_text, som_json['compos']))
+    # It could happen that in this specific instance, the object was not detected. In this case we will just get the closest one
+    if len(class_compos) == 0:
+        class_compos = som_json['compos']
+
+    for compo in class_compos:
         # Convertir el centroid de compo y ui_compo_centroid a enteros antes de comparar
         compo_centroid_int = [int(float((coord))) for coord in compo['centroid']]
         if compo_centroid_int == ui_compo_centroid:
@@ -88,11 +97,17 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, scenario_r
             # Calcular la distancia entre centroids
             distance = np.linalg.norm(np.array(compo_centroid_int) - np.array(ui_compo_centroid))
             if distance < min_distance:
-                min_distance = distance
-                closest_compo = compo
+                # Check the centroid is inside the bounding box
+                compo_polygon = Polygon(compo['points'])
+                if compo_polygon.contains(Point(ui_compo_centroid)):
+                    min_distance = distance
+                    closest_compo = compo
 
     # Si no se encontró una coincidencia exacta, usar el más cercano
     if uicompo_json is None and closest_compo is not None:
+        uicompo_json = closest_compo
+    else:
+        closest_compo = min(class_compos, key=lambda c: abs(np.linalg.norm(np.array([int(float((coord))) for coord in compo['centroid']]) - np.array(ui_compo_centroid))))
         uicompo_json = closest_compo
     return uicompo_json
 
@@ -507,20 +522,21 @@ def dot_to_png(dot_path):
     # Cargar el contenido del archivo .dot
     with open(dot_path, 'r') as file:
         dot_content = file.read()
-    try:
-        graph = Source(dot_content)
-        graph.format = 'png'
+        try:
+            graph = Source(dot_content)
+            graph.format = 'png'
+            
+            # Guardar la imagen a un archivo temporal
+            temp_file = NamedTemporaryFile(delete=False, suffix='.png')
+            temp_file.close()
+            graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
+            
+            return graph_path 
         
-        # Guardar la imagen a un archivo temporal
-        temp_file = NamedTemporaryFile(delete=False, suffix='.png')
-        graph_path = graph.render(filename=temp_file.name, format='png', cleanup=True)
-        
-        return graph_path 
-    
-    except Exception as e:
+        except Exception as e:
 
-        print(f"Error al procesar el gráfico: {e}")
-        return None
+            print(f"Error al procesar el gráfico: {e}")
+            return None
 
 #############################################################################################
 class ReportCreateView(CreateView):
@@ -569,7 +585,7 @@ class ReportCreateView(CreateView):
         
 
 def report_define(report_directory, report_path, execution,  report, scenario):
-    template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
+    template_path = os.path.join("apps", "templates", "reporting", "report_template.docx")
     doc = Document(template_path)
     colnames=execution.case_study.special_colnames
     ###############3
@@ -802,15 +818,6 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
         return graph_path
 
-        
-
-    def lectura_traceability(json_path):
-        # Leer el contenido del fichero JSON
-        with open(json_path, 'r') as file:
-            traceability = json.load(file)
-            return traceability
-        
-
     def get_branch_condition(decision_point, branch_number):
         branches = decision_point.get('branches', [])
         rules = decision_point.get('rules', {})
@@ -824,50 +831,69 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         return res
 ##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
 ##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'aqui va el centroid en tupla']], 3: [['numeric__Coor_Y_3 > 491.51', 'aqui va el centroid en tupla']]}}
-    def get_branch_condition2(decision_point, branch_number, pre_pd_activities):
-        branches = decision_point.get('branches', [])
-        rules = decision_point.get('rules', {})
-        
-        for branch in branches:
-            if branch['label'] == str(branch_number):
-                res = rules.get(str(branch_number), [])
-                if not res:
-                    return {"No associated rule found": []}
-                else:
-                    result_dict = {}
-                    for rule in res:
-                        condition_dict = {}
-                        parts = rule.split('&')
-                        for part in parts:
-                            elements = re.split(r'<=|>=|<|>|==|!=', part)
-                            variable = elements[0].strip()
-                            condition = part.strip()
-                            
-                            # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
-                            matched = False
-                            for act in pre_pd_activities:
-                                pattern = re.compile(f"_{act}(?:_.*)?$")
-                                if pattern.search(variable):
-                                    matched = True
-                                    variable_parts = variable.split('-')
-                                    
-                                    if len(variable_parts) > 1:
-                                        last_part = variable_parts[-1]
-                                        
-                                        first_part_split = variable_parts[0].split('_')
-                                        last_part_split = last_part.split('_')
-                                        
-                                        first_element = first_part_split[-1]
-                                        second_element = last_part_split[0]
-                                        
-                                        if act not in condition_dict:
-                                            condition_dict[act] = []
-                                        condition_dict[act].append([condition, (first_element, second_element)])
-                            #el caso por ejemplo en el que una regla sea de una actividad previa al punto de decision pero que no sea de esa variante (que sea ausencia de icono)
-                            if not matched:
-                                pass
-                        result_dict[rule.strip()] = condition_dict
-                    return result_dict
+    def get_branch_condition2(rules, pre_pd_activities):
+        def coordinate_rule(variable, condition, condition_dict, exists):
+            # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
+            present = False
+            for act in pre_pd_activities:
+                pattern = re.compile(f"_{act}(?:_.*)?$")
+                if pattern.search(variable):
+                    variable_parts = variable.split('-')
+                    
+                    if len(variable_parts) > 1:
+                        last_part = variable_parts[-1]
+                        
+                        first_part_split = variable_parts[-2].split('_')
+                        last_part_split = last_part.split('_')
+                        
+                        first_element = first_part_split[-1]
+                        second_element = last_part_split[0]
+
+                        compo_class_or_text = "_".join(last_part_split[2:]) # last_part_split[1] is the activity for the component
+                        if compo_class_or_text == "NaN" or compo_class_or_text == "nan":
+                            exists = not exists # Invert the exists value if the component is NaN, meaning <= is actually compo exists and > not exists
+                        
+                        if act not in condition_dict:
+                            condition_dict[act] = []
+                        condition_dict[act].append(["centroid", condition, (first_element, second_element, compo_class_or_text), exists])
+                        present = True
+
+        def decision_rule(variable, condition, condition_dict, exists):
+            coincidences = re.match(r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)", variable)
+            target = coincidences.group(4) # Actividad o numero de puerta xor
+            if coincidences.group(3):  # Si hay un grupo 3 adicional (opcional, significa xor)
+                target = f"{coincidences.group(3)}_{target}"
+            
+            if "decision" not in condition_dict:
+                condition_dict["decision"] = []
+            condition_dict["decision"].append([target, exists])
+
+        result_dict = {}
+        for rule in rules:
+            condition_dict = {}
+            parts = rule.split('&')
+            for part in parts:
+                elements = re.split(r'<=|>=|<|>|==|!=', part)
+                variable = elements[0].strip()
+                condition = part.strip()
+
+                # Figure out weather the element is or not in this instance
+                exists = False
+                if re.search(r">=|>|==", part):
+                    exists = True
+                
+                # Patrón para los nombres de columna que contienen centroid
+                pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.?\d*?-\d+\.?\d*?)_(\d+)(_?[_0-9a-zA-Z]+)"
+                # Patrón para puntos de decisión
+                # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
+                pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)"
+
+                if re.match(pattern_with_centroid, variable):
+                    coordinate_rule(variable, condition, condition_dict, exists)
+                elif re.match(pattern_decision_point, variable):
+                    decision_rule(variable, condition, condition_dict, exists)
+            result_dict[rule.strip()] = condition_dict
+        return result_dict
 
 
 #hay que decidr que en el punto de decisión hay una regla solpada entre dos branchas, x e x, y explicar esas reglas.
@@ -935,7 +961,10 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         for e in json_data:
             points = [tuple(point) for point in e["points"]]
             color = e.get("color", (0, 255, 0)) #el color verde por defecto
-            draw.polygon(points, outline=color, width=4)
+            if len(points) > 2:
+                draw.polygon(points, outline=color, width=4)
+            else:
+                draw.circle(points[0], radius=5 ,fill=color)
 
         # Guardar la imagen modificada en memoria
         image_byte_array = io.BytesIO()
@@ -956,13 +985,29 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         def search_decision_points(decision_points, branch_labels):
             for dp in decision_points:
                 for branch in dp['branches']:
-                    if int(branch['label']) in branch_labels:
+                    if str(branch['label']) in branch_labels:
                         result[dp['prevAct']] = dp
                     search_decision_points(branch.get('decision_points', []), branch_labels)
 
         search_decision_points(data['decision_points'], branch_labels)
         return result
     
+    
+#extrae una lista con todos los id de todos los puntos de decision de una variante  
+    def extract_decision_point_ids(decision_points):
+        ids = []
+    
+        def extract_ids(dp_list):
+            for dp in dp_list:
+                ids.append(dp['id'])
+                for branch in dp['branches']:
+                    extract_ids(branch['decision_points'])
+        
+        extract_ids(decision_points)
+        return ids
+    #def explicabilidad_decisions(decision_points, variant_decision_points):
+
+
 #extrae una lista con todos los id de todos los puntos de decision de una variante  
     def extract_decision_point_ids(decision_points):
         ids = []
@@ -993,7 +1038,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             decision_tree.add_run(f'Action {k}', style='Título 5 Car')
             decision_tree.add_run().add_break()
             
-            if action[colnames['EventType']].iloc[0] == 1: #colnames['EventType']
+            if action[colnames['EventType']].iloc[0] == 1 or action[colnames['EventType']].iloc[0] == "click": #colnames['EventType']
                 # Calcular la media de Coor_X y Coor_Y
                 mean_x = action[colnames['CoorX']].mean()
                 mean_y = action[colnames['CoorY']].mean()
@@ -1001,7 +1046,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 # Cargar la imagen correspondiente
                 screenshot_filename = action[colnames['Screenshot']].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-                image = action[colnames['Screenshot']].iloc[0] if 'Screenshot' in action.columns else None
+                image = action[colnames['Screenshot']].iloc[0]
                 image_click=True
                 with Image.open(path_to_image) as img:
                     width, height = img.size
@@ -1019,7 +1064,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
 
             else:
                     # Mostrar el valor de TextInput si existe, de lo contrario imprimir "No TextInput"
-                text_input = action['features.experiment.GUI_category.name.TextInput'].iloc[0] if 'TextInput' in action.columns and not pd.isnull(action['TextInput'].iloc[0]) else "No TextInput"
+                text_input_cat_name = execution.ui_elements_classification.model.text_classname
+                text_input = action[text_input_cat_name].iloc[0] if text_input_cat_name in action.columns and not pd.isnull(action[text_input_cat_name].iloc[0]) else f"No {text_input_cat_name}"
                 event_description = f'The user writes "{text_input}"'
                 screenshot_filename = action[colnames['Screenshot']].iloc[0]
                 path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
@@ -1112,34 +1158,89 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
           
 ############################################################3
     
-    def process_variant_group(group, traceability, path_to_dot_file, colnames,df_pd_log):
-    
+    def process_variant_group(group, traceability, path_to_dot_file, colnames,df_pd_log, variant):
+        def process_centroid_conditions(centroid_conditions, activities):
+            for act, condition_list in centroid_conditions.items(): 
+                color_index = 0
+                compo_ui_json=[]
+                screenshot_filename=None
+                #obtenemos la screenshot correspondiente
+                ######################################3
+                if act in activities:
+                    screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                else:
+                    screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
+                if not screenshot_filename:
+                    print(f"No screenshot found for the activity '{act}'.")
+                    ##################3
+                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+                for _, condition, variable, existence in condition_list:
+                    #decision_tree.add_run(f'Activity {act}: {condition}\n')
+                    color = colors[color_index % len(colors)]
+                    # Insertar la imagen en el documento
+                    ui_compo_centroid=variable[:2]
+                    ui_compo_class_or_text=variable[2]
+                    # Correct the text if it is NaN
+                    aux_compo_text = "Some component" if ui_compo_class_or_text == "NaN" else ui_compo_class_or_text
+                    
+                    if existence:
+                        compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, ui_compo_class_or_text, os.path.join(execution.exp_folder_complete_path, scenario + '_results'))
+                        compo_ui["color"] = color  # Asignar color al polígono
+                        compo_ui_json.append(compo_ui)
+
+                        run = decision_tree.add_run(f'Existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
+                        run.font.color.rgb = RGBColor(*color)
+                        color_index += 1
+                    else:
+                        compo_ui = {"points": [[int(float(coord)) for coord in ui_compo_centroid]], "color": color}
+                        compo_ui_json.append(compo_ui)
+
+                        run = decision_tree.add_run(f'Non-existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
+                        run.font.color.rgb = RGBColor(*color)
+                        color_index += 1
+                if compo_ui_json:
+                    draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
+                    decision_tree.add_run().add_break()
+
+
+        def process_decision_conditions(decision_conditions, activities):
+            for branch, existence in decision_conditions:
+                color = colors[0]
+                if existence:
+                    run = decision_tree.add_run(f'Took the branch "{branch}" in a previous decision point\n')
+                else:
+                    run = decision_tree.add_run(f'Did not take the branch "{branch}" in a previous decision point\n')
+                run.font.color.rgb = RGBColor(*color)
+
+        activities = group[colnames['Activity']].unique().tolist() #en funcion de si las activity label se pueden repetir
+
+        variant_decision_points = group.filter(regex=r'id[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]+').dropna(axis=1, how='all')
+
+        dps = list(filter(lambda dp: dp.id in variant_decision_points.columns, traceability.get_non_empty_dp_flattened()))
+
         #prev_act = traceability['decision_points'][0]['prevAct']
-        decision_point = traceability['decision_points'][0]
+        # decision_point = traceability['decision_points'][0]
         
-        #print(decision_point)
-        first_dp_id= decision_point['id']
-        #ir acumulando las id de los puntos de decision de cada variante
-        columnas_label_ramas=[]
-        for pd in extract_decision_point_ids(traceability['decision_points']):
-            columnas_label_ramas= columnas_label_ramas + group[pd].unique().tolist()
-            variant_decision_points = get_decision_points_for_branches(traceability, columnas_label_ramas)
-        #añadir el primer punto de decision al diccionario
-        variant_decision_points[decision_point['prevAct']]= decision_point
+        # #print(decision_point)
+        # first_dp_id= decision_point['id']
+        # #ir acumulando las id de los puntos de decision de cada variante
+        # columnas_label_ramas=[]
+        # for pd in list(map(lambda x: x['id'], traceability['decision_points'])):
+        #     columnas_label_ramas= columnas_label_ramas + group[pd].unique().tolist()
+        #     variant_decision_points = get_decision_points_for_branches(traceability, columnas_label_ramas)
+        # #añadir el primer punto de decision al diccionario
+        # variant_decision_points[decision_point['prevAct']]= decision_point
         
-        variant = group[colnames['Variant']].iloc[0]
         decision_tree.add_run().add_break()
         decision_tree.add_run(f'Variant {variant}\n', style='Título 3 Car')
         decision_tree.add_run().add_break()
 
         #actividades
-        activities = group[colnames['Activity']].unique().tolist() #en funcion de si las activity label se pueden repetir
         
         #meto diagrama bpmn resaltado de variantes
         run = decision_tree.add_run()
         run.add_picture(cambiar_color_nodos_y_caminos(activities, path_to_dot_file), width=Inches(6))
         run.add_break()
-
 
         for i, activity in enumerate(activities):
 
@@ -1148,140 +1249,113 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             
             ###############################################################################################333
 
-            #EXPLICABILIDAD DE LAS DECISIONES
-            if str(activity) in variant_decision_points:
-                decision_point = variant_decision_points[str(activity)]
-                num_ramas = len(decision_point['branches'])
-                next_activity = activities[i+1] if i+1 < len(activities) else None
-                #{'numeric__Coor_Y_2 <= 382.39': {2: [['numeric__Coor_Y_2 <= 382.39', 'numeric__Coor_Y_2']]}}
-                #actividades previas al pd, independientemente de la variante
+        #EXPLICABILIDAD DE LAS DECISIONES
+        for dp in dps:
+            activity = str(dp.prevAct)
+            num_ramas = len(dp.branches)
+            target = str(variant_decision_points[dp.id].iloc[0])
+            branch_rules = list(filter(lambda r: str(r.target) == target, dp.rules))[0].condition
+            #{'numeric__Coor_Y_2 <= 382.39': {2: [['numeric__Coor_Y_2 <= 382.39', 'numeric__Coor_Y_2']]}}
+            #actividades previas al pd, independientemente de la variante
+            act_seq_index = activities.index(int(activity))
+            pre_activities = activities[:act_seq_index+1]
 
-                pre_activities = pre_pd_activities(decision_point['prevAct'], df_pd_log,colnames)
+            result_dict = get_branch_condition2(branch_rules, pre_activities)
+            result_dict_overlapping = {}
+            # result_dict_overlapping = get_overlapping_branch_condition2(decision_point, next_activity, pre_activities)
 
-                result_dict = get_branch_condition2(decision_point, next_activity, pre_activities)
-                result_dict_overlapping = get_overlapping_branch_condition2(decision_point, next_activity, pre_activities)
-
-                decision_tree.add_run().add_break()      
-                decision_tree.add_run(f'Decision Point\n', style='Título 4 Car').bold = True
+            decision_tree.add_run().add_break()      
+            decision_tree.add_run(f'Decision Point\n', style='Título 4 Car').bold = True
+            decision_tree.add_run().add_break()
+            decision_tree.add_run().add_break()      
+            decision_tree.add_run(f'In this variant, after activity {activity} there is a decision point where the user decides between taking {num_ramas} different branches. \n')
+            decision_tree.add_run(f'In the case of this variant (variant {variant}) the user chooses to take branch {target}. \n')
+            decision_tree.add_run().add_break()
+            if 'No associated rule found' not in result_dict:
+                decision_tree.add_run(f"In order for the user to decide this branch, one of these deterministic rules must be given:")
+                for rules in result_dict.keys():
+                    decision_tree.add_run('\n• ' + f"{rules}" + '\n')    
                 decision_tree.add_run().add_break()
-                decision_tree.add_run().add_break()      
-                decision_tree.add_run(f'After this activity there is a decision point where the user decides between taking {num_ramas} different branches. \n')
-                decision_tree.add_run(f'In the case of this variant (variant {variant}) the user chooses to take branch {next_activity}. \n')
+            else:
+                decision_tree.add_run(f"No associated deterministic rules are found:")
                 decision_tree.add_run().add_break()
-                if 'No associated rule found' not in result_dict:
-                    decision_tree.add_run(f"In order for the user to decide this branch, one of these deterministic rules must be given:")
-                    for rules in result_dict.keys():
-                        decision_tree.add_run('\n• ' + f"{rules}" + '\n')    
+            if 'No associated rule found' not in result_dict_overlapping:
+                for branch, rules in result_dict_overlapping.items(): 
+                    decision_tree.add_run(f"In this decision we find rules that overlap with the rest of the decision branches. These rules are:")
+                    for rule, conditions in rules.items():
+                        decision_tree.add_run('\n• ' + f"Rule overlapping with branch {branch}: {rule}." + '\n')
                     decision_tree.add_run().add_break()
-                else:
-                    decision_tree.add_run(f"No associated deterministic rules are found:")
-                    decision_tree.add_run().add_break()
-                if 'No associated rule found' not in result_dict_overlapping:
-                    for branch, rules in result_dict_overlapping.items(): 
-                        decision_tree.add_run(f"In this decision we find rules that overlap with the rest of the decision branches. These rules are:")
-                        for rule, conditions in rules.items():
-                            decision_tree.add_run('\n• ' + f"Rule overlapping with branch {branch}: {rule}." + '\n')
-                        decision_tree.add_run().add_break()
-                else:
-                    decision_tree.add_run(f"No overlapping rules were found.")
-                    decision_tree.add_run().add_break()
+            else:
+                decision_tree.add_run(f"No overlapping rules were found.")
+                decision_tree.add_run().add_break()
 
 
-                colors = [RGBColor(255, 0, 0), RGBColor(0, 255, 0), RGBColor(0, 0, 255), RGBColor(255, 165, 0)]
+            colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 165, 0)]
 
-                #################################################################################################### DETERMINIST RULES
-                
-                if result_dict and all(isinstance(value, dict) for value in result_dict.values()): #se ejecuta solo si tiene reglas asociadas
-                    decision_tree.add_run().add_break()
-                    decision_tree.add_run("Determinist Rules\n", style='Título 5 Car').bold = True
-                    decision_tree.add_run().add_break()
-                    print(result_dict)
-                    for rule, conditions in result_dict.items():
+            #################################################################################################### DETERMINIST RULES
+            
+            if result_dict and all(isinstance(value, dict) for value in result_dict.values()): #se ejecuta solo si tiene reglas asociadas
+                decision_tree.add_run().add_break()
+                decision_tree.add_run("Determinist Rules\n", style='Título 5 Car').bold = True
+                decision_tree.add_run().add_break()
+                print(result_dict)
+                for rule, conditions in result_dict.items():
+                    decision_tree.add_run(f'{rule}\n').bold = True
+                    #compo_ui_json=[]
+                    #color_index = 0
+                    centroid_conditions = {k: v for k, v in conditions.items() if v[0][0] == "centroid"}
+                    decision_conditions = conditions["decision"] if "decision" in conditions else []
+                    process_centroid_conditions(centroid_conditions, activities)
+                    process_decision_conditions(decision_conditions, activities)
+                decision_tree.add_run().add_break()
+
+            #################################################################################################### OVERLAPPED RULES
+
+            if 'No associated rule found' not in result_dict_overlapping:  # se ejecuta solo si tiene reglas asociadas
+                decision_tree.add_run().add_break()
+                decision_tree.add_run("Overlapping Rules\n", style='Título 5 Car').bold = True
+                decision_tree.add_run().add_break()
+                print(result_dict_overlapping)
+                for branch, rules in result_dict_overlapping.items():
+                    decision_tree.add_run(f'Branch {branch}:\n').bold =True
+                    
+                    for rule, conditions in rules.items():
                         decision_tree.add_run(f'{rule}\n').bold = True
-                        #compo_ui_json=[]
-                        #color_index = 0
-                        for act, condition_list in conditions.items(): 
-                            color_index = 0
-                            compo_ui_json=[]
-                            screenshot_filename=None
-                            #obtenemos la screenshot correspondiente
-                            ######################################3
+                        color_index = 0
+                        compo_ui_json = []
+                        screenshot_filename= None
+                        for act, condition_list in conditions.items():
+                            # Obtener la screenshot correspondiente
                             if act in activities:
                                 screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
                             else:
+
                                 screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
                             if not screenshot_filename:
                                 print(f"No screenshot found for the activity '{act}'.")
-                                ##################3
+
                             path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
+
+                            #TODO: Adapt to new format of condition list after fixing overlapping rules
                             for condition, variable in condition_list:
-                                #decision_tree.add_run(f'Activity {act}: {condition}\n')
                                 color = colors[color_index % len(colors)]
                                 run = decision_tree.add_run(f'Activity {act}: {condition}\n')
-                                run.font.color.rgb = color
+                                run.font.color.rgb = RGBColor(*color)
                                 color_index += 1
+
                                 # Insertar la imagen en el documento
-                                ui_compo_centroid=variable
-                                
-                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
+                                ui_compo_centroid = variable
+                                compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'))
+
                                 if compo_ui:
                                     compo_ui["color"] = color  # Asignar color al polígono
                                     compo_ui_json.append(compo_ui)
+
                             if compo_ui_json:
-                                draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
+                                draw_polygons_on_image(compo_ui_json, path_to_image, decision_tree)
                                 decision_tree.add_run().add_break()
-                            ##################33
-                        
+
                         decision_tree.add_run().add_break()
-
-
-                #################################################################################################### OVERLAPPED RULES
-
-                if 'No associated rule found' not in result_dict_overlapping:  # se ejecuta solo si tiene reglas asociadas
-                    decision_tree.add_run().add_break()
-                    decision_tree.add_run("Overlapping Rules\n", style='Título 5 Car').bold = True
-                    decision_tree.add_run().add_break()
-                    print(result_dict_overlapping)
-                    for branch, rules in result_dict_overlapping.items():
-                        decision_tree.add_run(f'Branch {branch}:\n').bold =True
-                        
-                        for rule, conditions in rules.items():
-                            decision_tree.add_run(f'{rule}\n').bold = True
-                            color_index = 0
-                            compo_ui_json = []
-                            screenshot_filename= None
-                            for act, condition_list in conditions.items():
-                                # Obtener la screenshot correspondiente
-                                if act in activities:
-                                    screenshot_filename = group[group[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                                else:
-
-                                    screenshot_filename = df_pd_log[df_pd_log[colnames['Activity']] == act][colnames['Screenshot']].iloc[0]
-                                if not screenshot_filename:
-                                    print(f"No screenshot found for the activity '{act}'.")
-
-                                path_to_image = os.path.join(execution.exp_folder_complete_path, scenario, screenshot_filename)
-
-                                for condition, variable in condition_list:
-                                    color = colors[color_index % len(colors)]
-                                    run = decision_tree.add_run(f'Activity {act}: {condition}\n')
-                                    run.font.color.rgb = color
-                                    color_index += 1
-
-                                    # Insertar la imagen en el documento
-                                    ui_compo_centroid = variable
-                                    compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, os.path.join(execution.exp_folder_complete_path, scenario + '_results'), colnames, action=0)
-
-                                    if compo_ui:
-                                        compo_ui["color"] = color  # Asignar color al polígono
-                                        compo_ui_json.append(compo_ui)
-
-                                if compo_ui_json:
-                                    draw_polygons_on_image(compo_ui_json, path_to_image, decision_tree)
-                                    decision_tree.add_run().add_break()
-
-                            decision_tree.add_run().add_break()
-
     
 ###############
     
@@ -1290,11 +1364,12 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
     df_pd_log = read_ui_log_as_dataframe(os.path.join(execution.exp_folder_complete_path, scenario+'_results', PROCESS_DISCOVERY_LOG_FILENAME))
     #se quita porque la columna se aplica ya cuando se crea el csv y se llama auto_variant
     #df2= variant_column(df)
-    traceability= lectura_traceability(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json'))
+    traceability_json = json.load(open(os.path.join(execution.exp_folder_complete_path, scenario+'_results', 'traceability.json')))
+    traceability = Process.from_json(traceability_json)
     path_to_dot_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "bpmn.dot")
     #df2.groupby('Variant2').apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames))
     #colnames['Variant'] es auto_variant
-    df_pd_log.groupby(colnames['Variant']).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log))
+    df_pd_log.groupby(colnames['Variant'], as_index=False).apply(lambda group: process_variant_group(group,traceability,path_to_dot_file, colnames,df_pd_log, group.name))
 
 
 ###################################################################
@@ -1381,7 +1456,7 @@ def preview_pdf(request, report_id):
     
     report = get_object_or_404(PDD, pk=report_id)
     execution = report.execution
-    pdf_path = os.path.join('/screenrpa',execution.exp_folder_complete_path, execution.scenarios_to_study[0]+'_results', f'report_{report.id}.pdf')
+    pdf_path = os.path.join(execution.exp_folder_complete_path, execution.scenarios_to_study[0]+'_results', f'report_{report.id}.pdf')
     #pdf_path = '/screenrpa/media/unzipped/datos_inciiales_j49gvQs_1714120837/executions/exec_41/sc_0_size50_Balanced_results/calendario-academico.pdf'
 
     return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')

@@ -64,8 +64,8 @@ def get_compos_mask_json(masks, image_shape):
     }
     for i,mask in enumerate(sorted_masks): #TODO maybe here we can include a filter of areas
         #if bbox_area(mask)<uied_params['min-ele-area']: break
-        compo=UiComponent(i,bbox_list=mask['bbox'],area=mask['area'], contain=[])
-        compo.set_data(segmentation=mask['segmentation'],crop_box=mask['crop_box'], image_shape=image_shape)
+        compo=UiComponent(i,bbox_list=mask['bbox'],area=bbox_area(mask['bbox']), contain=[])
+        compo.set_data(segmentation=None,crop_box=mask['crop_box'], image_shape=image_shape)
         
         sorted_compos.append(compo)
 
@@ -102,8 +102,6 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
 
     time0=time.time()
 
-
-    resize_height = 800
     input_img_path = os.path.join(param_img_root, image_names[img_index])
 
     name = input_img_path.split('/')[-1][:-4] if '/' in input_img_path else input_img_path.split('\\')[-1][:-4]
@@ -114,17 +112,16 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     ##################################
     ##PREPROCESADO
     image = cv2.imread(input_img_path, cv2.COLOR_BGR2RGB)
-    image = resize_by_height(image, resize_height)
-    image_copy = image.copy()
+    image = image.copy()
     image_shape = image.shape
 
     time1=time.time()
 
     match(sam_type):
         case "fast-sam":
-            masks = get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, input_img_path)
+            masks = get_fast_sam_masks(checkpoint, checkpoint_path, image, input_img_path)
         case "sam":
-            masks = get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy)
+            masks = get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image)
 
     time2=time.time()
 
@@ -135,7 +132,7 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     # compos_json,uicompos= nesting_compos(uicompos)
     # time4=time.time()
     # *** Step 5 *** save detection result
-    draw_bounding_box(image_copy, uicompos, show=False, name='merged compo', 
+    draw_bounding_box(image, uicompos, show=False, name='merged compo', 
                            write_path=os.path.join(ip_root, name + '.jpg'), 
                            wait_key=0)
     
@@ -151,7 +148,7 @@ def get_sam_gui_components_crops(param_img_root,image_names ,path_to_save_border
     # RESULTS
     # ##########################
 
-    clips = [compo.compo_clipping(image_copy) for compo in uicompos]
+    clips = [compo.compo_clipping(image) for compo in uicompos]
 
     return clips, uicompos, mask_json, som, arrays_dict, dict_times
   
@@ -204,7 +201,7 @@ def get_sam_masks(sam_model_registry, checkpoint, checkpoint_path, image_copy):
 
     return masks
 
-def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
+def get_fast_sam_masks(checkpoint, checkpoint_path, image, image_path):
     '''
     masks contains the .generate return:
         - list of mask, each record is a dict(str, any) containg:
@@ -241,13 +238,13 @@ def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
         "iou": 0.9,
         "retina_masks": True
     }
-    fast_sam = FastSAMPredictor(overrides=overrides)
+    fast_sam = FastSAM(checkpoint_path+sam_checkpoint)
 
-    everything_results = fast_sam(image_copy)
+    everything_results = fast_sam(image_path)
 
     ### GENERATE MASK ###
-    result = everything_results.results[0]
-    masks = everything_results._format_results(result)
+    result = everything_results[0]
+    masks = list(map(lambda m: {"orig_shape": m.orig_shape, "segmentation": m.xy[0]}, result.masks))
 
     for i, ann in enumerate(masks):
         ann['bbox'] = [int(result.boxes.xyxy[i].tolist()[0]), int(result.boxes.xyxy[i].tolist()[1]),
@@ -255,6 +252,6 @@ def get_fast_sam_masks(checkpoint, checkpoint_path, image_copy, image_path):
                                 int(result.boxes.xyxy[i].tolist()[3]) - int(result.boxes.xyxy[i].tolist()[1])]
         ann['score'] = result.boxes.conf[i].tolist()
         ann['area'] = ann['segmentation'].sum().item()
-        ann['crop_box'] = [0, 0, image_copy.shape[1], image_copy.shape[0]]
+        ann['crop_box'] = [0, 0, image.shape[1], image.shape[0]]
 
     return masks

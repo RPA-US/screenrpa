@@ -152,6 +152,9 @@ def def_preprocessor(X):
                 
     # Identificar columnas de tipo objeto y numéricas
     types_obj = X.select_dtypes(include=['object']).columns
+    # Convertir estas columnas a string
+    for obj_col in types_obj:
+        X[obj_col] = X[obj_col].astype(str)
     one_hot_columns = list(types_obj.drop(sta_columns, errors='ignore'))
     numeric_features = X.select_dtypes(include=['number']).columns
 
@@ -356,14 +359,14 @@ def centroid_distance_checker(punto_x, punto_y, umbral):
 
 def read_feature_column_name(column_name):
     # Patrón para los nombres de columna que contienen centroid
-    pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+    pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.?\d*?-\d+\.?\d*?)_(\d+)(_?)([_0-9a-zA-Z]+)"
     # Patrón para los nombres de columna que no contienen centroid
     pattern_without_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_]+)_(\d+)(_?[a-zA-Z]?)"
     # Patrón adicional para nombres de columna sin prefijo
     pattern_no_prefix = r"([a-zA-Z0-9_]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
     # Patroón para puntos de decisión
-    # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
-    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_(\d+)(_?[a-zA-Z]?)"
+    # one_hot_categorical__idc2257948-fb8b-4a60-8ea6-1fdce0c602a1_*
+    pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)"
     
     # Intentamos encontrar coincidencias con los patrones definidos
     coincidences = re.match(pattern_with_centroid, column_name)
@@ -372,8 +375,6 @@ def read_feature_column_name(column_name):
         feature = coincidences.group(2)
         centroid = [float(coord) for coord in coincidences.group(3).split("-")]
         activity = coincidences.group(4)
-        if coincidences.group(5):  # Si hay un grupo 5 adicional (opcional)
-            activity += coincidences.group(5)
         return suffix, feature, centroid, activity
 
     coincidences = re.match(pattern_without_centroid, column_name)
@@ -401,9 +402,9 @@ def read_feature_column_name(column_name):
         suffix = coincidences.group(1)
         feature = coincidences.group(2)
         centroid = None
-        activity = coincidences.group(3)
-        if coincidences.group(4):  # Si hay un grupo 4 adicional (opcional)
-            activity += coincidences.group(4)
+        activity = coincidences.group(4) # Actividad o numero de puerta xor
+        if coincidences.group(3):  # Si hay un grupo 3 adicional (opcional, significa xor)
+            activity = f"{coincidences.group(3)}_{activity}"
         return suffix, feature, centroid, activity
     
     # Si no coincide con ninguno de los patrones
@@ -471,7 +472,7 @@ def find_prev_act(json_path, decision_point_id):
         print(f"File not found: {e}")
         return None
 
-    for dp in traceability.get("decision_points", []):
+    for dp in traceability.get_non_empty_dp_flattened():
         if dp["id"] == decision_point_id:
             return dp["prevAct"]
     
@@ -479,7 +480,7 @@ def find_prev_act(json_path, decision_point_id):
 
 def extract_tree_rules(path_to_tree_file):
     try:
-        with open('/screenrpa/' + path_to_tree_file, 'rb') as archivo:
+        with open(path_to_tree_file, 'rb') as archivo:
             loaded_data = pickle.load(archivo)
         # Obtener el clasificador y los nombres de las características del diccionario cargado
         tree = loaded_data['classifier']
