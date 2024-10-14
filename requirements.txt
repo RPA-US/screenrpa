@@ -121,7 +121,7 @@ pathlib==1.0.1
 pathspec==0.11.1
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==9.2.0
+Pillow==10.4.0
 platformdirs==3.2.0
 plum-dispatch==1.7.4
 pm4py==2.7.11.11
