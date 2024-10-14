@@ -850,7 +850,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         second_element = last_part_split[0]
 
                         compo_class_or_text = "_".join(last_part_split[2:]) # last_part_split[1] is the activity for the component
-                        if compo_class_or_text == "NaN":
+                        if compo_class_or_text == "NaN" or compo_class_or_text == "nan":
                             exists = not exists # Invert the exists value if the component is NaN, meaning <= is actually compo exists and > not exists
                         
                         if act not in condition_dict:
@@ -883,7 +883,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                     exists = True
                 
                 # Patrón para los nombres de columna que contienen centroid
-                pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.\d+-\d+\.\d+)_(\d+)(_?[a-zA-Z]?)"
+                pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.?\d*?-\d+\.?\d*?)_(\d+)(_?[_0-9a-zA-Z]+)"
                 # Patrón para puntos de decisión
                 # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
                 pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)"
@@ -1290,7 +1290,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 decision_tree.add_run().add_break()
 
 
-            colors = [RGBColor(255, 0, 0), RGBColor(0, 255, 0), RGBColor(0, 0, 255), RGBColor(255, 165, 0)]
+            colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 165, 0)]
 
             #################################################################################################### DETERMINIST RULES
             
