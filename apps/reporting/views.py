@@ -581,7 +581,7 @@ class ReportCreateView(CreateView):
         
 
 def report_define(report_directory, report_path, execution,  report, scenario):
-    template_path = "/screenrpa/apps/templates/reporting/report_template.docx"
+    template_path = os.path.join("apps", "templates", "reporting", "report_template.docx")
     doc = Document(template_path)
     colnames=execution.case_study.special_colnames
     ###############3
