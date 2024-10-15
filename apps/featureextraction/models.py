@@ -65,7 +65,7 @@ class Prefilters(models.Model):
         return reverse("featureextraction:prefilters_list", args=[str(self.case_study_id)])
     
     def __str__(self):
-        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+        return 'type: ' + self.title + ' - active? ' + str(self.active)
 
 @receiver(pre_delete, sender=Prefilters)
 def monitoring_delete(sender, instance, **kwargs):
@@ -99,7 +99,7 @@ class UIElementsDetection(models.Model):
         return reverse("featureextraction:ui_detection_list", args=[str(self.case_study_id)])
     
     def __str__(self):
-        return 'type: ' + self.type + ' - skip? ' + str(self.skip)
+        return 'type: ' + self.type + '- active? ' + str(self.active)
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -175,7 +175,7 @@ class UIElementsClassification(models.Model):
         return reverse("featureextraction:ui_classification_list", args=[str(self.case_study_id)])
         
     def __str__(self):
-        return 'type: ' + self.type + ' - model: ' + self.model
+        return 'type: ' + self.type
 
 @receiver(pre_delete, sender=UIElementsClassification)
 def monitoring_delete(sender, instance, **kwargs):
@@ -200,7 +200,7 @@ class Postfilters(models.Model):
         return reverse("featureextraction:postfilters_list", args=[str(self.case_study_id)])
     
     def __str__(self):
-        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+        return 'type: ' + self.title + ' - active? ' + str(self.active)
     
 @receiver(pre_delete, sender=Postfilters)
 def monitoring_delete(sender, instance, **kwargs):
@@ -234,7 +234,7 @@ class FeatureExtractionTechnique(models.Model):
         return reverse("featureextraction:fe_technique_list", args=[str(self.case_study_id)])
         
     def __str__(self):
-        return 'technique: ' + self.technique_name + ' - skip? ' + str(self.skip)
+        return 'technique: ' + self.technique_name + ' - active? ' + str(self.active)
 
 @receiver(pre_delete, sender=FeatureExtractionTechnique)
 def monitoring_delete(sender, instance, **kwargs):
@@ -262,7 +262,7 @@ class Postprocessing(models.Model):
         return reverse("featureextraction:postprocessing_list", args=[str(self.case_study_id)])
     
     def __str__(self):
-        return 'type: ' + self.technique_name + ' - skip? ' + str(self.skip)
+        return 'type: ' + self.title + ' - active? ' + str(self.active)
 
 @receiver(pre_delete, sender=Postprocessing)
 def monitoring_delete(sender, instance, **kwargs):
