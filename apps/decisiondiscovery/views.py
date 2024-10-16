@@ -2,10 +2,13 @@ import csv
 import json
 import os
 import zipfile
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
+from django.forms import ValidationError
 from django.forms.models import model_to_dict
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.views.generic.edit import FormMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -305,15 +308,27 @@ class ExtractTrainingDatasetListView(LoginRequiredMixin, ListView):
         return queryset
     
 
-class ExtractTrainingDatasetDetailView(LoginRequiredMixin, FormMixin, DetailView):
+class ExtractTrainingDatasetDetailView(LoginRequiredMixin, UpdateView):
     model = ExtractTrainingDataset
     form_class = ExtractTrainingDatasetForm
     template_name = "extract_training_dataset/details.html"
     pk_url_kwarg = "extract_training_dataset_id"
+    success_url = "/dd/extract-training-dataset/list/"
 
-    # Check if the the phase can be interacted with (included in case study available phases)
+    def get_object(self, queryset = ...):
+        return get_object_or_404(ExtractTrainingDataset, id=self.kwargs["extract_training_dataset_id"])
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
+
     def get(self, request, *args, **kwargs):
-        
         if 'case_study_id' in self.kwargs:
             #context['case_study_id'] = self.kwargs['case_study_id']
             case_study = CaseStudy.objects.get(pk=kwargs["case_study_id"])
@@ -329,12 +344,11 @@ class ExtractTrainingDatasetDetailView(LoginRequiredMixin, FormMixin, DetailView
             else:
                 return HttpResponseRedirect(reverse("analyzer:execution_list"))
     
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         #context['case_study_id'] = self.kwargs.get('case_study_id')
         # Set the form with read-only configurations and instance data
-        context['form'] = self.form_class(initial=model_to_dict(self.object), read_only=True, instance=self.object)
+        context['form'] = self.form_class(initial=model_to_dict(self.object), read_only=self.object.freeze, instance=self.object)
 
         if 'case_study_id' in self.kwargs:
             context['case_study_id'] = self.kwargs['case_study_id']
