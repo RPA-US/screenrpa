@@ -616,13 +616,27 @@ class DecisionTreeTrainingListView(LoginRequiredMixin, ListView):
         return queryset
 
 
-class DecisionTreeTrainingDetailView(LoginRequiredMixin, DetailView):
-    # Check if the the phase can be interacted with (included in case study available phases)
+class DecisionTreeTrainingDetailView(LoginRequiredMixin, UpdateView):
+    login_url = '/login/'
+    model = DecisionTreeTraining
+    form_class = DecisionTreeTrainingForm
+    template_name = "decision_tree_training/detail.html"
+    pk_url_kwarg = "decision_tree_training_id"
+    success_url = "/dd/decision-tree-training/list/"
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
     
     def get(self, request, *args, **kwargs):
-
         decision_tree_training = get_object_or_404(DecisionTreeTraining, id=kwargs["decision_tree_training_id"])
-        form = DecisionTreeTrainingForm(read_only=True, instance=decision_tree_training)
+        form = DecisionTreeTrainingForm(read_only=decision_tree_training.freeze, instance=decision_tree_training)
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'DecisionTreeTraining' in case_study.available_phases:
