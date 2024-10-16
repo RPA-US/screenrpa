@@ -92,16 +92,17 @@
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {
 
-        if (!document.getElementById('form').readOnly) {
+        if ("{{form.read_only | safe}}"!="True") {
           preloaded_file.disabled = !isPreloadedChecked;
           libr.disabled = isPreloadedChecked;
           one_hot_columns.disabled = isPreloadedChecked;
+        }
       }
-    }
     
       // Controlador de eventos para el checkbox 'preloaded'
       preloaded.addEventListener('change', () => {
         toggleFields(preloaded.checked);
+        preloaded_file.required = preloaded.checked;
       });
     
       // Inicializar los campos al cargar la página

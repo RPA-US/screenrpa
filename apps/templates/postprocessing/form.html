@@ -57,13 +57,14 @@
   
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
-      if (!document.getElementById('form').readOnly) {
+      if ("{{form.read_only | safe}}"!="True") {
         technique_name.disabled = isPreloadedChecked || !type.value;  // Deshabilitar si no se ha seleccionado un tipo
         preloaded_file.disabled = !isPreloadedChecked;
       }
     }
     preloaded.addEventListener('change', () => {
       toggleFields(preloaded.checked);
+      preloaded_file.required = preloaded.checked;
     });
   
     type.addEventListener('change', changeTechniqueOptions);

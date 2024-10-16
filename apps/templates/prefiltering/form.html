@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     preloaded.addEventListener('change', () => {
         toggleFields(preloaded.checked);
+        preloaded_file.required = preloaded.checked;
     });
 
     toggleFields(preloaded.checked);

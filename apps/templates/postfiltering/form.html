@@ -116,6 +116,7 @@
     // Controlador de eventos para el checkbox 'preloaded'
     preloaded.addEventListener('change', () => {
       toggleFields(preloaded.checked);
+      preloaded_file.required = !preloaded.checked;
     });
 
     // Inicializar los campos al cargar la página
