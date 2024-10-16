@@ -403,9 +403,25 @@ class PostprocessingListView(LoginRequiredMixin, ListView):
 
         return queryset
 
-class PostprocessingDetailView(LoginRequiredMixin, DetailView):
+class PostprocessingDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
-    # Check if the the phase can be interacted with (included in case study available phases)
+    model = Postprocessing
+    form_class = PostprocessingForm
+    success_url = "/fe/postprocessing/list/"
+    template_name = "postprocessing/detail.html"
+
+    def get_object(self, queryset = ...) -> Model:
+        return get_object_or_404(Postprocessing, id=self.kwargs["postprocessing_id"])
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
  
     def get(self, request, *args, **kwargs):
         postprocessing = get_object_or_404(Postprocessing, id=kwargs["postprocessing_id"])
@@ -414,7 +430,7 @@ class PostprocessingDetailView(LoginRequiredMixin, DetailView):
         elif postprocessing.case_study.user != request.user:
             raise PermissionDenied("Postprocessing doesn't belong to the authenticated user.")
 
-        form = PostprocessingForm(read_only=True, instance=postprocessing)
+        form = PostprocessingForm(read_only=postprocessing.freeze, instance=postprocessing)
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'Postprocessing' in case_study.available_phases:
