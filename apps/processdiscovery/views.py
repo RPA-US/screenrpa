@@ -12,7 +12,7 @@ import json
 from scipy.cluster.hierarchy import dendrogram, linkage
 # from sklearn.cluster import AgglomerativeClustering
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -555,15 +555,32 @@ class ProcessDiscoveryListView(LoginRequiredMixin, ListView):
         return queryset
     
 
-class ProcessDiscoveryDetailView(LoginRequiredMixin, DetailView):
+class ProcessDiscoveryDetailView(LoginRequiredMixin, UpdateView):
     login_url = '/login/'
-    # Check if the the phase can be interacted with (included in case study available phases)
+    model = ProcessDiscovery
+    form_class = ProcessDiscoveryForm
+    template_name = "processdiscovery/detail.html"
+    success_url = "/pd/bpmn/list/"
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(ProcessDiscovery, id=self.kwargs.get('process_discovery_id'))
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
+
     def get(self, request, *args, **kwargs):
         process_discovery = get_object_or_404(ProcessDiscovery, id=kwargs["process_discovery_id"])
         if process_discovery.case_study.user != request.user:
             raise PermissionDenied("Process Discovery doesn't belong to the authenticated user.")
 
-        process_discovery_form = ProcessDiscoveryForm(read_only=True, instance=process_discovery)
+        process_discovery_form = ProcessDiscoveryForm(read_only=process_discovery.freeze, instance=process_discovery)
 
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
@@ -571,6 +588,7 @@ class ProcessDiscoveryDetailView(LoginRequiredMixin, DetailView):
                 context= {"process_discovery": process_discovery, 
                             "case_study_id": case_study.id,
                             "form": process_discovery_form,}
+                return render(request, "processdiscovery/detail.html", context)
             else:
                 return HttpResponseRedirect(reverse("analyzer:casestudy_list"))
 
