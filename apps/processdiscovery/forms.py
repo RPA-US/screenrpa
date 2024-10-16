@@ -66,14 +66,14 @@ class ProcessDiscoveryForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         # Pop the 'read_only' and 'case_study' from kwargs before passing to the superclass constructor
-        read_only = kwargs.pop('read_only', False)
+        self.read_only = kwargs.pop('read_only', False)
         case_study_instance = kwargs.pop('case_study', None)
         
         # Call the superclass constructor with the remaining arguments
         super(ProcessDiscoveryForm, self).__init__(*args, **kwargs)
         
         # Handle the 'read_only' functionality
-        if read_only:   
+        if self.read_only:   
             for field_name in self.fields:
                 self.fields[field_name].disabled = True
                 
