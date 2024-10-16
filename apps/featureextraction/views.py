@@ -1030,13 +1030,30 @@ class PostfiltersListView(LoginRequiredMixin, ListView):
 
         return queryset
     
-class PostfiltersDetailView(LoginRequiredMixin, DetailView):
+class PostfiltersDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
+    model = Postfilters
+    form_class = PostfiltersForm
+    success_url = "/fe/postfiltering/list/"
+
+    def get_object(self, queryset = ...):
+        return get_object_or_404(Postfilters, id=self.kwargs["postfilter_id"])
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
+
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
         postfilter_id = kwargs.get('postfilter_id')
         postfilter = get_object_or_404(Postfilters, id=postfilter_id) 
-        form = PostfiltersForm(read_only=True, instance=postfilter)
+        form = PostfiltersForm(read_only=postfilter.freeze, instance=postfilter)
         if not postfilter:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif postfilter.case_study.user != request.user:
@@ -1105,6 +1122,8 @@ def set_as_postfilters_inactive(request):
 @login_required(login_url="/login/")
 def delete_postfilter(request):
     postfilter_id = request.GET.get("postfilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    postfilter = get_object_or_404(Postfilters, id=postfilter_id)
     # Validations
     if not request.user.is_authenticated:
         raise ValidationError(_("User must be authenticated."))
@@ -1114,8 +1133,6 @@ def delete_postfilter(request):
         raise ValidationError(_("Postfiltering doesn't belong to the authenticated user."))
     if Postfilters.objects.get(pk=postfilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
         raise ValidationError(_("Postfiltering doesn't belong to the Case Study."))   
-    case_study_id = request.GET.get("case_study_id")
-    postfilter = Postfilters.objects.get(id=postfilter_id)
     if request.user.id != postfilter.user.id:
         raise Exception("This object doesn't belong to the authenticated user")
     postfilter.delete()
