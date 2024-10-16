@@ -22,7 +22,7 @@ def decode_imotions_monitoring(gazeanalysis_log):
     return data_df, metadata_df #Aqui devuelve dos dataframes: Uno que es el data_df que es el que contiene información de las fijaciones 
 #y otro que es el metadata_df que contiene información de la prueba que no nos interesa.
 
-def decode_imotions_native_slideevents(native_slideevents_path, native_slideevents_filename, sep):
+def decode_imotions_native_slideevents(native_slideevents_path, native_slideevents_filename):
     # Extracción de la fecha y hora de inicio: Extrae la fecha y hora de inicio  (SlideShowStartDateTime) 
     # de los metadatos y la convierte en un objeto datetime.
 
@@ -59,7 +59,7 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
 
 #Tengo que convertir el formado del UTC del json que obtengo de de fixations_updated_centroids a un formato astimezone.
 def decode_webgazer_timezone(native_slideevents_path):
-    with open(os.path.join(native_slideevents_path , "webgazer_properties.json"), 'r') as file:
+    with open(os.path.join(native_slideevents_path , "tobii_properties.json"), 'r') as file:
         data = json.load(file)  
     res = parse(data["SlideShowStartDateTime"])
     timezone = pytz.timezone(data["TimeZone"])

@@ -457,7 +457,7 @@ def monitoring(log_path, root_path, execution):
       gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         
       #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-      startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events, sep)#en el imotions
+      startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events)#en el imotions
       startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, ui_log_filename), ui_log_format_pattern)#en steprecorder
 
       if os.path.exists(os.path.join(root_path ,"fixation.json")):
@@ -485,7 +485,7 @@ def monitoring(log_path, root_path, execution):
       minimum_fixation_gazepoints = get_minimum_fixation_gazepoints(DEVICE_FREQUENCY, FIXATION_MINIMUM_DURATION) #Capturing the minimum number of gazepoints to consider a fixation
 
       if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
-          preprocessed_webgazer_log = pd.read_csv(os.path.join(root_path , eyetracking_log_filename), sep=sep)
+          preprocessed_webgazer_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
       else:
           logging.exception("behaviourmonitoring/monitoring/monitoring line:180. NOT PREPROCESSED Eyetracking  webgazerlog  cannot be read: " + root_path + eyetracking_log_filename)
           raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
