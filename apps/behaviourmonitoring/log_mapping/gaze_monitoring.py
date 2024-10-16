@@ -437,12 +437,12 @@ def monitoring(log_path, root_path, execution):
   
   
     ui_log = read_ui_log_as_dataframe(log_path)
-    sep = monitoring_obj.ui_log_separator
 
     eyetracking_log_filename = monitoring_obj.gaze_log_filename
     
     if monitoring_type == "imotions":
       if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
+          gazeanalysis_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
           gazeanalysis_log = pd.read_csv(os.path.join(root_path , eyetracking_log_filename), sep=sep)
       else:
           logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
