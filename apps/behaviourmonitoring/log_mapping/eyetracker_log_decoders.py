@@ -66,3 +66,12 @@ def decode_webgazer_timezone(native_slideevents_path):
     res = res.astimezone(timezone)
     res = res.replace(tzinfo=None)
     return res
+
+def decode_tobii_timezone(native_slideevents_path):
+    with open(os.path.join(native_slideevents_path , "tobii_properties.json"), 'r') as file:
+        data = json.load(file)  
+    res = parse(data["SlideShowStartDateTime"])
+    timezone = pytz.timezone(data["TimeZone"])
+    res = res.astimezone(timezone)
+    res = res.replace(tzinfo=None)
+    return res
