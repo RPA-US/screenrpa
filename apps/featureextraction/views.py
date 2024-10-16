@@ -163,9 +163,26 @@ class FeatureExtractionTechniqueListView(LoginRequiredMixin, ListView):
 
         return queryset
 
-class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
+class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
+    model = FeatureExtractionTechnique
+    form_class = FeatureExtractionTechniqueForm
+    success_url = "/feature-extraction-technique/list/"
+    template_name = "fe/feature-extraction-technique/detail.html"
     # Check if the the phase can be interacted with (included in case study available phases)
+
+    def get_object(self, queryset = ...) -> Model:
+        return get_object_or_404(FeatureExtractionTechnique, id=self.kwargs["feature_extraction_technique_id"])
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
  
     def get(self, request, *args, **kwargs):
         feature_extraction = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
@@ -174,13 +191,24 @@ class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
         elif feature_extraction.case_study.user != request.user:
             raise PermissionDenied("FE doesn't belong to the authenticated user.")
 
-        form = FeatureExtractionTechniqueForm(read_only=True, instance=feature_extraction)
+        form = FeatureExtractionTechniqueForm(read_only=feature_extraction.freeze, instance=feature_extraction)
+        
+        context = {}
+        # Load single and aggregate techniques from configurations
+        single_json = json.load(open("configuration/single_feature_extractors.json"))
+        aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
+        context["options"] = {
+            # We convert the tuples returned by the items() method to lists so that javascript can correctly parse them
+            "single": list(map(lambda x: list(x), single_json.items())),
+            "aggregate": list(map(lambda x: list(x), aggregate_json.items()))
+        }
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'FeatureExtractionTechnique' in case_study.available_phases:
-                context= {"feature_extraction_technique": feature_extraction, 
+                context = context | {"feature_extraction_technique": feature_extraction, 
                     "case_study_id": case_study.id,
-                    "form": form,}
+                    "form": form
+                }
         
                 return render(request, "feature_extraction_technique/detail.html", context)
             else:
@@ -189,9 +217,10 @@ class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
             if execution.feature_extraction_technique:
-                context= {"feature_extraction_technique": feature_extraction, 
+                context = context | {"feature_extraction_technique": feature_extraction, 
                             "execution_id": execution.id,
-                            "form": form,}
+                            "form": form
+                }
             
                 return render(request, "feature_extraction_technique/detail.html", context)
             else:

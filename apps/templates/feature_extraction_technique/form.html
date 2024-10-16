@@ -150,7 +150,8 @@
       });
   
       // Habilitar el campo 'technique_name' si se ha seleccionado un tipo
-      technique_name.disabled = !selectedType;
+      if ("{{form.read_only | safe}}"!="True") 
+        technique_name.disabled = !selectedType;
     }
   
     preloaded.addEventListener('change', () => {
