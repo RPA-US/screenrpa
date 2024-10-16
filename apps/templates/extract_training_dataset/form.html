@@ -88,7 +88,8 @@
       });
     
       // Inicializar los campos al cargar la página
-      toggleFields(preloaded.checked);
+      if ("{{form.read_only}}"!="true")
+        togglefields(preloaded.checked);
     
       document.getElementById('form').onsubmit = function() {
         document.getElementById('id_preloaded').readOnly = false;

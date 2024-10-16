@@ -211,7 +211,8 @@
     });
   
     // Inicializar los campos al cargar la página
-    toggleFields(preloaded.checked);
+    if ("{{form.read_only}}"!="True")
+      toggleFields(preloaded.checked);
   
     document.getElementById('processDiscoveryForm').onsubmit = function() {
       document.getElementById('id_preloaded').readOnly = false;
