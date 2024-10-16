@@ -3,11 +3,14 @@ import json
 import os
 import random
 from art import tprint
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
+from django.forms import BaseModelForm
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from apps.utils import MultiFormsView
 from django.core.exceptions import ValidationError, PermissionDenied
 from apps.analyzer.models import CaseStudy
@@ -847,18 +850,34 @@ class PrefiltersListView(LoginRequiredMixin, ListView):
         return queryset
 
     
-class PrefiltersDetailView(LoginRequiredMixin, DetailView):
+class PrefiltersDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
+    model = Prefilters
+    form_class = PrefiltersForm
+    success_url = "/fe/prefiltering/list/"
     # Check if the the phase can be interacted with (included in case study available phases)
     
+    def get_object(self, queryset: None = ...) -> Model:
+        return get_object_or_404(Prefilters, id=self.kwargs["prefilter_id"])
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
+
     def get(self, request, *args, **kwargs):
         prefilter_id=kwargs.get("prefilter_id")
         prefilter = get_object_or_404(Prefilters, id=prefilter_id)
-        form = PrefiltersForm(read_only=True, instance=prefilter)
+
         if prefilter.case_study.user != request.user:
             raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
-        form = PrefiltersForm(read_only=True, instance=prefilter)
+        form = PrefiltersForm(read_only=prefilter.freeze, instance=prefilter)
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'Prefilters' in case_study.available_phases:

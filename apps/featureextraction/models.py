@@ -57,7 +57,7 @@ class Prefilters(models.Model):
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
-    scale_factor = models.IntegerField(default=3)
+    scale_factor = models.IntegerField(default=3, editable=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 

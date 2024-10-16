@@ -57,11 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const scale_factor_value = document.getElementById('scale_factor_value');
 
     if (scale_factor) {
-        scale_factor.type = 'range';
-        scale_factor.min = 1;
-        scale_factor.max = 5;
-        scale_factor.step = 1;
-        scale_factor.value = 3; // Default value
         scale_factor_value.innerText = `${scale_factor.value}`;
 
         scale_factor.oninput = function() {
@@ -80,10 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     toggleFields(preloaded.checked);
-
-    document.getElementById('form').onsubmit = function() {
-        document.getElementById('id_preloaded').readOnly = false;
-    }
 })
 </script>
 

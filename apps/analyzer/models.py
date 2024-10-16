@@ -262,14 +262,17 @@ class Execution(models.Model):
                       self.ui_elements_classification, self.postfilters, 
                       self.process_discovery, self.extract_training_dataset, self.decision_tree_training]:
             if stage:
+                stage.executed += 1
                 stage.freeze = True
                 stage.save()
                 
         for stage in self.feature_extraction_techniques.all():
+            stage.executed += 1
             stage.freeze = True
             stage.save()
         
         for stage in self.postprocessings.all():
+            stage.executed += 1
             stage.freeze = True
             stage.save()
 
