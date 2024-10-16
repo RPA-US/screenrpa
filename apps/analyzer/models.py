@@ -79,8 +79,8 @@ class CaseStudy(models.Model):
     executed = models.IntegerField(default=0, editable=True)
     active = models.BooleanField(default=True, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    exp_file = PrivateFileField("File", null=True)
-    exp_foldername = models.CharField(max_length=255, null=True, blank=True)
+    exp_file = PrivateFileField("File", null=True, editable=True)
+    exp_foldername = models.CharField(max_length=255, null=True, blank=True, editable=True)
     exp_folder_complete_path = models.CharField(max_length=255)
     scenarios_to_study = ArrayField(models.CharField(max_length=100), null=True, blank=True) # example: sc_0_size50_Balanced,sc_0_size50_Imbalanced,sc_0_size75_Balanced,sc_0_size75_Imbalanced,sc_0_size100_Balanced,sc_0_size100_Imbalanced,sc_0_size300_Balanced,sc_0_size300_Imbalanced,sc_0_size500_Balanced,sc_0_size500_Imbalanced
     special_colnames = JSONField(default=default_special_colnames)
