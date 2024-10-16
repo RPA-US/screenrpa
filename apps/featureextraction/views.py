@@ -650,6 +650,7 @@ class UIElementsDetectionDetailView(LoginRequiredMixin, MultiFormsView):
 
             },
             "instance": ui_elements_detection,
+            "read_only": ui_elements_detection.freeze
         }
 
     def get_ui_elements_classification_initial(self):
@@ -664,6 +665,7 @@ class UIElementsDetectionDetailView(LoginRequiredMixin, MultiFormsView):
                 "model": ui_elements_classification.model,
             },
             "instance": ui_elements_classification,
+            "read_only": ui_elements_classification.freeze
         }
     
     def forms_valid(self, forms):
