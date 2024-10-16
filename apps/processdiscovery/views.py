@@ -237,7 +237,6 @@ def scene_level(log_path, scenario_path, execution):
     process_discovery = execution.process_discovery
     model_type = process_discovery.model_type
     clustering_type = process_discovery.clustering_type
-    labeling = process_discovery.labeling
     image_weight = process_discovery.image_weight if model_type == 'clip' else 0.5
     text_weight = process_discovery.text_weight if model_type == 'clip' else 0.5
     use_pca = process_discovery.use_pca
@@ -256,7 +255,7 @@ def scene_level(log_path, scenario_path, execution):
         fe_log = None
     ui_log = extract_features_from_images(ui_log, scenario_path, special_colnames["Screenshot"], text_column, image_weight=image_weight, text_weight=text_weight, model_type=model_type)
     ui_log = cluster_images(ui_log, use_pca, clustering_type, n_components)
-    ui_log, fe_log = trace_id_assignment(ui_log, fe_log, remove_loops, labeling_mode=labeling)
+    ui_log, fe_log = trace_id_assignment(ui_log, fe_log, remove_loops)
 
     folder_path = scenario_path + '_results'
     print(folder_path)
