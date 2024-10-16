@@ -117,16 +117,18 @@
       var webgazerOptions = document.getElementById('webgazer_options');
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {
-        type.disabled = isPreloadedChecked;
-        ui_log_filename.readOnly = isPreloadedChecked;
-        gaze_log_filename.readOnly = isPreloadedChecked;
-        gaze_log_adjustment.readOnly = isPreloadedChecked;
-        native_slide_events.readOnly = isPreloadedChecked;
-        screen_inches.readOnly = isPreloadedChecked
-        observer_camera_distance.readOnly = isPreloadedChecked
-        screen_width.readOnly = isPreloadedChecked
-        screen_height.readOnly = isPreloadedChecked
-        preloaded_file.disabled = !isPreloadedChecked;
+        if ("{{form.read_only | safe}}"!="True") {
+          type.disabled = isPreloadedChecked;
+          ui_log_filename.readOnly = isPreloadedChecked;
+          gaze_log_filename.readOnly = isPreloadedChecked;
+          gaze_log_adjustment.readOnly = isPreloadedChecked;
+          native_slide_events.readOnly = isPreloadedChecked;
+          screen_inches.readOnly = isPreloadedChecked
+          observer_camera_distance.readOnly = isPreloadedChecked
+          screen_width.readOnly = isPreloadedChecked
+          screen_height.readOnly = isPreloadedChecked
+          preloaded_file.disabled = !isPreloadedChecked;
+        }
       }
 
       function toggleTypeFields() {
