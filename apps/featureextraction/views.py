@@ -1197,6 +1197,7 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
         context = {
             "execution_id": execution.id,
             "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
             "soms": soms
         }
 
