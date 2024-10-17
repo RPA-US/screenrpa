@@ -54,7 +54,6 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="form-group">
-            {{ form.configuration.label_tag }}
             {{ form.configuration }}
             <div class="form-validation">{{ form.configuration.errors }}</div>
           </div>
@@ -88,6 +87,10 @@
       const preloaded_file = document.getElementById('id_preloaded_file');  
       const libr = document.getElementById('id_library');
       const one_hot_columns = document.getElementById('id_one_hot_columns');
+
+      // Hide configuration
+      const configuration = document.getElementById('id_configuration');
+      configuration.style.display = 'none';
     
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {

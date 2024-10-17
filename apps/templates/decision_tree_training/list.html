@@ -48,7 +48,6 @@
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="library">{% blocktranslate %}library{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Algorithms{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}One hot columns{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
@@ -77,9 +76,6 @@
                   </td>
                   <td class="library">
                       {{ dtt.library }}
-                  </td>
-                  <td class="configuration">
-                    {{ dtt.configuration|truncatechars:50 }}
                   </td>
                   <td>
                     {{ dtt.one_hot_columns }}
