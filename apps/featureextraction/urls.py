@@ -13,6 +13,7 @@ urlpatterns = [
     path('ui-element-detection/active/', views.set_as_ui_elements_detection_active, name='ui_element_detection_set_as_active'),
     path('ui-element-detection/inactive/', views.set_as_ui_elements_detection_inactive, name='ui_element_detection_set_as_inactive'),
     path('ui-element-detection/delete/', views.delete_ui_elements_detection, name='ui_element_detection_delete'),
+    path('ex/ui-element-detection/result/<int:execution_id>/som', views.UIElementsDetectionResultsGetImgSom.as_view(), name='uielmdet_result_som'),
     path('ex/ui-element-detection/result/<int:execution_id>/', views.UIElementsDetectionResultDetailView.as_view(), name='uielmdet_result'),
     ##
     # Pre-Filtering

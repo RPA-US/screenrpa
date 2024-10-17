@@ -7,7 +7,7 @@ from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, View
 from apps.utils import MultiFormsView
 from django.core.exceptions import ValidationError, PermissionDenied
 from apps.analyzer.models import CaseStudy
@@ -1183,8 +1183,6 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
         soms["soms"] = []
 
         for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
-            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
-                compos = json.load(f)
             # path is something like: asdsa/.../.../image.PNG.json
             img_name = compo_json.split("/")[-1].split(".json")[0]
             img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
@@ -1192,8 +1190,7 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
             soms["soms"].append(
                 {
                     "img": img_name,
-                    "img_path": img_path,
-                    "som": compos
+                    "img_path": img_path
                 }
             )
 
@@ -1205,3 +1202,22 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
 
         #return HttpResponse(json.dumps(context), content_type="application/json")
         return render(request, "ui_elements_detection/results.html", context)
+
+class UIElementsDetectionResultsGetImgSom(LoginRequiredMixin, View):
+    login_url = "/login/"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
+        scenario: str = request.GET.get('scenario')
+        img_name: str = request.GET.get('img_name')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+        img_path = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", img_name + ".json")
+        with open(img_path, 'r') as f:
+            data = json.load(f)
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
