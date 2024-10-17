@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import random
+import polars as pl
 from art import tprint
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -15,8 +16,7 @@ from apps.featureextraction.SOM.classification import legacy_ui_elements_classif
 from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique, Postprocessing
 from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm, FeatureExtractionTechniqueForm, PostprocessingForm
 from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
-from .utils import detect_single_fe_function, detect_agg_fe_function, detect_postprocessing_function
-from .utils import draw_ui_compos_borders
+from .utils import detect_single_fe_function, detect_agg_fe_function, detect_postprocessing_function, read_ui_log_as_dataframe, draw_ui_compos_borders
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from rest_framework import status
@@ -266,7 +266,8 @@ class FeatureExtractionResultDetailView(LoginRequiredMixin, DetailView):
             return ResultDownload(path_to_csv_file)  
      
         # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
+        # Size is reduced to 100rowsx100cols for throughput
+        csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, nrows=10, ncols=100, lib='polars').to_dicts()
 
         # Include CSV data in the context for the template
         context = {
