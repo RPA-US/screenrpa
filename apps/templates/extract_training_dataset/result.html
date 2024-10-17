@@ -31,125 +31,65 @@
       <div class="row">
         <div class="col">
           <div class="card">
+            <div class="card-footer py-4">
+              <nav aria-label="...">
+                <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+                  <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{scenario}}
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        {% for scenario in scenarios %}
+                        <a class="dropdown-item" href="/fe/feature-extraction-technique/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <h4 class="text-muted align-self-end">{%blocktranslate%}Showing first 10 rows and 100 columns{%endblocktranslate%}</h4>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Decision Point: {{decision_point}}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      {% for decision_point in decision_points %}
+                      <a class="dropdown-item" href="/dd/extract-training-dataset/result/{{execution_id}}/?scenario={{scenario}}&decision_point={{decision_point}}"> Decision Point: {{decision_point}}</a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
+                  <a href="/dd/extract-training-dataset/result/{{execution_id}}/?download=True&scenario={{scenario}}&decision_point={{decision_point}}">
+                    <button class="btn btn-success" style="float: right;" type="button">
+                      <i class="ni ni-cloud-download-95"></i> 
+                      {% blocktranslate %}Download{% endblocktranslate %}
+                    </button>
+                  </a>
+                </ul>
+              </nav>
+            </div>
             <div class="table-responsive custom-scroll">
             <table id="csvDataTable" class="table align-items-center table-flush">
               <thead class="thead-light">
                 <tr>
-                  <!-- Table headers will be dynamically filled with JS -->
+                  {% for key in csv_data.0 %}
+                  <th>{{ key }}</th>
+                  {% endfor %}
                 </tr>
               </thead>
               <tbody class="list">
-                <tr>
-                <!-- Table data will be dynamically filled with JS -->
-                </tr>
+                {% for row in csv_data %}
+                  <tr>  
+                    {% for key, value in row.items %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
               </tbody>
             </table>
-          </div>
-
-
-          <div class="card-footer py-4">
-            <nav aria-label="...">
-              <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
-                <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{scenario}}
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    {% for scenario in scenarios %}
-                    <a class="dropdown-item" href="/dd/extract-training-dataset/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
-                    {% endfor %}
-                  </div>
-                </div>
-                <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Decision Point: {{decision_point}}
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    {% for decision_point in decision_points %}
-                    <a class="dropdown-item" href="/dd/extract-training-dataset/result/{{execution_id}}/?scenario={{scenario}}&decision_point={{decision_point}}"> Decision Point: {{decision_point}}</a>
-                    {% endfor %}
-                  </div>
-                </div>
-                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
-                <a href="/dd/extract-training-dataset/result/{{execution_id}}/?download=True&scenario={{scenario}}&decision_point={{decision_point}}">
-                  <button class="btn btn-success" style="float: right;" type="button">
-                    <i class="ni ni-cloud-download-95"></i> 
-                    {% blocktranslate %}Download{% endblocktranslate %}
-                  </button>
-                </a>
-              </ul>
-            </nav>
           </div>
           </div>
         </div>
       </div> 
       {% include "includes/footer.html" %}
     </div>
-
-    
-
-
-
   {% endblock content %}
-
-  <!-- Specific JS goes HERE --> 
-  {% block javascripts %}
-
-  <!-- Inject csv_data as a "application/json" script -->
-  <script type="application/json" id="csvDataScript">
-    {{ csv_data|safe }}
-  </script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-
-      // Safely parse CSV data to JSON
-      //var csvData = "{{ csv_data|safe }}";
-      //var csvData = JSON.parse(csvData);
-
-      // Read the text from the script tag and parse it as JSON
-      var csvDataText = document.getElementById('csvDataScript').textContent;
-      var csvData = JSON.parse(csvDataText);
-
-      // The rest of the code to manipulate csvData goes here...
-      var table = document.getElementById('csvDataTable');
-      var thead = table.querySelector('thead tr');
-      var tbody = table.querySelector('tbody');
-
-      if (csvData && csvData.length > 0) {
-        // Add headers based on the keys of the first element
-        Object.keys(csvData[0]).forEach(function(key) {
-          var th = document.createElement('th');
-          th.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          //th.scope.add('col');
-          //th.classList.add('sort');
-          //th.data-sort.add(key);
-          thead.classList.add('thead-light');
-          thead.appendChild(th);
-        });
-
-        // Add data rows
-        csvData.forEach(function(row) {
-          var tr = document.createElement('tr');
-          Object.keys(row).forEach(function(key) {
-            var td = document.createElement('td');
-            var value = row[key];
-            //if (value.length > 80) {
-            value = value.substring(0, 80); // Truncate the value to 80 characters
-            //}
-            td.textContent = value;
-            tr.appendChild(td);
-            });
-          tbody.appendChild(tr);
-        });
-      }
-    });
-  </script>
-
-
-
-
-{% endblock javascripts %}
-
-
-

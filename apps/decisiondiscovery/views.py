@@ -426,7 +426,7 @@ class ExtractTrainingDatasetResultDetailView(LoginRequiredMixin, DetailView):
             return Extract_training_dataset_ResultDownload(path_to_csv_file)
 
         # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
+        csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, nrows=10, ncols=100, lib='polars').to_dicts()
 
         # Include CSV data in the context for the template
         context = {
