@@ -33,49 +33,49 @@
           <div class="card">
             <!-- Display the bpmn image -->
             <div class="card-body">
-              <img src="{{ variant_image }}" alt="Grafo del Proceso">
-          </div>
-          <div class="card-footer py-4">
-            <nav aria-label="...">
-              <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
-                <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{scenario}}
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    {% for scenario in scenarios %}
-                    <a class="dropdown-item" href="/pd/bpmn/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
-                    {% endfor %}
+              <img class="col-12" src="{{ variant_image }}" alt="Grafo del Proceso">
+            </div>
+            <div class="card-footer py-4">
+              <nav aria-label="...">
+                <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+                  <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      {{scenario}}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      {% for scenario in scenarios %}
+                      <a class="dropdown-item" href="/pd/bpmn/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                      {% endfor %}
+                    </div>
+                    
                   </div>
-                  
+
+                  <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {% if selected_variant %}
+                            Variante {{ selected_variant }}
+                        {% else %}
+                            Seleccionar Variantes presentes en el log
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        {% for variant in variants %}
+                            <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?scenario={{scenario}}&variant={{ variant }}">Variante {{ variant }}</a>
+                        {% endfor %}
+                    </div>
                 </div>
 
-                <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      {% if selected_variant %}
-                          Variante {{ selected_variant }}
-                      {% else %}
-                          Seleccionar Variantes presentes en el log
-                      {% endif %}
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      {% for variant in variants %}
-                          <a class="dropdown-item" href="/pd/bpmn/result/{{ execution_id }}/?scenario={{scenario}}&variant={{ variant }}">Variante {{ variant }}</a>
-                      {% endfor %}
-                  </div>
-              </div>
-
-                
-                <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
-                <a href="/pd/bpmn/result/download/{{execution_id}}/?scenario={{scenario}}">
-                  <button class="btn btn-success" style="float: right;" type="button">
-                    <i class="ni ni-cloud-download-95"></i> 
-                    {% blocktranslate %}Download{% endblocktranslate %}
-                  </button>
-                </a>
-              </ul>
-            </nav>
-          </div>
+                  
+                  <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
+                  <a href="/pd/bpmn/result/download/{{execution_id}}/?scenario={{scenario}}">
+                    <button class="btn btn-success" style="float: right;" type="button">
+                      <i class="ni ni-cloud-download-95"></i> 
+                      {% blocktranslate %}Download{% endblocktranslate %}
+                    </button>
+                  </a>
+                </ul>
+              </nav>
+            </div>
           </div>
         </div>
       </div> 
