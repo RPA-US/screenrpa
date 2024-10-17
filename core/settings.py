@@ -60,10 +60,11 @@ DEFAULT_PHASES = ['monitoring', 'prefilters', 'ui_elements_detection', 'ui_eleme
 PHASES_OBJECTS = ['Monitoring','Prefilters','UIElementsDetection','UIElementsClassification','Postfilters','FeatureExtractionTechnique', 'Postprocessing', 'ProcessDiscovery','ExtractTrainingDataset','DecisionTreeTraining']
 MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Screenshot"]
 
-#WEBGAZER CONSTANTS
+#Eye Tracking CONSTANTS
 INCH_PER_CENTIMETRES = 2.54 #1 inch =  2.54cm
-DEVICE_FREQUENCY = 15 #Hz. Frequency of our Eyetracker software (Webgazer)
-FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum G
+FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum Gazepoints)
+DEVICE_FREQUENCY_WEBGAZER = 30 #Hz. Frequency of our Eyetracker software (Webgazer)
+DEVICE_FREQUENCY_TOBII = 60 #Hz. Frequency of our Eyetracker software (Tobii Pro Spark)
 #===================================================================================================
 #===================================================================================================
 
