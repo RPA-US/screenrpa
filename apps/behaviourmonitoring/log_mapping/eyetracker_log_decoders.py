@@ -4,7 +4,6 @@ import urllib.parse
 import json
 import pytz
 from dateutil.parser import parse
-import pandas as pd
 
 def decode_imotions_monitoring(gazeanalysis_log):
     # Find row index where "#DATA" is located
@@ -22,7 +21,7 @@ def decode_imotions_monitoring(gazeanalysis_log):
     return data_df, metadata_df #Aqui devuelve dos dataframes: Uno que es el data_df que es el que contiene información de las fijaciones 
 #y otro que es el metadata_df que contiene información de la prueba que no nos interesa.
 
-def decode_imotions_native_slideevents(native_slideevents_path, native_slideevents_filename, sep):
+def decode_imotions_native_slideevents(native_slideevents_path, native_slideevents_filename):
     # Extracción de la fecha y hora de inicio: Extrae la fecha y hora de inicio  (SlideShowStartDateTime) 
     # de los metadatos y la convierte en un objeto datetime.
 
@@ -40,12 +39,6 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
     native_properties= json.loads(native_properties)
     with open(os.path.join(native_slideevents_path,"native_properties.json"), 'w') as f:
             json.dump(native_properties, f, indent=4)
-    # data_index = data.index('#DATA\n')
-    # # Crear dos listas separadas para los metadatos y los datos
-    # metadata = [line.strip().split(sep) for line in data[metadata_index+1:data_index]]
-    # data_csv = [line.strip().split(sep) for line in data[data_index+1:]]
-    # # Convertir la lista de datos en un dataframe de pandas
-    # df = pd.DataFrame(data_csv[1:], columns=data_csv[0])
     res = parse(native_properties["SlideShowStartDateTime"])
     timezone_unformatted = native_properties["TimeZone"].split(";")[0].replace("+", " ") 
     f = open(CDLR)
@@ -58,8 +51,9 @@ def decode_imotions_native_slideevents(native_slideevents_path, native_slideeven
 
 
 #Tengo que convertir el formado del UTC del json que obtengo de de fixations_updated_centroids a un formato astimezone.
-def decode_webgazer_timezone(native_slideevents_path):
-    with open(os.path.join(native_slideevents_path , "webgazer_properties.json"), 'r') as file:
+#FOR WEBGAZER AND TOBII
+def decode_timezone(native_slideevents_path, native_slide_events):
+    with open(os.path.join(native_slideevents_path , native_slide_events), 'r') as file:
         data = json.load(file)  
     res = parse(data["SlideShowStartDateTime"])
     timezone = pytz.timezone(data["TimeZone"])

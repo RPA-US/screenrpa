@@ -99,7 +99,7 @@
             //Crear zip con .csv y .json
             const zip = new JSZip();
             //Crear csv
-            var csv = 'Gaze X,Gaze Y,Timestamp,UTCdate\n';
+            var csv = 'Gaze_X,Gaze_Y,Timestamp,UTCdate\n';
             gaze_points.forEach(function (row) {
                 csv += row.join(',');
                 csv += "\n";
@@ -116,7 +116,7 @@
             const jsonString = JSON.stringify(gaze_properties);
 
             //Guardar archivos en zip
-            zip.file("webgazer_gazeData.csv", csv);
+            zip.file("webgazer_gazedata.csv", csv);
             zip.file("webgazer_properties.json", jsonString);
 
             //Descargar zip
