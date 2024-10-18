@@ -1223,3 +1223,39 @@ class UIElementsDetectionResultsGetImgSom(LoginRequiredMixin, View):
             data = json.load(f)
 
         return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+class PrefilteringResultDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
+        scenario: str = request.GET.get('scenario')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        img_list = []
+        for img in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "prefiltered_img")):
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_path = os.path.join(execution.case_study.exp_foldername, "executions", execution.exp_foldername, scenario + "_results", "prefiltered_img", img)
+
+            img_list.append(
+                {
+                    "img": img,
+                    "img_path": img_path
+                }
+            )
+
+        context = {
+            "execution_id": execution.id,
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
+            "img_list": img_list
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "prefiltering/results.html", context)

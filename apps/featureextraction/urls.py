@@ -21,6 +21,7 @@ urlpatterns = [
     path('prefiltering/new/<int:case_study_id>/', views.PrefiltersCreateView.as_view(), name='prefilters_create'),
     path('prefiltering/detail/<int:case_study_id>/<int:prefilter_id>/', views.PrefiltersDetailView.as_view(), name='prefilters_detail'),
     path('ex/prefiltering/detail/<int:execution_id>/<int:prefilter_id>/', views.PrefiltersDetailView.as_view(), name='prefilters_detail-execution'),
+    path('ex/prefiltering/result/<int:execution_id>/', views.PrefilteringResultDetailView.as_view(), name='prefiltering_result'),
 
     path('prefiltering/active/', views.set_as_prefilters_active, name='prefilters_set_as_active'),
     path('prefiltering/inactive/', views.set_as_prefilters_inactive, name='prefilters_set_as_inactive'),
