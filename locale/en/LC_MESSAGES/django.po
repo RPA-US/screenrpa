@@ -1274,7 +1274,7 @@ msgid "More solutions"
 msgstr ""
 
 #: apps/templates/includes/sidenav.html:129
-msgid "Access to Webgazer"
+msgid "Webgazer.js"
 msgstr ""
 
 #: apps/templates/includes/sidenav.html:154
