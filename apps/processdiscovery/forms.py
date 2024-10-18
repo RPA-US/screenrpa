@@ -13,7 +13,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
         model = ProcessDiscovery
         exclude = ("user", "created_at")
         fields = (
-            "type",
             "configurations",
             "preloaded_file",
             "preloaded",
@@ -22,7 +21,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "text_weight",
             "image_weight",
             "clustering_type",
-            "labeling",
             "use_pca",
             "n_components",
             "show_dendrogram",
@@ -30,7 +28,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "text_column"
         )
         labels = {
-            "type": _("Type"),
             "configurations": _("Configurations"),
             "preloaded_file":_("Preload Execution Results"),
             "title": _("Title"),
@@ -38,7 +35,6 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "text_weight": _("Text Weight"),
             "image_weight": _("Image Weight"),
             "clustering_type": _("Clustering Type"),
-            "labeling": _("Labeling"),
             "use_pca": _("Use PCA"),
             "n_components": _("N Components"),
             "show_dendrogram": _("Show Dendrogram"),
@@ -50,13 +46,11 @@ class ProcessDiscoveryForm(forms.ModelForm):
             "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Process discovery Technique"}),
             "preloaded_file": forms.FileInput(attrs={'accept': '.zip'}),
             "preloaded": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),
-            "type": forms.TextInput(attrs={"class": "form-control", "placeholder": "imotions"}),
             "configurations": forms.Textarea(attrs={"class": "form-control", 'onchange': 'this.value = JSON.stringify(JSON.parse(this.value), null, 4);'}),
             "model_type": forms.Select(attrs={'class': 'form-control'}),
             "text_weight": forms.NumberInput(attrs={'class': 'form-control'}),
             "image_weight": forms.NumberInput(attrs={'class': 'form-control'}),
             "clustering_type": forms.Select(attrs={'class': 'form-control'}),
-            "labeling": forms.Select(attrs={'class': 'form-control'}),
             "use_pca": forms.CheckboxInput(attrs={'class': 'custom-control-input'}),
             "n_components": forms.NumberInput(attrs={'class': 'form-control'}),
             "show_dendrogram": forms.CheckboxInput(attrs={'class': 'custom-control-input'}),
@@ -66,14 +60,14 @@ class ProcessDiscoveryForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         # Pop the 'read_only' and 'case_study' from kwargs before passing to the superclass constructor
-        read_only = kwargs.pop('read_only', False)
+        self.read_only = kwargs.pop('read_only', False)
         case_study_instance = kwargs.pop('case_study', None)
         
         # Call the superclass constructor with the remaining arguments
         super(ProcessDiscoveryForm, self).__init__(*args, **kwargs)
         
         # Handle the 'read_only' functionality
-        if read_only:   
+        if self.read_only:   
             for field_name in self.fields:
                 self.fields[field_name].disabled = True
                 

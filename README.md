@@ -271,7 +271,7 @@ To record a GazeLog with the eye tracking software integrated into ScreenRPA (We
    - Launch the ScreenRPA web application.
 
 2. **Access WebGazer**
-   - Click on "Access to WebGazer" to open the WebGazer.js suite.
+   - Click on "WebGazer.js" to open the WebGazer.js suite.
 
 3. **Prepare Your Case Study Scenario**
    - Arrange all the applications you will interact with in windowed mode.

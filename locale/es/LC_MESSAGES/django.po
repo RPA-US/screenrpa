@@ -1292,8 +1292,8 @@ msgid "More solutions"
 msgstr "Más soluciones"
 
 #: apps/templates/includes/sidenav.html:129
-msgid "Access to Webgazer"
-msgstr "Acceso a Webgazer.js - Eyetracking"
+msgid "Webgazer.js"
+msgstr "Webgazer.js - Eyetracking"
 
 #: apps/templates/includes/sidenav.html:154
 msgid "Documentation"

@@ -98,7 +98,7 @@
   
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
-      if (!document.getElementById('form').readOnly) {
+      if ("{{form.read_only | safe}}"!="True") {
         type.disabled = isPreloadedChecked;
         identifier.disabled = isPreloadedChecked;
         technique_name.disabled = isPreloadedChecked || !type.value;  // Deshabilitar si no se ha seleccionado un tipo
@@ -150,11 +150,13 @@
       });
   
       // Habilitar el campo 'technique_name' si se ha seleccionado un tipo
-      technique_name.disabled = !selectedType;
+      if ("{{form.read_only | safe}}"!="True") 
+        technique_name.disabled = !selectedType;
     }
   
     preloaded.addEventListener('change', () => {
       toggleFields(preloaded.checked);
+      preloaded_file.required = preloaded.checked;
     });
   
     type.addEventListener('change', changeTechniqueOptions);

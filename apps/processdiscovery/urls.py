@@ -5,6 +5,7 @@ app_name = 'processdiscovery'
 
 urlpatterns = [
     path('bpmn/detail/<int:case_study_id>/<int:process_discovery_id>/', views.ProcessDiscoveryDetailView.as_view(), name='processdiscovery_detail'),
+    path('pd/bpmn/detail/<int:case_study_id>/<int:process_discovery_id>/', views.ProcessDiscoveryDetailView.as_view(), name='processdiscovery_detail-execution'),
     path('ex/bpmn/detail/<int:execution_id>/<int:process_discovery_id>/', views.ProcessDiscoveryDetailView.as_view(), name='processdiscovery_detail-execution'),
 
 

@@ -80,8 +80,12 @@ class UIElementsDetectionForm(forms .ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        self.read_only = kwargs.pop('read_only', False)
         super(UIElementsDetectionForm, self).__init__(*args, **kwargs)
         self.fields['configurations'].initial = dict()
+        if self.read_only:
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
 
 class PrefiltersForm(forms .ModelForm):
     class Meta:
@@ -213,7 +217,11 @@ class UIElementsClassificationForm(forms .ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.read_only = kwargs.pop('read_only', False)
         super(UIElementsClassificationForm, self).__init__(*args, **kwargs)
+        if self.read_only:
+            for field_name in self.fields:
+                self.fields[field_name].disabled = True
   
 class FeatureExtractionTechniqueForm(forms.ModelForm):
     class Meta:

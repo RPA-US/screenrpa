@@ -58,7 +58,6 @@
             <button onclick="alert('|-- *preloaded*.zip\n|   |-- scenario_results\n|   |   |-- borders -> .png\n|   |   |-- components_npy -> .npy\n|   |   |-- components_json\n|   |   |   ->  .json\n|   |   |   |-- soms -> .json')">?</button>
           </div>
         </div>
-        <hr>
       <div class="row">
         <div class="col-lg-12">
           <div class="form-group">
@@ -70,6 +69,7 @@
       </div>
     </div>
     {% if not form.read_only %}
+    <hr>
     <button class="btn btn-success" style="float: right;" type="submit" value="submit" >
       <i class="fas fa-save"></i> 
       {% blocktranslate %}Save{% endblocktranslate %}
@@ -91,11 +91,6 @@
     const scale_factor_value = document.getElementById('scale_factor_value');
 
     if (scale_factor) {
-        scale_factor.type = 'range';
-        scale_factor.min = 1;
-        scale_factor.max = 10;
-        scale_factor.step = 1;
-        scale_factor.value = 5; // Default value
         scale_factor_value.innerText = `${scale_factor.value}`;
 
         scale_factor.oninput = function() {
@@ -116,10 +111,12 @@
     // Controlador de eventos para el checkbox 'preloaded'
     preloaded.addEventListener('change', () => {
       toggleFields(preloaded.checked);
+      preloaded_file.required = !preloaded.checked;
     });
 
     // Inicializar los campos al cargar la página
-    toggleFields(preloaded.checked);
+    if ("{{form.read_only}}"!="true")
+      togglefields(preloaded.checked);
 
     document.getElementById('form').onsubmit = function() {
       document.getElementById('id_preloaded').readOnly = false;

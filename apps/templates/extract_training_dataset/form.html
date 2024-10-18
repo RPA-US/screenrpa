@@ -69,25 +69,27 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
       const title = document.getElementById('id_title');
-      //const type = document.getElementById('id_type');
       const preloaded = document.getElementById('id_preloaded');  
+      const columns_to_drop_before_decision_point = document.getElementById('id_columns_to_drop_before_decision_point');
       const preloaded_file = document.getElementById('id_preloaded_file');  
+      const configurations = document.getElementById('id_configurations');
     
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {
-        //type.disabled = isPreloadedChecked;
-        //skip.disabled = isPreloadedChecked;
-        //configurations.disabled = isPreloadedChecked;
+        configurations.readOnly = isPreloadedChecked;
+        columns_to_drop_before_decision_point.readOnly  = isPreloadedChecked;
         preloaded_file.disabled = !isPreloadedChecked;
       }
     
       // Controlador de eventos para el checkbox 'preloaded'
       preloaded.addEventListener('change', () => {
         toggleFields(preloaded.checked);
+        preloaded_file.disabled = !preloaded.checked;
       });
     
       // Inicializar los campos al cargar la página
-      toggleFields(preloaded.checked);
+      if ("{{form.read_only}}"!="true")
+        togglefields(preloaded.checked);
     
       document.getElementById('form').onsubmit = function() {
         document.getElementById('id_preloaded').readOnly = false;

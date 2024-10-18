@@ -34,7 +34,6 @@ class Monitoring(models.Model):
     # TODO: What do we do with format
     format = models.CharField(max_length=25, default='mht_csv')
     ui_log_filename = models.CharField(max_length=100, default='Recording_20240617_1711.mht')
-    ui_log_separator = models.CharField(max_length=1, default=',')
     gaze_log_filename = models.CharField(max_length=100, default='ET_RExtAPI-GazeAnalysis.csv')
     gaze_log_adjustment = models.FloatField(default=0)
     native_slide_events = models.CharField(max_length=100, default='Native_SlideEvents.csv')

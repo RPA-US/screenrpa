@@ -71,37 +71,3 @@
   </div>
 
 {% endblock content %}
-
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}
-<script>
-  // Espera a que el contenido de form.html se cargue completamente
-  document.addEventListener("DOMContentLoaded", function() {
-      // Oculta el botón del formulario
-      var preload = document.getElementById("preloaded_file");
-      preload.style.display = "none";
-
-      var scale_factor = document.getElementById('id_scale_factor');
-      var scale_factor_value = document.getElementById('scale_factor_value');
-      scale_factor.disabled = true;
-      scale_factor.value = "{{ form.scale_factor.value }}";
-      scale_factor_value.innerText = scale_factor.value;
-      
-      
-
-/*
-        // Espera a que el contenido de form.html se cargue completamente
-  document.addEventListener("DOMContentLoaded", function() {
-    // Oculta el botón del formulario
-    var preload = document.getElementById("preloaded_file");
-    preload.style.display = "none";
-
-    var select = document.getElementById('id_technique_name');
-    select.disabled = true;
-    select.value = "{{ form.technique_name.value }}"
-});
-*/
-
-  });
-</script>
-{% endblock javascripts %}

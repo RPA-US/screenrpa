@@ -135,15 +135,11 @@
                         {% if prefilter.active == True and prefilter.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/inactive/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
                           <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
                         {% elif prefilter.active == False and prefilter.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/detail/{{ case_study_id }}/{{ prefilter.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/fe/prefiltering/active/?case_study_id={{ case_study_id }}&prefilter_id={{ prefilter.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% elif prefilter.active == True and prefilter.freeze == False %}

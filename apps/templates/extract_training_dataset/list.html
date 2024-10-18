@@ -119,15 +119,11 @@
                         {% if extract_training_dataset.active == True and extract_training_dataset.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/inactive/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
                           <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
                         {% elif extract_training_dataset.active == False and extract_training_dataset.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/detail/{{ case_study_id }}/{{ extract_training_dataset.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/dd/extract-training-dataset/active/?case_study_id={{ case_study_id }}&extract_training_dataset_id={{ extract_training_dataset.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% elif extract_training_dataset.active == True and extract_training_dataset.freeze == False %}
