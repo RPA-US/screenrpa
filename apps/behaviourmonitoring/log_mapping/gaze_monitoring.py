@@ -454,7 +454,7 @@ def monitoring(log_path, root_path, execution):
       gaze_log, metadata = decode_imotions_monitoring(gazeanalysis_log)
         
       #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-      startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events)#en el imotions#en el imotions
+      startDateTime_gaze_tz = decode_imotions_native_slideevents(root_path, monitoring_obj.native_slide_events)#en el imotions
       startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path, ui_log_filename), ui_log_format_pattern)#en steprecorder
 
       if os.path.exists(os.path.join(root_path ,"fixation.json")):
@@ -483,7 +483,6 @@ def monitoring(log_path, root_path, execution):
 
       if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
           postprocessed_webgazer_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
-
       else:
           logging.exception("behaviourmonitoring/monitoring/monitoring line:180.  Eyetracking  webgazer log  cannot be read: " + root_path + eyetracking_log_filename)
           raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)

@@ -26,6 +26,8 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
+                if request.GET.get("next") is not None:
+                    return redirect(request.GET.get("next"))
                 return redirect("/")
             else:
                 msg = _('Invalid credentials')

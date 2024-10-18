@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -71,16 +72,25 @@ class MonitoringListView(LoginRequiredMixin, ListView):
     
         return queryset
 
-class MonitoringDetailView(LoginRequiredMixin, DetailView):
+class MonitoringDetailView(LoginRequiredMixin, UpdateView):
     login_url = '/login/'
+    model = Monitoring
+    success_url = "/monitoring/list/"
+    form_class = MonitoringForm
+
+    def get_object(self, queryset=None):
+        monitoring_id = self.kwargs.get('monitoring_id')
+        
+        return get_object_or_404(Monitoring, id=monitoring_id)
+
     def get(self, request, *args, **kwargs):
         case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"])
-        monitoring = get_object_or_404(Monitoring, id=kwargs["monitoring_id"])
+        monitoring = self.get_object()
         
         if not case_study.user == request.user:
             raise PermissionDenied("This object doesn't belong to the authenticated user")
 
-        form = MonitoringForm(read_only=True, instance=monitoring)
+        form = MonitoringForm(read_only=monitoring.freeze, instance=monitoring)
 
         context={}
 
@@ -99,6 +109,16 @@ class MonitoringDetailView(LoginRequiredMixin, DetailView):
                         "form": form,}
         
         return render(request, "monitoring/detail.html", context)
+
+    def form_valid(self, form, *args, **kwargs):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
     
 
 @login_required(login_url='/login/')

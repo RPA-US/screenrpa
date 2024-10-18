@@ -48,7 +48,6 @@
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="library">{% blocktranslate %}library{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Algorithms{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}One hot columns{% endblocktranslate %}</th>
                   <th scope="col">{% blocktranslate %}Columns to drop before decision point{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
@@ -77,9 +76,6 @@
                   </td>
                   <td class="library">
                       {{ dtt.library }}
-                  </td>
-                  <td class="configuration">
-                    {{ dtt.configuration|truncatechars:50 }}
                   </td>
                   <td>
                     {{ dtt.one_hot_columns }}
@@ -144,15 +140,11 @@
                         {% if dtt.active == True and dtt.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/inactive/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
                           <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
                         {% elif dtt.active == False and dtt.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/detail/{{ case_study_id }}/{{ dtt.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/dd/decision-tree-training/active/?case_study_id={{ case_study_id }}&decision_tree_training_id={{ dtt.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% elif dtt.active == True and dtt.freeze == False %}

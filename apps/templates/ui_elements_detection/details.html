@@ -63,62 +63,7 @@
             <h3 class="mb-0">{{ forms.ui_elements_detection.title.value }} Details</h3>
           </div>
           <div class="card-body">
-            <form id="form" method="POST" enctype="multipart/form-data">
-              {% csrf_token %}
-              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}General information{% endblocktranslate %}</h6>
-              <div class="pl-lg-2">
-                <div class="col-12">
-                  <div class="form-group">
-                    <label class="form-control-label" for="title">{% blocktranslate %}Title{% endblocktranslate %}</label>
-                    <input type="text" id="title" class="form-control" disabled value="{{ forms.ui_elements_detection.title.value }}">
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="form-group">
-                    <label class="form-control-label" for="type">{% blocktranslate %}Detection Technique{% endblocktranslate %}</label>
-                    <input type="text" id="type" class="form-control" disabled value="{{ forms.ui_elements_detection.type.value }}">
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="form-group">
-                    <label class="form-control-label" for="model">{% blocktranslate %}Classification Model{% endblocktranslate %}</label>
-                    <input type="text" id="model" class="form-control" disabled value="{{ forms.ui_elements_classification.model.value }}">
-                  </div>
-                </div>
-              </div>
-              <hr>
-              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
-              <div class="col-12">
-                <div class="form-group">
-                  <label class="form-control-label" for="preloaded">{% blocktranslate %}Preload Execution Results .zip{% endblocktranslate %}</label>
-                  <input type="text" id="preloaded" class="form-control" disabled value="{{ forms.ui_elements_detection.preloaded.value }}">
-                </div>
-                <div class="form-group">
-                  <label class="form-control-label" for="preloaded_file">
-                    {% if forms.ui_elements_detection.preloaded %}
-                      {% blocktranslate %}Preloaded File already uploaded{% endblocktranslate %} 
-                    {% endif %}
-                  </label>
-                  <input type="text" id="preloaded_file" class="form-control" disabled value="{{ forms.ui_elements_detection.preloaded_file.value }}">
-                </div>
-              </div>
-              <hr>
-              <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Configuration{% endblocktranslate %}</h6>
-              <div class="pl-lg-2">
-                <div class="col-12">
-                  <div class="form-group">
-                    <label class="form-control-label" for="ocr">{% blocktranslate %}Apply OCR{% endblocktranslate %}</label>
-                    <input type="text" id="ocr" class="form-control" disabled value="{{ forms.ui_elements_detection.ocr.value }}">
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="form-group">
-                    <label class="form-control-label" for="configurations">{% blocktranslate %}Additional Configurations{% endblocktranslate %}</label>
-                    <input type="text" id="configurations" class="form-control" disabled value="{{ forms.ui_elements_detection.configurations.value }}">
-                  </div>
-                </div>
-              </div>
-            </form>
+            {% include "ui_elements_detection/form.html" %}
           </div>
         </div>
       </div>

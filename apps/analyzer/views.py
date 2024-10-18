@@ -5,6 +5,7 @@ import random
 import time
 import threading
 import traceback
+from django.forms import BaseModelForm
 from tqdm import tqdm
 from art import tprint
 from django.core.exceptions import ValidationError
@@ -362,18 +363,16 @@ class CaseStudyDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
     model = CaseStudy
     form_class = CaseStudyForm
+    pk_url_kwarg = "case_study_id"
+    success_url = "/case-study/list"
 
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        case_study = get_object_or_404(CaseStudy, id=kwargs["case_study_id"], active=True)
-        if user.id != case_study.user.id:
-            raise PermissionDenied(_("This case study doesn't belong to the authenticated user"))
-        form = CaseStudyForm(request.POST, instance=case_study)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("analyzer:casestudy_detail", kwargs={"case_study_id": case_study.id}))
-        else:
-            return render(request, "case_studies/detail.html", {"form": form})
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if not self.object.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get(self, request, *args, **kwargs):
         user = request.user

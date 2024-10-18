@@ -4,11 +4,14 @@ import os
 import random
 import polars as pl
 from art import tprint
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
+from django.forms import BaseModelForm
 from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_FEATURE_EXTRACTION_PHASE_NAME, AGGREGATE_FEATURE_EXTRACTION_PHASE_NAME
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
-from django.views.generic import ListView, DetailView, CreateView, View
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, View
 from apps.utils import MultiFormsView
 from django.core.exceptions import ValidationError, PermissionDenied
 from apps.analyzer.models import CaseStudy
@@ -160,9 +163,26 @@ class FeatureExtractionTechniqueListView(LoginRequiredMixin, ListView):
 
         return queryset
 
-class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
+class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
+    model = FeatureExtractionTechnique
+    form_class = FeatureExtractionTechniqueForm
+    success_url = "/feature-extraction-technique/list/"
+    template_name = "fe/feature-extraction-technique/detail.html"
     # Check if the the phase can be interacted with (included in case study available phases)
+
+    def get_object(self, queryset = ...) -> Model:
+        return get_object_or_404(FeatureExtractionTechnique, id=self.kwargs["feature_extraction_technique_id"])
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
  
     def get(self, request, *args, **kwargs):
         feature_extraction = get_object_or_404(FeatureExtractionTechnique, id=kwargs["feature_extraction_technique_id"])
@@ -171,13 +191,24 @@ class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
         elif feature_extraction.case_study.user != request.user:
             raise PermissionDenied("FE doesn't belong to the authenticated user.")
 
-        form = FeatureExtractionTechniqueForm(read_only=True, instance=feature_extraction)
+        form = FeatureExtractionTechniqueForm(read_only=feature_extraction.freeze, instance=feature_extraction)
+        
+        context = {}
+        # Load single and aggregate techniques from configurations
+        single_json = json.load(open("configuration/single_feature_extractors.json"))
+        aggregate_json = json.load(open("configuration/aggregate_feature_extractors.json"))
+        context["options"] = {
+            # We convert the tuples returned by the items() method to lists so that javascript can correctly parse them
+            "single": list(map(lambda x: list(x), single_json.items())),
+            "aggregate": list(map(lambda x: list(x), aggregate_json.items()))
+        }
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'FeatureExtractionTechnique' in case_study.available_phases:
-                context= {"feature_extraction_technique": feature_extraction, 
+                context = context | {"feature_extraction_technique": feature_extraction, 
                     "case_study_id": case_study.id,
-                    "form": form,}
+                    "form": form
+                }
         
                 return render(request, "feature_extraction_technique/detail.html", context)
             else:
@@ -186,9 +217,10 @@ class FeatureExtractionTechniqueDetailView(LoginRequiredMixin, DetailView):
         elif 'execution_id' in kwargs:
             execution = get_object_or_404(Execution, id=kwargs['execution_id'])
             if execution.feature_extraction_technique:
-                context= {"feature_extraction_technique": feature_extraction, 
+                context = context | {"feature_extraction_technique": feature_extraction, 
                             "execution_id": execution.id,
-                            "form": form,}
+                            "form": form
+                }
             
                 return render(request, "feature_extraction_technique/detail.html", context)
             else:
@@ -372,9 +404,25 @@ class PostprocessingListView(LoginRequiredMixin, ListView):
 
         return queryset
 
-class PostprocessingDetailView(LoginRequiredMixin, DetailView):
+class PostprocessingDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
-    # Check if the the phase can be interacted with (included in case study available phases)
+    model = Postprocessing
+    form_class = PostprocessingForm
+    success_url = "/fe/postprocessing/list/"
+    template_name = "postprocessing/detail.html"
+
+    def get_object(self, queryset = ...) -> Model:
+        return get_object_or_404(Postprocessing, id=self.kwargs["postprocessing_id"])
+    
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
  
     def get(self, request, *args, **kwargs):
         postprocessing = get_object_or_404(Postprocessing, id=kwargs["postprocessing_id"])
@@ -383,7 +431,7 @@ class PostprocessingDetailView(LoginRequiredMixin, DetailView):
         elif postprocessing.case_study.user != request.user:
             raise PermissionDenied("Postprocessing doesn't belong to the authenticated user.")
 
-        form = PostprocessingForm(read_only=True, instance=postprocessing)
+        form = PostprocessingForm(read_only=postprocessing.freeze, instance=postprocessing)
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'Postprocessing' in case_study.available_phases:
@@ -648,6 +696,7 @@ class UIElementsDetectionDetailView(LoginRequiredMixin, MultiFormsView):
 
             },
             "instance": ui_elements_detection,
+            "read_only": ui_elements_detection.freeze
         }
 
     def get_ui_elements_classification_initial(self):
@@ -662,6 +711,7 @@ class UIElementsDetectionDetailView(LoginRequiredMixin, MultiFormsView):
                 "model": ui_elements_classification.model,
             },
             "instance": ui_elements_classification,
+            "read_only": ui_elements_classification.freeze
         }
     
     def forms_valid(self, forms):
@@ -848,18 +898,34 @@ class PrefiltersListView(LoginRequiredMixin, ListView):
         return queryset
 
     
-class PrefiltersDetailView(LoginRequiredMixin, DetailView):
+class PrefiltersDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
+    model = Prefilters
+    form_class = PrefiltersForm
+    success_url = "/fe/prefiltering/list/"
     # Check if the the phase can be interacted with (included in case study available phases)
     
+    def get_object(self, queryset: None = ...) -> Model:
+        return get_object_or_404(Prefilters, id=self.kwargs["prefilter_id"])
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
+
     def get(self, request, *args, **kwargs):
         prefilter_id=kwargs.get("prefilter_id")
         prefilter = get_object_or_404(Prefilters, id=prefilter_id)
-        form = PrefiltersForm(read_only=True, instance=prefilter)
+
         if prefilter.case_study.user != request.user:
             raise PermissionDenied("Prefilter doesn't belong to the authenticated user.")
 
-        form = PrefiltersForm(read_only=True, instance=prefilter)
+        form = PrefiltersForm(read_only=prefilter.freeze, instance=prefilter)
         if 'case_study_id' in kwargs:
             case_study = get_object_or_404(CaseStudy, id=kwargs['case_study_id'])
             if 'Prefilters' in case_study.available_phases:
@@ -1010,13 +1076,30 @@ class PostfiltersListView(LoginRequiredMixin, ListView):
 
         return queryset
     
-class PostfiltersDetailView(LoginRequiredMixin, DetailView):
+class PostfiltersDetailView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
+    model = Postfilters
+    form_class = PostfiltersForm
+    success_url = "/fe/postfiltering/list/"
+
+    def get_object(self, queryset = ...):
+        return get_object_or_404(Postfilters, id=self.kwargs["postfilter_id"])
+
+    def form_valid(self, form):
+        if not self.request.user.is_authenticated:
+            raise ValidationError("User must be authenticated.")
+        if self.object.freeze:
+            raise ValidationError("This object cannot be edited.")
+        if not self.object.case_study.user == self.request.user:
+            raise PermissionDenied("This object doesn't belong to the authenticated")
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url() + str(self.object.case_study.id))
+
     # Check if the the phase can be interacted with (included in case study available phases)
     def get(self, request, *args, **kwargs):
         postfilter_id = kwargs.get('postfilter_id')
         postfilter = get_object_or_404(Postfilters, id=postfilter_id) 
-        form = PostfiltersForm(read_only=True, instance=postfilter)
+        form = PostfiltersForm(read_only=postfilter.freeze, instance=postfilter)
         if not postfilter:
             return HttpResponse(status=404, content="Postfilters not found.")
         elif postfilter.case_study.user != request.user:
@@ -1085,6 +1168,8 @@ def set_as_postfilters_inactive(request):
 @login_required(login_url="/login/")
 def delete_postfilter(request):
     postfilter_id = request.GET.get("postfilter_id")
+    case_study_id = request.GET.get("case_study_id")
+    postfilter = get_object_or_404(Postfilters, id=postfilter_id)
     # Validations
     if not request.user.is_authenticated:
         raise ValidationError(_("User must be authenticated."))
@@ -1094,8 +1179,6 @@ def delete_postfilter(request):
         raise ValidationError(_("Postfiltering doesn't belong to the authenticated user."))
     if Postfilters.objects.get(pk=postfilter_id).case_study != CaseStudy.objects.get(pk=case_study_id):
         raise ValidationError(_("Postfiltering doesn't belong to the Case Study."))   
-    case_study_id = request.GET.get("case_study_id")
-    postfilter = Postfilters.objects.get(id=postfilter_id)
     if request.user.id != postfilter.user.id:
         raise Exception("This object doesn't belong to the authenticated user")
     postfilter.delete()

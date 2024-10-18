@@ -118,15 +118,11 @@
                         {% if fe_technique.active == True and fe_technique.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/inactive/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
                           <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
                         {% elif fe_technique.active == False and fe_technique.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/detail/{{ case_study_id }}/{{ fe_technique.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/fe/feature-extraction-technique/active/?case_study_id={{ case_study_id }}&feature_extraction_technique_id={{ fe_technique.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% elif fe_technique.active == True and fe_technique.freeze == False %}

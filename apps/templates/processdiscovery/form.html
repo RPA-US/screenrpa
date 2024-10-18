@@ -15,14 +15,6 @@
     </div>
   </div>
 
-  <div class="pl-lg-4">
-    <div class="form-group" id ="type">
-      <label class="form-control-label" for="id_type">{{ form.type.label }}<b class="text-red">*</b></label>
-      {{ form.type }}
-      <div class="form-validation">{{ form.type.errors }}</div>
-    </div>
-  </div>
-
   <!-- Model Config Section -->
   <hr class="my-4" />
   <h6 class="heading-small text-muted mb-4">{% trans "Model Config" %}</h6>
@@ -65,15 +57,6 @@
         </div>
       </div>
   </div>
-    
-    <div class="form-group">
-      <label class="form-control-label" for="id_labeling">
-        {{ form.labeling.label }}
-      </label>
-      {{ form.labeling }}
-      <div class="form-validation">{{ form.labeling.errors }}</div>
-    </div>
-  
 
     <div class="form-group d-flex align-items-center justify-content-start">
       <label class="mr-2" for="{{ form.remove_loops.id_for_label }}">
@@ -163,18 +146,12 @@
   </div>
 
   <!-- Submit Button -->
-  
-
-  
+   {% if not form.read_only %}
   <button class="btn btn-success" style="float: right;" type="submit" value="submit" id="id_button" >
     <i class="fas fa-save"></i> 
     {% blocktranslate %}Save{% endblocktranslate %}
-    </button>
-
-  
-
- 
-  
+  </button>
+  {% endif %}
 </form>
 
 <style>
@@ -207,10 +184,12 @@
     // Controlador de eventos para el checkbox 'preloaded'
     preloaded.addEventListener('change', () => {
       toggleFields(preloaded.checked);
+      preloaded_file.required = preloaded.checked;
     });
   
     // Inicializar los campos al cargar la página
-    toggleFields(preloaded.checked);
+    if ("{{form.read_only}}"!="True")
+      toggleFields(preloaded.checked);
   
     document.getElementById('processDiscoveryForm').onsubmit = function() {
       document.getElementById('id_preloaded').readOnly = false;

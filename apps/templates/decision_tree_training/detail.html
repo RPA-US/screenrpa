@@ -74,16 +74,3 @@
   </div>
 
 {% endblock content %}
-
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}
-
-<script>
-  // Espera a que el contenido de form.html se cargue completamente
-  document.addEventListener("DOMContentLoaded", function() {
-      // Oculta el botón del formulario
-      var preload = document.getElementById("preloaded_file");
-      preload.style.display = "none";
-  });
-</script>
-{% endblock javascripts %}

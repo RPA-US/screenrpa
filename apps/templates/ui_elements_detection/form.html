@@ -60,10 +60,12 @@
       </div>
     </div>
   </div>
+  {% if not forms.ui_elements_detection.read_only %}
   <button class="btn btn-success" style="float: right;" type="submit" value="submit">
     <i class="fas fa-save"></i>
     Save
   </button>
+  {% endif %}
 </form>
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
@@ -90,12 +92,14 @@
       ocr.disabled = isPreloadedChecked;
       configurations.readOnly = isPreloadedChecked;
       */
-      preloaded_file.disabled = !isPreloadedChecked;
+      if ("{{forms.ui_elements_detection.read_only}}"!="True")
+        preloaded_file.disabled = !isPreloadedChecked;
     }
 
     // Controlador de eventos para el checkbox 'preloaded'
     preloaded.addEventListener('change', () => {
       toggleFields(preloaded.checked);
+      preloaded_file.required = preloaded.checked;
     });
 
     // Inicializar los campos al cargar la página

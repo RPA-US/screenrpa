@@ -73,9 +73,6 @@
                   <td>
                     {{ processdiscovery.title }}
                   </td>
-                  <td class="type">
-                      {{ processdiscovery.type }}
-                  </td>
                   <td class="configurations">
                       {{ processdiscovery.configurations|truncatechars:100 }}
                   </td>
@@ -138,15 +135,11 @@
                         {% if processdiscovery.active == True and processdiscovery.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/pd/bpmn/detail/{{ case_study_id }}/{{ processdiscovery.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/pd/bpmn/inactive/?case_study_id={{ case_study_id }}&process_discovery_id={{ processdiscovery.pk }}">
                           <i class="fas fa-power-off" style="color: grey; vertical-align: 0%;"></i>{% blocktranslate %}Deactivate{% endblocktranslate %}</a>  
                         {% elif processdiscovery.active == False and processdiscovery.freeze == True %}
                         <a class="dropdown-item" style="display: inline;" href="/pd/bpmn/detail/{{ case_study_id }}/{{ processdiscovery.pk }}/">
                           <i class="fas fa-info-circle" style="vertical-align: 0%;"></i>{% blocktranslate %}Details{% endblocktranslate %}</a>
-                        <a class="dropdown-item" style="display: inline;" href="#">
-                          <i class="fas fa-copy" style="color:blue; vertical-align: 0%;"></i>{% blocktranslate %}Duplicate{% endblocktranslate %}</a>
                         <a class="dropdown-item" style="display: inline;" href="/pd/bpmn/active/?case_study_id={{ case_study_id }}&process_discovery_id={{ processdiscovery.pk }}">
                           <i class="fas fa-power-off" style="color: green; vertical-align: 0%;"></i>{% blocktranslate %}Activate{% endblocktranslate %}</a>
                         {% elif processdiscovery.active == True and processdiscovery.freeze == False %}

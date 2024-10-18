@@ -33,7 +33,7 @@
       <div class="header-body">
         <div class="row align-items-center py-4">
           <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/dd/decision-tree-training/list/{{case_study_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            <a href="/pd/bpmn/list/{{case_study_id}}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
             </i>{% blocktranslate %}Go Back to Process Discovery Configurations{% endblocktranslate %}</a>
             <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Process Discovery Configuration Details{% endblocktranslate %}</h6>
             <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
@@ -74,34 +74,3 @@
   </div>
 
 {% endblock content %}
-
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}
-
-<script>
-
-  document.addEventListener('DOMContentLoaded', function() {
-
-    var type = document.getElementById("id_type");
-    type.disabled = true;
-
-    var preload = document.getElementById("preloaded_file");
-    preload.style.display = "none";
-
-    var boton = document.getElementById('id_button');
-    boton.style.display = 'none';
-
-    var switchElement = document.getElementById('{{ form.remove_loops.id_for_label }}');
-    switchElement.disabled = true;
-
-    var switchElement2 = document.getElementById('{{ form.use_pca.id_for_label }}');
-    switchElement2.disabled = true;
-
-    var switchElement3 = document.getElementById('{{ form.show_dendrogram.id_for_label }}');
-    switchElement3.disabled = true;
-
-
-   
-});
-</script>
-{% endblock javascripts %}

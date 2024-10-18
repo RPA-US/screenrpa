@@ -44,11 +44,6 @@
                 {{ form.ui_log_filename }}
                 <div class="form-validation">{{ form.ui_log_filename.errors }}</div>
             </div>
-            <div class="form-group">
-                <label class="form-control-label" for="input-title">{% blocktranslate %}UI Log Separator{% endblocktranslate %}</label>
-                {{ form.ui_log_separator }}
-                <div class="form-validation">{{ form.ui_log_separator.errors }}</div>
-            </div>
         </div>
         <div class="col-6">
             <div class="form-group">
@@ -105,7 +100,6 @@
       const preloaded = document.getElementById('id_preloaded');  
       const preloaded_file = document.getElementById('id_preloaded_file');  
       const ui_log_filename = document.getElementById('id_ui_log_filename');
-      const ui_log_separator = document.getElementById('id_ui_log_separator');
       const gaze_log_filename = document.getElementById('id_gaze_log_filename');
       const gaze_log_adjustment = document.getElementById('id_gaze_log_adjustment');
       const native_slide_events = document.getElementById('id_native_slide_events');
@@ -123,17 +117,18 @@
       var webgazerOptions = document.getElementById('webgazer_options');
       // Función para habilitar/deshabilitar campos
       function toggleFields(isPreloadedChecked) {
-        type.disabled = isPreloadedChecked;
-        ui_log_filename.readOnly = isPreloadedChecked;
-        ui_log_separator.readOnly = isPreloadedChecked;
-        gaze_log_filename.readOnly = isPreloadedChecked;
-        gaze_log_adjustment.readOnly = isPreloadedChecked;
-        native_slide_events.readOnly = isPreloadedChecked;
-        screen_inches.readOnly = isPreloadedChecked
-        observer_camera_distance.readOnly = isPreloadedChecked
-        screen_width.readOnly = isPreloadedChecked
-        screen_height.readOnly = isPreloadedChecked
-        preloaded_file.disabled = !isPreloadedChecked;
+        if ("{{form.read_only | safe}}"!="True") {
+          type.disabled = isPreloadedChecked;
+          ui_log_filename.readOnly = isPreloadedChecked;
+          gaze_log_filename.readOnly = isPreloadedChecked;
+          gaze_log_adjustment.readOnly = isPreloadedChecked;
+          native_slide_events.readOnly = isPreloadedChecked;
+          screen_inches.readOnly = isPreloadedChecked
+          observer_camera_distance.readOnly = isPreloadedChecked
+          screen_width.readOnly = isPreloadedChecked
+          screen_height.readOnly = isPreloadedChecked
+          preloaded_file.disabled = !isPreloadedChecked;
+        }
       }
 
       function toggleTypeFields() {
@@ -174,12 +169,14 @@
       // Controlador de eventos para el checkbox 'preloaded'
       preloaded.addEventListener('change', () => {
         toggleFields(preloaded.checked);
+        preloaded_file.required = preloaded.checked;
       });
 
 
   
       // Inicializar los campos al cargar la página
-      toggleFields(preloaded.checked);
+      if ("{{form.read_only}}"!="true")
+        togglefields(preloaded.checked);
   
       document.getElementById('form').onsubmit = function() {
         // document.getElementById('id_model').readOnly = false;
