@@ -6,8 +6,6 @@ from scipy.spatial.distance import pdist
 
 ################# Constants #################
 INCH_PER_CENTIMETRES = 2.54 #1 inch =  2.54cm
-DEVICE_FREQUENCY = 30 #Hz. Frequency of our Eyetracker software (Webgazer)
-FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum Gazepoints, not I-VT)
 
 ################# Constans to introduce by the user #################
 SCREEN_INCHES = 15.6 #Screen Inches
@@ -41,7 +39,7 @@ def get_distance_threshold_by_resolution(screen_inches, inch_per_centimetres, ob
     
     return pixels_threshold_i_dt
 
-def get_minimum_fixation_gazepoints(device_frequency=DEVICE_FREQUENCY, fixation_minimum_duration=FIXATION_MINIMUM_DURATION):
+def get_minimum_fixation_gazepoints(device_frequency, fixation_minimum_duration):
     
     minimum_fixation_gazepoints = round(device_frequency*fixation_minimum_duration/1000)
     # print(f"The minimum gaze points considered to be a possible fixation is {minimum_fixation_gazepoints},\naccording to our device refresh rate and the established fixation minimum duration (100ms).\n")

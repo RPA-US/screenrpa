@@ -6,13 +6,13 @@ import datetime
 import pandas as pd
 import numpy as np
 from dateutil import tz
-from apps.behaviourmonitoring.log_mapping.wegbgazer_log_processing import add_saccade_index, get_distance_threshold_by_resolution, get_minimum_fixation_gazepoints, int_index, preprocess_gaze_log
+from apps.behaviourmonitoring.log_mapping.eye_tracking_log_processing import add_saccade_index, get_distance_threshold_by_resolution, get_minimum_fixation_gazepoints, int_index, preprocess_gaze_log
 from core.utils import read_ui_log_as_dataframe
-from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS, INCH_PER_CENTIMETRES, DEVICE_FREQUENCY, FIXATION_MINIMUM_DURATION
+from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS, INCH_PER_CENTIMETRES, FIXATION_MINIMUM_DURATION, DEVICE_FREQUENCY_WEBGAZER, DEVICE_FREQUENCY_TOBII
 from apps.analyzer.utils import convert_timestamps_and_clean_screenshot_name_in_csv, get_csv_log_start_datetime, get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
-from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_imotions_monitoring, decode_imotions_native_slideevents, decode_webgazer_timezone
-from apps.behaviourmonitoring.utils import get_monitoring
+from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_timezone, decode_imotions_native_slideevents, decode_imotions_monitoring
+
 
 ms_pattern = '%H-%M-%S.%f'
 # ui_log_timestamp_pattern = '%H:%M:%S %p'
@@ -26,7 +26,7 @@ def euclidean_distance(x1, y1, x2, y2):
   """
   return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
-def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze X", y_column_name="Gaze Y"):
+def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze_X", y_column_name="Gaze_Y"):
     """
     Define a function to calculate the fixation dispersion given a list of fixations
     """
@@ -56,9 +56,8 @@ def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze X", y_column_na
   
 def calculate_dispersion(gaze_log, metrics, last_index):
     current_fixations = range(metrics["start_index"], last_index + 1)
-    # dispersion = fixation_dispersion(current_fixations, gaze_log, "Gaze X", "Gaze Y")
-    fixations_x = [float(gaze_log.loc[index,"Gaze X"]) for index in current_fixations]
-    fixations_y = [float(gaze_log.loc[index,"Gaze Y"]) for index in current_fixations]
+    fixations_x = [float(gaze_log.loc[index,"Gaze_X"]) for index in current_fixations]
+    fixations_y = [float(gaze_log.loc[index,"Gaze_Y"]) for index in current_fixations]
     # REF PyTrack: An end-to-end analysis toolkit for eye tracking -> Parameter extraction - Fixations
     dispersion = euclidean_distance(min(fixations_x), min(fixations_y), max(fixations_x), max(fixations_y))
     
@@ -426,6 +425,7 @@ def monitoring(log_path, root_path, execution):
     monitoring_screen_width = monitoring_obj.screen_width
     monitoring_screen_height = monitoring_obj.screen_height
     ui_log_filename = monitoring_obj.ui_log_filename
+    monitoring_native_slide_events = monitoring_obj.native_slide_events
     
     if os.path.exists(log_path):
       logging.info("apps/behaviourmonitoring/log_mapping/gaze_monitoring.py Log already exists, it's not needed to execute format conversor")
@@ -435,15 +435,12 @@ def monitoring(log_path, root_path, execution):
       # TODO: org:resource
       log_path = format_mht_file(os.path.join(root_path, ui_log_filename), monitoring_obj.format, root_path, log_filename, 'User1')
   
-  
     ui_log = read_ui_log_as_dataframe(log_path)
-
     eyetracking_log_filename = monitoring_obj.gaze_log_filename
     
     if monitoring_type == "imotions":
       if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
           gazeanalysis_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
-          gazeanalysis_log = pd.read_csv(os.path.join(root_path , eyetracking_log_filename), sep=sep)
       else:
           logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
           raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
@@ -480,24 +477,24 @@ def monitoring(log_path, root_path, execution):
       # update monitoring_obj
       monitoring_obj.save()
     elif monitoring_type == "webgazer":
-      #### Preprocessing WebgazerLog Start ####
+      #### Postprocessing WebgazerLog Start ####
       pixels_threshold_i_dt = get_distance_threshold_by_resolution(monitoring_screen_inches,INCH_PER_CENTIMETRES, monitoring_observer_camera_distance,monitoring_screen_width,monitoring_screen_height) #Capturing the distance threshold in pixels regarding to the screen resolution
-      minimum_fixation_gazepoints = get_minimum_fixation_gazepoints(DEVICE_FREQUENCY, FIXATION_MINIMUM_DURATION) #Capturing the minimum number of gazepoints to consider a fixation
+      minimum_fixation_gazepoints = get_minimum_fixation_gazepoints(DEVICE_FREQUENCY_WEBGAZER, FIXATION_MINIMUM_DURATION) #Capturing the minimum number of gazepoints to consider a fixation
 
       if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
-          preprocessed_webgazer_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
+          postprocessed_webgazer_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
       else:
-          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. NOT PREPROCESSED Eyetracking  webgazerlog  cannot be read: " + root_path + eyetracking_log_filename)
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180.  Eyetracking  webgazer log  cannot be read: " + root_path + eyetracking_log_filename)
           raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
-      preprocessed_webgazer_fixations_log_build = preprocess_gaze_log(preprocessed_webgazer_log, "Gaze X", "Gaze Y",minimum_fixation_gazepoints,pixels_threshold_i_dt)# First Preprocesing of the WebGazer Log. In this Log, we get the fixations (Timestamps, duration, start,end, x,y, etc.)
-      preprocessed_webgazer_fixations_saccade_log_build = add_saccade_index(preprocessed_webgazer_fixations_log_build)# Second Preprocesing of the WebGazer Log. In this Log, we get the saccades (Timestamps, duration, start,end, x,y, etc.)
-      preprocessed_webgazer_fixations_saccade_index_log_build = int_index(preprocessed_webgazer_fixations_saccade_log_build)#Last Preprocesing of the WebGazer Log. In this Log, we get the index of the fixations and saccades to finally get the gazeanalysis Log (Idem to imotions log)
-      preprocessed_webgazer_fixations_saccade_index_log_build.to_csv(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"))
-      ##### Preprocessing WebGazer Log End #####
-      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,"webgazer_gazeData_preprocessed.csv")):
-          gazeanalysis_log = read_ui_log_as_dataframe(os.path.join(root_path , "webgazer_gazeData_preprocessed.csv"))
+      postprocessed_webgazer_fixations_log_build = preprocess_gaze_log(postprocessed_webgazer_log, "Gaze_X", "Gaze_Y",minimum_fixation_gazepoints,pixels_threshold_i_dt)# First Preprocesing of the WebGazer Log. In this Log, we get the fixations (Timestamps, duration, start,end, x,y, etc.)
+      postprocessed_webgazer_fixations_saccade_log_build = add_saccade_index(postprocessed_webgazer_fixations_log_build)# Second Preprocesing of the WebGazer Log. In this Log, we get the saccades (Timestamps, duration, start,end, x,y, etc.)
+      postprocessed_webgazer_fixations_saccade_index_log_build = int_index(postprocessed_webgazer_fixations_saccade_log_build)#Last Preprocesing of the WebGazer Log. In this Log, we get the index of the fixations and saccades to finally get the gazeanalysis Log (Idem to imotions log)
+      postprocessed_webgazer_fixations_saccade_index_log_build.to_csv(os.path.join(root_path , "webgazer_gazedata_postprocessed.csv"))
+      ##### Postprocessing WebGazer Log End #####
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,"webgazer_gazedata_postprocessed.csv")):
+          gazeanalysis_log = read_ui_log_as_dataframe(os.path.join(root_path , "webgazer_gazedata_postprocessed.csv"))
       else:
-          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. PREPROCESSED Eyetracking  webgazerlog cannot be read: " + root_path + "webgazer_gazeData_preprocessed.csv")
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. Eyetracking  webgazerlog cannot be read: " + root_path + "webgazer_gazedata_postprocessed.csv")
           raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
         # fixation.json to Dataframe checker
       # fixation.json to Dataframe checker        
@@ -510,7 +507,66 @@ def monitoring(log_path, root_path, execution):
         #GAZELOG = WEBGAZERLOG.csv debido a que no hay que formartear metadata. columnas de webgazerlog.csv iguales a imotions.
         
       #Es la información de base de la zona horaria donde se esta llevando a cabo la grabación. (ej:UTC+1)
-      startDateTime_gaze_tz = decode_webgazer_timezone(root_path)#timezone y startslideeventdatetime
+      startDateTime_gaze_tz = decode_timezone(root_path, monitoring_native_slide_events)
+      
+      #If the ui log file is a mht file. We need to get the startdatetime from the mht file with the get_mht_log_start_datetime function
+      if ui_log_filename.endswith('.mht'):
+        startDateTime_ui_log = get_mht_log_start_datetime(os.path.join(root_path , ui_log_filename), ui_log_format_pattern)
+      #If the ui log file is a csv file. We need to get the startdatetime from the csv file with the get_csv_log_start_datetime function
+      elif ui_log_filename.endswith('.csv'):
+        startDateTime_ui_log = get_csv_log_start_datetime(os.path.join(root_path , ui_log_filename), ui_log_format_pattern)
+        ui_log = convert_timestamps_and_clean_screenshot_name_in_csv(log_path)
+        
+        
+        
+      if os.path.exists(os.path.join(root_path ,"fixation.json")):
+        fixation_p = json.load(open(os.path.join(root_path ,"fixation.json")))
+        logging.warning("The file " + root_path + "fixation.json already exists. Not regenerated")
+        print("The file " + root_path + "fixation.json already exists. If you want to regenerate it, please remove it or change its name")
+      else:
+        fixation_p = gaze_log_mapping(ui_log, gazeanalysis_log, special_colnames, startDateTime_ui_log, startDateTime_gaze_tz, 'ms_webgazer')
+        
+      # Serializing json
+      json_object = json.dumps(fixation_p, indent=4)
+      with open(os.path.join(root_path ,"fixation.json"), "w") as outfile:
+          outfile.write(json_object)
+      logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
+        
+      fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+        
+      monitoring_obj.executed = 100
+      monitoring_obj.ub_log_path =os.path.join( root_path , "fixation.json")
+      # update monitoring_obj
+      monitoring_obj.save()
+    
+    elif monitoring_type == "tobii":
+      #### Preprocessing tobii_gazelog Start ####
+      pixels_threshold_i_dt = get_distance_threshold_by_resolution(monitoring_screen_inches,INCH_PER_CENTIMETRES, monitoring_observer_camera_distance,monitoring_screen_width,monitoring_screen_height) #Capturing the distance threshold in pixels regarding to the screen resolution
+      minimum_fixation_gazepoints = get_minimum_fixation_gazepoints(DEVICE_FREQUENCY_TOBII, FIXATION_MINIMUM_DURATION) #Capturing the minimum number of gazepoints to consider a fixation
+
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path , eyetracking_log_filename)):
+          postprocessed_tobii_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
+      else:
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. NOT PREPROCESSED Eyetracking  tobii log  cannot be read: " + root_path + eyetracking_log_filename)
+          raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
+      postprocessed_tobii_fixations_log_build = preprocess_gaze_log(postprocessed_tobii_log, "Gaze_X", "Gaze_Y",minimum_fixation_gazepoints,pixels_threshold_i_dt)# First Preprocesing of the tobii Log. In this Log, we get the fixations (Timestamps, duration, start,end, x,y, etc.)
+      postprocessed_tobii_fixations_saccade_log_build = add_saccade_index(postprocessed_tobii_fixations_log_build)# Second Preprocesing of the tobii Log. In this Log, we get the saccades (Timestamps, duration, start,end, x,y, etc.)
+      postprocessed_tobii_fixations_saccade_index_log_build = int_index(postprocessed_tobii_fixations_saccade_log_build)#Last Preprocesing of the tobii Log. In this Log, we get the index of the fixations and saccades to finally get the gazeanalysis Log (Idem to imotions log)
+      postprocessed_tobii_fixations_saccade_index_log_build.to_csv(os.path.join(root_path , "tobii_gazedata_postprocessed.csv"))
+      ##### Preprocessing tobii Log End #####
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,"tobii_gazedata_postprocessed.csv")):
+          gazeanalysis_log = read_ui_log_as_dataframe(os.path.join(root_path , "tobii_gazedata_postprocessed.csv"))
+      else:
+          logging.exception("behaviourmonitoring/monitoring/monitoring line:180. PREPROCESSED Eyetracking  tobii log cannot be read: " + root_path + "tobii_gazedata_preprocessed.csv")
+          raise Exception("Eyetracking log cannot be read: " + root_path + eyetracking_log_filename)
+        # fixation.json to Dataframe checker
+      # fixation.json to Dataframe checker        
+      for col_name in MONITORING_IMOTIONS_NEEDED_COLUMNS:
+        if special_colnames[col_name] not in ui_log.columns:
+          logging.error("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+          raise Exception("Your UI log doesn't have a column representing : " + col_name + ". It must store information about " + str(MONITORING_IMOTIONS_NEEDED_COLUMNS))
+      
+      startDateTime_gaze_tz = decode_timezone(root_path,monitoring_native_slide_events)#timezone y startslideeventdatetime
       
       #If the ui log file is a mht file. We need to get the startdatetime from the mht file with the get_mht_log_start_datetime function
       if ui_log_filename.endswith('.mht'):

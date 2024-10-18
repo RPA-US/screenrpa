@@ -140,6 +140,16 @@
           screen_height_id_div.style.display = 'block';
           native_slide_events.value = 'webgazer_properties.json'
           gaze_log_filename.value = 'webgazer_gazeData.csv'
+        }
+        else if (type.value == 'tobii'){
+          screen_inches_id_div.style.display = 'block';
+          observer_camera_distance_id_div.style.display = 'block';
+          webgazerOptions.style.display = 'block';
+          screen_width_id_div.style.display = 'block';
+          screen_height_id_div.style.display = 'block';
+          native_slide_events.value = 'tobii_properties.json'
+          gaze_log_filename.value = 'tobii_gazedata.csv'
+        
         } else {
           screen_inches_id_div.style.display = 'none';
           observer_camera_distance_id_div.style.display = 'none';

@@ -55,8 +55,10 @@
             <label for="config_dropdown">{% blocktranslate %}Configuration{% endblocktranslate %}</label>
             <select class="form-control" id="config_dropdown">
                 <option value="standard">{% blocktranslate %}Configuration Standard Template without Gaze Log included in Case Study{% endblocktranslate %}</option>
-                <option value="with_gazelog">{% blocktranslate %}Configuration Template with Steprecorders mht UI Log and Webgazer.js Gaze Log included in Case Study{% endblocktranslate %}</option>
-                <option value="with_gazelog_and_screenActionLogger">{% blocktranslate %}Configuration Template with ScreenActionLogger UI Log and Webgazer.js Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="steprecorders_webgazer">{% blocktranslate %}Configuration Template with Steprecorders mht UI Log and Webgazer.js Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="screenActionLogger_webgazer">{% blocktranslate %}Configuration Template with ScreenActionLogger UI Log and Webgazer.js Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="steprecorders_tobii">{% blocktranslate %}Configuration Template with Steprecorders mht UI Log and Tobii Spark Eye tracking Gaze Log included in Case Study{% endblocktranslate %}</option>
+                <option value="screenActionLogger_tobii">{% blocktranslate %}Configuration Template with ScreenActionLogger UI Log and Tobii Spark Eye tracking Gaze Log included in Case Study{% endblocktranslate %}</option>
                 <option value="blank">{% blocktranslate %}Custom Configuration{% endblocktranslate %}</option>
             </select>
         </div>    
@@ -137,7 +139,7 @@
         let data;
         if (config_dropdown.value === 'standard') {
             data = JSON.parse('{{ form.special_colnames.value|escapejs }}');
-        } else if (config_dropdown.value === 'with_gazelog') {
+        } else if (config_dropdown.value === 'steprecorders_webgazer') {
             data = {
                 "Case": "ocel:eid",
                 "CoorX": "ocel:click:coorX",
@@ -150,7 +152,33 @@
                 "Timestamp": "ocel:timestamp",
                 "Screenshot": "ocel:screenshot:name", 
             };
-        } else if (config_dropdown.value === 'with_gazelog_and_screenActionLogger') {
+        } else if (config_dropdown.value === 'screenActionLogger_webgazer') {
+            data = {
+                "Case": "case:concept:name",
+                "CoorX": "coordX",
+                "CoorY": "coordY",
+                "Header": "header",
+                "NameApp": "application",
+                "Variant": "ocel:variant",
+                "Activity": "ocel:activity",
+                "EventType": "category",
+                "Screenshot": "screenshot", 
+                "Timestamp": "time:timestamp",
+            };
+        } else if (config_dropdown.value === 'steprecorders_tobii') {
+            data = {
+                "Case": "ocel:eid",
+                "CoorX": "ocel:click:coorX",
+                "CoorY": "ocel:click:coorY",
+                "Header": "header",
+                "NameApp": "FileName",
+                "Variant": "ocel:variant",
+                "Activity": "ocel:activity",
+                "EventType": "ocel:type:event",
+                "Timestamp": "ocel:timestamp",
+                "Screenshot": "ocel:screenshot:name", 
+            };
+        } else if (config_dropdown.value === 'screenActionLogger_tobii') {
             data = {
                 "Case": "case:concept:name",
                 "CoorX": "coordX",
