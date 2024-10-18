@@ -831,7 +831,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         return res
 ##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
 ##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'aqui va el centroid en tupla']], 3: [['numeric__Coor_Y_3 > 491.51', 'aqui va el centroid en tupla']]}}
-    def get_branch_condition2(rules, pre_pd_activities):
+    def get_branch_condition2(rules, pre_pd_activities, process):
         def coordinate_rule(variable, condition, condition_dict, exists):
             # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
             present = False
@@ -858,15 +858,23 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         condition_dict[act].append(["centroid", condition, (first_element, second_element, compo_class_or_text), exists])
                         present = True
 
-        def decision_rule(variable, condition, condition_dict, exists):
+        def decision_rule(variable, condition, condition_dict, exists, process):
             coincidences = re.match(r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)", variable)
             target = coincidences.group(4) # Actividad o numero de puerta xor
             if coincidences.group(3):  # Si hay un grupo 3 adicional (opcional, significa xor)
                 target = f"{coincidences.group(3)}_{target}"
             
-            if "decision" not in condition_dict:
-                condition_dict["decision"] = []
-            condition_dict["decision"].append([target, exists])
+            dp = coincidences.group(2)
+            dps = process.get_non_empty_dp_flattened()
+            dp = list(filter(lambda x: x.id == dp, dps))[0]
+
+            rules = dp.to_json().get("rules", {})[target]
+            subconditions = get_branch_condition2(rules, pre_pd_activities, process)
+            for _, subrule in subconditions.items():
+                for act, cond in subrule.items():
+                    if act not in condition_dict:
+                        condition_dict[act] = []
+                    condition_dict[act].extend(cond)
 
         result_dict = {}
         for rule in rules:
@@ -891,7 +899,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 if re.match(pattern_with_centroid, variable):
                     coordinate_rule(variable, condition, condition_dict, exists)
                 elif re.match(pattern_decision_point, variable):
-                    decision_rule(variable, condition, condition_dict, exists)
+                    decision_rule(variable, condition, condition_dict, exists, process)
             result_dict[rule.strip()] = condition_dict
         return result_dict
 
@@ -1260,7 +1268,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             act_seq_index = activities.index(int(activity))
             pre_activities = activities[:act_seq_index+1]
 
-            result_dict = get_branch_condition2(branch_rules, pre_activities)
+            result_dict = get_branch_condition2(branch_rules, pre_activities, traceability)
             result_dict_overlapping = {}
             # result_dict_overlapping = get_overlapping_branch_condition2(decision_point, next_activity, pre_activities)
 
