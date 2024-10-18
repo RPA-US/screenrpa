@@ -12,6 +12,7 @@ from .forms import MonitoringForm
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from core.utils import read_ui_log_as_dataframe
 
 # Create your views here.
     
@@ -179,7 +180,7 @@ class MonitoringResultDetailView(LoginRequiredMixin, DetailView):
             return ResultDownload(path_to_csv_file)  
 
         # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
+        csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, lib='polars').to_dicts()
 
         # Include CSV data in the context for the template
         context = {
