@@ -39,13 +39,22 @@
       <div class="col">
         <div class="card">
           <!-- Card header -->
-          <div class="card-header border-0">
+          <div class="card-header border-0 d-flex justify-content-between">
             <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Detections{% endblocktranslate %}</h3>
+            <section for="content" class="col-6 p-0 d-flex align-items-center">
+              <h3 class="pr-3">{% blocktranslate %}Scenario{% endblocktranslate %}</h3>
+              <select id="scenarioList" class="col-6 form-control outline-light" style="border-color:#adb5bd;" onchange="window.location.href = `/fe/ex/ui-element-detection/result/{{ execution_id }}/?scenario=${this.value}`">
+                {% for scenario in scenarios %}
+                  <option value="{{ scenario }}">{{ scenario }}</option>
+                {% endfor %}
+              </select>
+            </section>
           </div>
           <div class="card-body d-flex flex-column" style="gap:12px">
             <section for="content" class="col-12 p-0 d-flex justify-content-between">
               <!-- Dropdown to select imgages with back and forth buttons -->
-              <div for="controls" class="col-4 p-0 d-flex justify-content-between">
+              <div for="controls" class="col-4 p-0 d-flex justify-content-between align-items-center">
+                <h3 class="pr-3">Image</h3>
                 <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
                 <select id="imgList" class="form-control outline-light" style="border-color:#adb5bd;" onchange="changeImage(this.value)">
                   {% for som in soms.soms %}
@@ -116,7 +125,7 @@
       var image = document.getElementById('bordered-img');
       var imageHeight = image.clientHeight;
       section.style.height = imageHeight + 'px';
-      updatePolygons(showMasks, imgList.selectedIndex);
+      updatePolygons(showMasks, somData.compos);
     }
 
     window.addEventListener('resize', function() {
@@ -126,6 +135,7 @@
     // Declare list of images from soms json replacing None with empty string
     soms = {{ soms|handle_none|safe }};
     imgList = soms.soms.map(som => som.img_path ? som.img_path : '');
+    somData = {} // Represents the current image som data
 
     // Get the classes of the classification method
     classes = soms.classes;
@@ -139,6 +149,18 @@
         return JSON.parse($('#json-input').val());
       } catch (ex) {
         alert('Wrong JSON Format: ' + ex);
+      }
+    }
+    
+    //Retrieves json from the backend
+    async function getSom(scenario, imgName) {
+      const url = `/fe/ex/ui-element-detection/result/{{ execution_id }}/som?scenario=${scenario}&img_name=${imgName}`
+      const response = await fetch(url)
+      if (response.ok) {
+        somData = await response.json()
+        $('#json-input').val(JSON.stringify(somData, null, 2));
+      } else {
+        alert('Error loading SOM');
       }
     }
 
@@ -161,7 +183,7 @@
       // Get selected image index
       imgList = document.getElementById('imgList');
       selectedIndex = imgList.selectedIndex;
-      updatePolygons(showMasks, selectedIndex)
+      updatePolygons(showMasks, somData.compos)
     }
 
     function toggleAllMasks(switchInput) {
@@ -176,15 +198,14 @@
           button.style.backgroundColor = '#ffffff' + '00';
         });
       }
-      updatePolygons(showMasks, imgList.selectedIndex);
+      updatePolygons(showMasks, somData.compos);
     }
 
-    function updatePolygons(showMasks, selectedIndex) {
+    function updatePolygons(showMasks, compos) {
       // Remove all polygons
       polygons.forEach(polygon => polygon.remove());
       polygons = [];
       // Add polygons for each class
-      compos = soms.soms.at(selectedIndex).som.compos;
 
       selectedCompos = Object.values(compos).filter(compo =>
         showMasks.includes(compo.class)
@@ -234,7 +255,7 @@
       document.getElementById('json-display').scrollTop = topPos;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         // Create classes for the buttons
         for (const [key, value] of Object.entries(classes)) {
           var button = document.getElementById('toggle-class-' + key);
@@ -254,74 +275,72 @@
         document.getElementById('prev').disabled = true
 
         borderedImg = document.getElementById('bordered-img');
-        somWindow = document.getElementById('json-input');
-        somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+        // somWindow = document.getElementById('json-input');
+        // somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
+        await getSom("{{scenario}}", soms.soms[imgList.selectedIndex].img);
         editor = new JsonEditor('#json-display', getJson());
         editor.load(getJson())
 
-        originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
-        originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
-        updatePolygons(showMasks, imgList.selectedIndex);
+        originalHeight = somData.img_shape.at(0);
+        originalWidth = somData.img_shape.at(1);
+        updatePolygons(showMasks, somData.compos);
     })
 
     function prevImage() {
       showLoadingOverlay();
       imgList = document.getElementById('imgList');
       imgPath = document.getElementById('imgPath');
-      somWindow = document.getElementById('json-input');
       if (imgList.selectedIndex > 0) {
         imgList.selectedIndex = imgList.selectedIndex - 1;
         borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-        somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
-        setTimeout(function() {
+        setTimeout(async function() {
+          await getSom("{{scenario}}", soms.soms[imgList.selectedIndex].img);
           editor.load(getJson());
           adjustContainerHeight();
           hideLoadingOverlay();
         }, 0);
       }
       updateControls(imgList.selectedIndex);
-      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
-      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
-      updatePolygons(showMasks, imgList.selectedIndex);
+      originalHeight = somData.img_shape.at(0);
+      originalWidth = somData.img_shape.at(1);
+      updatePolygons(showMasks, somData.compos);
     }
 
     function nextImage() {
       showLoadingOverlay();
       imgList = document.getElementById('imgList');
       imgPath = document.getElementById('imgPath');
-      somWindow = document.getElementById('json-input');
       if (imgList.selectedIndex < imgList.options.length - 1) {
-          imgList.selectedIndex = imgList.selectedIndex + 1;
-          borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-          somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
-          setTimeout(function() {
-            editor.load(getJson());
-            adjustContainerHeight();
-            hideLoadingOverlay();
-          }, 0);
+        imgList.selectedIndex = imgList.selectedIndex + 1;
+        borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+        setTimeout(async function() {
+          await getSom("{{scenario}}", soms.soms[imgList.selectedIndex].img);
+          editor.load(getJson());
+          adjustContainerHeight();
+          hideLoadingOverlay();
+        }, 0);
       }
       updateControls(imgList.selectedIndex);
-      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
-      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
-      updatePolygons(showMasks, imgList.selectedIndex);
+      originalHeight = somData.img_shape.at(0);
+      originalWidth = somData.img_shape.at(1);
+      updatePolygons(showMasks, somData.compos);
     }
 
     function changeImage(value) {
       showLoadingOverlay();
       imgList = document.getElementById('imgList');
       imgPath = document.getElementById('imgPath');
-      somWindow = document.getElementById('json-input');
       borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
-      somWindow.innerHTML = JSON.stringify(soms.soms[imgList.selectedIndex].som.som, null, 2);
-      setTimeout(function() {
+      setTimeout(async function() {
+          await getSom("{{scenario}}", soms.soms[imgList.selectedIndex].img);
         editor.load(getJson());
         adjustContainerHeight();
         hideLoadingOverlay();
       }, 0);
       updateControls(imgList.selectedIndex);
-      originalHeight = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(1);
-      originalWidth = soms.soms[imgList.selectedIndex].som.som.points.at(3).at(0);
-      updatePolygons(showMasks, imgList.selectedIndex);
+      originalHeight = somData.img_shape.at(0);
+      originalWidth = somData.img_shape.at(1);
+      updatePolygons(showMasks, somData.compos);
     }
 
     function updateControls(selectedIndex) {

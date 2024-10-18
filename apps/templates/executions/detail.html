@@ -144,7 +144,7 @@
                       {% else %}
                       <a class="btn-icon-clipboard" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
-                          <i class="ni ni-laptop"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
+                          <i class="ni ni-zoom-split-in"></i> <span>{% blocktranslate %}Pre-Filtering{% endblocktranslate %}</span>
                         </div>
                       {% endif %}
                       </a>
@@ -152,7 +152,7 @@
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/fe/ex/prefiltering/detail/{{execution_id}}/{{execution.prefilters.id}}">Configurations</a>
-                          <a class="dropdown-item" href="#">Results</a>
+                          <a class="dropdown-item" href="/fe/ex/prefiltering/result/{{execution.id}}">Results</a>
                         </div>
                       {% endif %}
                     </div>
@@ -195,14 +195,14 @@
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links -->
                           <a class="dropdown-item" href="/fe/ex/posfiltering/detail/{{execution_id}}/{{execution.postfilters.id}}">Configurations</a>
-                          <a class="dropdown-item" href="#">Results</a>
+                          <a class="dropdown-item" href="/fe/ex/postfiltering/result/{{execution.id}}">Results</a>
                         </div>
                       {% endif %}
                     </div>
 
 
                     <div class="col-lg-3 col-md-6" >
-                      {% if not execution.feature_extraction_techniques %}
+                      {% if not execution.feature_extraction_technique %}
                       <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div>
                           <i class="ni ni-money-coins" style="color: grey "></i> <span>{% blocktranslate %}Feature extraction{% endblocktranslate %}</span>
@@ -214,7 +214,7 @@
                         </div>
                       {% endif %}
                       </a>
-                      {% if execution.feature_extraction_techniques %}
+                      {% if execution.feature_extraction_technique %}
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                           <!-- Dropdown menu links 'ex/feature-extraction-technique/detail/<int:execution_id>/<int:feature_extraction_technique_id>/-->
                           <a class="dropdown-item" href="/fe/ex/feature-extraction-technique/detail/{{execution_id}}/{{feature_extraction_technique.id}}/">Configurations</a>

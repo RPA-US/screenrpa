@@ -440,7 +440,7 @@ class ExtractTrainingDatasetResultDetailView(LoginRequiredMixin, DetailView):
             return Extract_training_dataset_ResultDownload(path_to_csv_file)
 
         # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
+        csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, nrows=10, ncols=100, lib='polars').to_dicts()
 
         # Include CSV data in the context for the template
         context = {
@@ -756,7 +756,28 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
             #scenario = "1"
             scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
         
-        activities_before_dps=extract_prev_act_labels(os.path.join(execution.exp_folder_complete_path, scenario+"_results","bpmn.dot"))
+        try:
+            json_traceability = json.load(open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "traceability.json")))
+            process_tracebility = Process.from_json(json_traceability)
+        except:
+            raise Exception("Tracebility.json not found")
+        
+        decision_points = process_tracebility.get_non_empty_dp_flattened()
+        activities_before_dps = list(map(lambda dp: dp.prevAct, decision_points))
+        dp_rules = list(map(lambda dp: dp.to_json()['rules'], decision_points))
+
+        count_dict = {}
+        tmp = []
+        # Converting ['3', '3', '3', '10'] to ['3', '3-1', '3-2', '10']
+        for act in activities_before_dps:
+            if act in count_dict:
+                count_dict[act] += 1
+                tmp.append(f"{act}-{count_dict[act] - 1}")
+            else:
+                count_dict[act] = 1
+                tmp.append(act)
+        activities_before_dps = tmp
+        del tmp
 
         if decision_point == None:
             #scenario = "1"
@@ -767,25 +788,10 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
         path_to_tree_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "decision_tree_"+decision_point+".pkl")
         tree_image_base64 = tree_to_png_base64(path_to_tree_file) 
         #tree_rules= extract_tree_rules(path_to_tree_file)
-        rules_file = os.path.join(execution.exp_folder_complete_path, scenario+"_results", "traceability.json")
-
-        # Read the JSON file
-        with open(rules_file, 'r') as file:
-            decision_data = json.load(file)
 
         # Find the decision point with the matching prevAct
-        decision_point_data = None
-        for dp in decision_data["decision_points"]:
-            if dp["prevAct"] == decision_point:
-                decision_point_data = dp
-                break
+        tree_rules = dp_rules[activities_before_dps.index(decision_point)]
 
-        tree_rules = decision_point_data["rules"]
-        if "overlapping_rules" in decision_point_data:
-            tree_overlapping_rules = decision_point_data["overlapping_rules"]
-        else:
-            tree_overlapping_rules = {}
-        
         # Include CSV data in the context for the template
         context = {
             "execution_id": execution.id,
@@ -793,7 +799,7 @@ class DecisionTreeResultDetailView(LoginRequiredMixin, DetailView):
             "scenarios": execution.scenarios_to_study,
             "scenario": scenario,
             "tree_rules": tree_rules,
-            "tree_overlapping_rules": tree_overlapping_rules,
+            "tree_overlapping_rules": {},
             "decision_point": decision_point,
             "decision_points": activities_before_dps,
             }

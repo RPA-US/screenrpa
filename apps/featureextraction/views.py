@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import random
+import polars as pl
 from art import tprint
 from django.db.models.base import Model as Model
 from django.db.models.query import QuerySet
@@ -10,7 +11,7 @@ from core.settings import sep, PLATFORM_NAME, CLASSIFICATION_PHASE_NAME, SINGLE_
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, View
 from apps.utils import MultiFormsView
 from django.core.exceptions import ValidationError, PermissionDenied
 from apps.analyzer.models import CaseStudy
@@ -18,8 +19,7 @@ from apps.featureextraction.SOM.classification import legacy_ui_elements_classif
 from .models import UIElementsClassification, UIElementsDetection, Prefilters, Postfilters, FeatureExtractionTechnique, Postprocessing
 from .forms import UIElementsClassificationForm, UIElementsDetectionForm, PrefiltersForm, PostfiltersForm, FeatureExtractionTechniqueForm, PostprocessingForm
 from .relevantinfoselection.postfilters import draw_postfilter_relevant_ui_compos_borders
-from .utils import detect_single_fe_function, detect_agg_fe_function, detect_postprocessing_function
-from .utils import draw_ui_compos_borders
+from .utils import detect_single_fe_function, detect_agg_fe_function, detect_postprocessing_function, read_ui_log_as_dataframe, draw_ui_compos_borders
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from rest_framework import status
@@ -298,7 +298,8 @@ class FeatureExtractionResultDetailView(LoginRequiredMixin, DetailView):
             return ResultDownload(path_to_csv_file)  
      
         # CSV Reading and Conversion to JSON
-        csv_data_json = read_csv_to_json(path_to_csv_file)
+        # Size is reduced to 100rowsx100cols for throughput
+        csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, nrows=10, ncols=100, lib='polars').to_dicts()
 
         # Include CSV data in the context for the template
         context = {
@@ -1266,8 +1267,6 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
         soms["soms"] = []
 
         for compo_json in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json")):
-            with open(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", compo_json), "r") as f:
-                compos = json.load(f)
             # path is something like: asdsa/.../.../image.PNG.json
             img_name = compo_json.split("/")[-1].split(".json")[0]
             img_path = os.path.join(execution.case_study.exp_foldername, scenario, img_name)
@@ -1275,16 +1274,106 @@ class UIElementsDetectionResultDetailView(LoginRequiredMixin, DetailView):
             soms["soms"].append(
                 {
                     "img": img_name,
-                    "img_path": img_path,
-                    "som": compos
+                    "img_path": img_path
                 }
             )
 
         context = {
             "execution_id": execution.id,
             "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
             "soms": soms
         }
 
         #return HttpResponse(json.dumps(context), content_type="application/json")
         return render(request, "ui_elements_detection/results.html", context)
+
+class UIElementsDetectionResultsGetImgSom(LoginRequiredMixin, View):
+    login_url = "/login/"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
+        scenario: str = request.GET.get('scenario')
+        img_name: str = request.GET.get('img_name')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+        img_path = os.path.join(execution.exp_folder_complete_path, scenario + "_results", "components_json", img_name + ".json")
+        with open(img_path, 'r') as f:
+            data = json.load(f)
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+class PrefilteringResultDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
+        scenario: str = request.GET.get('scenario')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        img_list = []
+        for img in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "prefiltered_img")):
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_path = os.path.join(execution.case_study.exp_foldername, "executions", execution.exp_foldername, scenario + "_results", "prefiltered_img", img)
+
+            img_list.append(
+                {
+                    "img": img,
+                    "img_path": img_path
+                }
+            )
+
+        context = {
+            "execution_id": execution.id,
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
+            "img_list": img_list
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "prefiltering/results.html", context)
+
+class PostfilteringResultDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
+        scenario: str = request.GET.get('scenario')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        img_list = []
+        for img in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "postfilter_attention_maps")):
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_path = os.path.join(execution.case_study.exp_foldername, "executions", execution.exp_foldername, scenario + "_results", "postfilter_attention_maps", img)
+
+            img_list.append(
+                {
+                    "img": img,
+                    "img_path": img_path
+                }
+            )
+
+        context = {
+            "execution_id": execution.id,
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
+            "img_list": img_list
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "postfiltering/results.html", context)
