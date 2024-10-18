@@ -33,6 +33,7 @@ urlpatterns = [
     path('postfiltering/new/<int:case_study_id>/', views.PostfiltersCreateView.as_view(), name='postfilters_create'),
     path('postfiltering/detail/<int:case_study_id>/<int:postfilter_id>/', views.PostfiltersDetailView.as_view(), name='prefilters_detail'),
     path('ex/postfiltering/detail/<int:execution_id>/<int:postfilter_id>/', views.PostfiltersDetailView.as_view(), name='prefilters_detail-execution'),
+    path('ex/postfiltering/result/<int:execution_id>/', views.PostfilteringResultDetailView.as_view(), name='prefiltering_result'),
 
     path('postfiltering/active/', views.set_as_postfilters_active, name='postfilters_set_as_active'),
     path('postfiltering/inactive/', views.set_as_postfilters_inactive, name='postfilters_set_as_inactive'),

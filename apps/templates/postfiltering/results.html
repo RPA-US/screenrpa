@@ -1,0 +1,132 @@
+{% extends 'layouts/base.html' %}
+{% load extras %}
+{% load i18n %}
+{% load static %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" href="{% static 'assets/css/loading.css'%}">
+{% endblock stylesheets %}
+
+{% block title %} {% blocktranslate %}Case studies{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12">
+            <a href="/case-study/execution/detail/{{ execution_id }}/" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
+            </i>{% blocktranslate %}Go Back to Execution Details {% endblocktranslate %}</a>
+            <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Postfiltering Results{% endblocktranslate %}</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4" style="margin-top: 10px;">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/list">{% blocktranslate %}Execution{% endblocktranslate %} {{ execution_id }}</a></li>
+                <li class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}/">{% blocktranslate %}Execution Details{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %} Postfilters {% endblocktranslate %}</a></li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0 d-flex justify-content-between">
+            <h3 class="mb-0">{{ execution.case_study.title }} {% blocktranslate %}Postfilters{% endblocktranslate %}</h3>
+          </div>
+          <div class="card-body d-flex flex-column" style="gap:12px">
+            <section for="content" class="col-12 p-0 d-flex justify-content-between">
+              <!-- Dropdown to select imgages with back and forth buttons -->
+              <div for="controls" class="col-4 p-0 d-flex justify-content-between align-items-center">
+                <h3 class="pr-3">Image</h3>
+                <button id="prev" class="btn btn-outline-light" onclick="prevImage()"><</button>
+                <select id="imgList" class="form-control outline-light" style="border-color:#adb5bd;" onchange="changeImage(this.value)">
+                  {% for img in img_list %}
+                    <option value="{{ img.img_path }}">{{ img.img }}</option>
+                  {% endfor %}
+                </select>
+                <button id="next" class="btn btn-outline-light ml-2" onclick="nextImage()">></button>
+              </div>
+              <section for="content" class="col-6 p-0 d-flex align-items-center">
+                <h3 class="pr-3">{% blocktranslate %}Scenario{% endblocktranslate %}</h3>
+                <select id="scenarioList" class="col-6 form-control outline-light" style="border-color:#adb5bd;" onchange="window.location.href = `/fe/ex/ui-element-detection/result/{{ execution_id }}/?scenario=${this.value}`">
+                  {% for scenario in scenarios %}
+                    <option value="{{ scenario }}">{{ scenario }}</option>
+                  {% endfor %}
+                </select>
+              </section>
+            </section>
+            <section for="som-content" class="col-12 p-0 d-flex justify-content-between">
+              <div style="position: relative; overflow:hidden">
+                <img id="bordered-img" class="img-fluid" src="/case-study/private-data/unzipped/{{ img_list.0.img_path }}"/>
+              </div>
+              </pre>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% include "includes/footer.html" %}
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+    <script>
+    // Declare list of images from soms json replacing None with empty string
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Disable prev or next btn if needed
+        imgList = document.getElementById('imgList');
+        imgList.value = imgList.options[0].value;
+        document.getElementById('prev').disabled = true
+
+        borderedImg = document.getElementById('bordered-img');
+    })
+
+    function prevImage() {
+      imgList = document.getElementById('imgList');
+      imgList.selectedIndex = imgList.selectedIndex - 1;
+      borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+      updateControls(imgList.selectedIndex);
+    }
+
+    function nextImage() {
+      imgList = document.getElementById('imgList');
+      imgList.selectedIndex = imgList.selectedIndex + 1;
+      borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+      updateControls(imgList.selectedIndex);
+    }
+
+    function changeImage(value) {
+      imgList = document.getElementById('imgList');
+      borderedImg.src = '/case-study/private-data/unzipped/' + imgList.options[imgList.selectedIndex].value;
+      updateControls(imgList.selectedIndex);
+    }
+
+    function updateControls(selectedIndex) {
+        imgList = document.getElementById('imgList');
+        prev = document.getElementById('prev');
+        next = document.getElementById('next');
+        if (selectedIndex == 0) {
+            prev.disabled = true;
+        } else {
+            prev.disabled = false;
+        }
+        if (selectedIndex == imgList.options.length - 1) {
+            next.disabled = true;
+        } else {
+            next.disabled = false;
+        }
+    }
+  </script>
+{% endblock javascripts %}

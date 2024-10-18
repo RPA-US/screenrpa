@@ -1259,3 +1259,38 @@ class PrefilteringResultDetailView(LoginRequiredMixin, DetailView):
 
         #return HttpResponse(json.dumps(context), content_type="application/json")
         return render(request, "prefiltering/results.html", context)
+
+class PostfilteringResultDetailView(LoginRequiredMixin, DetailView):
+    login_url = "/login/"
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        execution: Execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
+        if user.id != execution.user.id:
+            raise PermissionDenied("Execution doesn't belong to the authenticated user.")
+        scenario: str = request.GET.get('scenario')
+
+        if scenario == None:
+            scenario = execution.scenarios_to_study[0] # Select the first scenario by default
+
+        img_list = []
+        for img in os.listdir(os.path.join(execution.exp_folder_complete_path, scenario + "_results", "postfilter_attention_maps")):
+            # path is something like: asdsa/.../.../image.PNG.json
+            img_path = os.path.join(execution.case_study.exp_foldername, "executions", execution.exp_foldername, scenario + "_results", "postfilter_attention_maps", img)
+
+            img_list.append(
+                {
+                    "img": img,
+                    "img_path": img_path
+                }
+            )
+
+        context = {
+            "execution_id": execution.id,
+            "scenarios": execution.scenarios_to_study,
+            "scenario": scenario,
+            "img_list": img_list
+        }
+
+        #return HttpResponse(json.dumps(context), content_type="application/json")
+        return render(request, "postfiltering/results.html", context)
