@@ -237,9 +237,8 @@ def get_csv_log_start_datetime(csv_file_path,pattern):
   return first_timestamp
 
 def convert_timestamps_and_clean_screenshot_name_in_csv(csv_file_path):
-    date_format = "%H:%M:%S"
     df = read_ui_log_as_dataframe(csv_file_path)
-    df['time:timestamp'] = pd.to_datetime(df['time:timestamp'], format=date_format).dt.strftime('%H:%M:%S')
+    df['time:timestamp'] = pd.to_datetime(df['time:timestamp']).dt.strftime('%H:%M:%S')
     df['screenshot'] = df['screenshot'].apply(lambda x: re.split(r'[\\/]+', x)[-1])
     # Save and apply this changes
     df.to_csv(csv_file_path, index=False)
