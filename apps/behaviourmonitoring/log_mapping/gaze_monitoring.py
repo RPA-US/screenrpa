@@ -481,7 +481,7 @@ def monitoring(log_path, root_path, execution):
       pixels_threshold_i_dt = get_distance_threshold_by_resolution(monitoring_screen_inches,INCH_PER_CENTIMETRES, monitoring_observer_camera_distance,monitoring_screen_width,monitoring_screen_height) #Capturing the distance threshold in pixels regarding to the screen resolution
       minimum_fixation_gazepoints = get_minimum_fixation_gazepoints(DEVICE_FREQUENCY_WEBGAZER, FIXATION_MINIMUM_DURATION) #Capturing the minimum number of gazepoints to consider a fixation
 
-      if eyetracking_log_filename and os.path.exists(os.path.join(root_path ,eyetracking_log_filename)):
+      if eyetracking_log_filename and os.path.exists(os.path.join(root_path , eyetracking_log_filename)):
           postprocessed_webgazer_log = read_ui_log_as_dataframe(os.path.join(root_path , eyetracking_log_filename))
       else:
           logging.exception("behaviourmonitoring/monitoring/monitoring line:180.  Eyetracking  webgazer log  cannot be read: " + root_path + eyetracking_log_filename)
