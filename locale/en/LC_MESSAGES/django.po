@@ -3,12 +3,14 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: apps/templates/includes/footer-fullscreen.html:9
+#: apps/templates/includes/footer.html:8
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-30 12:36+0000\n"
+"POT-Creation-Date: 2024-10-18 10:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,7 +71,7 @@ msgid "Get Support"
 msgstr ""
 
 #: apps/templates/accounts/register.html:23
-msgid "Let's join to ScreenRPA!"
+msgid "Let's join ScreenRPA!"
 msgstr ""
 
 #: apps/templates/accounts/register.html:32
@@ -101,6 +103,8 @@ msgstr ""
 #: apps/templates/postfiltering/create.html:5
 #: apps/templates/postfiltering/detail.html:5
 #: apps/templates/postfiltering/list.html:4
+#: apps/templates/postprocessing/create.html:5
+#: apps/templates/postprocessing/list.html:4
 #: apps/templates/prefiltering/create.html:5
 #: apps/templates/prefiltering/list.html:4
 #: apps/templates/processdiscovery/create.html:6
@@ -138,6 +142,7 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/create.html:27
 #: apps/templates/monitoring/create.html:27
 #: apps/templates/postfiltering/create.html:27
+#: apps/templates/postprocessing/create.html:27
 #: apps/templates/prefiltering/create.html:27
 #: apps/templates/processdiscovery/create.html:28
 #: apps/templates/processdiscovery/detail.html:49
@@ -198,14 +203,17 @@ msgid "UI Elements Detection"
 msgstr ""
 
 #: apps/templates/case_studies/detail.html:101
-#: apps/templates/case_studies/detail.html:117
-msgid "UI Elements Detection needed"
+msgid "UI Elements Detection and Log Processing needed"
 msgstr ""
 
 #: apps/templates/case_studies/detail.html:112
 #: apps/templates/executions/detail.html:208
 #: apps/templates/executions/detail.html:213
 msgid "Feature extraction"
+msgstr ""
+
+#: apps/templates/case_studies/detail.html:117
+msgid "UI Elements Detection needed"
 msgstr ""
 
 #: apps/templates/case_studies/detail.html:128
@@ -215,22 +223,27 @@ msgid "Process Discovery"
 msgstr ""
 
 #: apps/templates/case_studies/detail.html:144
+msgid "Postprocessing"
+msgstr ""
+
+#: apps/templates/case_studies/detail.html:149
+#: apps/templates/case_studies/detail.html:165
+msgid "FE and PD needed"
+msgstr ""
+
+#: apps/templates/case_studies/detail.html:160
 #: apps/templates/executions/detail.html:253
 #: apps/templates/executions/detail.html:258
 msgid "Extract training dataset"
 msgstr ""
 
-#: apps/templates/case_studies/detail.html:149
-msgid "Process Discovery needed"
-msgstr ""
-
-#: apps/templates/case_studies/detail.html:160
+#: apps/templates/case_studies/detail.html:176
 #: apps/templates/executions/detail.html:277
 #: apps/templates/executions/detail.html:282
 msgid "Decision tree training"
 msgstr ""
 
-#: apps/templates/case_studies/detail.html:165
+#: apps/templates/case_studies/detail.html:181
 msgid "Extract Training Dataset needed"
 msgstr ""
 
@@ -271,25 +284,27 @@ msgstr ""
 #: apps/templates/case_studies/exp_files.html:88
 #: apps/templates/case_studies/list.html:121
 #: apps/templates/case_studies/list.html:127
-#: apps/templates/decision_tree_training/list.html:186
-#: apps/templates/decision_tree_training/list.html:192
+#: apps/templates/decision_tree_training/list.html:178
+#: apps/templates/decision_tree_training/list.html:184
 #: apps/templates/executions/list.html:161
 #: apps/templates/executions/list.html:167
-#: apps/templates/extract_training_dataset/list.html:162
-#: apps/templates/extract_training_dataset/list.html:168
-#: apps/templates/feature_extraction_technique/list.html:160
-#: apps/templates/feature_extraction_technique/list.html:166
-#: apps/templates/monitoring/list.html:156
-#: apps/templates/monitoring/list.html:162
-#: apps/templates/postfiltering/list.html:184
-#: apps/templates/postfiltering/list.html:190
-#: apps/templates/prefiltering/list.html:177
-#: apps/templates/prefiltering/list.html:183
-#: apps/templates/processdiscovery/list.html:180
-#: apps/templates/processdiscovery/list.html:186
+#: apps/templates/extract_training_dataset/list.html:158
+#: apps/templates/extract_training_dataset/list.html:164
+#: apps/templates/feature_extraction_technique/list.html:156
+#: apps/templates/feature_extraction_technique/list.html:162
+#: apps/templates/monitoring/list.html:149
+#: apps/templates/monitoring/list.html:155
+#: apps/templates/postfiltering/list.html:180
+#: apps/templates/postfiltering/list.html:186
+#: apps/templates/postprocessing/list.html:156
+#: apps/templates/postprocessing/list.html:162
+#: apps/templates/prefiltering/list.html:173
+#: apps/templates/prefiltering/list.html:179
+#: apps/templates/processdiscovery/list.html:173
+#: apps/templates/processdiscovery/list.html:179
 #: apps/templates/reporting/list.html:97 apps/templates/reporting/list.html:103
-#: apps/templates/ui_elements_detection/list.html:166
-#: apps/templates/ui_elements_detection/list.html:172
+#: apps/templates/ui_elements_detection/list.html:162
+#: apps/templates/ui_elements_detection/list.html:168
 msgid "Previous"
 msgstr ""
 
@@ -300,26 +315,28 @@ msgstr ""
 #: apps/templates/case_studies/exp_files.html:101
 #: apps/templates/case_studies/list.html:143
 #: apps/templates/case_studies/list.html:149
-#: apps/templates/decision_tree_training/list.html:208
-#: apps/templates/decision_tree_training/list.html:214
+#: apps/templates/decision_tree_training/list.html:200
+#: apps/templates/decision_tree_training/list.html:206
 #: apps/templates/executions/list.html:183
 #: apps/templates/executions/list.html:189
-#: apps/templates/extract_training_dataset/list.html:184
-#: apps/templates/extract_training_dataset/list.html:190
-#: apps/templates/feature_extraction_technique/list.html:182
-#: apps/templates/feature_extraction_technique/list.html:188
-#: apps/templates/monitoring/list.html:178
-#: apps/templates/monitoring/list.html:184
-#: apps/templates/postfiltering/list.html:206
-#: apps/templates/postfiltering/list.html:212
-#: apps/templates/prefiltering/list.html:199
-#: apps/templates/prefiltering/list.html:205
-#: apps/templates/processdiscovery/list.html:202
-#: apps/templates/processdiscovery/list.html:208
+#: apps/templates/extract_training_dataset/list.html:180
+#: apps/templates/extract_training_dataset/list.html:186
+#: apps/templates/feature_extraction_technique/list.html:178
+#: apps/templates/feature_extraction_technique/list.html:184
+#: apps/templates/monitoring/list.html:171
+#: apps/templates/monitoring/list.html:177
+#: apps/templates/postfiltering/list.html:202
+#: apps/templates/postfiltering/list.html:208
+#: apps/templates/postprocessing/list.html:178
+#: apps/templates/postprocessing/list.html:184
+#: apps/templates/prefiltering/list.html:195
+#: apps/templates/prefiltering/list.html:201
+#: apps/templates/processdiscovery/list.html:195
+#: apps/templates/processdiscovery/list.html:201
 #: apps/templates/reporting/list.html:119
 #: apps/templates/reporting/list.html:125
-#: apps/templates/ui_elements_detection/list.html:188
-#: apps/templates/ui_elements_detection/list.html:194
+#: apps/templates/ui_elements_detection/list.html:184
+#: apps/templates/ui_elements_detection/list.html:190
 msgid "Next"
 msgstr ""
 
@@ -329,8 +346,8 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/form.html:4
 #: apps/templates/monitoring/form.html:4
 #: apps/templates/postfiltering/form.html:5
+#: apps/templates/postprocessing/form.html:4
 #: apps/templates/prefiltering/form.html:5
-#: apps/templates/ui_elements_detection/details.html:68
 #: apps/templates/ui_elements_detection/form.html:4
 msgid "General information"
 msgstr ""
@@ -340,7 +357,6 @@ msgstr ""
 #: apps/templates/executions/detail.html:84
 #: apps/templates/extract_training_dataset/form.html:36
 #: apps/templates/monitoring/form.html:39
-#: apps/templates/ui_elements_detection/details.html:106
 #: apps/templates/ui_elements_detection/form.html:46
 msgid "Configuration"
 msgstr ""
@@ -362,16 +378,29 @@ msgid ""
 msgstr ""
 
 #: apps/templates/case_studies/form.html:60
+msgid ""
+"Configuration Template with Steprecorders mht UI Log and Tobii Spark Eye "
+"tracking Gaze Log included in Case Study"
+msgstr ""
+
+#: apps/templates/case_studies/form.html:61
+msgid ""
+"Configuration Template with ScreenActionLogger UI Log and Tobii Spark Eye "
+"tracking Gaze Log included in Case Study"
+msgstr ""
+
+#: apps/templates/case_studies/form.html:62
 msgid "Custom Configuration"
 msgstr ""
 
-#: apps/templates/case_studies/form.html:125
-#: apps/templates/decision_tree_training/form.html:71
+#: apps/templates/case_studies/form.html:127
+#: apps/templates/decision_tree_training/form.html:76
 #: apps/templates/extract_training_dataset/form.html:61
-#: apps/templates/monitoring/form.html:95
+#: apps/templates/monitoring/form.html:90
 #: apps/templates/postfiltering/form.html:75
+#: apps/templates/postprocessing/form.html:42
 #: apps/templates/prefiltering/form.html:44
-#: apps/templates/processdiscovery/form.html:171
+#: apps/templates/processdiscovery/form.html:152
 msgid "Save"
 msgstr ""
 
@@ -386,6 +415,7 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/list.html:47
 #: apps/templates/monitoring/list.html:47
 #: apps/templates/postfiltering/list.html:47
+#: apps/templates/postprocessing/list.html:47
 #: apps/templates/prefiltering/list.html:47
 #: apps/templates/processdiscovery/list.html:47
 #: apps/templates/reporting/list.html:48
@@ -400,9 +430,9 @@ msgstr ""
 #: apps/templates/extract_training_dataset/list.html:49
 #: apps/templates/feature_extraction_technique/list.html:49
 #: apps/templates/postfiltering/list.html:48
+#: apps/templates/postprocessing/list.html:49
 #: apps/templates/prefiltering/list.html:48
 #: apps/templates/processdiscovery/list.html:49
-#: apps/templates/ui_elements_detection/details.html:72
 #: apps/templates/ui_elements_detection/list.html:48
 msgid "Title"
 msgstr ""
@@ -414,6 +444,7 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/list.html:48
 #: apps/templates/monitoring/list.html:48
 #: apps/templates/postfiltering/list.html:49
+#: apps/templates/postprocessing/list.html:48
 #: apps/templates/prefiltering/list.html:49
 #: apps/templates/processdiscovery/list.html:48
 #: apps/templates/reporting/list.html:49
@@ -433,24 +464,26 @@ msgid "Executions"
 msgstr ""
 
 #: apps/templates/case_studies/list.html:88
-#: apps/templates/decision_tree_training/list.html:146
-#: apps/templates/decision_tree_training/list.html:153
+#: apps/templates/decision_tree_training/list.html:142
+#: apps/templates/decision_tree_training/list.html:147
 #: apps/templates/executions/list.html:126
 #: apps/templates/executions/list.html:135
 #: apps/templates/extract_training_dataset/list.html:121
-#: apps/templates/extract_training_dataset/list.html:128
+#: apps/templates/extract_training_dataset/list.html:126
 #: apps/templates/feature_extraction_technique/list.html:120
-#: apps/templates/feature_extraction_technique/list.html:127
+#: apps/templates/feature_extraction_technique/list.html:125
 #: apps/templates/monitoring/list.html:116
-#: apps/templates/monitoring/list.html:123
+#: apps/templates/monitoring/list.html:120
 #: apps/templates/postfiltering/list.html:144
-#: apps/templates/postfiltering/list.html:151
+#: apps/templates/postfiltering/list.html:149
+#: apps/templates/postprocessing/list.html:120
+#: apps/templates/postprocessing/list.html:125
 #: apps/templates/prefiltering/list.html:137
-#: apps/templates/prefiltering/list.html:144
-#: apps/templates/processdiscovery/list.html:140
-#: apps/templates/processdiscovery/list.html:147
+#: apps/templates/prefiltering/list.html:142
+#: apps/templates/processdiscovery/list.html:137
+#: apps/templates/processdiscovery/list.html:142
 #: apps/templates/ui_elements_detection/list.html:126
-#: apps/templates/ui_elements_detection/list.html:133
+#: apps/templates/ui_elements_detection/list.html:131
 msgid "Details"
 msgstr ""
 
@@ -460,17 +493,18 @@ msgstr ""
 
 #: apps/templates/case_studies/list.html:91
 #: apps/templates/case_studies/list.html:94
-#: apps/templates/decision_tree_training/list.html:167
+#: apps/templates/decision_tree_training/list.html:159
 #: apps/templates/executions/detail.html:324
 #: apps/templates/executions/list.html:132
 #: apps/templates/executions/list.html:141
-#: apps/templates/extract_training_dataset/list.html:142
-#: apps/templates/feature_extraction_technique/list.html:141
-#: apps/templates/monitoring/list.html:137
-#: apps/templates/postfiltering/list.html:165
-#: apps/templates/prefiltering/list.html:158
-#: apps/templates/processdiscovery/list.html:161
-#: apps/templates/ui_elements_detection/list.html:147
+#: apps/templates/extract_training_dataset/list.html:138
+#: apps/templates/feature_extraction_technique/list.html:137
+#: apps/templates/monitoring/list.html:130
+#: apps/templates/postfiltering/list.html:161
+#: apps/templates/postprocessing/list.html:137
+#: apps/templates/prefiltering/list.html:154
+#: apps/templates/processdiscovery/list.html:154
+#: apps/templates/ui_elements_detection/list.html:143
 #: venv/lib/python3.10/site-packages/django/forms/formsets.py:496
 msgid "Delete"
 msgstr ""
@@ -492,16 +526,17 @@ msgid "Set up at least one setup phase as active for execution."
 msgstr ""
 
 #: apps/templates/case_studies/list.html:135
-#: apps/templates/decision_tree_training/list.html:200
+#: apps/templates/decision_tree_training/list.html:192
 #: apps/templates/executions/list.html:175
-#: apps/templates/extract_training_dataset/list.html:176
-#: apps/templates/feature_extraction_technique/list.html:174
-#: apps/templates/monitoring/list.html:170
-#: apps/templates/postfiltering/list.html:198
-#: apps/templates/prefiltering/list.html:191
-#: apps/templates/processdiscovery/list.html:194
+#: apps/templates/extract_training_dataset/list.html:172
+#: apps/templates/feature_extraction_technique/list.html:170
+#: apps/templates/monitoring/list.html:163
+#: apps/templates/postfiltering/list.html:194
+#: apps/templates/postprocessing/list.html:170
+#: apps/templates/prefiltering/list.html:187
+#: apps/templates/processdiscovery/list.html:187
 #: apps/templates/reporting/list.html:111
-#: apps/templates/ui_elements_detection/list.html:180
+#: apps/templates/ui_elements_detection/list.html:176
 msgid "current"
 msgstr ""
 
@@ -528,6 +563,9 @@ msgstr ""
 #: apps/templates/postfiltering/create.html:20
 #: apps/templates/postfiltering/detail.html:42
 #: apps/templates/postfiltering/list.html:19
+#: apps/templates/postprocessing/create.html:20
+#: apps/templates/postprocessing/detail.html:44
+#: apps/templates/postprocessing/list.html:19
 #: apps/templates/prefiltering/create.html:20
 #: apps/templates/prefiltering/detail.html:42
 #: apps/templates/prefiltering/list.html:19
@@ -561,6 +599,7 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/detail.html:16
 #: apps/templates/monitoring/detail.html:17
 #: apps/templates/postfiltering/detail.html:15
+#: apps/templates/postprocessing/detail.html:16
 #: apps/templates/prefiltering/detail.html:16
 #: apps/templates/processdiscovery/detail.html:15
 #: apps/templates/ui_elements_detection/details.html:16
@@ -580,6 +619,7 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/detail.html:21
 #: apps/templates/monitoring/detail.html:22
 #: apps/templates/postfiltering/detail.html:20
+#: apps/templates/postprocessing/detail.html:21
 #: apps/templates/prefiltering/detail.html:21
 #: apps/templates/processdiscovery/detail.html:20
 #: apps/templates/ui_elements_detection/details.html:21
@@ -600,44 +640,45 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/form.html:8
 #: apps/templates/monitoring/form.html:8
 #: apps/templates/postfiltering/form.html:9
+#: apps/templates/postprocessing/form.html:8
 #: apps/templates/prefiltering/form.html:9
 #: apps/templates/processdiscovery/form.html:12
 #: apps/templates/ui_elements_detection/form.html:8
 msgid "Title "
 msgstr ""
 
-#: apps/templates/decision_tree_training/form.html:31
+#: apps/templates/decision_tree_training/form.html:37
 #: apps/templates/extract_training_dataset/form.html:18
 #: apps/templates/feature_extraction_technique/form.html:44
 #: apps/templates/monitoring/form.html:22
 #: apps/templates/postfiltering/form.html:44
+#: apps/templates/postprocessing/form.html:22
 #: apps/templates/prefiltering/form.html:24
-#: apps/templates/processdiscovery/form.html:134
-#: apps/templates/ui_elements_detection/details.html:90
+#: apps/templates/processdiscovery/form.html:117
 #: apps/templates/ui_elements_detection/form.html:29
 msgid "Preload Execution Results"
 msgstr ""
 
-#: apps/templates/decision_tree_training/form.html:35
+#: apps/templates/decision_tree_training/form.html:41
 #: apps/templates/extract_training_dataset/form.html:22
 #: apps/templates/feature_extraction_technique/form.html:48
 #: apps/templates/monitoring/form.html:26
 #: apps/templates/postfiltering/form.html:48
+#: apps/templates/postprocessing/form.html:26
 #: apps/templates/prefiltering/form.html:28
-#: apps/templates/processdiscovery/form.html:138
-#: apps/templates/ui_elements_detection/details.html:93
+#: apps/templates/processdiscovery/form.html:121
 #: apps/templates/ui_elements_detection/form.html:33
 msgid "Preload Execution Results .zip"
 msgstr ""
 
-#: apps/templates/decision_tree_training/form.html:41
+#: apps/templates/decision_tree_training/form.html:47
 #: apps/templates/extract_training_dataset/form.html:28
 #: apps/templates/feature_extraction_technique/form.html:54
 #: apps/templates/monitoring/form.html:32
 #: apps/templates/postfiltering/form.html:54
+#: apps/templates/postprocessing/form.html:32
 #: apps/templates/prefiltering/form.html:34
-#: apps/templates/processdiscovery/form.html:144
-#: apps/templates/ui_elements_detection/details.html:99
+#: apps/templates/processdiscovery/form.html:127
 #: apps/templates/ui_elements_detection/form.html:39
 msgid "Preloaded File already uploaded"
 msgstr ""
@@ -647,6 +688,7 @@ msgstr ""
 #: apps/templates/feature_extraction_technique/list.html:14
 #: apps/templates/monitoring/list.html:14
 #: apps/templates/postfiltering/list.html:14
+#: apps/templates/postprocessing/list.html:14
 #: apps/templates/prefiltering/list.html:14
 #: apps/templates/processdiscovery/list.html:14
 #: apps/templates/reporting/list.html:14
@@ -673,60 +715,60 @@ msgid "library"
 msgstr ""
 
 #: apps/templates/decision_tree_training/list.html:51
-msgid "Algorithms"
-msgstr ""
-
-#: apps/templates/decision_tree_training/list.html:52
 msgid "One hot columns"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:53
+#: apps/templates/decision_tree_training/list.html:52
 #: apps/templates/extract_training_dataset/list.html:51
 msgid "Columns to drop before decision point"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:54
+#: apps/templates/decision_tree_training/list.html:53
 #: apps/templates/extract_training_dataset/list.html:52
 #: apps/templates/feature_extraction_technique/list.html:52
 #: apps/templates/monitoring/list.html:50
 #: apps/templates/postfiltering/list.html:51
+#: apps/templates/postprocessing/list.html:52
 #: apps/templates/prefiltering/list.html:51
 #: apps/templates/processdiscovery/list.html:52
 #: apps/templates/ui_elements_detection/list.html:50
 msgid "Preloaded results"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:55
+#: apps/templates/decision_tree_training/list.html:54
 #: apps/templates/extract_training_dataset/list.html:53
 #: apps/templates/feature_extraction_technique/list.html:53
 #: apps/templates/monitoring/list.html:52
 #: apps/templates/postfiltering/list.html:53
+#: apps/templates/postprocessing/list.html:53
 #: apps/templates/prefiltering/list.html:52
 #: apps/templates/processdiscovery/list.html:53
 #: apps/templates/ui_elements_detection/list.html:53
 msgid "Executed"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:56
+#: apps/templates/decision_tree_training/list.html:55
 #: apps/templates/executions/list.html:48
 #: apps/templates/extract_training_dataset/list.html:54
 #: apps/templates/feature_extraction_technique/list.html:54
 #: apps/templates/monitoring/list.html:53
 #: apps/templates/postfiltering/list.html:54
+#: apps/templates/postprocessing/list.html:54
 #: apps/templates/prefiltering/list.html:53
 #: apps/templates/processdiscovery/list.html:54
 #: apps/templates/ui_elements_detection/list.html:54
 msgid "Status"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:92
+#: apps/templates/decision_tree_training/list.html:88
 #: apps/templates/extract_training_dataset/list.html:84
 #: apps/templates/feature_extraction_technique/list.html:84
 #: apps/templates/monitoring/list.html:77
 #: apps/templates/postfiltering/list.html:81
 #: apps/templates/postfiltering/list.html:89
+#: apps/templates/postprocessing/list.html:84
 #: apps/templates/prefiltering/list.html:81
-#: apps/templates/processdiscovery/list.html:84
+#: apps/templates/processdiscovery/list.html:81
 #: apps/templates/ui_elements_detection/list.html:78
 #: apps/templates/ui_elements_detection/list.html:89
 #: apps/templates/ui_elements_detection/list.html:91
@@ -734,137 +776,130 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:95
+#: apps/templates/decision_tree_training/list.html:91
 #: apps/templates/extract_training_dataset/list.html:87
 #: apps/templates/feature_extraction_technique/list.html:87
 #: apps/templates/monitoring/list.html:80
 #: apps/templates/postfiltering/list.html:84
 #: apps/templates/postfiltering/list.html:91
+#: apps/templates/postprocessing/list.html:87
 #: apps/templates/prefiltering/list.html:84
-#: apps/templates/processdiscovery/list.html:87
+#: apps/templates/processdiscovery/list.html:84
 #: apps/templates/ui_elements_detection/list.html:81
 #: apps/templates/ui_elements_detection/list.html:93
 #: venv/lib/python3.10/site-packages/django/forms/widgets.py:772
 msgid "No"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:120
+#: apps/templates/decision_tree_training/list.html:116
 #: apps/templates/extract_training_dataset/list.html:94
 #: apps/templates/feature_extraction_technique/list.html:94
 #: apps/templates/monitoring/list.html:90
 #: apps/templates/postfiltering/list.html:98
+#: apps/templates/postprocessing/list.html:94
 #: apps/templates/prefiltering/list.html:91
-#: apps/templates/processdiscovery/list.html:114
+#: apps/templates/processdiscovery/list.html:111
 #: apps/templates/ui_elements_detection/list.html:100
 msgid "Already Executed"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:123
+#: apps/templates/decision_tree_training/list.html:119
 #: apps/templates/extract_training_dataset/list.html:97
 #: apps/templates/feature_extraction_technique/list.html:97
 #: apps/templates/monitoring/list.html:93
 #: apps/templates/postfiltering/list.html:101
-#: apps/templates/processdiscovery/list.html:117
+#: apps/templates/postprocessing/list.html:97
+#: apps/templates/processdiscovery/list.html:114
 #: apps/templates/ui_elements_detection/list.html:103
 msgid "Not Executed"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:131
+#: apps/templates/decision_tree_training/list.html:127
 #: apps/templates/feature_extraction_technique/list.html:105
 #: apps/templates/postfiltering/list.html:109
+#: apps/templates/postprocessing/list.html:105
 #: apps/templates/prefiltering/list.html:102
-#: apps/templates/processdiscovery/list.html:125
+#: apps/templates/processdiscovery/list.html:122
 #: apps/templates/ui_elements_detection/list.html:111
 msgid "active"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:134
+#: apps/templates/decision_tree_training/list.html:130
 #: apps/templates/feature_extraction_technique/list.html:108
 #: apps/templates/postfiltering/list.html:112
+#: apps/templates/postprocessing/list.html:108
 #: apps/templates/prefiltering/list.html:105
-#: apps/templates/processdiscovery/list.html:128
+#: apps/templates/processdiscovery/list.html:125
 #: apps/templates/ui_elements_detection/list.html:114
 msgid "not active"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:148
-#: apps/templates/decision_tree_training/list.html:155
+#: apps/templates/decision_tree_training/list.html:144
+#: apps/templates/decision_tree_training/list.html:154
 #: apps/templates/extract_training_dataset/list.html:123
-#: apps/templates/extract_training_dataset/list.html:130
+#: apps/templates/extract_training_dataset/list.html:133
 #: apps/templates/feature_extraction_technique/list.html:122
-#: apps/templates/feature_extraction_technique/list.html:129
+#: apps/templates/feature_extraction_technique/list.html:132
 #: apps/templates/monitoring/list.html:118
-#: apps/templates/monitoring/list.html:125
+#: apps/templates/monitoring/list.html:126
 #: apps/templates/postfiltering/list.html:146
-#: apps/templates/postfiltering/list.html:153
+#: apps/templates/postfiltering/list.html:156
+#: apps/templates/postprocessing/list.html:122
+#: apps/templates/postprocessing/list.html:132
 #: apps/templates/prefiltering/list.html:139
-#: apps/templates/prefiltering/list.html:146
-#: apps/templates/processdiscovery/list.html:142
+#: apps/templates/prefiltering/list.html:149
+#: apps/templates/processdiscovery/list.html:139
 #: apps/templates/processdiscovery/list.html:149
 #: apps/templates/ui_elements_detection/list.html:128
-#: apps/templates/ui_elements_detection/list.html:135
-msgid "Duplicate"
-msgstr ""
-
-#: apps/templates/decision_tree_training/list.html:150
-#: apps/templates/decision_tree_training/list.html:162
-#: apps/templates/extract_training_dataset/list.html:125
-#: apps/templates/extract_training_dataset/list.html:137
-#: apps/templates/feature_extraction_technique/list.html:124
-#: apps/templates/feature_extraction_technique/list.html:136
-#: apps/templates/monitoring/list.html:120
-#: apps/templates/monitoring/list.html:132
-#: apps/templates/postfiltering/list.html:148
-#: apps/templates/postfiltering/list.html:160
-#: apps/templates/prefiltering/list.html:141
-#: apps/templates/prefiltering/list.html:153
-#: apps/templates/processdiscovery/list.html:144
-#: apps/templates/processdiscovery/list.html:156
-#: apps/templates/ui_elements_detection/list.html:130
-#: apps/templates/ui_elements_detection/list.html:142
+#: apps/templates/ui_elements_detection/list.html:138
 msgid "Deactivate"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:157
-#: apps/templates/decision_tree_training/list.html:169
-#: apps/templates/extract_training_dataset/list.html:132
-#: apps/templates/extract_training_dataset/list.html:144
-#: apps/templates/feature_extraction_technique/list.html:131
-#: apps/templates/feature_extraction_technique/list.html:143
-#: apps/templates/monitoring/list.html:127
-#: apps/templates/monitoring/list.html:139
-#: apps/templates/postfiltering/list.html:155
-#: apps/templates/postfiltering/list.html:167
-#: apps/templates/prefiltering/list.html:148
-#: apps/templates/prefiltering/list.html:160
-#: apps/templates/processdiscovery/list.html:151
-#: apps/templates/processdiscovery/list.html:163
-#: apps/templates/ui_elements_detection/list.html:137
-#: apps/templates/ui_elements_detection/list.html:149
+#: apps/templates/decision_tree_training/list.html:149
+#: apps/templates/decision_tree_training/list.html:161
+#: apps/templates/extract_training_dataset/list.html:128
+#: apps/templates/extract_training_dataset/list.html:140
+#: apps/templates/feature_extraction_technique/list.html:127
+#: apps/templates/feature_extraction_technique/list.html:139
+#: apps/templates/monitoring/list.html:122
+#: apps/templates/monitoring/list.html:132
+#: apps/templates/postfiltering/list.html:151
+#: apps/templates/postfiltering/list.html:163
+#: apps/templates/postprocessing/list.html:127
+#: apps/templates/postprocessing/list.html:139
+#: apps/templates/prefiltering/list.html:144
+#: apps/templates/prefiltering/list.html:156
+#: apps/templates/processdiscovery/list.html:144
+#: apps/templates/processdiscovery/list.html:156
+#: apps/templates/ui_elements_detection/list.html:133
+#: apps/templates/ui_elements_detection/list.html:145
 msgid "Activate"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:160
-#: apps/templates/decision_tree_training/list.html:165
-#: apps/templates/extract_training_dataset/list.html:135
-#: apps/templates/extract_training_dataset/list.html:140
-#: apps/templates/feature_extraction_technique/list.html:134
-#: apps/templates/feature_extraction_technique/list.html:139
-#: apps/templates/monitoring/list.html:130
-#: apps/templates/monitoring/list.html:135
-#: apps/templates/postfiltering/list.html:158
-#: apps/templates/postfiltering/list.html:163
-#: apps/templates/prefiltering/list.html:151
-#: apps/templates/prefiltering/list.html:156
-#: apps/templates/processdiscovery/list.html:154
-#: apps/templates/processdiscovery/list.html:159
-#: apps/templates/ui_elements_detection/list.html:140
-#: apps/templates/ui_elements_detection/list.html:145
+#: apps/templates/decision_tree_training/list.html:152
+#: apps/templates/decision_tree_training/list.html:157
+#: apps/templates/extract_training_dataset/list.html:131
+#: apps/templates/extract_training_dataset/list.html:136
+#: apps/templates/feature_extraction_technique/list.html:130
+#: apps/templates/feature_extraction_technique/list.html:135
+#: apps/templates/monitoring/list.html:124
+#: apps/templates/monitoring/list.html:128
+#: apps/templates/postfiltering/list.html:154
+#: apps/templates/postfiltering/list.html:159
+#: apps/templates/postprocessing/list.html:130
+#: apps/templates/postprocessing/list.html:135
+#: apps/templates/prefiltering/list.html:147
+#: apps/templates/prefiltering/list.html:152
+#: apps/templates/processdiscovery/list.html:147
+#: apps/templates/processdiscovery/list.html:152
+#: apps/templates/ui_elements_detection/list.html:136
+#: apps/templates/ui_elements_detection/list.html:141
 msgid "Edit"
 msgstr ""
 
-#: apps/templates/decision_tree_training/list.html:166
-#: apps/templates/feature_extraction_technique/list.html:140
+#: apps/templates/decision_tree_training/list.html:158
+#: apps/templates/feature_extraction_technique/list.html:136
+#: apps/templates/postprocessing/list.html:136
 msgid "Are you sure you want to delete this decision tree training?"
 msgstr ""
 
@@ -1091,7 +1126,7 @@ msgstr ""
 msgid "Not Active"
 msgstr ""
 
-#: apps/templates/extract_training_dataset/list.html:141
+#: apps/templates/extract_training_dataset/list.html:137
 msgid "Are you sure you want to delete this extract training dataset?"
 msgstr ""
 
@@ -1158,12 +1193,13 @@ msgid "Type "
 msgstr ""
 
 #: apps/templates/feature_extraction_technique/form.html:29
+#: apps/templates/postprocessing/form.html:15
 msgid "Technique "
 msgstr ""
 
 #: apps/templates/feature_extraction_technique/form.html:61
 #: apps/templates/monitoring/list.html:51
-#: apps/templates/processdiscovery/form.html:154
+#: apps/templates/processdiscovery/form.html:137
 #: apps/templates/processdiscovery/list.html:51
 #: apps/templates/reporting/list.html:51
 msgid "Configurations"
@@ -1189,10 +1225,12 @@ msgid "Feature Extraction Technique Configurations"
 msgstr ""
 
 #: apps/templates/feature_extraction_technique/list.html:50
+#: apps/templates/postprocessing/list.html:50
 msgid "Technique name"
 msgstr ""
 
 #: apps/templates/feature_extraction_technique/list.html:51
+#: apps/templates/postprocessing/list.html:51
 msgid "Identifier"
 msgstr ""
 
@@ -1204,11 +1242,6 @@ msgstr ""
 msgid "Feature Extraction result"
 msgstr ""
 
-#: apps/templates/includes/footer-fullscreen.html:9
-#: apps/templates/includes/footer.html:8
-msgid "More Solutions"
-msgstr ""
-
 #: apps/templates/includes/navigation-fullscreen.html:7
 #: apps/templates/includes/navigation-fullscreen.html:19
 msgid "Toggle navigation"
@@ -1216,11 +1249,6 @@ msgstr ""
 
 #: apps/templates/includes/navigation-fullscreen.html:57
 msgid "Follow us on Twitter"
-msgstr ""
-
-#: apps/templates/includes/navigation-fullscreen.html:68
-#: apps/templates/includes/sidenav.html:138
-msgid "PRO Version"
 msgstr ""
 
 #: apps/templates/includes/navigation.html:59
@@ -1240,7 +1268,7 @@ msgid "Welcome!"
 msgstr ""
 
 #: apps/templates/includes/navigation.html:135
-#: apps/templates/includes/sidenav.html:148
+#: apps/templates/includes/sidenav.html:132
 msgid "My profile"
 msgstr ""
 
@@ -1249,7 +1277,7 @@ msgid "Any issue?"
 msgstr ""
 
 #: apps/templates/includes/navigation.html:144
-#: apps/templates/includes/sidenav.html:160
+#: apps/templates/includes/sidenav.html:144
 msgid "Logout"
 msgstr ""
 
@@ -1269,15 +1297,11 @@ msgstr ""
 msgid "Resources"
 msgstr ""
 
-#: apps/templates/includes/sidenav.html:120
-msgid "More solutions"
+#: apps/templates/includes/sidenav.html:121
+msgid "Webgazer.js Eye Tracking"
 msgstr ""
 
-#: apps/templates/includes/sidenav.html:129
-msgid "Webgazer.js"
-msgstr ""
-
-#: apps/templates/includes/sidenav.html:154
+#: apps/templates/includes/sidenav.html:138
 msgid "Documentation"
 msgstr ""
 
@@ -1340,39 +1364,35 @@ msgstr ""
 msgid "UI Log Filename"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:48
-msgid "UI Log Separator"
-msgstr ""
-
-#: apps/templates/monitoring/form.html:55
+#: apps/templates/monitoring/form.html:50
 msgid "Gaze Log Filename"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:60
+#: apps/templates/monitoring/form.html:55
 msgid "Gaze Log Adjustment"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:65
+#: apps/templates/monitoring/form.html:60
 msgid "System Info. Log"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:69
+#: apps/templates/monitoring/form.html:64
 msgid "Webgazer options"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:71
+#: apps/templates/monitoring/form.html:66
 msgid "Screen Inches"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:76
+#: apps/templates/monitoring/form.html:71
 msgid "Observer Camera Distance (in centimetres)"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:81
+#: apps/templates/monitoring/form.html:76
 msgid "Screen Width (in pixels)"
 msgstr ""
 
-#: apps/templates/monitoring/form.html:86
+#: apps/templates/monitoring/form.html:81
 msgid "Screen Height (in pixels)"
 msgstr ""
 
@@ -1387,7 +1407,7 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
-#: apps/templates/monitoring/list.html:136
+#: apps/templates/monitoring/list.html:129
 msgid "Are you sure you want to delete this monitoring log mapping?"
 msgstr ""
 
@@ -1476,8 +1496,51 @@ msgstr ""
 msgid "Nested UI elements as relevant"
 msgstr ""
 
-#: apps/templates/postfiltering/list.html:164
+#: apps/templates/postfiltering/list.html:160
 msgid "Are you sure you want to delete this postfilter?"
+msgstr ""
+
+#: apps/templates/postprocessing/create.html:15
+#: apps/templates/postprocessing/detail.html:39
+msgid "Go Back to Postprocessing Configurations"
+msgstr ""
+
+#: apps/templates/postprocessing/create.html:16
+msgid "New Postprocessing Configuration"
+msgstr ""
+
+#: apps/templates/postprocessing/create.html:21
+#: apps/templates/postprocessing/detail.html:45
+msgid "Postprocessing Configs"
+msgstr ""
+
+#: apps/templates/postprocessing/create.html:22
+#: apps/templates/postprocessing/list.html:26
+msgid "New Postprocessing"
+msgstr ""
+
+#: apps/templates/postprocessing/create.html:41
+#: apps/templates/postprocessing/detail.html:63
+msgid "Create a new Postprocessing Configuration"
+msgstr ""
+
+#: apps/templates/postprocessing/detail.html:17
+#: apps/templates/postprocessing/detail.html:22
+msgid "Postprocessing Configuration Details"
+msgstr ""
+
+#: apps/templates/postprocessing/detail.html:40
+msgid "Postprocessing Configuration"
+msgstr ""
+
+#: apps/templates/postprocessing/detail.html:46
+msgid "Postprocessing Details"
+msgstr ""
+
+#: apps/templates/postprocessing/list.html:15
+#: apps/templates/postprocessing/list.html:20
+#: apps/templates/postprocessing/list.html:40
+msgid "Postprocessing Configurations"
 msgstr ""
 
 #: apps/templates/prefiltering/create.html:15
@@ -1551,7 +1614,7 @@ msgstr ""
 msgid "Not executed"
 msgstr ""
 
-#: apps/templates/prefiltering/list.html:157
+#: apps/templates/prefiltering/list.html:153
 msgid "Are you sure you want to delete this prefilter?"
 msgstr ""
 
@@ -1592,11 +1655,11 @@ msgstr ""
 msgid "General Config"
 msgstr ""
 
-#: apps/templates/processdiscovery/form.html:28
+#: apps/templates/processdiscovery/form.html:20
 msgid "Model Config"
 msgstr ""
 
-#: apps/templates/processdiscovery/form.html:92
+#: apps/templates/processdiscovery/form.html:75
 msgid "Clustering Config"
 msgstr ""
 
@@ -1606,8 +1669,8 @@ msgstr ""
 msgid "Process Discovery Configurations"
 msgstr ""
 
-#: apps/templates/processdiscovery/list.html:160
-#: apps/templates/ui_elements_detection/list.html:146
+#: apps/templates/processdiscovery/list.html:153
+#: apps/templates/ui_elements_detection/list.html:142
 msgid "Are you sure you want to delete this UI element detection?"
 msgstr ""
 
@@ -1688,27 +1751,20 @@ msgstr ""
 msgid "UI Element Detection Configuration Details"
 msgstr ""
 
-#: apps/templates/ui_elements_detection/details.html:78
-msgid "Detection Technique"
+#: apps/templates/ui_elements_detection/form.html:15
+msgid "Detection Technique "
 msgstr ""
 
-#: apps/templates/ui_elements_detection/details.html:84
 #: apps/templates/ui_elements_detection/form.html:22
 msgid "Classification Model"
 msgstr ""
 
-#: apps/templates/ui_elements_detection/details.html:110
 #: apps/templates/ui_elements_detection/form.html:51
 msgid "Apply OCR"
 msgstr ""
 
-#: apps/templates/ui_elements_detection/details.html:116
 #: apps/templates/ui_elements_detection/form.html:57
 msgid "Additional Configurations"
-msgstr ""
-
-#: apps/templates/ui_elements_detection/form.html:15
-msgid "Detection Technique "
 msgstr ""
 
 #: apps/templates/ui_elements_detection/list.html:15
@@ -1763,6 +1819,137 @@ msgstr ""
 
 #: apps/templates/ui_elements_detection/results.html:96
 msgid "Loading Screen Object Model..."
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:141
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:141
+#, python-brace-format
+msgid "{case_study.title} Execution Started"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:141
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:141
+msgid "Case study execution has started"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:165
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:165
+msgid "Scenarios that have been processed: "
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:190
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:190
+#, python-brace-format
+msgid "{execution.case_study.title} Execution Completed"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:190
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:190
+msgid "Case study executed successfully"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:195
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:195
+#, python-brace-format
+msgid "{case_study.title} Execution Error"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:316
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:316
+msgid "User must be authenticated."
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:342
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:356
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:371
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:383
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:481
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:342
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:356
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:371
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:383
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:481
+msgid "This case study doesn't belong to the authenticated user"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:358
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:358
+msgid "This case study cannot be deleted because it has already been excecuted"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:417
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:417
+#, python-format
+msgid ""
+"phases_to_execute must be of type dict!!!!! and must be composed by phases "
+"contained in %(DEFAULT_PHASES)s"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:423
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:423
+msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:430
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:430
+msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:438
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:444
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:438
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:444
+msgid "The following file or directory does not exists: %(path)"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:451
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:451
+#, python-format
+msgid ""
+"phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:462
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:462
+#, python-format
+msgid "Case study with id:%(id) is being generated ..."
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:465
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:465
+msgid "Some of the attributes are invalid: "
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:487
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:487
+msgid "Case Study with id %(id) not found"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:505
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:505
+msgid ""
+"The processing of this case study has not yet finished, please try again in "
+"a few minutes"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:508
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:508
+#, python-format
+msgid "Case Study with id %(id) raised an exception: "
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:562
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:640
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:562
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:640
+msgid "You don't have permissions to access this files"
+msgstr ""
+
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:606
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_693/Intermediate_100_Balanced_results/views.py:621
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:606
+#: media/unzipped/Intermediate_100_Balanced_1726475485/executions/exec_695/Intermediate_100_Balanced_results/views.py:621
+msgid "This execution doesn't belong to the authenticated user"
 msgstr ""
 
 #: venv/lib/python3.10/site-packages/IPython/core/tests/test_completer.py:420

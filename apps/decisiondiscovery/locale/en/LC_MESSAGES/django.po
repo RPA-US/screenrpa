@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-30 11:17+0000\n"
+"POT-Creation-Date: 2024-10-18 10:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgid "Title"
 msgstr ""
 
 #: apps/decisiondiscovery/forms.py:26 apps/decisiondiscovery/forms.py:28
-#: apps/decisiondiscovery/forms.py:86
+#: apps/decisiondiscovery/forms.py:87
 msgid "Columns to drop before decision point"
 msgstr ""
 
@@ -31,18 +31,18 @@ msgstr ""
 msgid "Additional Configurations (JSON)"
 msgstr ""
 
-#: apps/decisiondiscovery/forms.py:83
+#: apps/decisiondiscovery/forms.py:84
 msgid "Library"
 msgstr ""
 
-#: apps/decisiondiscovery/forms.py:84
+#: apps/decisiondiscovery/forms.py:85
 msgid "Configuration"
 msgstr ""
 
-#: apps/decisiondiscovery/forms.py:85
+#: apps/decisiondiscovery/forms.py:86
 msgid "One hot columns"
 msgstr ""
 
-#: apps/decisiondiscovery/views.py:182
+#: apps/decisiondiscovery/views.py:227
 msgid "Decision model chosen is not an option"
 msgstr ""
