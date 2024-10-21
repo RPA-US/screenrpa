@@ -4,6 +4,7 @@ import json
 import os
 import pickle
 import re
+import copy
 # For file conversion
 import subprocess # Libreoffice
 from docx2pdf import convert # MS Word
@@ -105,9 +106,6 @@ def get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, ui_compo_c
 
     # Si no se encontró una coincidencia exacta, usar el más cercano
     if uicompo_json is None and closest_compo is not None:
-        uicompo_json = closest_compo
-    else:
-        closest_compo = min(class_compos, key=lambda c: abs(np.linalg.norm(np.array([int(float((coord))) for coord in compo['centroid']]) - np.array(ui_compo_centroid))))
         uicompo_json = closest_compo
     return uicompo_json
 
@@ -831,7 +829,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
         return res
 ##el resultado es un diccionario cuyas claves son las reglas y los valores otro diccionario con las reglas y su valor va a ser el centroid
 ##{'numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51': {2: [['numeric__Coor_Y_2 > 382.39', 'aqui va el centroid en tupla']], 3: [['numeric__Coor_Y_3 > 491.51', 'aqui va el centroid en tupla']]}}
-    def get_branch_condition2(rules, pre_pd_activities):
+    def get_branch_condition2(rules, pre_pd_activities, process):
         def coordinate_rule(variable, condition, condition_dict, exists):
             # Verificar si el final de la variable contiene una de las actividades finales con o sin sufijo adicional
             present = False
@@ -858,17 +856,8 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                         condition_dict[act].append(["centroid", condition, (first_element, second_element, compo_class_or_text), exists])
                         present = True
 
-        def decision_rule(variable, condition, condition_dict, exists):
-            coincidences = re.match(r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)", variable)
-            target = coincidences.group(4) # Actividad o numero de puerta xor
-            if coincidences.group(3):  # Si hay un grupo 3 adicional (opcional, significa xor)
-                target = f"{coincidences.group(3)}_{target}"
-            
-            if "decision" not in condition_dict:
-                condition_dict["decision"] = []
-            condition_dict["decision"].append([target, exists])
-
         result_dict = {}
+        rules = preprocess_rules(rules, process)
         for rule in rules:
             condition_dict = {}
             parts = rule.split('&')
@@ -881,17 +870,11 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                 exists = False
                 if re.search(r">=|>|==", part):
                     exists = True
-                
-                # Patrón para los nombres de columna que contienen centroid
-                pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.?\d*?-\d+\.?\d*?)_(\d+)(_?[_0-9a-zA-Z]+)"
-                # Patrón para puntos de decisión
-                # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
-                pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)"
 
+                # We technically should have no dp rules left at this point
+                pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.?\d*?-\d+\.?\d*?)_(\d+)(_?[_0-9a-zA-Z]+)"
                 if re.match(pattern_with_centroid, variable):
                     coordinate_rule(variable, condition, condition_dict, exists)
-                elif re.match(pattern_decision_point, variable):
-                    decision_rule(variable, condition, condition_dict, exists)
             result_dict[rule.strip()] = condition_dict
         return result_dict
 
@@ -1185,19 +1168,22 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
                     
                     if existence:
                         compo_ui = get_uicompo_from_centroid(screenshot_filename, ui_compo_centroid, ui_compo_class_or_text, os.path.join(execution.exp_folder_complete_path, scenario + '_results'))
-                        compo_ui["color"] = color  # Asignar color al polígono
-                        compo_ui_json.append(compo_ui)
+                        if compo_ui:
+                            compo_ui["color"] = color  # Asignar color al polígono
+                            compo_ui_json.append(compo_ui)
 
-                        run = decision_tree.add_run(f'Existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
-                        run.font.color.rgb = RGBColor(*color)
-                        color_index += 1
-                    else:
-                        compo_ui = {"points": [[int(float(coord)) for coord in ui_compo_centroid]], "color": color}
-                        compo_ui_json.append(compo_ui)
+                            run = decision_tree.add_run(f'Existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
+                            run.font.color.rgb = RGBColor(*color)
+                            color_index += 1
+                            continue
+                    # Fallback if not exists or component not found
+                    compo_ui = {"points": [[int(float(coord)) for coord in ui_compo_centroid]], "color": color}
+                    compo_ui_json.append(compo_ui)
 
-                        run = decision_tree.add_run(f'Non-existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
-                        run.font.color.rgb = RGBColor(*color)
-                        color_index += 1
+                    run = decision_tree.add_run(f'Non-existence of "{aux_compo_text}" with centroid {ui_compo_centroid} in activity {act}\n')
+                    run.font.color.rgb = RGBColor(*color)
+                    color_index += 1
+
                 if compo_ui_json:
                     draw_polygons_on_image(compo_ui_json, path_to_image,decision_tree)
                     decision_tree.add_run().add_break()
@@ -1260,7 +1246,7 @@ def detailes_as_is_process_actions(doc, paragraph_dict, scenario, execution, col
             act_seq_index = activities.index(int(activity))
             pre_activities = activities[:act_seq_index+1]
 
-            result_dict = get_branch_condition2(branch_rules, pre_activities)
+            result_dict = get_branch_condition2(branch_rules, pre_activities, traceability)
             result_dict_overlapping = {}
             # result_dict_overlapping = get_overlapping_branch_condition2(decision_point, next_activity, pre_activities)
 
@@ -1466,3 +1452,77 @@ def preview_pdf(request, report_id):
     #     return render(request, 'reporting/preview_pdf.html', {'pdf_path': pdf_path})
     # else:
     #     return HttpResponseNotFound("El documento PDF solicitado no fue encontrado.")
+
+def preprocess_rules(rules, process):
+    def unpack_decision_rule(variable, condition, rules, exists, process):
+        coincidences = re.match(r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)", variable)
+        target = coincidences.group(4) # Actividad o numero de puerta xor
+        if coincidences.group(3):  # Si hay un grupo 3 adicional (opcional, significa xor)
+            target = f"{coincidences.group(3)}_{target}"
+        
+        dp = coincidences.group(2)
+        dps = process.get_non_empty_dp_flattened()
+        dp = list(filter(lambda x: x.id == dp, dps))[0]
+
+        subrules = dp.to_json().get("rules", {})[target]
+        # In case we have branch rules, we process them
+        aux_rules = copy.deepcopy(rules)
+        for subrule in subrules:
+            for i, r in enumerate(aux_rules):
+                # If we went to that branch we add the rules as &, else we add it as | and flip the sign
+                # In our model it means adding a separate rule
+                # Ej. numeric__Coor_Y_2 > 382.39 & numeric__Coor_Y_3 > 491.51 is the branch condition
+                # Ej. numeric__Coor_Y_2 <= 382.39 | numeric__Coor_Y_3 <= 491.51 is the "not" branch condition
+                if exists:
+                    # We prevent duplicate rules
+                    aux = [sr.strip() for sr in subrule.split('&') if sr not in r]
+                    aux = " & ".join(aux)
+                    # Replace old rule by new one. We only moddify rules that contain the variable
+                    rules[i] = r.replace(condition, aux)
+                else:
+                    aux = [sr.strip() for sr in subrule.split('&') if sr not in r]
+                    for j, sc in enumerate(aux):
+                        if "<=" in sc:
+                            aux[j] = sc.replace("<=", ">")
+                        elif ">=" in sc:
+                            aux[j] = sc.replace(">=", "<")
+                        elif "<" in sc:
+                            aux[j] = sc.replace("<", ">=")
+                        elif ">" in sc:
+                            aux[j] = sc.replace(">", "<=")
+                        elif "==" in sc:
+                            aux[j] = sc.replace("==", "!=")
+                        elif "!=" in sc:
+                            aux[j] = sc.replace("!=", "==")
+                        # To avoid messing up with indexes we moddify the first, add the rest at the end
+                        if j == 0:
+                            rules[i] = r.replace(condition, aux[j])
+                        else:
+                            rules.append(r.replace(condition, aux[j]))
+        # Before returning, if case new branch rules were added, we need to preprocess them
+        rules = preprocess_rules(rules, process)
+
+    # To unpack dp rules and treat everything correctly we need to first trat all dp rules then the rest
+    aux_rules = copy.deepcopy(rules)
+    for rule in aux_rules:
+        parts = rule.split('&')
+        for part in parts:
+            elements = re.split(r'<=|>=|<|>|==|!=', part)
+            variable = elements[0].strip()
+            condition = part.strip()
+
+            # Figure out weather the element is or not in this instance
+            exists = False
+            if re.search(r">=|>|==", part):
+                exists = True
+            
+            pattern_with_centroid = r"([a-zA-Z_]+)__([a-zA-Z0-9_-]+)_(\d+\.?\d*?-\d+\.?\d*?)_(\d+)(_?[_0-9a-zA-Z]+)"
+            # numeric__id6322e007-a58b-4b5a-b711-8f51d37c438f_1
+            pattern_decision_point = r"([a-zA-Z_]+)__([a-zA-Z0-9-]+)_([a-zA-Z]+)?_?([_a-zA-Z0-9-]+)"
+
+            # Centroids will also match the decision point pattern, so we need to treat them first
+            if re.match(pattern_with_centroid, variable):
+                continue
+            elif re.match(pattern_decision_point, variable):
+                unpack_decision_rule(variable, condition, rules, exists, process)
+    return rules
