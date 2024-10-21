@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-04 08:56+0000\n"
+"POT-Creation-Date: 2024-10-18 10:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,18 +54,18 @@ msgstr "Nombre"
 msgid "Last name"
 msgstr "Apellido"
 
-#: apps/authentication/views.py:31
+#: apps/authentication/views.py:33
 msgid "Invalid credentials"
 msgstr "Credenciales inválidas"
 
-#: apps/authentication/views.py:33
+#: apps/authentication/views.py:35
 msgid "Error validating the form"
 msgstr "Error al validar el formulario"
 
-#: apps/authentication/views.py:54
+#: apps/authentication/views.py:56
 msgid "User created - please <a href=\"/login\">login</a>."
 msgstr "Usuario creado - por favor <a href=\"/login\">inicia sesión</a>."
 
-#: apps/authentication/views.py:60
+#: apps/authentication/views.py:62
 msgid "Form is not valid"
 msgstr "El formulario no es válido"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-30 11:17+0000\n"
+"POT-Creation-Date: 2024-10-18 10:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,84 +20,82 @@ msgstr ""
 
 #: apps/reporting/forms.py:25
 msgid "Objective"
-msgstr ""
+msgstr "Objetivo"
 
 #: apps/reporting/forms.py:26
 msgid "Purpose"
-msgstr ""
+msgstr "Razón"
 
 #: apps/reporting/forms.py:27
-#, fuzzy
-#| msgid "5. Process Metrics"
 msgid "Process Overview"
 msgstr "5. Métricas del Proceso"
 
 #: apps/reporting/forms.py:28
 msgid "Applications Used"
-msgstr ""
+msgstr "Aplicaciones usadas"
 
 #: apps/reporting/forms.py:29
 msgid "AS IS Process Map"
-msgstr ""
+msgstr "Mapa AS IS del proceso"
 
 #: apps/reporting/forms.py:30
 msgid "Detailed AS IS Process Actions"
-msgstr ""
+msgstr "Acciones AS IS del proceso detallado"
 
 #: apps/reporting/forms.py:31
 msgid "Input Data Description"
-msgstr ""
+msgstr "Descripción de los datos"
 
 #: apps/reporting/forms.py:35
 msgid "Objective of the PDD"
-msgstr ""
+msgstr "Objetivo del PDD"
 
 #: apps/reporting/forms.py:36
 msgid "Purpose of the PDD..."
-msgstr ""
+msgstr "Propósito del PDD..."
 
-#: apps/reporting/views.py:217 apps/reporting/views.py:234
+#: apps/reporting/views.py:175 apps/reporting/views.py:192
 msgid "Process Definition Document"
 msgstr "Documento de Definición de Proceso"
 
-#: apps/reporting/views.py:218
+#: apps/reporting/views.py:176
 msgid "This is a first version of your RPA Process Definition Document."
 msgstr ""
 "Esta es la primera versión de su Documento de Definición de Proceso de RPA."
 
-#: apps/reporting/views.py:219
+#: apps/reporting/views.py:177
 msgid "PDDs"
 msgstr "DDPs"
 
-#: apps/reporting/views.py:235
+#: apps/reporting/views.py:193
 msgid "Version 1.0"
 msgstr "Versión 1.0"
 
-#: apps/reporting/views.py:243
+#: apps/reporting/views.py:201
 msgid "Table of Contents"
 msgstr "Índice de Contenidos"
 
-#: apps/reporting/views.py:263
+#: apps/reporting/views.py:221
 msgid "Right-click to update field."
 msgstr "Haga clic derecho para actualizar el campo."
 
-#: apps/reporting/views.py:293
+#: apps/reporting/views.py:251
 msgid "1. Introduction"
 msgstr "1. Introducción"
 
-#: apps/reporting/views.py:301
+#: apps/reporting/views.py:259
 msgid "This document outlines the process definition for..."
 msgstr "Este documento describe la definición del proceso para..."
 
-#: apps/reporting/views.py:313
+#: apps/reporting/views.py:271
 msgid "This process consists of the following steps:"
 msgstr "Este proceso consiste en los siguientes pasos:"
 
-#: apps/reporting/views.py:317
+#: apps/reporting/views.py:275
 msgid "Step 1: ..."
 msgstr "Paso 1: ..."
 
-#: apps/reporting/views.py:318
+#: apps/reporting/views.py:276
 msgid ""
 "\n"
 "Step 2: ..."
@@ -105,7 +103,7 @@ msgstr ""
 "\n"
 "Paso 2: ..."
 
-#: apps/reporting/views.py:319
+#: apps/reporting/views.py:277
 msgid ""
 "\n"
 "Step 3: ..."
@@ -113,64 +111,64 @@ msgstr ""
 "\n"
 "Paso 3: ..."
 
-#: apps/reporting/views.py:331
+#: apps/reporting/views.py:289
 msgid "The following roles and responsibilities are involved in this process:"
 msgstr ""
 "Los siguientes roles y responsabilidades están involucrados en este proceso:"
 
-#: apps/reporting/views.py:345
+#: apps/reporting/views.py:303
 msgid "Role"
 msgstr "Rol"
 
-#: apps/reporting/views.py:346
+#: apps/reporting/views.py:304
 msgid "Responsibilities"
 msgstr "Responsabilidades"
 
-#: apps/reporting/views.py:350
+#: apps/reporting/views.py:308
 msgid "Manager"
 msgstr "Gerente"
 
-#: apps/reporting/views.py:351
+#: apps/reporting/views.py:309
 msgid "Approves final output of the process"
 msgstr "Aprueba la salida final del proceso"
 
-#: apps/reporting/views.py:353
+#: apps/reporting/views.py:311
 msgid "Analyst"
 msgstr "Analista"
 
-#: apps/reporting/views.py:354
+#: apps/reporting/views.py:312
 msgid "Conducts analysis for the process"
 msgstr "Realiza análisis para el proceso"
 
-#: apps/reporting/views.py:356
+#: apps/reporting/views.py:314
 msgid "Developer"
 msgstr "Desarrollador"
 
-#: apps/reporting/views.py:357
+#: apps/reporting/views.py:315
 msgid "Implements changes to the process"
 msgstr "Implementa cambios en el proceso"
 
-#: apps/reporting/views.py:361
+#: apps/reporting/views.py:319
 msgid "4. Process Flow"
 msgstr "4. Flujo de Proceso"
 
-#: apps/reporting/views.py:369
+#: apps/reporting/views.py:327
 msgid "The process flow for this process is as follows:"
 msgstr "El flujo de proceso para este proceso es el siguiente:"
 
-#: apps/reporting/views.py:374
+#: apps/reporting/views.py:332
 msgid "5. Process Metrics"
 msgstr "5. Métricas del Proceso"
 
-#: apps/reporting/views.py:382
+#: apps/reporting/views.py:340
 msgid "The following metrics are tracked for this process:"
 msgstr "Se siguen las siguientes métricas para este proceso:"
 
-#: apps/reporting/views.py:387
+#: apps/reporting/views.py:345
 msgid "Metric 1: ..."
 msgstr "Métrica 1: ..."
 
-#: apps/reporting/views.py:388
+#: apps/reporting/views.py:346
 msgid ""
 "\n"
 "Metric 2: ..."
@@ -178,7 +176,7 @@ msgstr ""
 "\n"
 "Métrica 2: ..."
 
-#: apps/reporting/views.py:389
+#: apps/reporting/views.py:347
 msgid ""
 "\n"
 "Metric 3: ..."
@@ -186,69 +184,81 @@ msgstr ""
 "\n"
 "Métrica 3: ..."
 
-#: apps/reporting/views.py:393
+#: apps/reporting/views.py:351
 msgid "6. Process Improvement"
 msgstr "6. Mejora del Proceso"
 
-#: apps/reporting/views.py:401
+#: apps/reporting/views.py:359
 msgid ""
 "The following improvement opportunities have been identified for this "
 "process:"
 msgstr ""
 "Se han identificado las siguientes oportunidades de mejora para este proceso:"
 
-#: apps/reporting/views.py:407 apps/reporting/views.py:414
-#: apps/reporting/views.py:421
+#: apps/reporting/views.py:365 apps/reporting/views.py:372
+#: apps/reporting/views.py:379
 msgid "Opportunity 1: ..."
 msgstr "Oportunidad 1: ..."
 
-#: apps/reporting/views.py:408 apps/reporting/views.py:415
-#: apps/reporting/views.py:422
+#: apps/reporting/views.py:366 apps/reporting/views.py:373
+#: apps/reporting/views.py:380
 msgid "Opportunity 2: ..."
 msgstr "Oportunidad 2: ..."
 
-#: apps/reporting/views.py:409 apps/reporting/views.py:416
-#: apps/reporting/views.py:423
+#: apps/reporting/views.py:367 apps/reporting/views.py:374
+#: apps/reporting/views.py:381
 msgid "Opportunity 3: ..."
 msgstr "Oportunidad 3: ..."
 
-#: apps/reporting/views.py:436
+#: apps/reporting/views.py:394
 msgid "The following terms are used throughout this document:"
 msgstr "Los siguientes términos se utilizan en todo este documento:"
 
-#: apps/reporting/views.py:451
+#: apps/reporting/views.py:409
 msgid "Term"
 msgstr "Término"
 
-#: apps/reporting/views.py:452
+#: apps/reporting/views.py:410
 msgid "Definition"
 msgstr "Definición"
 
-#: apps/reporting/views.py:456
+#: apps/reporting/views.py:414
 msgid "Process"
 msgstr "Proceso"
 
-#: apps/reporting/views.py:457
+#: apps/reporting/views.py:415
 msgid "A set of activities that transform inputs into outputs"
 msgstr "Un conjunto de actividades que transforman insumos en resultados"
 
-#: apps/reporting/views.py:459
+#: apps/reporting/views.py:417
 msgid "Metric"
 msgstr "Métrica"
 
-#: apps/reporting/views.py:460
+#: apps/reporting/views.py:418
 msgid "A quantifiable measure used to track the performance of a process"
 msgstr ""
 "Una medida cuantificable utilizada para seguir el rendimiento de un proceso"
 
-#: apps/reporting/views.py:498
+#: apps/reporting/views.py:455
 msgid "File does not exist"
 msgstr "El archivo no existe"
 
-#: apps/reporting/views.py:628
+#: apps/reporting/views.py:559
 msgid "User must be authenticated."
-msgstr ""
+msgstr "Debes estar autenticado"
 
-#: apps/reporting/views.py:1399
-msgid "This case study doesn't belong to the authenticated user"
+#: apps/reporting/views.py:731
+msgid "Limited report"
+msgstr "Reporte limitado"
+
+#: apps/reporting/views.py:731
+msgid ""
+"Please install MS Word on windows or Libreoffice on linux to generate the "
+"execution report."
 msgstr ""
+"Por favor instala MS Word en windows o Libreoffice en linux para generar el "
+"reporte de la ejecución."
+
+#: apps/reporting/views.py:1383
+msgid "This case study doesn't belong to the authenticated user"
+msgstr "Este caso de estudio no pertenece al usuario autenticado"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-30 11:17+0000\n"
+"POT-Creation-Date: 2024-10-18 10:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,15 +79,15 @@ msgstr ""
 msgid "This is a nice experiment..."
 msgstr ""
 
-#: apps/analyzer/models.py:118
+#: apps/analyzer/models.py:120
 msgid "Case study"
 msgstr ""
 
-#: apps/analyzer/models.py:119
+#: apps/analyzer/models.py:121
 msgid "Case studies"
 msgstr ""
 
-#: apps/analyzer/models.py:160
+#: apps/analyzer/models.py:162
 msgid "The title of the case study already exists"
 msgstr ""
 
@@ -125,100 +125,99 @@ msgstr ""
 msgid "The MHT file doesnt have a valid datetime format"
 msgstr ""
 
-#: apps/analyzer/views.py:130
+#: apps/analyzer/views.py:141
 #, python-brace-format
 msgid "{case_study.title} Execution Started"
 msgstr ""
 
-#: apps/analyzer/views.py:130
+#: apps/analyzer/views.py:141
 msgid "Case study execution has started"
 msgstr ""
 
-#: apps/analyzer/views.py:154
+#: apps/analyzer/views.py:165
 msgid "Scenarios that have been processed: "
 msgstr ""
 
-#: apps/analyzer/views.py:179
+#: apps/analyzer/views.py:190
 #, python-brace-format
 msgid "{execution.case_study.title} Execution Completed"
 msgstr ""
 
-#: apps/analyzer/views.py:179
+#: apps/analyzer/views.py:190
 msgid "Case study executed successfully"
 msgstr ""
 
-#: apps/analyzer/views.py:184
+#: apps/analyzer/views.py:195
 #, python-brace-format
 msgid "{case_study.title} Execution Error"
 msgstr ""
 
-#: apps/analyzer/views.py:305
+#: apps/analyzer/views.py:316
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/analyzer/views.py:331 apps/analyzer/views.py:345
-#: apps/analyzer/views.py:360 apps/analyzer/views.py:372
-#: apps/analyzer/views.py:470
+#: apps/analyzer/views.py:342 apps/analyzer/views.py:356
+#: apps/analyzer/views.py:381 apps/analyzer/views.py:479
 msgid "This case study doesn't belong to the authenticated user"
 msgstr ""
 
-#: apps/analyzer/views.py:347
+#: apps/analyzer/views.py:358
 msgid "This case study cannot be deleted because it has already been excecuted"
 msgstr ""
 
-#: apps/analyzer/views.py:406
+#: apps/analyzer/views.py:415
 #, python-format
 msgid ""
 "phases_to_execute must be of type dict!!!!! and must be composed by phases "
 "contained in %(DEFAULT_PHASES)s"
 msgstr ""
 
-#: apps/analyzer/views.py:412
+#: apps/analyzer/views.py:421
 msgid "Elements Detection algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 
-#: apps/analyzer/views.py:419
+#: apps/analyzer/views.py:428
 msgid "Elements Classification algorithm must be one of ['legacy', 'uied']"
 msgstr ""
 
-#: apps/analyzer/views.py:427 apps/analyzer/views.py:433
+#: apps/analyzer/views.py:436 apps/analyzer/views.py:442
 msgid "The following file or directory does not exists: %(path)"
 msgstr ""
 
-#: apps/analyzer/views.py:440
+#: apps/analyzer/views.py:449
 #, python-format
 msgid ""
 "phases_to_execute must be composed by phases contained in %(DEFAULT_PHASES)s"
 msgstr ""
 
-#: apps/analyzer/views.py:451
+#: apps/analyzer/views.py:460
 #, python-format
 msgid "Case study with id:%(id) is being generated ..."
 msgstr ""
 
-#: apps/analyzer/views.py:454
+#: apps/analyzer/views.py:463
 msgid "Some of the attributes are invalid: "
 msgstr ""
 
-#: apps/analyzer/views.py:476
+#: apps/analyzer/views.py:485
 msgid "Case Study with id %(id) not found"
 msgstr ""
 
-#: apps/analyzer/views.py:494
+#: apps/analyzer/views.py:503
 msgid ""
 "The processing of this case study has not yet finished, please try again in "
 "a few minutes"
 msgstr ""
 
-#: apps/analyzer/views.py:497
+#: apps/analyzer/views.py:506
 #, python-format
 msgid "Case Study with id %(id) raised an exception: "
 msgstr ""
 
-#: apps/analyzer/views.py:551 apps/analyzer/views.py:629
+#: apps/analyzer/views.py:560 apps/analyzer/views.py:638
 msgid "You don't have permissions to access this files"
 msgstr ""
 
-#: apps/analyzer/views.py:595 apps/analyzer/views.py:610
+#: apps/analyzer/views.py:604 apps/analyzer/views.py:619
 msgid "This execution doesn't belong to the authenticated user"
 msgstr ""

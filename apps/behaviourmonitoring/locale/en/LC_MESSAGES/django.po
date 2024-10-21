@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-24 08:18+0000\n"
+"POT-Creation-Date: 2024-10-18 10:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,66 +18,62 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/behaviourmonitoring/forms.py:33
+#: apps/behaviourmonitoring/forms.py:32
 msgid "Type"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:34
+#: apps/behaviourmonitoring/forms.py:33
 msgid "UI Log Filename"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:35
-msgid "UI Log Separator"
-msgstr ""
-
-#: apps/behaviourmonitoring/forms.py:36
+#: apps/behaviourmonitoring/forms.py:34
 msgid "Gaze Log Filename"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:37
+#: apps/behaviourmonitoring/forms.py:35
 msgid "Gaze Log Adjustment"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:38
+#: apps/behaviourmonitoring/forms.py:36
 msgid "System Info. Log"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:40
+#: apps/behaviourmonitoring/forms.py:38
 msgid "Screen Inches"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:41
+#: apps/behaviourmonitoring/forms.py:39
 msgid "Observer to Webcam distance (in cm)"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:42
+#: apps/behaviourmonitoring/forms.py:40
 msgid "Screen Width (in pixels)"
 msgstr ""
 
-#: apps/behaviourmonitoring/forms.py:43
+#: apps/behaviourmonitoring/forms.py:41
 msgid "Screen Height (in pixels)"
 msgstr ""
 
-#: apps/behaviourmonitoring/models.py:53
+#: apps/behaviourmonitoring/models.py:52
 msgid "There is already an active monitoring for this case study."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:110 apps/behaviourmonitoring/views.py:133
+#: apps/behaviourmonitoring/views.py:130 apps/behaviourmonitoring/views.py:153
 msgid "User must be authenticated."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:112 apps/behaviourmonitoring/views.py:135
+#: apps/behaviourmonitoring/views.py:132 apps/behaviourmonitoring/views.py:155
 msgid "Case Study doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:114 apps/behaviourmonitoring/views.py:137
+#: apps/behaviourmonitoring/views.py:134 apps/behaviourmonitoring/views.py:157
 msgid "Monitoring doesn't belong to the authenticated user."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:116 apps/behaviourmonitoring/views.py:139
+#: apps/behaviourmonitoring/views.py:136 apps/behaviourmonitoring/views.py:159
 msgid "Monitoring doesn't belong to the Case Study."
 msgstr ""
 
-#: apps/behaviourmonitoring/views.py:155
+#: apps/behaviourmonitoring/views.py:175
 msgid "This object doesn't belong to the authenticated user"
 msgstr ""
