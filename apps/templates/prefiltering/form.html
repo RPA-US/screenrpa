@@ -11,14 +11,14 @@
                     <div class="form-validation">{{ form.title.errors }}</div>
                 </div>
             </div>
-            <div class="col-12">
+            <!-- <div class="col-12">
                 <div class="form-group">
                     <label class="form-control-label" for="input-title">{% blocktranslate %}Scale Dispersion{% endblocktranslate %}<b class="text-red">*</b> <small>{% blocktranslate %}Scale the dispersion area circle . The value 3 is recommended as first prefiltering execution. (1-5){% endblocktranslate %}</small></label>
                     {{ form.scale_factor }}
                     <span id="scale_factor_value"></span>
                     <div class="form-validation">{{ form.scale_factor.errors }}</div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <hr>
         <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
@@ -53,7 +53,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const preloaded = document.getElementById('id_preloaded');  
     const preloaded_file = document.getElementById('id_preloaded_file');  
-    const scale_factor = document.getElementById('id_scale_factor');
+    /*const scale_factor = document.getElementById('id_scale_factor');
     const scale_factor_value = document.getElementById('scale_factor_value');
 
     if (scale_factor) {
@@ -62,11 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
         scale_factor.oninput = function() {
             scale_factor_value.innerText = `${this.value}`;
         }
-    }
-    
+    }    */
     function toggleFields(isPreloadedChecked) {
         preloaded_file.disabled = !isPreloadedChecked;
-        scale_factor.disabled = isPreloadedChecked;
+        //scale_factor.disabled = isPreloadedChecked;
     }
 
     preloaded.addEventListener('change', () => {

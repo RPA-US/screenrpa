@@ -15,7 +15,7 @@ from django.utils.translation import gettext_lazy as _
 def rectangle_prefilter():
     print("Not implemented yet :)")
 
-def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_filename, scale_factor):
+def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_filename):
     
     scenario_results = path_scenario + '_results'
     print(scenario_results)
@@ -27,10 +27,11 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
     draw = ImageDraw.Draw(attention_mask)
     for fixation_point in fixation_data[screenshot_filename]['fixation_points']:
         x, y = map(float, fixation_point.split('#'))
-        if 'imotions_dispersion' in fixation_data[screenshot_filename]['fixation_points'][fixation_point]:
-            dispersion = float(fixation_data[screenshot_filename]['fixation_points'][fixation_point]['imotions_dispersion'])
+        if 'dispersion' in fixation_data[screenshot_filename]['fixation_points'][fixation_point]:
+            dispersion = float(fixation_data[screenshot_filename]['fixation_points'][fixation_point]['dispersion'])
             if not pd.isna(dispersion):
-                radius = dispersion * (1000*scale_factor)  # Scale the dispersion to a reasonable size for the circle
+                # radius = dispersion * (1000*scale_factor)  # Scale the dispersion to a reasonable size for the circle
+                radius = dispersion
                 draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=255)
             else:
                 logging.info(fixation_point + " - (dispersion attr is nan) not mapped to attention area in screenshot " + screenshot_filename)
@@ -52,18 +53,18 @@ def attention_screen_mapping(log_path,path_scenario, fixation_data, screenshot_f
     attention_map.save(os.path.join(attention_path ,screenshot_filename))
     print(screenshot_filename+" prefiltered correctly and saved in: "+ str(attention_path))
 
-def attention_areas_prefilter(log_path, path_scenario, special_colnames, scale_factor):
+def attention_areas_prefilter(log_path, path_scenario, special_colnames):
     ui_log = read_ui_log_as_dataframe(log_path)
     # Load the fixation data
     with open(os.path.join(path_scenario, 'fixation.json'), 'r') as f:
         fixation_data = json.load(f)
     for screenshot_filename in ui_log[special_colnames["Screenshot"]]:
         if screenshot_filename in fixation_data:
-            attention_screen_mapping(log_path, path_scenario, fixation_data, screenshot_filename, scale_factor)
+            attention_screen_mapping(log_path, path_scenario, fixation_data, screenshot_filename)
         else:
             logging.info(str(screenshot_filename) + " doesn't generate filtered screenshot. It doesn't have fixations related.")
 
-def apply_prefilters(log_path, path_scenario, special_colnames, scale_factor):
+def apply_prefilters(log_path, path_scenario, special_colnames):
     times = {}
     # for key in tqdm(configurations, desc="Prefilters have been processed: "):
     #     # ui_selector = configurations[key]["UI_selector"]
@@ -83,7 +84,7 @@ def apply_prefilters(log_path, path_scenario, special_colnames, scale_factor):
     #     times[key] = {"duration": float(time.time()) - float(start_t)}
     print("Prefiltering phase started...")
     start_t = time.time()
-    attention_areas_prefilter(log_path, path_scenario, special_colnames, scale_factor)
+    attention_areas_prefilter(log_path, path_scenario, special_colnames)
     print("Prefiltering phase finished satisfactory!")
     times["prefiltering"] = {"duration": float(time.time()) - float(start_t)}
 
@@ -91,7 +92,7 @@ def apply_prefilters(log_path, path_scenario, special_colnames, scale_factor):
 
 def prefilters(log_path, path_scenario, execution):
     special_colnames = execution.case_study.special_colnames
-    scale_factor = execution.prefilters.scale_factor
+    # scale_factor = execution.prefilters.scale_factor
     skip = execution.prefilters.preloaded
     
     if not skip:  
@@ -99,7 +100,7 @@ def prefilters(log_path, path_scenario, execution):
         # match filters_format_type:
         #     case "rpa-us":
         #         output = apply_prefilters(log_path, execution.exp_folder_complete_path, special_colnames, configurations)
-        output = apply_prefilters(log_path, path_scenario, special_colnames, scale_factor)
+        output = apply_prefilters(log_path, path_scenario, special_colnames)
         #     case _:
         #         raise Exception(_("You select a type of prefilter that doesnt exists"))
     else:

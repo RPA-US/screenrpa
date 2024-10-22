@@ -62,7 +62,7 @@ MONITORING_IMOTIONS_NEEDED_COLUMNS = ["CoorX","CoorY","EventType","NameApp","Scr
 
 #Eye Tracking CONSTANTS
 INCH_PER_CENTIMETRES = 2.54 #1 inch =  2.54cm
-FIXATION_MINIMUM_DURATION = 100 #ms (This is for Fixation Minimum Gazepoints)
+FIXATION_MINIMUM_DURATION = 200 #ms (This is for Fixation Minimum Gazepoints) It could be 100ms-200ms. We establish it in 200ms
 DEVICE_FREQUENCY_WEBGAZER = 30 #Hz. Frequency of our Eyetracker software (Webgazer)
 DEVICE_FREQUENCY_TOBII = 60 #Hz. Frequency of our Eyetracker software (Tobii Pro Spark)
 #===================================================================================================

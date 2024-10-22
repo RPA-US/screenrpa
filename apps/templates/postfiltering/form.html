@@ -12,7 +12,7 @@
                 </div>
               </div> 
           </div>
-          <div class="pl-lg-2">
+          <!-- <div class="pl-lg-2">
               <div class="col-12">
                 <div class="form-group">
                   <label class="form-control-label" for="input-scale_factor">{% blocktranslate %}Dispersion Scale Factor{% endblocktranslate %}<b class="text-red">*</b> <small>{% blocktranslate %}Scale the dispersion area circle. The value 5 is recommended as first prefiltering execution. (1-10){% endblocktranslate %}</small></label>
@@ -21,7 +21,7 @@
                   <div class="form-validation">{{ form.scale_factor.errors }}</div>
                 </div>
               </div> 
-          </div>
+          </div> -->
           <!-- <div class="pl-lg-2">
               <div class="col-12">
                 <div class="form-group">
@@ -87,22 +87,21 @@
     const consider_nested_as_relevant = document.getElementById('id_consider_nested_as_relevant');
     const preloaded = document.getElementById('id_preloaded');  
     const preloaded_file = document.getElementById('id_preloaded_file');
-    const scale_factor = document.getElementById('id_scale_factor');
-    const scale_factor_value = document.getElementById('scale_factor_value');
+    //const scale_factor = document.getElementById('id_scale_factor');
+    //const scale_factor_value = document.getElementById('scale_factor_value'); 
 
-    if (scale_factor) {
-        scale_factor_value.innerText = `${scale_factor.value}`;
+    /*if (scale_factor) {
+      scale_factor_value.innerText = `${scale_factor.value}`;
 
-        scale_factor.oninput = function() {
-            scale_factor_value.innerText = `${this.value}`;
-        }
-    }  
-
+      scale_factor.oninput = function() {
+          scale_factor_value.innerText = `${this.value}`;
+      }
+    } */
 
     // Función para habilitar/deshabilitar campos
     function toggleFields(isPreloadedChecked) {
       preloaded_file.disabled = !isPreloadedChecked;
-      scale_factor.disabled = isPreloadedChecked;
+      //scale_factor.disabled = isPreloadedChecked;
       //intersection_area_thresh.disabled = isPreloadedChecked;
       consider_nested_as_relevant.disabled = isPreloadedChecked;
 

@@ -47,7 +47,7 @@
                   <th scope="col" class="sort" data-sort="id">{% blocktranslate %}Id{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Title{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="created_at">{% blocktranslate %}Created at{% endblocktranslate %}</th>
-                  <th scope="col">{% blocktranslate %}Dispersion factor{% endblocktranslate %}</th>
+                  <!-- <th scope="col">{% blocktranslate %}Dispersion factor{% endblocktranslate %}</th> -->
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Preloaded results{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Nested UI elements as relevant{% endblocktranslate %}</th>
                   <th scope="col" class="sort" data-sort="type">{% blocktranslate %}Executed{% endblocktranslate %}</th>
@@ -73,9 +73,9 @@
                   <td>
                     {{ postfilter.created_at }}
                   </td>
-                  <td>
+                  <!-- <td>
                     {{ postfilter.scale_factor }}
-                  </td>
+                  </td> -->
                   <td >
                     {% if postfilter.preloaded %}
                       {% blocktranslate %}Yes{% endblocktranslate %} |
