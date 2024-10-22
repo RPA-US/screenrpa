@@ -122,17 +122,17 @@ def calculate_intersection_area_v2(compo, fixation_point_x, fixation_point_y, ci
     
     return intersection_area
 
-def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_point_y, scale_factor, previous_coincident_areas):
-    compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
+# def is_component_relevant_v2(compo, fixation_point, fixation_point_x, fixation_point_y, scale_factor, previous_coincident_areas):
+#     compo_area = (compo['row_max'] - compo['row_min']) * (compo['column_max'] - compo['column_min'])
     
-    circle_radius = fixation_point["dispersion"] * int(scale_factor)
-    intersection_area = calculate_intersection_area_v2(compo, fixation_point_x, fixation_point_y, circle_radius)
-    res = intersection_area / compo_area
-    return res
+#     circle_radius = fixation_point["dispersion"] * int(scale_factor)
+#     intersection_area = calculate_intersection_area_v2(compo, fixation_point_x, fixation_point_y, circle_radius)
+#     res = intersection_area / compo_area
+#     return res
 
 
 # def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, !!!!intersection_area_thresh, consider_nested_as_relevant):
-def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, consider_nested_as_relevant):
+def gaze_filtering(log_path, path_scenario, special_colnames, consider_nested_as_relevant):
     """
     This function removes from 'screenshot000X.JPG' the components that do not receive attention by the user 
     (there's no fixation point that matches component area)
@@ -179,6 +179,8 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, cons
                 # Split the fixation point into coordinates and load the corresponding fixation object
             fixation_coordinates = fixation_point.split("#")
             fixation_obj = fixation_json[screenshot_filename]["fixation_points"][fixation_point]
+            if "dispersion" not in fixation_obj:
+                continue
             fixation_point_x = float(fixation_coordinates[0])
             fixation_point_y = float(fixation_coordinates[1])     
                 
@@ -186,7 +188,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, cons
             centre = Point(fixation_point_x, fixation_point_y)
             #El radio relevante es el radio de la dispersion del punto de fijación multiplicado por el factor de escala
             #El scale_factor es un valor que si puede ser modificable por el usuario.
-            radio = float(fixation_obj["imotions_dispersion"]) * (500 * float(scale_factor))
+            radio = float(fixation_obj["dispersion"]) 
             if not pd.isna(radio):
                 polygon_circle = centre.buffer(radio)
                 polygon_circles.append(polygon_circle)
@@ -248,7 +250,7 @@ def gaze_filtering(log_path, path_scenario, special_colnames, scale_factor, cons
 def apply_filters(log_path, path_scenario, execution):
     
     special_colnames = execution.case_study.special_colnames
-    scale_factor = execution.postfilters.scale_factor
+    # scale_factor = execution.postfilters.scale_factor
     # intersection_area_thresh = execution.postfilters.intersection_area_thresh
     consider_nested_as_relevant = execution.postfilters.consider_nested_as_relevant 
     times = {}
@@ -271,7 +273,7 @@ def apply_filters(log_path, path_scenario, execution):
     print("Postfiltering phase started...")
     start_t = time.time()
     # gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,!!!intersection_area_thresh,consider_nested_as_relevant)
-    gaze_filtering(log_path,path_scenario,special_colnames,scale_factor,consider_nested_as_relevant)
+    gaze_filtering(log_path,path_scenario,special_colnames,consider_nested_as_relevant)
     print("Postfiltering phase finished satisfactory!")
     times["postfiltering"] = {"duration": float(time.time()) - float(start_t)}
 

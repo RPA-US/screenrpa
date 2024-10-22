@@ -22,7 +22,7 @@ def get_distance_threshold_by_resolution(screen_inches, inch_per_centimetres, ob
     sin_value = np.sin(angle_radians)#Sin(1º) value
     print(f"sin(1º) = {sin_value}")
     
-    radius_diameter = sin_value*observer_camera_distance*2 #diámetro en cm
+    radius_diameter = sin_value*observer_camera_distance*2 #Se multiplica por 2 para obtener el diámetro
     print(f"Fixation Boundary (diameter): {radius_diameter} cm.")
 
     screen_diagonal_pixels = math.sqrt((width)**2 + (height)**2)#diagonal de la pantalla en píxeles. Dependiendo de la resolución de la pantalla, tendrá un valor diferente
@@ -36,13 +36,12 @@ def get_distance_threshold_by_resolution(screen_inches, inch_per_centimetres, ob
 
     pixels_threshold_i_dt = int(radius_diameter * pixels_per_centimetres)
     print(f"I-DT threshold (in pixels): {pixels_threshold_i_dt} px.")
-    
     return pixels_threshold_i_dt
 
 def get_minimum_fixation_gazepoints(device_frequency, fixation_minimum_duration):
     
     minimum_fixation_gazepoints = round(device_frequency*fixation_minimum_duration/1000)
-    # print(f"The minimum gaze points considered to be a possible fixation is {minimum_fixation_gazepoints},\naccording to our device refresh rate and the established fixation minimum duration (100ms).\n")
+    # print(f"The minimum gaze points considered to be a possible fixation is {minimum_fixation_gazepoints},\naccording to our device refresh rate and the established fixation minimum duration (200ms).\n")
     
     return minimum_fixation_gazepoints
 
@@ -116,26 +115,12 @@ def preprocess_gaze_log(df, gaze_x_colname, gaze_y_colname, min_points, distance
                 # y la duración de la fijación (tiempo entre el comienzo y el final de la fijación)
                 last_fixation_duration = last_fixation_end - last_fixation_start
                 
-                # Calcular la desviación estándar de las coordenadas x e y de los puntos de fijación
-                #La desviación estándar es una medida de la cantidad de variación o dispersión
-                # de un conjunto de valores. Una desviación estándar baja indica que los valores tienden a estar cerca de la media del conjunto,
-                # mientras que una desviación estándar alta indica que los valores están más dispersos.
-                
-                fixation_dispersion_x = df[gaze_x_colname].iloc[pos_start_last_fixation_to_store:pos_end_last_fixation + 1].std()
-                fixation_dispersion_y = df[gaze_y_colname].iloc[pos_start_last_fixation_to_store:pos_end_last_fixation + 1].std()
-                
-                # Calcular el índice de dispersión como la media de las desviaciones estándar de x e y. Esto se denomina
-                #como coeficiente de variación. El coeficiente de variación es una medida de la dispersión relativa de forma 
-                #porcentual
-                fixation_dispersion = round(((fixation_dispersion_x + fixation_dispersion_y) / 2) / 100, 2)
                 
 
             else:
+                #Reseteamos
                 centroid_x = 0
                 centroid_y = 0
-                fixation_dispersion_x = 0
-                fixation_dispersion_y = 0
-                fixation_dispersion = 0
 
 
             # añadir el fixation index desde la row pos_start_last_fixation hasta el pos_current_fixation en la columna de fixation_index del df
@@ -149,7 +134,7 @@ def preprocess_gaze_log(df, gaze_x_colname, gaze_y_colname, min_points, distance
             # Indice de dispersión: Puede calcularse como la relación entre la media de las distancias entre todos los puntos 
             # y la distancia media desde cada punto hasta el centro del conjunto. 
             # Un índice mayor indica mayor dispersión.
-            df.loc[pos_start_last_fixation_to_store:pos_end_last_fixation, 'Fixation Dispersion'] = fixation_dispersion
+
             
     
             

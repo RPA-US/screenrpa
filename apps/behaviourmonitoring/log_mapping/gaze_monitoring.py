@@ -55,6 +55,7 @@ def fixation_dispersion(fixations, gaze_log, x_column_name="Gaze_X", y_column_na
     return fixation_dispersion
   
 def calculate_dispersion(gaze_log, metrics, last_index):
+  #Dispersion de https://link.springer.com/article/10.3758/s13428-020-01392-6
     current_fixations = range(metrics["start_index"], last_index + 1)
     fixations_x = [float(gaze_log.loc[index,"Gaze_X"]) for index in current_fixations]
     fixations_y = [float(gaze_log.loc[index,"Gaze_Y"]) for index in current_fixations]
@@ -113,7 +114,7 @@ def gaze_log_get_key(i, gaze_log, gaze_timestamp):
     "ms_start": gaze_log.iloc[i]["Fixation Start"],
     "ms_end": gaze_log.iloc[i]["Fixation End"],
     "duration": gaze_log.iloc[i]["Fixation Duration"], 
-    "imotions_dispersion": gaze_log.iloc[i]["Fixation Dispersion"]
+    # "imotions_dispersion": gaze_log.iloc[i]["Fixation Dispersion"]
   }
   return format_fixation_point_key(i, gaze_log), init
 
@@ -405,7 +406,7 @@ def fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path):
         new_row_json["#events"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["#events"]]
         new_row_json[special_colnames["Timestamp"]] = [fixation_p[screenshot]["fixation_points"][coor_coded]["timestamp"]]
         # new_row_json["dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["dispersion"]]
-        new_row_json["imotions_dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["imotions_dispersion"]]
+        # new_row_json["imotions_dispersion"] = [fixation_p[screenshot]["fixation_points"][coor_coded]["imotions_dispersion"]]
         
         new_row_json = pd.DataFrame(new_row_json)
         

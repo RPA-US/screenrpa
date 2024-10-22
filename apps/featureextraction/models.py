@@ -57,7 +57,7 @@ class Prefilters(models.Model):
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
     freeze = models.BooleanField(default=False, editable=True)
-    scale_factor = models.IntegerField(default=3, editable=True)
+    # scale_factor = models.IntegerField(default=3, editable=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -190,7 +190,7 @@ class Postfilters(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=False, editable=True)
     executed = models.IntegerField(default=0, editable=True)
-    scale_factor = models.IntegerField(default=5)
+    # scale_factor = models.IntegerField(default=5)
     # intersection_area_thresh = models.IntegerField(default=0)
     consider_nested_as_relevant = models.BooleanField(default=True)
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True)
