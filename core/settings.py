@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'drf_spectacular', # Swagger
     'drf_spectacular_sidecar', # Swagger. required for Django collectstatic discovery
     'apps.wearabletracking',
+    'apps.emotions',  # Local App
 ]
 
 MIDDLEWARE = [
@@ -211,6 +212,7 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'apps', 'decisiondiscovery', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'featureextraction', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'wearabletracking', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'emotions', 'locale'),
     os.path.join(CORE_DIR, 'locale'),
 ]
 

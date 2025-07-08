@@ -29,5 +29,6 @@ urlpatterns += _(
     path('reporting/', include("apps.reporting.urls")),
     path('notification/', include("apps.notification.urls")),
     path('wearabletracking/', include("apps.wearabletracking.urls")),
+    path('emotions/', include("apps.emotions.urls")),
 )
     
