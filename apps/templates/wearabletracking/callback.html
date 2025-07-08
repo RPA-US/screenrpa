@@ -1,7 +1,13 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-  <h1>Dispositivos Fitbit del usuario</h1>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Dispositivos Fitbit del usuario</h1>
+    <form action="{% url 'wearabletracking:fitbit_logout' %}" method="post" style="margin: 0;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Cerrar sesión Fitbit</button>
+    </form>
+  </div>
   <p><strong>ID de usuario Fitbit:</strong> {{ fitbit_user }}</p>
   {% if devices %}
     <ul>

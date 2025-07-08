@@ -15,9 +15,12 @@ import pandas as pd
 from django.shortcuts import render
 
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
+@login_required
 def wearable_home(request):
-    token = FitbitToken.objects.first()
+    token = FitbitToken.objects.filter(user=request.user).first()
     if token and (token.created_at + timedelta(seconds=token.expires_in)) > timezone.now():
         # Obtener dispositivos
         device_url = "https://api.fitbit.com/1/user/-/devices.json"
@@ -48,6 +51,7 @@ def authorize(request):
     )
     return redirect(auth_url)
 
+@login_required
 def callback(request):
     code = request.GET.get('code')
     if not code:
@@ -69,17 +73,18 @@ def callback(request):
     if response.status_code == 200:
         token_data = response.json()
 
-        # Elimina tokens antiguos si solo quieres uno por usuario
-        FitbitToken.objects.all().delete()
+        # Elimina el token antiguo solo del usuario actual
+        FitbitToken.objects.filter(user=request.user).delete()
 
-        # Guardar token en la base de datos
+        # Guardar token en la base de datos para el usuario actual
         token = FitbitToken.objects.create(
+            user=request.user,
             access_token=token_data['access_token'],
             refresh_token=token_data['refresh_token'],
             expires_in=token_data['expires_in'],
             token_type=token_data['token_type'],
             scope=token_data['scope'],
-            user_id=token_data['user_id']
+            fitbit_user_id=token_data['user_id']
         )
 
         # Obtener dispositivos del usuario
@@ -96,7 +101,10 @@ def callback(request):
     else:
         return render(request, 'wearabletracking/callback.html', {'error': response.json()})
      
-
+@login_required
+def fitbit_logout(request):
+    FitbitToken.objects.filter(user=request.user).delete()
+    return redirect(reverse('wearabletracking:wearable_home'))
 
 
 def calcular_metricas_derivadas(pasos, fc, edad, fc_reposo):
