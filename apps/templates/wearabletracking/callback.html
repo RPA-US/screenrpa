@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Dispositivos wearable pantalal callback</h1>
+  <ul>
+    {% for device in devices %}
+      <li>{{ device.name }} ({{ device.device_id }})</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

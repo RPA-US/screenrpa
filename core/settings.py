@@ -106,7 +106,8 @@ INSTALLED_APPS = [
     'apps.reporting', # Local App
     'apps.notification', # Local App
     'drf_spectacular', # Swagger
-    'drf_spectacular_sidecar',  # Swagger. required for Django collectstatic discovery
+    'drf_spectacular_sidecar', # Swagger. required for Django collectstatic discovery
+    'apps.wearabletracking',
 ]
 
 MIDDLEWARE = [
@@ -209,6 +210,7 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'apps', 'chefboost', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'decisiondiscovery', 'locale'),
     os.path.join(BASE_DIR, 'apps', 'featureextraction', 'locale'),
+    os.path.join(BASE_DIR, 'apps', 'wearabletracking', 'locale'),
     os.path.join(CORE_DIR, 'locale'),
 ]
 
