@@ -1,10 +1,19 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 
 {% block content %}
-  <h1>Dispositivos wearable pantalal callback</h1>
-  <ul>
-    {% for device in devices %}
-      <li>{{ device.name }} ({{ device.device_id }})</li>
-    {% endfor %}
-  </ul>
+  <h1>Dispositivos Fitbit del usuario</h1>
+  <p><strong>ID de usuario Fitbit:</strong> {{ fitbit_user }}</p>
+  {% if devices %}
+    <ul>
+      {% for device in devices %}
+        <li>
+          <strong>{{ device.deviceVersion }}</strong> ({{ device.type }})<br>
+          <strong>ID:</strong> {{ device.id }}<br>
+          <strong>Última sincronización:</strong> {{ device.lastSyncTime }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No se encontraron dispositivos.</p>
+  {% endif %}
 {% endblock %}

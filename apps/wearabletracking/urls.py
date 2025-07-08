@@ -9,5 +9,6 @@ urlpatterns = [
     path('callback/', views.callback, name='callback'),
     path('rango-fechas/', views.exportar_datos_fitbit, name='exportar_datos_fitbit'),
     path('analytics/', views.analytics, name='fitbit_analytics'),
+    path('fitbit/callback/', views.callback, name='fitbit_callback'),
 
 ]

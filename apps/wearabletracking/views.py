@@ -18,15 +18,22 @@ from django.utils import timezone
 
 def wearable_home(request):
     token = FitbitToken.objects.first()
-    # Verifica si hay token y si no ha expirado
     if token and (token.created_at + timedelta(seconds=token.expires_in)) > timezone.now():
-        # Si el token es válido, muestra la pantalla de callback
-        return render(request, 'wearabletracking/callback.html', {'token': {
-            'access_token': token.access_token,
-            'user_id': token.user_id,
-        }})
+        # Obtener dispositivos
+        device_url = "https://api.fitbit.com/1/user/-/devices.json"
+        headers = {"Authorization": f"Bearer {token.access_token}"}
+        device_resp = requests.get(device_url, headers=headers)
+        devices = device_resp.json() if device_resp.status_code == 200 else []
+
+        return render(request, 'wearabletracking/callback.html', {
+            'token': {
+                'access_token': token.access_token,
+                'user_id': token.user_id,
+            },
+            'devices': devices,
+            'fitbit_user': token.user_id,
+        })
     else:
-        # Si no hay token válido, muestra el botón para autorizar
         return render(request, 'wearabletracking/wearable_home.html')
     
 def authorize(request):
@@ -44,7 +51,7 @@ def authorize(request):
 def callback(request):
     code = request.GET.get('code')
     if not code:
-        return render(request, 'fitbit_app/callback.html', {'error': 'No se recibió el código.'})
+        return render(request, 'wearabletracking/callback.html', {'error': 'No se recibió el código.'})
 
     token_url = "https://api.fitbit.com/oauth2/token"
     headers = {
@@ -62,8 +69,11 @@ def callback(request):
     if response.status_code == 200:
         token_data = response.json()
 
+        # Elimina tokens antiguos si solo quieres uno por usuario
+        FitbitToken.objects.all().delete()
+
         # Guardar token en la base de datos
-        FitbitToken.objects.create(
+        token = FitbitToken.objects.create(
             access_token=token_data['access_token'],
             refresh_token=token_data['refresh_token'],
             expires_in=token_data['expires_in'],
@@ -72,7 +82,17 @@ def callback(request):
             user_id=token_data['user_id']
         )
 
-        return render(request, 'wearabletracking/callback.html', {'token': token_data})
+        # Obtener dispositivos del usuario
+        device_url = "https://api.fitbit.com/1/user/-/devices.json"
+        device_headers = {"Authorization": f"Bearer {token.access_token}"}
+        device_resp = requests.get(device_url, headers=device_headers)
+        devices = device_resp.json() if device_resp.status_code == 200 else []
+
+        return render(request, 'wearabletracking/callback.html', {
+            'token': token_data,
+            'devices': devices,
+            'fitbit_user': token_data['user_id'],
+        })
     else:
         return render(request, 'wearabletracking/callback.html', {'error': response.json()})
      

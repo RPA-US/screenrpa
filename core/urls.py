@@ -9,6 +9,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 from .settings import API_VERSION
 from apps.analyzer.views import index
 from django.conf.urls.i18n import i18n_patterns as _
+from apps.wearabletracking import views as wearable_views
 
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
@@ -30,5 +31,6 @@ urlpatterns += _(
     path('notification/', include("apps.notification.urls")),
     path('wearabletracking/', include("apps.wearabletracking.urls")),
     path('emotions/', include("apps.emotions.urls")),
+    path('fitbit/callback/', wearable_views.callback, name='fitbit_callback_global'),
 )
     

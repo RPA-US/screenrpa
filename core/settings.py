@@ -341,3 +341,10 @@ SCREEN2SOM_CONFIG_PATH =                               CORE_DIR + sep + "configu
 #to visualize pdf files in the browser
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+
+# Fitbit OAuth2 credentials
+FITBIT_CLIENT_ID     = config('FITBIT_CLIENT_ID')
+FITBIT_CLIENT_SECRET = config('FITBIT_CLIENT_SECRET')
+FITBIT_REDIRECT_URI  = config('FITBIT_REDIRECT_URI')
+

@@ -1,1 +1,8 @@
-<h2>Conectar con Fitbit</h2>
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+  <h2>Conectar con Fitbit</h2>
+  <form action="{% url 'wearabletracking:authorize' %}" method="get">
+      <button type="submit">Autorizar con Fitbit</button>
+  </form>
+{% endblock %}
