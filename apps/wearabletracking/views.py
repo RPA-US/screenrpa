@@ -134,7 +134,7 @@ def exportar_datos_fitbit(request):
         fecha_inicio = request.POST.get('fecha_inicio')
         fecha_fin = request.POST.get('fecha_fin')
         
-        token = FitbitToken.objects.first()
+        token = FitbitToken.objects.filter(user=request.user).first()
         headers = {"Authorization": f"Bearer {token.access_token}"}
         edad = 30  # Ajustar según usuario real
         fc_reposo = 65  # Ajustar según usuario real
@@ -154,7 +154,11 @@ def exportar_datos_fitbit(request):
 
                 temp_url = f"https://api.fitbit.com/1/user/-/temp/skin/date/{fecha_str}.json"
                 temp_resp = requests.get(temp_url, headers=headers)
-                temp_var = temp_resp.json().get("tempSkin", [{}])[0].get("value", "") if temp_resp.status_code == 200 else ""
+                temp_data = temp_resp.json().get("tempSkin", [{}])
+                if temp_data:
+                    temp_var = temp_data[0].get("value", "")
+                else:
+                    temp_var = ""
 
                 hrv_url = f"https://api.fitbit.com/1/user/-/hrv/date/{fecha_str}/all.json"
                 hrv_resp = requests.get(hrv_url, headers=headers)
@@ -272,7 +276,7 @@ def analytics(request):
         'temp_skin': df['temperatura'].iloc[0] if 'temperatura' in df.columns else None,
     }
 
-    token = FitbitToken.objects.first()
+    token = FitbitToken.objects.filter(user=request.user).first()
     headers = {"Authorization": f"Bearer {token.access_token}"}
     resp = requests.get(
         f"https://api.fitbit.com/1/user/-/stressManagement/date/{date_str}.json",

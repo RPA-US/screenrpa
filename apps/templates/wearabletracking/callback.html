@@ -22,4 +22,20 @@
   {% else %}
     <p>No se encontraron dispositivos.</p>
   {% endif %}
+  <hr>
+  <h3>Exportar datos de Fitbit</h3>
+  <form method="post" action="{% url 'wearabletracking:exportar_datos_fitbit' %}" class="row g-3">
+    {% csrf_token %}
+    <div class="col-md-5">
+      <label for="fecha_inicio" class="form-label">Fecha inicio</label>
+      <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+    </div>
+    <div class="col-md-5">
+      <label for="fecha_fin" class="form-label">Fecha fin</label>
+      <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-success w-100">Descargar ZIP</button>
+    </div>
+  </form>
 {% endblock %}
