@@ -181,7 +181,7 @@ def chefboost_decision_tree(
                 os.path.join(param_path, alg + "-rules.json"),
             )
 
-        features = list(fi.loc[fi["importance"] > 0].index)
+        features = list(fi.loc[fi["final_importance"] > 0].index)
         target_labels = list(df[target_label].unique())
 
         traceability_path = os.path.join(param_path, "traceability.json")
@@ -409,7 +409,7 @@ def sklearn_decision_tree(
         "sklearn",
         tree_classifier,
         k_fold_cross_validation,
-    )
+    )[0]
     times["sklearn"] = {"duration": float(time.time()) - float(start_t)}
     # times["sklearn"]["encoders"] = {
     #     "enabled": status_encoder.fit_transform(["enabled"])[0],
