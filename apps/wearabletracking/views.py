@@ -5,6 +5,8 @@ import zipfile
 import requests
 from django.shortcuts import render, redirect
 from django.conf import settings
+
+from apps.wearabletracking.utils import obtener_ultima_sync, validar_fechas, fechas_fuera_de_sync
 from .models import FitbitToken
 from datetime import datetime, timedelta
 import csv
@@ -133,15 +135,85 @@ def exportar_datos_fitbit(request):
     if request.method == 'POST':
         fecha_inicio = request.POST.get('fecha_inicio')
         fecha_fin = request.POST.get('fecha_fin')
-        
+
+        # Obtener token y dispositivos antes de cualquier validación
         token = FitbitToken.objects.filter(user=request.user).first()
-        headers = {"Authorization": f"Bearer {token.access_token}"}
+        devices = []
+        if token:
+            headers = {"Authorization": f"Bearer {token.access_token}"}
+            device_url = "https://api.fitbit.com/1/user/-/devices.json"
+            device_resp = requests.get(device_url, headers=headers)
+            devices = device_resp.json() if device_resp.status_code == 200 else []
+        else:
+            headers = {}
+
+        # Validación de fechas
+        error_msg = validar_fechas(fecha_inicio, fecha_fin)
+        if error_msg:
+            return render(request, 'wearabletracking/callback.html', {
+                'devices': devices,
+                'fitbit_user': token.user_id if token else None,
+                'error': error_msg,
+                'fecha_inicio': fecha_inicio,
+                'fecha_fin': fecha_fin,
+            })
+
+        # Validación de sincronización
+        ultima_sync = obtener_ultima_sync(devices)
+        fuera_de_sync = fechas_fuera_de_sync(fecha_fin, ultima_sync)
+        if fuera_de_sync:
+            return render(request, 'wearabletracking/callback.html', {
+                'devices': devices,
+                'fitbit_user': token.user_id if token else None,
+                'error': fuera_de_sync,
+                'fecha_inicio': fecha_inicio,
+                'fecha_fin': fecha_fin,
+            })
+
         edad = 30  # Ajustar según usuario real
         fc_reposo = 65  # Ajustar según usuario real
 
         current_date = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
         end_date = datetime.strptime(fecha_fin, "%Y-%m-%d").date()
 
+        # Detectar días sin datos relevantes
+        dias_sin_datos = []
+        fechas_a_exportar = []
+        temp_current_date = current_date
+        def fetch_data(metric, fecha_str):
+            url = f"https://api.fitbit.com/1/user/-/activities/{metric}/date/{fecha_str}/1d/1min.json"
+            r = requests.get(url, headers=headers)
+            key = f"activities-{metric}-intraday"
+            if r.status_code == 200:
+                return {d['time']: d['value'] for d in r.json().get(key, {}).get('dataset', [])}
+            return {}
+
+        while temp_current_date <= end_date:
+            fecha_str = temp_current_date.strftime("%Y-%m-%d")
+            fc_data = fetch_data('heart', fecha_str)
+            pasos_data = fetch_data('steps', fecha_str)
+            calorias_data = fetch_data('calories', fecha_str)
+            if not fc_data and not pasos_data and not calorias_data:
+                dias_sin_datos.append(fecha_str)
+            fechas_a_exportar.append(fecha_str)
+            temp_current_date += timedelta(days=1)
+
+        # Advertencia si hay días sin datos y no se ha confirmado la descarga
+        if dias_sin_datos and not request.POST.get('confirmar_descarga'):
+            advertencia = (
+                f"Advertencia: No hay datos para los días {', '.join(dias_sin_datos)}. "
+                "¿Desea descargar el archivo igualmente?"
+            )
+            return render(request, 'wearabletracking/callback.html', {
+                'devices': devices,
+                'fitbit_user': token.user_id if token else None,
+                'error': advertencia,
+                'dias_sin_datos': dias_sin_datos,
+                'fecha_inicio': fecha_inicio,
+                'fecha_fin': fecha_fin,
+            })
+
+        # Crear un buffer para el zip
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             while current_date <= end_date:
@@ -155,10 +227,7 @@ def exportar_datos_fitbit(request):
                 temp_url = f"https://api.fitbit.com/1/user/-/temp/skin/date/{fecha_str}.json"
                 temp_resp = requests.get(temp_url, headers=headers)
                 temp_data = temp_resp.json().get("tempSkin", [{}])
-                if temp_data:
-                    temp_var = temp_data[0].get("value", "")
-                else:
-                    temp_var = ""
+                temp_var = temp_data[0].get("value", "") if temp_data else ""
 
                 hrv_url = f"https://api.fitbit.com/1/user/-/hrv/date/{fecha_str}/all.json"
                 hrv_resp = requests.get(hrv_url, headers=headers)
@@ -174,18 +243,10 @@ def exportar_datos_fitbit(request):
                     if rmssd_values:
                         hrv_rmssd = sum(rmssd_values) / len(rmssd_values)
 
-                def fetch_data(metric):
-                    url = f"https://api.fitbit.com/1/user/-/activities/{metric}/date/{fecha_str}/1d/1min.json"
-                    r = requests.get(url, headers=headers)
-                    key = f"activities-{metric}-intraday"
-                    if r.status_code == 200:
-                        return {d['time']: d['value'] for d in r.json().get(key, {}).get('dataset', [])}
-                    return {}
-
                 # Frecuencia cardíaca, pasos, calorías
-                fc_data = fetch_data('heart')
-                pasos_data = fetch_data('steps')
-                calorias_data = fetch_data('calories')
+                fc_data = fetch_data('heart', fecha_str)
+                pasos_data = fetch_data('steps', fecha_str)
+                calorias_data = fetch_data('calories', fecha_str)
 
                 # Zonas activas: manejo especial
                 azm_url = f"https://api.fitbit.com/1/user/-/activities/active-zone-minutes/date/{fecha_str}/1d/1min.json"
@@ -195,11 +256,9 @@ def exportar_datos_fitbit(request):
                     azm_json = azm_resp.json().get("activities-active-zone-minutes-intraday", [])
                     if azm_json and "minutes" in azm_json[0]:
                         for entry in azm_json[0]["minutes"]:
-                            # Extrae solo la hora y minuto para alinear con otros datos
                             minute = entry["minute"][-8:]  # HH:MM:SS
                             azm_data[minute] = entry["value"].get("activeZoneMinutes", 0)
 
-                # Unifica todos los minutos disponibles
                 minutos = sorted(set(fc_data.keys()) | set(pasos_data.keys()) | set(azm_data.keys()))
                 fc_list = [fc_data.get(m, None) for m in minutos]
                 pasos_list = [pasos_data.get(m, 0) for m in minutos]
@@ -222,7 +281,7 @@ def exportar_datos_fitbit(request):
                         fc_data.get(minuto, ''),
                         pasos_data.get(minuto, ''),
                         calorias_data.get(minuto, ''),
-                        azm_data.get(minuto, 0),  # Si no hay dato, pone 0
+                        azm_data.get(minuto, 0),
                         sedentario[idx],
                         ratio[idx],
                         cvl[idx],
@@ -241,6 +300,7 @@ def exportar_datos_fitbit(request):
         return response
 
     return render(request, 'wearabletracking/form_range.html')
+
 
 
 def analytics(request):

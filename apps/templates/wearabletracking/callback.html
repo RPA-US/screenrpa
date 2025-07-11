@@ -9,6 +9,11 @@
     </form>
   </div>
   <p><strong>ID de usuario Fitbit:</strong> {{ fitbit_user }}</p>
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  {% endif %}
   {% if devices %}
     <ul>
       {% for device in devices %}
@@ -23,6 +28,18 @@
     <p>No se encontraron dispositivos.</p>
   {% endif %}
   <hr>
+  {% if error and dias_sin_datos %}
+  <div class="alert alert-warning" role="alert">
+    {{ error }}
+    <form method="post" action="{% url 'wearabletracking:exportar_datos_fitbit' %}">
+      {% csrf_token %}
+      <input type="hidden" name="fecha_inicio" value="{{ fecha_inicio }}">
+      <input type="hidden" name="fecha_fin" value="{{ fecha_fin }}">
+      <input type="hidden" name="confirmar_descarga" value="1">
+      <button type="submit" class="btn btn-warning mt-2">Descargar de todas formas</button>
+    </form>
+  </div>
+  {% endif %}
   <h3>Exportar datos de Fitbit</h3>
   <form method="post" action="{% url 'wearabletracking:exportar_datos_fitbit' %}" class="row g-3">
     {% csrf_token %}
