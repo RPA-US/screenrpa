@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grabar Emociones</title>
+  <!-- Bootstrap opcional -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css"
+    integrity="sha256-Nfu23DiRqsrx/6B6vsI0T9vEVKq1M6KgO8+TV363g3s="
+    crossorigin="anonymous"
+  />
+  <style>
+    body { padding: 2rem; }
+    #status { margin-top: 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Grabar Emociones</h1>
+
+  <div class="btn-group" role="group">
+    <button id="btn-start" class="btn btn-primary">Iniciar</button>
+    <button id="btn-stop"  class="btn btn-warning">Detener</button>
+    <button id="btn-down"  class="btn btn-success">Descargar ZIP</button>
+  </div>
+
+  <div id="status">
+    Estado: <span id="state-text">detenido</span>
+  </div>
+
+  <script>
+    const stateText = document.getElementById('state-text');
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+      fetch("{% url 'emotions:emotion_start' %}")
+        .then(r => r.json())
+        .then(data => {
+          stateText.textContent = (data.status === 'started')
+            ? 'grabando'
+            : data.status;
+        })
+        .catch(() => {
+          stateText.textContent = 'error al iniciar';
+        });
+    });
+
+    document.getElementById('btn-stop').addEventListener('click', () => {
+      fetch("{% url 'emotions:emotion_stop' %}")
+        .then(r => r.json())
+        .then(data => {
+          stateText.textContent = (data.status === 'stopped')
+            ? 'detenido'
+            : data.status;
+        })
+        .catch(() => {
+          stateText.textContent = 'error al detener';
+        });
+    });
+
+    document.getElementById('btn-down').addEventListener('click', () => {
+      // Esto disparará la descarga del ZIP
+      window.location.href = "{% url 'emotions:emotion_download' %}";
+    });
+  </script>
+</body>
+</html>

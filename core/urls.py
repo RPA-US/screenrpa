@@ -30,7 +30,7 @@ urlpatterns += _(
     path('reporting/', include("apps.reporting.urls")),
     path('notification/', include("apps.notification.urls")),
     path('wearabletracking/', include("apps.wearabletracking.urls")),
-    path('emotions/', include("apps.emotions.urls")),
+    path('emotions/', include(('apps.emotions.urls','emotions'), namespace='emotions')),
     path('fitbit/callback/', wearable_views.callback, name='fitbit_callback_global'),
 )
     
