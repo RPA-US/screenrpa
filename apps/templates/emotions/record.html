@@ -1,68 +1,160 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Grabar Emociones</title>
-  <!-- Bootstrap opcional -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css"
-    integrity="sha256-Nfu23DiRqsrx/6B6vsI0T9vEVKq1M6KgO8+TV363g3s="
-    crossorigin="anonymous"
-  />
-  <style>
-    body { padding: 2rem; }
-    #status { margin-top: 1rem; font-weight: bold; }
-  </style>
+    <title>Detección de Emociones</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .video-container { text-align: center; margin: 20px 0; }
+        .controls { margin: 20px 0; }
+        .btn { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; }
+        .btn-start { background-color: #4CAF50; color: white; }
+        .btn-stop { background-color: #f44336; color: white; }
+        .btn-download { background-color: #2196F3; color: white; }
+        .status { margin: 10px 0; padding: 10px; background-color: #f0f0f0; }
+        .emotion-display { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .error { color: red; margin: 10px 0; }
+    </style>
 </head>
 <body>
-  <h1>Grabar Emociones</h1>
+    <div class="container">
+        <h1>Detección de Emociones en Tiempo Real</h1>
+        
+        <div class="video-container">
+            <img id="video-feed" src="" alt="Video Feed" style="max-width: 100%; height: auto; display: none;">
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn" class="btn btn-start">Iniciar Detección</button>
+            <button id="stop-btn" class="btn btn-stop">Detener Detección</button>
+            <button id="download-btn" class="btn btn-download">Descargar Registros</button>
+        </div>
+        
+        <div class="status">
+            <div>Estado: <span id="status">Detenido</span></div>
+            <div class="emotion-display">Emoción: <span id="current-emotion">No detectado</span></div>
+        </div>
+        
+        <div id="error-message" class="error" style="display: none;"></div>
+    </div>
 
-  <div class="btn-group" role="group">
-    <button id="btn-start" class="btn btn-primary">Iniciar</button>
-    <button id="btn-stop"  class="btn btn-warning">Detener</button>
-    <button id="btn-down"  class="btn btn-success">Descargar ZIP</button>
-  </div>
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const statusSpan = document.getElementById('status');
+        const emotionSpan = document.getElementById('current-emotion');
+        const videoFeed = document.getElementById('video-feed');
+        const errorMessage = document.getElementById('error-message');
 
-  <div id="status">
-    Estado: <span id="state-text">detenido</span>
-  </div>
+        let isRunning = false;
+        let emotionInterval;
 
-  <script>
-    const stateText = document.getElementById('state-text');
+        // Obtener el prefijo de idioma actual
+        const currentPath = window.location.pathname;
+        const langPrefix = currentPath.split('/')[1] === 'es' ? '/es' : '';
 
-    document.getElementById('btn-start').addEventListener('click', () => {
-      fetch("{% url 'emotions:emotion_start' %}")
-        .then(r => r.json())
-        .then(data => {
-          stateText.textContent = (data.status === 'started')
-            ? 'grabando'
-            : data.status;
-        })
-        .catch(() => {
-          stateText.textContent = 'error al iniciar';
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            console.error(message);
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        startBtn.addEventListener('click', async () => {
+            hideError();
+            console.log('Intentando iniciar...');
+            
+            try {
+                const response = await fetch(langPrefix + '/emotions/start/', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.log('Response text:', text);
+                    showError('Error: La respuesta no es JSON. Verifica la consola para más detalles.');
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.status === 'started') {
+                    isRunning = true;
+                    statusSpan.textContent = 'Grabando';
+                    videoFeed.src = langPrefix + '/emotions/video_feed/';
+                    videoFeed.style.display = 'block';
+                    startEmotionUpdates();
+                } else {
+                    showError('Error: ' + data.status);
+                }
+            } catch (error) {
+                console.error('Error completo:', error);
+                showError('Error al iniciar: ' + error.message);
+            }
         });
-    });
 
-    document.getElementById('btn-stop').addEventListener('click', () => {
-      fetch("{% url 'emotions:emotion_stop' %}")
-        .then(r => r.json())
-        .then(data => {
-          stateText.textContent = (data.status === 'stopped')
-            ? 'detenido'
-            : data.status;
-        })
-        .catch(() => {
-          stateText.textContent = 'error al detener';
+        stopBtn.addEventListener('click', async () => {
+            hideError();
+            
+            try {
+                const response = await fetch(langPrefix + '/emotions/stop/', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'stopped') {
+                    isRunning = false;
+                    statusSpan.textContent = 'Detenido';
+                    videoFeed.src = '';
+                    videoFeed.style.display = 'none';
+                    stopEmotionUpdates();
+                } else {
+                    showError('Error: ' + data.status);
+                }
+            } catch (error) {
+                showError('Error al detener: ' + error.message);
+            }
         });
-    });
 
-    document.getElementById('btn-down').addEventListener('click', () => {
-      // Esto disparará la descarga del ZIP
-      window.location.href = "{% url 'emotions:emotion_download' %}";
-    });
-  </script>
+        downloadBtn.addEventListener('click', () => {
+            window.location.href = langPrefix + '/emotions/download/';
+        });
+
+        function startEmotionUpdates() {
+            emotionInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(langPrefix + '/emotions/current/');
+                    const data = await response.json();
+                    emotionSpan.textContent = data.emotion;
+                } catch (error) {
+                    console.error('Error al obtener emoción:', error);
+                }
+            }, 1000);
+        }
+
+        function stopEmotionUpdates() {
+            if (emotionInterval) {
+                clearInterval(emotionInterval);
+                emotionInterval = null;
+            }
+        }
+    </script>
 </body>
 </html>
