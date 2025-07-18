@@ -41,6 +41,26 @@ class Monitoring(models.Model):
     observer_camera_distance = models.FloatField(null =True, blank = True ,default=50)
     screen_width = models.IntegerField(null =True, blank = True ,default=1920)
     screen_height = models.IntegerField(null =True, blank = True ,default=1080)
+    #Wearable data
+    use_wearable_data = models.BooleanField(
+        default=False,
+        verbose_name=_("¿Procesar datos de wearable?")
+    )
+    wearable_filename = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    #Emotions data
+    use_emotions_data = models.BooleanField(
+        default=False
+    )
+    emotions_filename = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
 
     case_study = models.ForeignKey('apps_analyzer.CaseStudy', on_delete=models.CASCADE, null=True) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

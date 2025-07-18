@@ -26,7 +26,11 @@ class MonitoringForm(forms .ModelForm):
             "screen_inches",
             "observer_camera_distance",
             "screen_width",
-            "screen_height"
+            "screen_height",
+            "use_wearable_data",
+            "wearable_filename",
+            "use_emotions_data",
+            "emotions_filename",
         )
         labels = {
             "type": _("Type"),
@@ -38,7 +42,11 @@ class MonitoringForm(forms .ModelForm):
             "screen:_inches":_("Screen Inches"),
             "observer_camera_distance":_("Observer to Webcam distance (in cm)"),
             "screen_width":_("Screen Width (in pixels)"),
-            "screen_height":_("Screen Height (in pixels)")
+            "screen_height":_("Screen Height (in pixels)"),
+            "use_wearable_data": _("¿Procesar datos de wearable?"),
+            "wearable_filename": _("Nombre del archivo wearable (.csv)"),
+            "use_emotions_data": _("¿Procesar datos de emociones?"),
+            "emotions_filename": _("Nombre del archivo de emociones (.csv)")
         }
 
         widgets = {
@@ -67,7 +75,11 @@ class MonitoringForm(forms .ModelForm):
             "screen_inches": forms.NumberInput(attrs={"class": "form-control"}),
             "observer_camera_distance": forms.NumberInput(attrs={"class": "form-control"}),
             "screen_width": forms.NumberInput(attrs={"class": "form-control"}),
-            "screen_height": forms.NumberInput(attrs={"class": "form-control"})
+            "screen_height": forms.NumberInput(attrs={"class": "form-control"}),
+            "use_wearable_data": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),
+            "wearable_filename": forms.TextInput(attrs={"class": "form-control"}),
+            "use_emotions_data": forms.CheckboxInput(attrs={"class": "primary-checkbox"}),
+            "emotions_filename": forms.TextInput(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):

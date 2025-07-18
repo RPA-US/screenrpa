@@ -17,6 +17,22 @@
             <div class="form-validation">{{ form.type.errors }}</div>
             </div>
         </div>
+        <div class="form-group">
+            {{ form.use_wearable_data }}
+            <label for="id_use_wearable_data">¿Procesar datos de wearable?</label>
+        </div>
+        <div class="form-group" id="wearable_filename_div">
+            {{ form.wearable_filename }}
+            <label for="id_wearable_filename">Nombre del archivo wearable (.csv)</label>
+        </div>
+        <div class="form-group">
+            {{ form.use_emotions_data }}
+            <label for="id_use_emotions_data">¿Procesar datos de emociones?</label>
+        </div>
+        <div class="form-group" id="emotions_filename_div">
+            {{ form.emotions_filename }}
+            <label for="id_emotions_filename">Nombre del archivo de emociones (.csv)</label>
+        </div>
     </div>
   <hr>
   <h6 class="heading-small text-muted mb-4">{% blocktranslate %}Preload Execution Results{% endblocktranslate %}</h6>
@@ -184,6 +200,27 @@
       }
     })  
   
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var toggleWearable = document.getElementById('id_use_wearable_data');
+      var divWearable = document.getElementById('wearable_filename_div');
+      if (toggleWearable) {
+          divWearable.style.display = toggleWearable.checked ? 'block' : 'none';
+          toggleWearable.addEventListener('change', function() {
+              divWearable.style.display = this.checked ? 'block' : 'none';
+          });
+      }
+
+      var toggleEmotions = document.getElementById('id_use_emotions_data');
+      var divEmotions = document.getElementById('emotions_filename_div');
+      if (toggleEmotions) {
+          divEmotions.style.display = toggleEmotions.checked ? 'block' : 'none';
+          toggleEmotions.addEventListener('change', function() {
+              divEmotions.style.display = this.checked ? 'block' : 'none';
+          });
+      }
+    });
   </script>
 
   {% endblock javascripts %}
