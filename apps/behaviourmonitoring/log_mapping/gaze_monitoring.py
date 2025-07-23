@@ -12,7 +12,7 @@ from core.settings import MONITORING_IMOTIONS_NEEDED_COLUMNS, INCH_PER_CENTIMETR
 from apps.analyzer.utils import convert_timestamps_and_clean_screenshot_name_in_csv, get_csv_log_start_datetime, get_mht_log_start_datetime
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_timezone, decode_imotions_native_slideevents, decode_imotions_monitoring
-
+from apps.behaviourmonitoring.log_mapping.merge_wearable_data_with_ui import merge_wearable_with_ui
 
 ms_pattern = '%H-%M-%S.%f'
 # ui_log_timestamp_pattern = '%H:%M:%S %p'
@@ -596,6 +596,17 @@ def monitoring(log_path, root_path, execution):
       logging.info("behaviourmonitoring/monitoring/monitoring. fixation.json saved!")
         
       fixation_json_to_dataframe(ui_log, fixation_p, special_colnames, root_path)
+# --- INTEGRACIÓN WEARABLE ---
+      if monitoring_obj.use_wearable_data and monitoring_obj.wearable_filename:
+          ui_log_path = os.path.join(root_path, "ub_log_fixation.csv")
+          wearable_csv_path = os.path.join(root_path, monitoring_obj.wearable_filename)
+          output_path = os.path.join(root_path, "merged_ui_wearable.csv")
+          if os.path.exists(ui_log_path) and os.path.exists(wearable_csv_path):
+              merge_wearable_with_ui(ui_log_path, wearable_csv_path, output_path)
+              logging.info(f"Archivo combinado wearable guardado en: {output_path}")
+          else:
+              logging.warning("No se encontró el CSV global o el CSV de wearable para combinar.")
+# --- FIN INTEGRACIÓN WEARABLE ---
         
       monitoring_obj.executed = 100
       monitoring_obj.ub_log_path =os.path.join( root_path , "fixation.json")
