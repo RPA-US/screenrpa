@@ -3,18 +3,17 @@ import json
 import os
 import zipfile
 import requests
-from django.shortcuts import render, redirect
 from django.conf import settings
 
 from apps.wearabletracking.utils import obtener_ultima_sync, validar_fechas, fechas_fuera_de_sync
-from .models import FitbitToken
+from apps.analyzer.models import CaseStudy, Execution
+from .models import FitbitToken, BiometricAnalysisConfig, BiometricAnalysisReport
 from datetime import datetime, timedelta
 import csv
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 import numpy as np
-import io
 import pandas as pd
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -301,8 +300,6 @@ def exportar_datos_fitbit(request):
 
     return render(request, 'wearabletracking/form_range.html')
 
-
-
 def analytics(request):
     date_str = request.GET.get('date', datetime.today().strftime("%Y-%m-%d"))
     csv_path = os.path.join(settings.MEDIA_ROOT, f"fitbit_{date_str}.csv")
@@ -353,3 +350,152 @@ def analytics(request):
         'data_json': json.dumps(records),
         'daily': daily,
     })
+
+# Lista de configuraciones biométricas
+def biometric_config_list(request, case_study_id):
+    case_study = get_object_or_404(CaseStudy, pk=case_study_id)
+    configs = BiometricAnalysisConfig.objects.filter(case_study=case_study)
+    return render(request, 'wearabletracking/biometric_config_list.html', {
+        'case_study': case_study,
+        'object_list': configs,
+        'case_study_id': case_study_id,
+    })
+# def biometric_config_list(request, case_study_id):
+#     # Simulación de datos
+#     configs = [
+#         {
+#             'id': 1,
+#             'created_at': '2025-07-25',
+#             'title': 'Config ejemplo 1',
+#             'default_metrics': ['fc', 'pasos'],
+#             'default_chart_type': 'line',
+#             'freeze': False,
+#             'active': True,
+#         },
+#         {
+#             'id': 2,
+#             'created_at': '2025-07-20',
+#             'title': 'Config ejemplo 2',
+#             'default_metrics': ['calorias'],
+#             'default_chart_type': 'bar',
+#             'freeze': True,
+#             'active': False,
+#         },
+#     ]
+#     return render(request, 'wearabletracking/biometric_config_list.html', {
+#         'case_study': {'id': case_study_id},
+#         'object_list': configs,
+#         'case_study_id': case_study_id,
+#     })
+
+# Formulario para crear nueva configuración biométrica
+@login_required
+def biometric_config_create(request, case_study_id):
+    case_study = get_object_or_404(CaseStudy, pk=case_study_id)
+    if request.method == 'POST':
+        # Recoge los datos del formulario visual
+        metrics = request.POST.get('metrics', '')
+        chart_type = request.POST.get('chart_type', 'line')
+        title = request.POST.get('title', 'Configuración biométrica')
+        description = request.POST.get('description', '')
+        metrics_list = [m for m in metrics.split(',') if m]
+
+        BiometricAnalysisConfig.objects.create(
+            case_study=case_study,
+            user=request.user,
+            default_metrics=metrics_list,
+            default_chart_type=chart_type,
+            active=False,
+            # Si tienes title y description en el modelo, añádelos aquí
+            title=title,
+            description=description,
+        )
+        return redirect('wearabletracking:biometric_config_list', case_study_id=case_study_id)
+    return render(request, 'wearabletracking/biometric_config_form.html', {
+        'case_study': case_study,
+        'case_study_id': case_study_id,
+    })
+# def biometric_config_create(request, case_study_id):
+#     # Simulación: no uses BiometricAnalysisConfigForm ni lógica de guardado
+#     case_study = {'id': case_study_id, 'title': 'Estudio de ejemplo'}
+#     return render(request, 'wearabletracking/biometric_config_form.html', {
+#         'case_study': case_study,
+#         'case_study_id': case_study_id,
+#         # Puedes pasar datos simulados si quieres mostrar valores por defecto
+#     })
+
+# Detalle de configuración biométrica
+def biometric_config_detail(request, config_id):
+    config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
+    return render(request, 'wearabletracking/biometric_config_detail.html', {
+        'config': config,
+        'case_study_id': config.case_study.id,
+    })
+
+# Activar configuración biométrica
+def biometric_config_activate(request, config_id):
+    config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
+    # Cambia el estado: si está activa, desactívala; si no, actívala
+    config.active = not config.active
+    config.save()
+    return redirect('wearabletracking:biometric_config_list', case_study_id=config.case_study.id)
+
+@login_required
+@login_required
+def biometric_config_edit(request, config_id):
+    config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
+    if config.freeze:
+        return redirect('wearabletracking:biometric_config_detail', config_id=config.id)
+        
+    if request.method == 'POST':
+        metrics = request.POST.get('metrics', '')
+        chart_type = request.POST.get('chart_type', 'line')
+        title = request.POST.get('title', config.title)
+        description = request.POST.get('description', config.description)
+        
+        metrics_list = [m for m in metrics.split(',') if m]
+        
+        config.title = title
+        config.description = description
+        config.default_metrics = metrics_list
+        config.default_chart_type = chart_type
+        config.save()
+        
+        return redirect('wearabletracking:biometric_config_list', case_study_id=config.case_study.id)
+        
+    return render(request, 'wearabletracking/biometric_config_form.html', {
+        'case_study': config.case_study,
+        'case_study_id': config.case_study.id,
+        'config': config,
+        'edit_mode': True,
+    })
+
+# Lista de reportes biométricos de una ejecución
+def biometric_report_list(request, execution_id):
+    execution = get_object_or_404(Execution, pk=execution_id)
+    report = getattr(execution, 'biometric_report', None)
+    return render(request, 'wearabletracking/biometric_report_list.html', {
+        'execution': execution,
+        'report': report,
+    })
+
+# Detalle de reporte biométrico
+def biometric_report_detail(request, report_id):
+    report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
+    return render(request, 'wearabletracking/biometric_report_detail.html', {
+        'report': report,
+    })
+
+# Descargar reporte biométrico (PDF)
+def biometric_report_download(request, report_id):
+    report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
+    return FileResponse(report.report_file, as_attachment=True, filename=f'reporte_biometrico_{report_id}.pdf')
+
+
+@login_required
+def biometric_config_delete(request, config_id):
+    config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
+    case_study_id = config.case_study.id
+    if not config.freeze:  # Solo permite borrar si no está congelada
+        config.delete()
+    return redirect('wearabletracking:biometric_config_list', case_study_id=case_study_id)

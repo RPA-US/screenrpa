@@ -182,6 +182,22 @@
                       </p>
                     {% endif %}
                   </div>
+                  <div class="col-lg-3 col-md-6">
+                    {% if 'BiometricAnalysis' in case_study.available_phases %}
+                      <a href="/wearabletracking/biometric-analysis/list/{{ case_study_id }}" type="button" class="btn-icon-clipboard">
+                    {% else %}
+                      <a type="button" class="btn-icon-clipboard btn-icon-clipboard-disabled" disabled>
+                    {% endif %}
+                        <div>
+                          <i class="ni ni-watch-time"></i> <span>{% blocktranslate %}Biometric Analysis{% endblocktranslate %}</span>
+                        </div>
+                      </a>
+                    {% if not 'BiometricAnalysis' in case_study.available_phases %}
+                      <p class="text-sm text-muted">
+                        {% blocktranslate %}Requires Log Processing with wearable data{% endblocktranslate %}
+                      </p>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
             </div>

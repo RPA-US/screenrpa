@@ -1,0 +1,272 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}
+  {% if edit_mode %}
+    {% blocktranslate %}Edit Biometric Analysis Configuration{% endblocktranslate %}
+  {% else %}
+    {% blocktranslate %}New Biometric Analysis Configuration{% endblocktranslate %}
+  {% endif %}
+{% endblock title %}
+
+{% block content %}
+  <!-- Encabezado y breadcrumb -->
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-12">
+            <a href="{% url 'wearabletracking:biometric_config_list' case_study_id %}" class="btn btn-neutral">
+              <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+              {% blocktranslate %}Go Back to Biometric Analysis Configurations{% endblocktranslate %}
+            </a>
+            <h6 class="h2 text-white d-inline-block mb-0 ml-2">
+              {% if edit_mode %}
+                {% blocktranslate %}Edit Biometric Analysis Configuration{% endblocktranslate %}
+              {% else %}
+                {% blocktranslate %}New Biometric Analysis Configuration{% endblocktranslate %}
+              {% endif %}
+            </h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-lg-2">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="/case-study/list/"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/case-study/detail/{{ case_study_id }}/">{% blocktranslate %}Case Study {{ case_study_id }}{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'wearabletracking:biometric_config_list' case_study_id %}">{% blocktranslate %}Biometric Analysis Configs{% endblocktranslate %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  {% if edit_mode %}
+                    {% blocktranslate %}Edit Biometric Analysis{% endblocktranslate %}
+                  {% else %}
+                    {% blocktranslate %}New Biometric Analysis{% endblocktranslate %}
+                  {% endif %}
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 30px;"></div>
+
+  <!-- Usar campos ocultos para pasar datos de Django a JavaScript -->
+  {% if config %}
+    <input type="hidden" id="default-chart-type" value="{{ config.default_chart_type }}">
+    {{ config.default_metrics|json_script:"metrics-data" }}
+  {% endif %}
+
+  <div class="container-fluid">
+    <form method="post" id="biometric-config-form">
+      {% csrf_token %}
+      <div class="row justify-content-start">
+        <div class="col-xl-10 col-lg-11">
+          <!-- Título y descripción -->
+          <div class="mb-4">
+            <h2 class="text-primary">{% blocktranslate %}Activity Monitor Configuration{% endblocktranslate %}</h2>
+            <p class="text-muted">{% blocktranslate %}Customize and generate reports with data from your wearable device{% endblocktranslate %}</p>
+            <div class="form-group">
+              <label for="title">{% blocktranslate %}Title{% endblocktranslate %}</label>
+              <input type="text" class="form-control" id="title" name="title" maxlength="255"
+                placeholder="{% blocktranslate %}Enter a title{% endblocktranslate %}"
+                value="{{ config.title|default:'' }}">
+            </div>
+            <div class="form-group">
+              <label for="description">{% blocktranslate %}Description{% endblocktranslate %}</label>
+              <textarea class="form-control" id="description" name="description" rows="2" maxlength="500"
+                placeholder="{% blocktranslate %}Enter a description (optional){% endblocktranslate %}">{{ config.description|default:'' }}</textarea>
+            </div>
+          </div>
+          <!-- Métricas -->
+          <div class="card mb-5 shadow-sm">
+            <div class="card-body">
+              <h4 class="mb-3 text-primary">{% blocktranslate %}Metrics to Visualize{% endblocktranslate %}</h4>
+              <div class="d-flex flex-wrap justify-content-center">
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="fc" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-heartbeat"></i> {% blocktranslate %}Heart Rate{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="pasos" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-shoe-prints"></i> {% blocktranslate %}Steps{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="calorias" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-fire"></i> {% blocktranslate %}Calories{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="zona_activa" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-bolt"></i> {% blocktranslate %}Active Zone{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="sedentario" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-couch"></i> {% blocktranslate %}Sedentary Time{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="ratio_fc_pasos" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-divide"></i> {% blocktranslate %}FC/Steps Ratio{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="cvl" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-chart-area"></i> {% blocktranslate %}CVL{% endblocktranslate %}
+                </button>
+                <button type="button" class="btn btn-outline-primary metric-btn m-2"
+                  data-value="sdnn" style="border-radius: 20px; min-width: 140px;">
+                  <i class="fas fa-wave-square"></i> {% blocktranslate %}SDNN{% endblocktranslate %}
+                </button>
+              </div>
+              <input type="hidden" name="metrics" id="metrics-input" value="">
+            </div>
+          </div>
+          <!-- Tipo de gráfico -->
+          <div class="card mb-5 shadow-sm">
+            <div class="card-body">
+              <h4 class="mb-3 text-primary">{% blocktranslate %}Chart Type{% endblocktranslate %}</h4>
+              <div class="d-flex flex-wrap justify-content-center">
+                <div class="card chart-type-card mr-3 mb-2" data-value="line"
+                  style="width: 130px; border-radius: 15px; cursor:pointer; transition: box-shadow 0.2s;">
+                  <div class="card-body text-center p-2">
+                    <i class="fas fa-chart-line" style="color: #1976d2; font-size: 2em;"></i>
+                    <div class="mt-2" style="color: #1976d2;">{% blocktranslate %}Line Chart{% endblocktranslate %}</div>
+                  </div>
+                </div>
+                <div class="card chart-type-card mr-3 mb-2" data-value="bar"
+                  style="width: 130px; border-radius: 15px; cursor:pointer; transition: box-shadow 0.2s;">
+                  <div class="card-body text-center p-2">
+                    <i class="fas fa-chart-bar" style="color: #adb5bd; font-size: 2em;"></i>
+                    <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Bar Chart{% endblocktranslate %}</div>
+                  </div>
+                </div>
+                <div class="card chart-type-card mb-2" data-value="radar"
+                  style="width: 130px; border-radius: 15px; cursor:pointer; transition: box-shadow 0.2s;">
+                  <div class="card-body text-center p-2">
+                    <i class="fas fa-bullseye" style="color: #adb5bd; font-size: 2em;"></i>
+                    <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Radar Chart{% endblocktranslate %}</div>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="chart_type" id="chart-type-input" value="">
+            </div>
+          </div>
+          <!-- Botón de generar -->
+          <div class="text-center mb-5">
+            <button type="submit" class="btn btn-success btn-lg px-5" style="font-size: 1.2em; box-shadow: 0 2px 8px rgba(76,175,80,0.15);">
+              <i class="fas fa-save"></i>
+              {% blocktranslate %}Save configuration{% endblocktranslate %}
+            </button>
+          </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <style>
+    .metric-btn, .chart-type-card {
+      transition: background 0.2s, border 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .chart-type-card.active {
+      box-shadow: 0 4px 16px rgba(33,150,243,0.12);
+    }
+    .btn-success {
+      box-shadow: 0 2px 8px rgba(76,175,80,0.15);
+    }
+    .card-body {
+      padding: 1.2em 1em;
+    }
+    @media (max-width: 768px) {
+      .d-flex.flex-wrap {
+        flex-direction: column !important;
+        align-items: center;
+      }
+      .chart-type-card {
+        margin-right: 0 !important;
+        margin-bottom: 16px !important;
+      }
+    }
+    .card.mb-5 {
+      margin-bottom: 2.5rem !important;
+    }
+  </style>
+
+  <script>
+    // Inicializar valores por defecto en edición/creación
+    document.addEventListener('DOMContentLoaded', function() {
+      // --- MÉTRICAS ---
+      var selectedMetrics = ['fc']; // Valor por defecto
+      
+      // Comprueba si existe el elemento metrics-data (caso de edición)
+      if (document.getElementById('metrics-data')) {
+        selectedMetrics = JSON.parse(document.getElementById('metrics-data').textContent);
+      }
+      
+      document.querySelectorAll('.metric-btn').forEach(function(btn) {
+        if (selectedMetrics.includes(btn.getAttribute('data-value'))) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      document.getElementById('metrics-input').value = selectedMetrics.join(',');
+
+      // --- TIPO DE GRÁFICA ---
+      var selectedChart = 'line'; // Valor por defecto
+      
+      // Usa un elemento oculto para pasar el valor desde Django
+      var chartTypeElement = document.getElementById('default-chart-type');
+      if (chartTypeElement) {
+        selectedChart = chartTypeElement.value;
+      }
+      
+      document.querySelectorAll('.chart-type-card').forEach(function(card) {
+        if (card.getAttribute('data-value') === selectedChart) {
+          card.classList.add('active');
+          card.style.background = '#e3f2fd';
+          card.style.border = '2px solid #1976d2';
+          card.querySelector('i').style.color = '#1976d2';
+          card.querySelector('.mt-2').style.color = '#1976d2';
+          card.style.boxShadow = '0 4px 16px rgba(33,150,243,0.12)';
+        } else {
+          card.classList.remove('active');
+          card.style.background = '#fff';
+          card.style.border = '2px solid #adb5bd';
+          card.querySelector('i').style.color = '#adb5bd';
+          card.querySelector('.mt-2').style.color = '#adb5bd';
+          card.style.boxShadow = '';
+        }
+      });
+      document.getElementById('chart-type-input').value = selectedChart;
+
+      // --- EVENTOS ---
+      document.querySelectorAll('.metric-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          btn.classList.toggle('active');
+          var selected = [];
+          document.querySelectorAll('.metric-btn.active').forEach(function(activeBtn) {
+            selected.push(activeBtn.getAttribute('data-value'));
+          });
+          document.getElementById('metrics-input').value = selected.join(',');
+        });
+      });
+
+      document.querySelectorAll('.chart-type-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+          document.querySelectorAll('.chart-type-card').forEach(function(c) {
+            c.classList.remove('active');
+            c.style.background = '#fff';
+            c.style.border = '2px solid #adb5bd';
+            c.querySelector('i').style.color = '#adb5bd';
+            c.querySelector('.mt-2').style.color = '#adb5bd';
+            c.style.boxShadow = '';
+          });
+          card.classList.add('active');
+          card.style.background = '#e3f2fd';
+          card.style.border = '2px solid #1976d2';
+          card.querySelector('i').style.color = '#1976d2';
+          card.querySelector('.mt-2').style.color = '#1976d2';
+          card.style.boxShadow = '0 4px 16px rgba(33,150,243,0.12)';
+          document.getElementById('chart-type-input').value = card.getAttribute('data-value');
+        });
+      });
+    });
+  </script>
+{% endblock content %}

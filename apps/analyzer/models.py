@@ -97,6 +97,7 @@ class CaseStudy(models.Model):
         Returns the phases that can be configured based on the current active configurations
         """
         available_phases = ['Monitoring']
+        monitoring= Monitoring.objects.filter(case_study=self, active=True).first()
         # If there exists a log.csv in the unzipped folder or there exists a monitoring configutation, phases can be configured
         exists_log_csvs_paths = [os.path.exists(os.path.join(self.exp_folder_complete_path, scenario, 'log.csv')) for scenario in self.scenarios_to_study]
         if all(exists_log_csvs_paths) or Monitoring.objects.filter(case_study=self, active=True).exists():
@@ -113,6 +114,8 @@ class CaseStudy(models.Model):
                 available_phases.append('ExtractTrainingDataset')
             if ExtractTrainingDataset.objects.filter(case_study=self, active=True).exists():
                 available_phases.append("DecisionTreeTraining")
+            if monitoring and getattr(monitoring, "use_wearable_data", False):
+                available_phases.append("BiometricAnalysis")
 
         return available_phases
     
@@ -203,6 +206,8 @@ class Execution(models.Model):
     extract_training_dataset = models.ForeignKey(ExtractTrainingDataset, null=True, blank=True, on_delete=models.CASCADE)
     decision_tree_training = models.ForeignKey(DecisionTreeTraining, null=True, blank=True, on_delete=models.CASCADE)
     
+    biometric_config = models.ForeignKey('wearabletracking.BiometricAnalysisConfig',null=True, blank=True, on_delete=models.SET_NULL)
+    
     errored = models.BooleanField(default=False)
   
     @property
@@ -260,7 +265,7 @@ class Execution(models.Model):
 
         for stage in [self.monitoring, self.prefilters, self.ui_elements_detection,
                       self.ui_elements_classification, self.postfilters, 
-                      self.process_discovery, self.extract_training_dataset, self.decision_tree_training]:
+                      self.process_discovery, self.extract_training_dataset, self.decision_tree_training, self.biometric_config]:
             if stage:
                 stage.executed += 1
                 stage.freeze = True

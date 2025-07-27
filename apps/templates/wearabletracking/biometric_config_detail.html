@@ -1,0 +1,78 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ config.title }}{% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12">
+          <a href="{% url 'wearabletracking:biometric_config_list' case_study_id %}" class="btn btn-neutral">
+            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+            {% blocktranslate %}Go Back to Biometric Analysis Configurations{% endblocktranslate %}
+          </a>
+          <h6 class="h2 text-white d-inline-block mb-0 ml-2">{% blocktranslate %}Biometric Analysis Configuration Details{% endblocktranslate %}</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="height: 30px;"></div>
+
+<div class="container-fluid">
+  <form>
+    <div class="row justify-content-start">
+      <div class="col-xl-10 col-lg-11">
+        <!-- Título y descripción -->
+        <div class="mb-4">
+          <h2 class="text-primary">{% blocktranslate %}Activity Monitor Configuration{% endblocktranslate %}</h2>
+          <div class="form-group">
+            <label>{% blocktranslate %}Title{% endblocktranslate %}</label>
+            <input type="text" class="form-control" value="{{ config.title }}" disabled>
+          </div>
+          <div class="form-group">
+            <label>{% blocktranslate %}Description{% endblocktranslate %}</label>
+            <textarea class="form-control" rows="2" disabled>{{ config.description }}</textarea>
+          </div>
+        </div>
+        <!-- Métricas -->
+        <div class="card mb-5 shadow-sm">
+          <div class="card-body">
+            <h4 class="mb-3 text-primary">{% blocktranslate %}Metrics to Visualize{% endblocktranslate %}</h4>
+            <div class="d-flex flex-wrap justify-content-center">
+              {% for metric, label in config.METRIC_CHOICES %}
+                <button type="button" class="btn btn-outline-primary metric-btn m-2 {% if metric in config.default_metrics %}active{% endif %}" style="border-radius: 20px; min-width: 140px;" disabled>
+                  {{ label }}
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <!-- Tipo de gráfico -->
+        <div class="card mb-5 shadow-sm">
+          <div class="card-body">
+            <h4 class="mb-3 text-primary">{% blocktranslate %}Chart Type{% endblocktranslate %}</h4>
+            <div class="d-flex flex-wrap justify-content-center">
+              {% for chart, label in config.CHART_TYPE_CHOICES %}
+                <div class="card chart-type-card mr-3 mb-2 {% if chart == config.default_chart_type %}active{% endif %}" style="width: 130px; border-radius: 15px; opacity: 0.7;" disabled>
+                  <div class="card-body text-center p-2">
+                    <div class="mt-2">{{ label }}</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="text-center mb-5">
+          <a href="{% url 'wearabletracking:biometric_config_list' case_study_id %}" class="btn btn-secondary">
+            {% blocktranslate %}Back to list{% endblocktranslate %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock content %}
