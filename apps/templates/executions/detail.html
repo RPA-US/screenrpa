@@ -291,7 +291,28 @@
                             <a class="dropdown-item" href="/dd/decision-tree-training/result/{{execution_id}}/">Results</a>
                           </div>
                         {% endif %}
-                      </div> 
+                      </div>
+                    <div class="col-lg-3 col-md-6">
+                      {% if execution.biometric_config == None %}
+                      <a style="color: grey; background-color: #f1f1f1; pointer-events: none" class="btn-icon-clipboard disabled" href="#" role="button">
+                        <div>
+                          <i class="ni ni-watch-time" style="color: grey;"></i> <span>{% blocktranslate %}Biometric Analysis{% endblocktranslate %}</span>
+                        </div>
+                      {% else %}
+                      <a class="btn-icon-clipboard" href="#" role="button" id="biometricDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div>
+                          <i class="ni ni-watch-time"></i> <span>{% blocktranslate %}Biometric Analysis{% endblocktranslate %}</span>
+                        </div>
+                      {% endif %}
+                      </a>
+                      {% if execution.biometric_config != None %}
+                        <div class="dropdown-menu" aria-labelledby="biometricDropdown">
+                          <!-- Dropdown menu links -->
+                          <a class="dropdown-item" href="{% url 'wearabletracking:biometric_config_detail' execution.biometric_config.id %}">Configurations</a>
+                          <a class="dropdown-item" href="{% url 'wearabletracking:biometric_report_detail' execution.biometric_report.id %}">Results</a>
+                        </div>
+                      {% endif %}
+                    </div>
                       
                   </div>
                   
