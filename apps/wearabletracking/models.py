@@ -107,6 +107,8 @@ class BiometricAnalysisReport(models.Model):
     
     # Archivo del reporte generado
     report_file = PrivateFileField("Reporte PDF", upload_to='biometric_reports/', null=True, blank=True)
+
+    extra_data = models.JSONField(default=dict, blank=True)
     
     def get_merged_file_path(self):
         """Retorna la ruta completa al archivo CSV combinado"""

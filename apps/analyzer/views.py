@@ -91,6 +91,9 @@ from apps.analyzer.collect_results import experiments_results_collectors
 from apps.notification.models import Status as NotifStatus
 from apps.notification.views import create_notification
 
+from apps.wearabletracking.utils import procesar_analisis_biometrico
+from apps.wearabletracking.models import BiometricAnalysisConfig
+
 # Result Treeimport json
 import matplotlib.pyplot as plt
 from sklearn import tree
@@ -114,6 +117,10 @@ def generate_case_study(execution, path_scenario, times):
 
     n = 0
     for i, function_to_exec in enumerate(DEFAULT_PHASES):
+        
+        if function_to_exec == "biometric_config":
+            continue
+
         if getattr(execution, function_to_exec) is not None:
             # We handle fe preloaded because it may have several configuations
             phase_has_preloaded = (
@@ -229,6 +236,16 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         execution.save()
         execution.check_preloaded_file()
 
+        biometric_config = BiometricAnalysisConfig.objects.filter(
+            case_study=case_study,
+            active=True
+        ).first()
+        
+        if biometric_config:
+            execution.biometric_config = biometric_config
+            execution.save()
+            print(f"Found active biometric configuration: {biometric_config.title}")
+
         times = {}
 
         # year = datetime.now().date().strftime("%Y")
@@ -281,6 +298,34 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
 
             with open(metadata_final_path, "w") as outfile:
                 outfile.write(json_object)
+        
+        # If biometric analysis is enabled, process the biometric data
+                    
+        if hasattr(execution, 'biometric_config') and execution.biometric_config:
+            try:
+                print(f"Processing biometric data with config: {execution.biometric_config.title}")
+                biometric_report = procesar_analisis_biometrico(execution)
+                print(f"Biometric analysis completed for execution {execution.id}")
+            except Exception as e:
+                print(f"Error processing biometric data: {str(e)}")
+                traceback.print_exc()
+                
+                # Marcar la ejecución como errónea, similar a otras fases
+                execution.errored = True
+                execution.save()
+                
+                # Crear notificación de error
+                create_notification(
+                    User.objects.get(id=user_id),
+                    _(f"{case_study.title} Execution Error"),
+                    _(f"Error en análisis biométrico: {str(e)}"),
+                    reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}),
+                    status=NotifStatus.ERROR.value,
+                )
+                
+                # No lanzamos la excepción para que no interrumpa el flujo principal
+                # Si se desea interrumpir el flujo, descomentar: 
+                # raise Exception(f"Error en análisis biométrico: {str(e)}")
 
         print(
             f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}"

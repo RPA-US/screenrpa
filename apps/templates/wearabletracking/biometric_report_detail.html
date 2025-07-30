@@ -1,0 +1,594 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %} {% blocktranslate %}Biometric Analysis Results{% endblocktranslate %} {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="/case-study/execution/detail/{{ report.execution.id }}/" class="btn btn-neutral">
+            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
+            {% blocktranslate %}Go Back to Execution{% endblocktranslate %}
+          </a>
+          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Biometric Analysis Results{% endblocktranslate %}</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item">
+                <a href="/case-study/execution/detail/{{ report.execution.id }}/">
+                  {% blocktranslate %}Execution {{ report.execution.id }}{% endblocktranslate %}
+                </a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Biometric Results{% endblocktranslate %}</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <!-- Tabs navigation -->
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-pills nav-fill flex-column flex-sm-row mb-4" id="metric-tabs" role="tablist">
+        {% for metric in report.metrics %}
+          <li class="nav-item">
+            <a class="nav-link mb-sm-3 mb-md-0 {% if forloop.first %}active{% endif %}" 
+               id="{{ metric }}-tab" 
+               data-toggle="tab" 
+               href="#{{ metric }}-content" 
+               role="tab" 
+               aria-controls="{{ metric }}-content" 
+               aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+              {% if metric == 'fc' %}
+                <i class="ni ni-favourite-28 text-danger mr-2"></i> Heart Rate
+              {% elif metric == 'pasos' %}
+                <i class="ni ni-user-run text-primary mr-2"></i> Steps
+              {% elif metric == 'calorias' %}
+                <i class="ni ni-flame text-warning mr-2"></i> Calories
+              {% elif metric == 'zona_activa' %}
+                <i class="ni ni-watch-time text-success mr-2"></i> Active Zone
+              {% elif metric == 'sedentario' %}
+                <i class="ni ni-button-pause text-info mr-2"></i> Sedentary Time
+              {% else %}
+                <i class="ni ni-chart-bar-32 text-primary mr-2"></i> {{ metric }}
+              {% endif %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="row">
+    <!-- Left column: Chart -->
+    <div class="col-lg-8 col-md-12">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <div class="row">
+            <div class="col">
+              <h3 class="mb-0" id="chart-title">{{ report.title }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-legend mb-4">
+            <div class="d-flex">
+              <div class="mr-4">
+                <i class="fas fa-circle text-success mr-1"></i> Normal
+              </div>
+              <div>
+                <i class="fas fa-exclamation-triangle text-warning mr-1"></i> Abnormalities
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content">
+            {% for metric in report.metrics %}
+              <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                   id="{{ metric }}-content" 
+                   role="tabpanel" 
+                   aria-labelledby="{{ metric }}-tab">
+                <div class="chart-container" style="position: relative; height:45vh; width:100%">
+                  <canvas id="{{ metric }}-chart"></canvas>
+                </div>
+                
+                <!-- Events table -->
+                <div class="mt-4">
+                  <h4>{% blocktranslate %}Activity events{% endblocktranslate %}</h4>
+                  <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                      <thead class="thead-light">
+                        <tr>
+                          <th scope="col">{% blocktranslate %}Time{% endblocktranslate %}</th>
+                          <th scope="col">{% blocktranslate %}Value{% endblocktranslate %}</th>
+                          <th scope="col">{% blocktranslate %}Activity{% endblocktranslate %}</th>
+                        </tr>
+                      </thead>
+                      <tbody id="{{ metric }}-events">
+                        <!-- Events will be populated by JavaScript -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right column: Data and indicators -->
+    <div class="col-lg-4 col-md-12">
+      <!-- Data panel -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-gradient-primary">
+          <h3 class="text-white mb-0">DATA</h3>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="mr-3">
+              <i class="fas fa-calendar-day text-primary"></i>
+            </div>
+            <div>
+              <small class="text-muted">{% blocktranslate %}Date{% endblocktranslate %}</small>
+              <h5 class="mb-0">{{ report.created_at|date:"F j, Y" }}</h5>
+            </div>
+          </div>
+          
+          <div class="d-flex align-items-center">
+            <div class="mr-3">
+              <i class="fas fa-clock text-primary"></i>
+            </div>
+            <div>
+              <small class="text-muted">{% blocktranslate %}Time range{% endblocktranslate %}</small>
+              <h5 class="mb-0" id="time-range">8:00 am - 18:00 pm</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Indicators panel -->
+      <div class="card shadow">
+        <div class="card-header">
+          <h3 class="mb-0">{% blocktranslate %}Indicators{% endblocktranslate %}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- First row of indicators -->
+            <div class="col-6 mb-4">
+              <div class="card indicator-card" style="border: 1px solid #5e72e4;">
+                <div class="card-body py-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <i class="fas fa-tint text-primary fa-2x"></i>
+                    </div>
+                    <div class="text-right">
+                      <h4 class="mb-0">SpO₂</h4>
+                      <span class="text-success">Normal</span>
+                    </div>
+                  </div>
+                  <div class="h2 font-weight-bold mb-0">99%</div>
+                  <div class="mini-chart">
+                    <!-- Mini chart here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-6 mb-4">
+              <div class="card indicator-card" style="border: 1px solid #fb6340;">
+                <div class="card-body py-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <i class="fas fa-brain text-warning fa-2x"></i>
+                    </div>
+                    <div class="text-right">
+                      <h4 class="mb-0">Stress</h4>
+                      <span class="text-success">Normal</span>
+                    </div>
+                  </div>
+                  <div class="h2 font-weight-bold mb-0">139 mg/dL</div>
+                  <div class="mini-chart">
+                    <!-- Mini chart here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Second row of indicators -->
+            <div class="col-6">
+              <div class="card indicator-card" style="border: 1px solid #f5365c;">
+                <div class="card-body py-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <i class="fas fa-heartbeat text-danger fa-2x"></i>
+                    </div>
+                    <div class="text-right">
+                      <h4 class="mb-0">Heart rate</h4>
+                      <span class="text-success">Normal</span>
+                    </div>
+                  </div>
+                  <div class="h2 font-weight-bold mb-0">85 bpm</div>
+                  <div class="mini-chart">
+                    <!-- Mini chart here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-6">
+              <div class="card indicator-card" style="border: 1px solid #8965e0;">
+                <div class="card-body py-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <i class="fas fa-thermometer-half text-purple fa-2x"></i>
+                    </div>
+                    <div class="text-right">
+                      <h4 class="mb-0">Temperature</h4>
+                      <span class="text-success">Normal</span>
+                    </div>
+                  </div>
+                  <div class="h2 font-weight-bold mb-0">36.5°</div>
+                  <div class="mini-chart">
+                    <!-- Mini chart here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Download button -->
+      <div class="card mt-4">
+        <div class="card-body text-center">
+          <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-primary">
+            <i class="fas fa-download"></i> {% blocktranslate %}Download Data{% endblocktranslate %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% include "includes/footer.html" %}
+</div>
+
+<style>
+.indicator-card {
+  transition: all 0.3s ease;
+  border-radius: 0.5rem;
+}
+
+.indicator-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.mini-chart {
+  height: 30px;
+  margin-top: 10px;
+}
+
+.nav-pills .nav-link {
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.15s ease;
+  background-color: #fff;
+  margin-right: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.nav-pills .nav-link.active {
+  color: #fff;
+  background-color: #5e72e4;
+  transform: translateY(-2px);
+}
+
+.nav-pills .nav-link:not(.active):hover {
+  transform: translateY(-2px);
+  background-color: rgba(94, 114, 228, 0.1);
+}
+
+#metric-tabs {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  display: flex;
+}
+
+.chart-point {
+  cursor: pointer;
+}
+</style>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<!-- Usamos json_script para pasar datos desde Django a JavaScript de forma segura -->
+{{ chart_labels|default:"[]"|json_script:"chart-labels-data" }}
+{{ datasets|default:"[]"|json_script:"chart-datasets-data" }}
+{{ stats|default:"{}"|json_script:"stats-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Obtener los datos JSON de forma segura
+  var chartLabels = JSON.parse(document.getElementById('chart-labels-data').textContent);
+  var chartDatasets = JSON.parse(document.getElementById('chart-datasets-data').textContent);
+  var statsData = JSON.parse(document.getElementById('stats-data').textContent);
+  
+  // Configurar el rango de tiempo basado en los datos disponibles
+  if (chartLabels.length > 0) {
+    var startTime = chartLabels[0];
+    var endTime = chartLabels[chartLabels.length - 1];
+    document.getElementById('time-range').textContent = startTime + ' - ' + endTime;
+  }
+  
+  // Crear gráficos para cada métrica
+  var charts = {};
+  
+  // Mapeamos métricas a colores y nombres de visualización
+  var metricConfig = {
+    'fc': {
+      color: '#f5365c', 
+      bgColor: 'rgba(245, 54, 92, 0.2)',
+      displayName: 'Heart Rate (bpm)',
+      unit: 'bpm'
+    },
+    'pasos': {
+      color: '#5e72e4',
+      bgColor: 'rgba(94, 114, 228, 0.2)',
+      displayName: 'Steps',
+      unit: ''
+    },
+    'calorias': {
+      color: '#fb6340',
+      bgColor: 'rgba(251, 99, 64, 0.2)',
+      displayName: 'Calories',
+      unit: 'cal'
+    },
+    'zona_activa': {
+      color: '#2dce89',
+      bgColor: 'rgba(45, 206, 137, 0.2)',
+      displayName: 'Active Zone Minutes',
+      unit: 'min'
+    },
+    'sedentario': {
+      color: '#11cdef',
+      bgColor: 'rgba(17, 205, 239, 0.2)',
+      displayName: 'Sedentary Time',
+      unit: 'min'
+    },
+    'ratio_fc_pasos': {
+      color: '#8965e0',
+      bgColor: 'rgba(137, 101, 224, 0.2)',
+      displayName: 'HR/Steps Ratio',
+      unit: ''
+    },
+    'cvl': {
+      color: '#ffd600',
+      bgColor: 'rgba(255, 214, 0, 0.2)',
+      displayName: 'CVL',
+      unit: ''
+    },
+    'sdnn': {
+      color: '#8898aa',
+      bgColor: 'rgba(136, 152, 170, 0.2)',
+      displayName: 'SDNN',
+      unit: 'ms'
+    }
+  };
+  
+  // Generar datos de eventos (simulados para el ejemplo)
+  function generateEvents(metric, values) {
+    // Selecciona 3 puntos significativos (mínimo, medio, máximo)
+    if (!values || !values.length) return [];
+    
+    var points = [];
+    var minIndex = values.indexOf(Math.min(...values));
+    var maxIndex = values.indexOf(Math.max(...values));
+    var midIndex = Math.floor(values.length / 2);
+    
+    // Asegurarnos de no duplicar los mismos puntos
+    if (minIndex === midIndex) midIndex = Math.floor(values.length / 3);
+    if (maxIndex === midIndex) midIndex = Math.floor(values.length * 2 / 3);
+    
+    var activities = [
+      "Checking emails", "Short break", "Multitasking", 
+      "Meeting", "Lunch", "Walking", "Focus time",
+      "Development", "Planning", "Testing"
+    ];
+    
+    // Para cada punto, definimos un evento
+    [minIndex, midIndex, maxIndex].forEach((index, i) => {
+      var timestamp = chartLabels[Math.min(index, chartLabels.length - 1)];
+      var value = values[index];
+      var activity = activities[Math.floor(Math.random() * activities.length)];
+      var isAbnormal = false;
+      
+      // Para heart rate, definimos valores anormales
+      if (metric === 'fc') {
+        isAbnormal = value > 90 || value < 40;
+      } else if (metric === 'temperatura') {
+        isAbnormal = value > 37.5 || value < 35.5;
+      }
+      
+      points.push({
+        index: index,
+        timestamp: timestamp,
+        value: value,
+        activity: activity,
+        isAbnormal: isAbnormal
+      });
+    });
+    
+    return points;
+  }
+  
+  // Actualiza la tabla de eventos para la métrica activa
+  function updateEventsTable(metric, events) {
+    var tbody = document.getElementById(metric + '-events');
+    tbody.innerHTML = '';
+    
+    events.forEach(event => {
+      var tr = document.createElement('tr');
+      
+      // Columna de tiempo
+      var tdTime = document.createElement('td');
+      tdTime.textContent = event.timestamp;
+      tr.appendChild(tdTime);
+      
+      // Columna de valor
+      var tdValue = document.createElement('td');
+      var valueSpan = document.createElement('span');
+      valueSpan.classList.add(event.isAbnormal ? 'text-warning' : 'text-success');
+      valueSpan.innerHTML = `${event.value} ${metricConfig[metric].unit} 
+                            ${event.isAbnormal ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : 
+                                               '<i class="fas fa-check-circle ml-1"></i>'}`;
+      tdValue.appendChild(valueSpan);
+      tr.appendChild(tdValue);
+      
+      // Columna de actividad
+      var tdActivity = document.createElement('td');
+      tdActivity.textContent = event.activity;
+      tr.appendChild(tdActivity);
+      
+      tbody.appendChild(tr);
+    });
+  }
+  
+  // Crear gráficos para cada métrica
+  chartDatasets.forEach(dataset => {
+    var metric = dataset.label.toLowerCase().replace(/\s+/g, '_');
+    if (!metricConfig[metric]) return;
+    
+    var ctx = document.getElementById(metric + '-chart');
+    if (!ctx) return;
+    
+    var events = generateEvents(metric, dataset.data);
+    updateEventsTable(metric, events);
+    
+    // Configuración para los puntos especiales en el gráfico
+    var pointRadius = Array(dataset.data.length).fill(0);
+    var pointBackgroundColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
+    var pointBorderColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
+    
+    events.forEach(event => {
+      pointRadius[event.index] = 6;
+      pointBackgroundColor[event.index] = event.isAbnormal ? '#fb6340' : '#2dce89';
+      pointBorderColor[event.index] = event.isAbnormal ? '#fb6340' : '#2dce89';
+    });
+    
+    var config = {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [{
+          label: metricConfig[metric].displayName,
+          data: dataset.data,
+          borderColor: metricConfig[metric].color,
+          backgroundColor: metricConfig[metric].bgColor,
+          fill: true,
+          tension: 0.4,
+          pointRadius: pointRadius,
+          pointBackgroundColor: pointBackgroundColor,
+          pointBorderColor: pointBorderColor,
+          pointHoverRadius: 8,
+          pointHoverBackgroundColor: metricConfig[metric].color,
+          pointHoverBorderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              label: function(context) {
+                var label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  label += context.parsed.y;
+                  if (metricConfig[metric].unit) {
+                    label += ' ' + metricConfig[metric].unit;
+                  }
+                }
+                
+                // Mostrar actividad si es un punto destacado
+                var eventIndex = events.findIndex(e => e.index === context.dataIndex);
+                if (eventIndex !== -1) {
+                  label += ' - ' + events[eventIndex].activity;
+                }
+                
+                return label;
+              }
+            }
+          },
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        hover: {
+          mode: 'index',
+          intersect: false
+        },
+        scales: {
+          x: {
+            grid: {
+              display: true,
+              color: "rgba(0,0,0,0.05)"
+            }
+          },
+          y: {
+            grid: {
+              display: true,
+              color: "rgba(0,0,0,0.05)"
+            },
+            beginAtZero: metric !== 'fc' // FC no debe empezar en cero
+          }
+        }
+      }
+    };
+    
+    // Crear el gráfico
+    charts[metric] = new Chart(ctx.getContext('2d'), config);
+  });
+  
+  // Actualizar los indicadores según la métrica activa
+  function updateIndicators() {
+    // En una implementación real, estos valores vendrían de los datos del reporte
+    // Por ahora, usamos los valores de ejemplo
+  }
+  
+  // Escuchar cambios de pestañas para reajustar los gráficos
+  document.querySelectorAll('a[data-toggle="tab"]').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', event => {
+      var activeMetric = event.target.id.replace('-tab', '');
+      if (charts[activeMetric]) {
+        charts[activeMetric].resize();
+        updateIndicators();
+      }
+    });
+  });
+  
+  // Inicialización
+  updateIndicators();
+});
+</script>
+{% endblock javascripts %}

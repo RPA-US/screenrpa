@@ -481,16 +481,75 @@ def biometric_report_list(request, execution_id):
 
 # Detalle de reporte biométrico
 def biometric_report_detail(request, report_id):
+    """Vista para mostrar los resultados de un análisis biométrico"""
     report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
-    return render(request, 'wearabletracking/biometric_report_detail.html', {
+    
+    # Extraer datos para el gráfico
+    chart_data = {}
+    chart_labels = []
+    stats = {}
+    datasets = []
+    
+    if hasattr(report, 'extra_data') and report.extra_data:
+        stats = report.extra_data.get('stats', {})
+        chart_data = report.extra_data.get('chart_data', {})
+        chart_labels = report.extra_data.get('chart_labels', [])
+        
+        # Si no hay etiquetas pero hay datos, generamos etiquetas numéricas
+        if not chart_labels and chart_data:
+            first_metric = next(iter(chart_data))
+            chart_labels = list(range(1, len(chart_data[first_metric]) + 1))
+    
+        # Preparar datasets para Chart.js
+        for metric, values in chart_data.items():
+            color = get_color_for_metric(metric)
+            datasets.append({
+                'label': dict(BiometricAnalysisConfig.METRIC_CHOICES).get(metric, metric),
+                'data': values,
+                'borderColor': color,
+                'backgroundColor': color + '33',  # Añadir transparencia
+                'fill': report.chart_type == 'radar',
+                'tension': 0.1
+            })
+    
+    context = {
         'report': report,
-    })
+        'chart_labels': chart_labels,
+        'datasets': datasets,
+        'stats': stats
+    }
+    
+    return render(request, 'wearabletracking/biometric_report_detail.html', context)
+
+def get_color_for_metric(metric):
+    """Retorna un color consistente para cada métrica"""
+    colors = {
+        'fc': '#FF6384',           # Rojo para frecuencia cardíaca
+        'pasos': '#36A2EB',        # Azul para pasos
+        'calorias': '#FFCE56',     # Amarillo para calorías
+        'zona_activa': '#4BC0C0',  # Verde azulado para zona activa
+        'sedentario': '#9966FF',   # Púrpura para sedentario
+        'ratio_fc_pasos': '#FF9F40', # Naranja para ratio FC/pasos
+        'cvl': '#C9CBCF',          # Gris para CVL
+        'sdnn': '#7FC97F'          # Verde para SDNN
+    }
+    # Devuelve un color basado en la métrica o genera uno aleatorio pero consistente
+    return colors.get(metric, '#' + hex(hash(metric) % 0xffffff)[2:].zfill(6))
 
 # Descargar reporte biométrico (PDF)
 def biometric_report_download(request, report_id):
+    """Vista para descargar los datos del reporte biométrico"""
     report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
-    return FileResponse(report.report_file, as_attachment=True, filename=f'reporte_biometrico_{report_id}.pdf')
-
+    file_path = report.get_merged_file_path()
+    
+    if file_path and os.path.exists(file_path):
+        with open(file_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+            return response
+    
+    # Si no hay archivo, devolver error
+    return HttpResponse("No se encontró el archivo de datos", status=404)
 
 @login_required
 def biometric_config_delete(request, config_id):
