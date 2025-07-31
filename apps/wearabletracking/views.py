@@ -485,38 +485,80 @@ def biometric_report_detail(request, report_id):
     report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
     
     # Extraer datos para el gráfico
-    chart_data = {}
     chart_labels = []
-    stats = {}
     datasets = []
+    stats = {}
+    events = {}
+    indicators = {}
     
     if hasattr(report, 'extra_data') and report.extra_data:
         stats = report.extra_data.get('stats', {})
         chart_data = report.extra_data.get('chart_data', {})
         chart_labels = report.extra_data.get('chart_labels', [])
+        events = report.extra_data.get('events', {})
+        indicators = report.extra_data.get('indicators', {})
         
-        # Si no hay etiquetas pero hay datos, generamos etiquetas numéricas
-        if not chart_labels and chart_data:
-            first_metric = next(iter(chart_data))
-            chart_labels = list(range(1, len(chart_data[first_metric]) + 1))
-    
         # Preparar datasets para Chart.js
         for metric, values in chart_data.items():
-            color = get_color_for_metric(metric)
+            # Asignar colores según la métrica
+            colors = {
+                'fc': {'border': '#f5365c', 'bg': 'rgba(245, 54, 92, 0.2)'},
+                'pasos': {'border': '#5e72e4', 'bg': 'rgba(94, 114, 228, 0.2)'},
+                'calorias': {'border': '#fb6340', 'bg': 'rgba(251, 99, 64, 0.2)'},
+                'zona_activa': {'border': '#2dce89', 'bg': 'rgba(45, 206, 137, 0.2)'},
+                'sedentario': {'border': '#11cdef', 'bg': 'rgba(17, 205, 239, 0.2)'},
+                'ratio_fc_pasos': {'border': '#8965e0', 'bg': 'rgba(137, 101, 224, 0.2)'},
+                'cvl': {'border': '#ffd600', 'bg': 'rgba(255, 214, 0, 0.2)'},
+                'sdnn': {'border': '#8898aa', 'bg': 'rgba(136, 152, 170, 0.2)'},
+                'spo2': {'border': '#1d8cf8', 'bg': 'rgba(29, 140, 248, 0.2)'},
+                'temperatura': {'border': '#a38df8', 'bg': 'rgba(163, 141, 248, 0.2)'},
+                'hrv': {'border': '#f58231', 'bg': 'rgba(245, 130, 49, 0.2)'},
+            }
+            
+            # Nombre para mostrar
+            metric_names = {
+                'fc': 'Heart Rate (bpm)',
+                'pasos': 'Steps',
+                'calorias': 'Calories',
+                'zona_activa': 'Active Zone Minutes',
+                'sedentario': 'Sedentary Time (min)',
+                'ratio_fc_pasos': 'HR/Steps Ratio',
+                'cvl': 'CVL',
+                'sdnn': 'SDNN (ms)',
+                'spo2': 'SpO₂ (%)',
+                'temperatura': 'Temperature (°C)',
+                'hrv': 'HRV (ms)',
+            }
+            
+            border_color = colors.get(metric, {'border': '#5e72e4'})['border']
+            bg_color = colors.get(metric, {'bg': 'rgba(94, 114, 228, 0.2)'})['bg']
+            display_name = metric_names.get(metric, metric)
+            
             datasets.append({
-                'label': dict(BiometricAnalysisConfig.METRIC_CHOICES).get(metric, metric),
+                'label': display_name,
                 'data': values,
-                'borderColor': color,
-                'backgroundColor': color + '33',  # Añadir transparencia
-                'fill': report.chart_type == 'radar',
-                'tension': 0.1
+                'borderColor': border_color,
+                'backgroundColor': bg_color,
+                'fill': True,
+                'tension': 0.4,
+                'metric': metric  # Para identificar la métrica en JS
             })
+    
+    # Rango de tiempo para mostrar en la interfaz
+    time_range = "N/A - N/A"
+    if chart_labels and len(chart_labels) > 1:
+        start_time = chart_labels[0]
+        end_time = chart_labels[-1]
+        time_range = f"{start_time} - {end_time}"
     
     context = {
         'report': report,
         'chart_labels': chart_labels,
         'datasets': datasets,
-        'stats': stats
+        'stats': stats,
+        'events': events,
+        'indicators': indicators,
+        'time_range': time_range
     }
     
     return render(request, 'wearabletracking/biometric_report_detail.html', context)

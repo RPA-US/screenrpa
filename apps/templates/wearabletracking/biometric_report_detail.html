@@ -13,7 +13,7 @@
             <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
             {% blocktranslate %}Go Back to Execution{% endblocktranslate %}
           </a>
-          <h6 class="h2 text-white d-inline-block mb-0">{% blocktranslate %}Biometric Analysis Results{% endblocktranslate %}</h6>
+          <h6 class="h2 text-white d-inline-block mb-0">{{ report.title }}</h6>
           <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
               <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
@@ -31,63 +31,66 @@
   </div>
 </div>
 
-<div class="container-fluid mt--6">
-  <!-- Tabs navigation -->
+<!-- Aumentamos aún más la separación del encabezado -->
+<div class="container-fluid mt--3">
+  <!-- Espacio adicional antes de las pestañas -->
+  <div style="height: 40px;"></div>
+  
+  <!-- Tabs navigation - Diseño mejorado -->
   <div class="row">
-    <div class="col-12">
-      <ul class="nav nav-pills nav-fill flex-column flex-sm-row mb-4" id="metric-tabs" role="tablist">
-        {% for metric in report.metrics %}
-          <li class="nav-item">
-            <a class="nav-link mb-sm-3 mb-md-0 {% if forloop.first %}active{% endif %}" 
-               id="{{ metric }}-tab" 
-               data-toggle="tab" 
-               href="#{{ metric }}-content" 
-               role="tab" 
-               aria-controls="{{ metric }}-content" 
-               aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
-              {% if metric == 'fc' %}
-                <i class="ni ni-favourite-28 text-danger mr-2"></i> Heart Rate
-              {% elif metric == 'pasos' %}
-                <i class="ni ni-user-run text-primary mr-2"></i> Steps
-              {% elif metric == 'calorias' %}
-                <i class="ni ni-flame text-warning mr-2"></i> Calories
-              {% elif metric == 'zona_activa' %}
-                <i class="ni ni-watch-time text-success mr-2"></i> Active Zone
-              {% elif metric == 'sedentario' %}
-                <i class="ni ni-button-pause text-info mr-2"></i> Sedentary Time
-              {% else %}
-                <i class="ni ni-chart-bar-32 text-primary mr-2"></i> {{ metric }}
-              {% endif %}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
+    <div class="col-lg-8 col-md-12">
+      <div class="nav-tabs-container">
+        <ul class="custom-tabs" id="metric-tabs" role="tablist">
+          {% for metric in report.metrics %}
+            <li class="nav-item">
+              <a class="nav-link {% if forloop.first %}active{% endif %}" 
+                 id="{{ metric }}-tab" 
+                 data-toggle="tab" 
+                 href="#{{ metric }}-content" 
+                 role="tab" 
+                 aria-controls="{{ metric }}-content" 
+                 aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                {% if metric == 'fc' %}
+                  <i class="ni ni-favourite-28 text-danger mr-2"></i> Heart Rate
+                {% elif metric == 'pasos' %}
+                  <i class="ni ni-user-run text-primary mr-2"></i> Steps
+                {% elif metric == 'calorias' %}
+                  <i class="ni ni-flame text-warning mr-2"></i> Calories
+                {% elif metric == 'zona_activa' %}
+                  <i class="ni ni-watch-time text-success mr-2"></i> Active Zone
+                {% elif metric == 'sedentario' %}
+                  <i class="ni ni-button-pause text-info mr-2"></i> Sedentary Time
+                {% elif metric == 'spo2' %}
+                  <i class="ni ni-air-baloon text-info mr-2"></i> SpO₂
+                {% elif metric == 'temperatura' %}
+                  <i class="ni ni-thermometer-98 text-purple mr-2"></i> Temperature
+                {% elif metric == 'hrv' %}
+                  <i class="ni ni-chart-bar-32 text-warning mr-2"></i> HRV
+                {% else %}
+                  <i class="ni ni-chart-bar-32 text-primary mr-2"></i> {{ metric }}
+                {% endif %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
   </div>
 
   <!-- Main content -->
-  <div class="row">
+  <div class="row mt-0">
     <!-- Left column: Chart -->
     <div class="col-lg-8 col-md-12">
-      <div class="card shadow">
+      <div class="card shadow tab-content-card">
         <div class="card-header bg-transparent">
           <div class="row">
             <div class="col">
-              <h3 class="mb-0" id="chart-title">{{ report.title }}</h3>
+              <h3 class="mb-0" id="chart-title">{% blocktranslate %}Biometric Data Visualization{% endblocktranslate %}</h3>
             </div>
           </div>
         </div>
         <div class="card-body">
-          <div class="chart-legend mb-4">
-            <div class="d-flex">
-              <div class="mr-4">
-                <i class="fas fa-circle text-success mr-1"></i> Normal
-              </div>
-              <div>
-                <i class="fas fa-exclamation-triangle text-warning mr-1"></i> Abnormalities
-              </div>
-            </div>
-          </div>
+          <!-- Eliminada la leyenda ya que cada pestaña muestra solo un tipo de datos -->
           
           <div class="tab-content">
             {% for metric in report.metrics %}
@@ -99,16 +102,18 @@
                   <canvas id="{{ metric }}-chart"></canvas>
                 </div>
                 
-                <!-- Events table -->
+                <!-- Events table MEJORADA -->
                 <div class="mt-4">
-                  <h4>{% blocktranslate %}Activity events{% endblocktranslate %}</h4>
+                  <h4>{% blocktranslate %}Significant Events{% endblocktranslate %}</h4>
+                  <p class="text-muted">{% blocktranslate %}Notable biometric events and associated user activities{% endblocktranslate %}</p>
                   <div class="table-responsive">
                     <table class="table align-items-center table-flush">
                       <thead class="thead-light">
                         <tr>
                           <th scope="col">{% blocktranslate %}Time{% endblocktranslate %}</th>
-                          <th scope="col">{% blocktranslate %}Value{% endblocktranslate %}</th>
-                          <th scope="col">{% blocktranslate %}Activity{% endblocktranslate %}</th>
+                          <th scope="col">{% blocktranslate %}Biometric Value{% endblocktranslate %}</th>
+                          <th scope="col">{% blocktranslate %}UI Activity{% endblocktranslate %}</th>
+                          <th scope="col">{% blocktranslate %}Details{% endblocktranslate %}</th>
                         </tr>
                       </thead>
                       <tbody id="{{ metric }}-events">
@@ -129,9 +134,9 @@
       <!-- Data panel -->
       <div class="card shadow mb-4">
         <div class="card-header bg-gradient-primary">
-          <h3 class="text-white mb-0">DATA</h3>
+          <h3 class="text-white mb-0">{% blocktranslate %}DATA{% endblocktranslate %}</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body no-scroll">
           <div class="d-flex align-items-center mb-3">
             <div class="mr-3">
               <i class="fas fa-calendar-day text-primary"></i>
@@ -148,7 +153,7 @@
             </div>
             <div>
               <small class="text-muted">{% blocktranslate %}Time range{% endblocktranslate %}</small>
-              <h5 class="mb-0" id="time-range">8:00 am - 18:00 pm</h5>
+              <h5 class="mb-0">{{ time_range }}</h5>
             </div>
           </div>
         </div>
@@ -161,87 +166,30 @@
         </div>
         <div class="card-body">
           <div class="row">
-            <!-- First row of indicators -->
-            <div class="col-6 mb-4">
-              <div class="card indicator-card" style="border: 1px solid #5e72e4;">
+            <!-- Generar indicadores desde los datos reales -->
+            {% for key, indicator in indicators.items %}
+            <div class="col-6 {% if not forloop.last %}mb-4{% endif %}">
+              <div class="card indicator-card" id="indicator-{{ key }}">
                 <div class="card-body py-3">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
-                      <i class="fas fa-tint text-primary fa-2x"></i>
+                      <i class="fas fa-{{ indicator.icon }} text-{{ indicator.color }} fa-2x"></i>
                     </div>
                     <div class="text-right">
-                      <h4 class="mb-0">SpO₂</h4>
-                      <span class="text-success">Normal</span>
+                      <h4 class="mb-0">{{ indicator.name }}</h4>
+                      <span class="text-{% if indicator.status == 'Normal' %}success{% elif indicator.status == 'High' %}warning{% elif indicator.status == 'Low' %}danger{% else %}info{% endif %}">
+                        {{ indicator.status }}
+                      </span>
                     </div>
                   </div>
-                  <div class="h2 font-weight-bold mb-0">99%</div>
-                  <div class="mini-chart">
-                    <!-- Mini chart here -->
+                  <div class="h2 font-weight-bold mb-0">{{ indicator.value }}{{ indicator.unit }}</div>
+                  <div class="mini-chart" id="mini-chart-{{ key }}">
+                    <!-- Mini chart will be added by JS -->
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div class="col-6 mb-4">
-              <div class="card indicator-card" style="border: 1px solid #fb6340;">
-                <div class="card-body py-3">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                      <i class="fas fa-brain text-warning fa-2x"></i>
-                    </div>
-                    <div class="text-right">
-                      <h4 class="mb-0">Stress</h4>
-                      <span class="text-success">Normal</span>
-                    </div>
-                  </div>
-                  <div class="h2 font-weight-bold mb-0">139 mg/dL</div>
-                  <div class="mini-chart">
-                    <!-- Mini chart here -->
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Second row of indicators -->
-            <div class="col-6">
-              <div class="card indicator-card" style="border: 1px solid #f5365c;">
-                <div class="card-body py-3">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                      <i class="fas fa-heartbeat text-danger fa-2x"></i>
-                    </div>
-                    <div class="text-right">
-                      <h4 class="mb-0">Heart rate</h4>
-                      <span class="text-success">Normal</span>
-                    </div>
-                  </div>
-                  <div class="h2 font-weight-bold mb-0">85 bpm</div>
-                  <div class="mini-chart">
-                    <!-- Mini chart here -->
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-6">
-              <div class="card indicator-card" style="border: 1px solid #8965e0;">
-                <div class="card-body py-3">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                      <i class="fas fa-thermometer-half text-purple fa-2x"></i>
-                    </div>
-                    <div class="text-right">
-                      <h4 class="mb-0">Temperature</h4>
-                      <span class="text-success">Normal</span>
-                    </div>
-                  </div>
-                  <div class="h2 font-weight-bold mb-0">36.5°</div>
-                  <div class="mini-chart">
-                    <!-- Mini chart here -->
-                  </div>
-                </div>
-              </div>
-            </div>
+            {% endfor %}
           </div>
         </div>
       </div>
@@ -249,7 +197,7 @@
       <!-- Download button -->
       <div class="card mt-4">
         <div class="card-body text-center">
-          <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-primary">
+          <a href="#" onclick="alert('La descarga de datos estará disponible próximamente'); return false;" class="btn btn-primary">
             <i class="fas fa-download"></i> {% blocktranslate %}Download Data{% endblocktranslate %}
           </a>
         </div>
@@ -261,9 +209,12 @@
 </div>
 
 <style>
+/* Estilos para indicadores */
 .indicator-card {
   transition: all 0.3s ease;
   border-radius: 0.5rem;
+  border: 1px solid #5e72e4;
+  box-shadow: 0 2px 5px rgba(50, 50, 93, 0.1);
 }
 
 .indicator-card:hover {
@@ -276,38 +227,158 @@
   margin-top: 10px;
 }
 
-.nav-pills .nav-link {
-  border-radius: 0.5rem;
+/* Eliminar cualquier scroll innecesario */
+.no-scroll {
+  overflow: visible !important;
+}
+
+/* Nuevo diseño de pestañas tipo cuaderno MEJORADO */
+.nav-tabs-container {
+  position: relative;
+  padding-top: 30px; /* Más espacio arriba */
+  margin-bottom: -1px;
+  z-index: 10;
+  /* Asegurar que el contenedor de pestañas no sea más ancho que su contenedor */
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.custom-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden; /* Evitar scroll vertical */
+  padding-left: 15px;
+  list-style: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  /* Borde inferior solo para el área de las pestañas, no toda la pantalla */
+  border-bottom: 2px solid #d0d6e2;
+  width: 100%;
+  /* Ocultar la barra de desplazamiento pero mantener la funcionalidad */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Ocultar scrollbar para Chrome, Safari y Opera */
+.custom-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-tabs .nav-item {
+  margin-right: 5px;
+}
+
+.custom-tabs .nav-link {
+  position: relative;
+  border: 2px solid #d0d6e2; /* Borde más visible */
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0; /* Bordes más redondeados arriba */
+  padding: 12px 20px;
+  background-color: #f4f5f9; /* Color más distinguible */
+  color: #8898aa;
+  transition: all 0.2s ease;
   font-weight: 600;
   font-size: 0.875rem;
-  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: all 0.15s ease;
-  background-color: #fff;
-  margin-right: 10px;
-  padding: 0.75rem 1rem;
+  min-width: 130px;
+  text-align: center;
+  box-shadow: 0 -2px 7px rgba(0, 0, 0, 0.1); /* Sombra más notoria */
+  z-index: 1;
+  cursor: pointer;
+  /* Asegurarse que la pestaña esté pegada al borde inferior */
+  margin-bottom: -2px;
 }
 
-.nav-pills .nav-link.active {
-  color: #fff;
-  background-color: #5e72e4;
-  transform: translateY(-2px);
+.custom-tabs .nav-link:hover {
+  background-color: #ebeef5;
+  color: #5e72e4;
 }
 
-.nav-pills .nav-link:not(.active):hover {
-  transform: translateY(-2px);
-  background-color: rgba(94, 114, 228, 0.1);
+/* Corregido: Mantener el borde superior visible durante la animación */
+.custom-tabs .nav-link.active {
+  color: #32325d;
+  background-color: white;
+  border-color: #b0bdd8; /* Borde más oscuro para mejor contraste */
+  border-bottom-color: white;
+  transform: translateY(-5px); /* Más elevada */
+  z-index: 5;
+  font-weight: 700;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+  /* Asegurar que el borde superior sea visible */
+  border-top-width: 2px;
+  border-top-color: #b0bdd8;
 }
 
-#metric-tabs {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  flex-wrap: nowrap;
-  display: flex;
+/* Sombra para simular elevación de pestaña activa */
+.custom-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: white;
+  z-index: 6; /* Asegurarse que esté por encima del borde */
+}
+
+/* Efecto de pestañas inactivas "detrás" */
+.custom-tabs .nav-link:not(.active) {
+  opacity: 0.8;
+  transform: translateY(0);
+}
+
+/* Tarjeta de contenido que se integra con las pestañas */
+.tab-content-card {
+  border-top-left-radius: 0;
+  margin-top: 0;
+  z-index: 4;
+  border: 1px solid #d0d6e2;
+  border-top: none;
+  /* Asegurarnos que la tarjeta tenga el borde superior */
+  position: relative;
+}
+
+/* Asegurar que el borde superior de la tarjeta conecte con las pestañas */
+.tab-content-card::before {
+  content: '';
+  position: absolute;
+  top: -1px; /* Compensar el borde superior faltante */
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #d0d6e2;
+  z-index: 3;
 }
 
 .chart-point {
   cursor: pointer;
+}
+
+/* Colores para los bordes de indicadores */
+.border-primary { border: 1px solid #5e72e4 !important; }
+.border-danger { border: 1px solid #f5365c !important; }
+.border-warning { border: 1px solid #fb6340 !important; }
+.border-success { border: 1px solid #2dce89 !important; }
+.border-info { border: 1px solid #11cdef !important; }
+.border-purple { border: 1px solid #8965e0 !important; }
+
+/* Evitar desbordamiento horizontal */
+.container-fluid {
+  overflow-x: hidden;
+}
+
+/* Eliminar scrollbars innecesarios */
+.card-body {
+  overflow: visible;
+}
+
+.tab-content {
+  overflow: hidden;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
 }
 </style>
 {% endblock content %}
@@ -316,29 +387,26 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
-<!-- Usamos json_script para pasar datos desde Django a JavaScript de forma segura -->
-{{ chart_labels|default:"[]"|json_script:"chart-labels-data" }}
-{{ datasets|default:"[]"|json_script:"chart-datasets-data" }}
-{{ stats|default:"{}"|json_script:"stats-data" }}
+<!-- Pasar datos de Django a JavaScript de forma segura -->
+{{ chart_labels|json_script:"chart-labels-data" }}
+{{ datasets|json_script:"chart-datasets-data" }}
+{{ stats|json_script:"stats-data" }}
+{{ events|json_script:"events-data" }}
+{{ indicators|json_script:"indicators-data" }}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Obtener los datos JSON de forma segura
+  // Obtener los datos JSON
   var chartLabels = JSON.parse(document.getElementById('chart-labels-data').textContent);
   var chartDatasets = JSON.parse(document.getElementById('chart-datasets-data').textContent);
   var statsData = JSON.parse(document.getElementById('stats-data').textContent);
-  
-  // Configurar el rango de tiempo basado en los datos disponibles
-  if (chartLabels.length > 0) {
-    var startTime = chartLabels[0];
-    var endTime = chartLabels[chartLabels.length - 1];
-    document.getElementById('time-range').textContent = startTime + ' - ' + endTime;
-  }
+  var eventsData = JSON.parse(document.getElementById('events-data').textContent);
+  var indicatorsData = JSON.parse(document.getElementById('indicators-data').textContent);
   
   // Crear gráficos para cada métrica
   var charts = {};
   
-  // Mapeamos métricas a colores y nombres de visualización
+  // Configuración de métricas
   var metricConfig = {
     'fc': {
       color: '#f5365c', 
@@ -387,125 +455,146 @@ document.addEventListener('DOMContentLoaded', function() {
       bgColor: 'rgba(136, 152, 170, 0.2)',
       displayName: 'SDNN',
       unit: 'ms'
+    },
+    'spo2': {
+      color: '#1d8cf8',
+      bgColor: 'rgba(29, 140, 248, 0.2)',
+      displayName: 'SpO₂',
+      unit: '%'
+    },
+    'temperatura': {
+      color: '#a38df8',
+      bgColor: 'rgba(163, 141, 248, 0.2)',
+      displayName: 'Temperature',
+      unit: '°C'
+    },
+    'hrv': {
+      color: '#f58231',
+      bgColor: 'rgba(245, 130, 49, 0.2)',
+      displayName: 'HRV',
+      unit: 'ms'
     }
   };
   
-  // Generar datos de eventos (simulados para el ejemplo)
-  function generateEvents(metric, values) {
-    // Selecciona 3 puntos significativos (mínimo, medio, máximo)
-    if (!values || !values.length) return [];
-    
-    var points = [];
-    var minIndex = values.indexOf(Math.min(...values));
-    var maxIndex = values.indexOf(Math.max(...values));
-    var midIndex = Math.floor(values.length / 2);
-    
-    // Asegurarnos de no duplicar los mismos puntos
-    if (minIndex === midIndex) midIndex = Math.floor(values.length / 3);
-    if (maxIndex === midIndex) midIndex = Math.floor(values.length * 2 / 3);
-    
-    var activities = [
-      "Checking emails", "Short break", "Multitasking", 
-      "Meeting", "Lunch", "Walking", "Focus time",
-      "Development", "Planning", "Testing"
-    ];
-    
-    // Para cada punto, definimos un evento
-    [minIndex, midIndex, maxIndex].forEach((index, i) => {
-      var timestamp = chartLabels[Math.min(index, chartLabels.length - 1)];
-      var value = values[index];
-      var activity = activities[Math.floor(Math.random() * activities.length)];
-      var isAbnormal = false;
-      
-      // Para heart rate, definimos valores anormales
-      if (metric === 'fc') {
-        isAbnormal = value > 90 || value < 40;
-      } else if (metric === 'temperatura') {
-        isAbnormal = value > 37.5 || value < 35.5;
-      }
-      
-      points.push({
-        index: index,
-        timestamp: timestamp,
-        value: value,
-        activity: activity,
-        isAbnormal: isAbnormal
-      });
-    });
-    
-    return points;
-  }
-  
-  // Actualiza la tabla de eventos para la métrica activa
+  // Actualizar la tabla de eventos para cada métrica
   function updateEventsTable(metric, events) {
     var tbody = document.getElementById(metric + '-events');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
+    
+    // Si no hay eventos, mostrar mensaje
+    if (!events || events.length === 0) {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.colSpan = 4;
+      td.className = 'text-center';
+      td.textContent = 'No significant events detected';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
     
     events.forEach(event => {
       var tr = document.createElement('tr');
       
       // Columna de tiempo
       var tdTime = document.createElement('td');
-      tdTime.textContent = event.timestamp;
+      tdTime.textContent = event.timestamp || 'N/A';
       tr.appendChild(tdTime);
       
-      // Columna de valor
+      // Columna de valor biométrico
       var tdValue = document.createElement('td');
       var valueSpan = document.createElement('span');
-      valueSpan.classList.add(event.isAbnormal ? 'text-warning' : 'text-success');
-      valueSpan.innerHTML = `${event.value} ${metricConfig[metric].unit} 
-                            ${event.isAbnormal ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : 
-                                               '<i class="fas fa-check-circle ml-1"></i>'}`;
+      valueSpan.classList.add(event.is_abnormal ? 'text-warning' : 'text-success');
+      valueSpan.innerHTML = `${event.value} ${metricConfig[metric]?.unit || ''} 
+                           ${event.is_abnormal ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : 
+                                             '<i class="fas fa-check-circle ml-1"></i>'}`;
       tdValue.appendChild(valueSpan);
       tr.appendChild(tdValue);
       
       // Columna de actividad
       var tdActivity = document.createElement('td');
-      tdActivity.textContent = event.activity;
+      tdActivity.innerHTML = `<strong>${event.activity_type || 'Unknown'}</strong>`;
       tr.appendChild(tdActivity);
+      
+      // Columna de detalles
+      var tdDetails = document.createElement('td');
+      if (event.details) {
+        var detailsList = document.createElement('ul');
+        detailsList.className = 'mb-0 pl-3';
+        
+        // Mostrar solo los 3 detalles más relevantes
+        const keysToShow = Object.keys(event.details).slice(0, 3);
+        
+        keysToShow.forEach(key => {
+          const value = event.details[key];
+          if (value) {
+            var li = document.createElement('li');
+            li.innerHTML = `<small>${key}: <span class="text-primary">${value}</span></small>`;
+            detailsList.appendChild(li);
+          }
+        });
+        
+        if (detailsList.children.length > 0) {
+          tdDetails.appendChild(detailsList);
+        } else {
+          tdDetails.textContent = 'No additional details';
+        }
+      } else {
+        tdDetails.textContent = 'No additional details';
+      }
+      tr.appendChild(tdDetails);
       
       tbody.appendChild(tr);
     });
   }
   
-  // Crear gráficos para cada métrica
+  // Crear gráficos para cada dataset
   chartDatasets.forEach(dataset => {
-    var metric = dataset.label.toLowerCase().replace(/\s+/g, '_');
-    if (!metricConfig[metric]) return;
+    var metric = dataset.metric;
+    if (!metric) return;
     
     var ctx = document.getElementById(metric + '-chart');
     if (!ctx) return;
     
-    var events = generateEvents(metric, dataset.data);
+    // Usar eventos reales del backend
+    var events = eventsData[metric] || [];
+    
+    // Actualizar la tabla con los eventos reales
     updateEventsTable(metric, events);
     
-    // Configuración para los puntos especiales en el gráfico
+    // Configuración para los puntos en el gráfico
     var pointRadius = Array(dataset.data.length).fill(0);
     var pointBackgroundColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
     var pointBorderColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
     
+    // Resaltar los puntos de eventos importantes
     events.forEach(event => {
-      pointRadius[event.index] = 6;
-      pointBackgroundColor[event.index] = event.isAbnormal ? '#fb6340' : '#2dce89';
-      pointBorderColor[event.index] = event.isAbnormal ? '#fb6340' : '#2dce89';
+      if (event.index >= 0 && event.index < pointRadius.length) {
+        pointRadius[event.index] = 6;
+        pointBackgroundColor[event.index] = event.is_abnormal ? '#fb6340' : '#2dce89';
+        pointBorderColor[event.index] = event.is_abnormal ? '#fb6340' : '#2dce89';
+      }
     });
     
+    // Configuración del gráfico
     var config = {
       type: 'line',
       data: {
         labels: chartLabels,
         datasets: [{
-          label: metricConfig[metric].displayName,
+          label: metricConfig[metric]?.displayName || metric,
           data: dataset.data,
-          borderColor: metricConfig[metric].color,
-          backgroundColor: metricConfig[metric].bgColor,
+          borderColor: dataset.borderColor,
+          backgroundColor: dataset.backgroundColor,
           fill: true,
           tension: 0.4,
           pointRadius: pointRadius,
           pointBackgroundColor: pointBackgroundColor,
           pointBorderColor: pointBorderColor,
           pointHoverRadius: 8,
-          pointHoverBackgroundColor: metricConfig[metric].color,
+          pointHoverBackgroundColor: dataset.borderColor,
           pointHoverBorderColor: '#fff'
         }]
       },
@@ -524,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (context.parsed.y !== null) {
                   label += context.parsed.y;
-                  if (metricConfig[metric].unit) {
+                  if (metricConfig[metric]?.unit) {
                     label += ' ' + metricConfig[metric].unit;
                   }
                 }
@@ -532,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mostrar actividad si es un punto destacado
                 var eventIndex = events.findIndex(e => e.index === context.dataIndex);
                 if (eventIndex !== -1) {
-                  label += ' - ' + events[eventIndex].activity;
+                  label += ' - ' + events[eventIndex].activity_type;
                 }
                 
                 return label;
@@ -540,8 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           },
           legend: {
-            display: true,
-            position: 'top'
+            display: false  // Ocultamos la leyenda ya que solo hay una serie
           }
         },
         hover: {
@@ -560,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
               display: true,
               color: "rgba(0,0,0,0.05)"
             },
-            beginAtZero: metric !== 'fc' // FC no debe empezar en cero
+            beginAtZero: metric !== 'fc' // Para frecuencia cardíaca no empezar en cero
           }
         }
       }
@@ -570,25 +658,88 @@ document.addEventListener('DOMContentLoaded', function() {
     charts[metric] = new Chart(ctx.getContext('2d'), config);
   });
   
-  // Actualizar los indicadores según la métrica activa
-  function updateIndicators() {
-    // En una implementación real, estos valores vendrían de los datos del reporte
-    // Por ahora, usamos los valores de ejemplo
+  // SOLUCIÓN COMPLETA: Navegación de pestañas usando JavaScript puro
+  // Esto evita dependencias con jQuery y soluciona los problemas de navegación
+  var tabLinks = document.querySelectorAll('.custom-tabs .nav-link');
+  var tabContents = document.querySelectorAll('.tab-pane');
+  
+  // Función para mostrar una pestaña específica
+  function showTab(tabId) {
+    // Ocultar todos los contenidos de pestañas
+    tabContents.forEach(function(content) {
+      content.classList.remove('show', 'active');
+    });
+    
+    // Desactivar todas las pestañas
+    tabLinks.forEach(function(link) {
+      link.classList.remove('active');
+      link.setAttribute('aria-selected', 'false');
+    });
+    
+    // Activar la pestaña seleccionada
+    var selectedTab = document.getElementById(tabId + '-tab');
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+      selectedTab.setAttribute('aria-selected', 'true');
+    }
+    
+    // Mostrar el contenido de la pestaña
+    var selectedContent = document.getElementById(tabId + '-content');
+    if (selectedContent) {
+      selectedContent.classList.add('show', 'active');
+    }
+    
+    // Redimensionar el gráfico si existe
+    if (charts[tabId]) {
+      setTimeout(function() {
+        charts[tabId].resize();
+      }, 50);
+    }
   }
   
-  // Escuchar cambios de pestañas para reajustar los gráficos
-  document.querySelectorAll('a[data-toggle="tab"]').forEach(tab => {
-    tab.addEventListener('shown.bs.tab', event => {
-      var activeMetric = event.target.id.replace('-tab', '');
-      if (charts[activeMetric]) {
-        charts[activeMetric].resize();
-        updateIndicators();
-      }
+  // Asignar eventos de clic a las pestañas
+  tabLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var tabId = this.id.replace('-tab', '');
+      showTab(tabId);
     });
   });
   
-  // Inicialización
-  updateIndicators();
+  // Activar la primera pestaña por defecto
+  if (tabLinks.length > 0) {
+    var firstTabId = tabLinks[0].id.replace('-tab', '');
+    showTab(firstTabId);
+  }
+  
+  // Aplicar colores a los indicadores
+  for (const [key, indicator] of Object.entries(indicatorsData)) {
+    const card = document.getElementById('indicator-' + key);
+    if (card && indicator.color) {
+      // Usar las clases predefinidas
+      if (indicator.color === 'primary') card.classList.add('border-primary');
+      else if (indicator.color === 'danger') card.classList.add('border-danger');
+      else if (indicator.color === 'warning') card.classList.add('border-warning');
+      else if (indicator.color === 'success') card.classList.add('border-success');
+      else if (indicator.color === 'info') card.classList.add('border-info');
+      else if (indicator.color === 'purple') card.classList.add('border-purple');
+      else card.style.borderColor = indicator.color; // Fallback a estilo inline
+    }
+  }
+  
+  // Eliminar cualquier scrollbar innecesario
+  (function removeUnnecessaryScrollbars() {
+    // Eliminar scrollbars de todos los contenedores relevantes
+    document.querySelectorAll('.card-body, .nav-tabs-container, .custom-tabs, .tab-content').forEach(function(element) {
+      element.classList.add('no-scroll');
+    });
+    
+    // Asegurar que no haya overflow visible que cause scrollbars
+    document.querySelectorAll('.row').forEach(function(row) {
+      row.style.marginRight = '0';
+      row.style.marginLeft = '0';
+    });
+  })();
 });
 </script>
 {% endblock javascripts %}
