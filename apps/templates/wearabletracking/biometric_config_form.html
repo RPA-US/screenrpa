@@ -117,7 +117,7 @@
               <input type="hidden" name="metrics" id="metrics-input" value="">
             </div>
           </div>
-          <!-- Tipo de gráfico -->
+          <!-- Tipo de gráfico - ACTUALIZADO con los 3 tipos recomendados -->
           <div class="card mb-5 shadow-sm">
             <div class="card-body">
               <h4 class="mb-3 text-primary">{% blocktranslate %}Chart Type{% endblocktranslate %}</h4>
@@ -127,6 +127,7 @@
                   <div class="card-body text-center p-2">
                     <i class="fas fa-chart-line" style="color: #1976d2; font-size: 2em;"></i>
                     <div class="mt-2" style="color: #1976d2;">{% blocktranslate %}Line Chart{% endblocktranslate %}</div>
+                    <small class="text-muted">{% blocktranslate %}Best for trends{% endblocktranslate %}</small>
                   </div>
                 </div>
                 <div class="card chart-type-card mr-3 mb-2" data-value="bar"
@@ -134,16 +135,19 @@
                   <div class="card-body text-center p-2">
                     <i class="fas fa-chart-bar" style="color: #adb5bd; font-size: 2em;"></i>
                     <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Bar Chart{% endblocktranslate %}</div>
+                    <small class="text-muted">{% blocktranslate %}Compare values{% endblocktranslate %}</small>
                   </div>
                 </div>
-                <div class="card chart-type-card mb-2" data-value="radar"
+                <div class="card chart-type-card mb-2" data-value="area"
                   style="width: 130px; border-radius: 15px; cursor:pointer; transition: box-shadow 0.2s;">
                   <div class="card-body text-center p-2">
-                    <i class="fas fa-bullseye" style="color: #adb5bd; font-size: 2em;"></i>
-                    <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Radar Chart{% endblocktranslate %}</div>
+                    <i class="fas fa-chart-area" style="color: #adb5bd; font-size: 2em;"></i>
+                    <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Area Chart{% endblocktranslate %}</div>
+                    <small class="text-muted">{% blocktranslate %}Volume & trends{% endblocktranslate %}</small>
                   </div>
                 </div>
               </div>
+              <div id="chart-recommendation" class="mt-3 text-muted text-center" style="display:none;"></div>
               <input type="hidden" name="chart_type" id="chart-type-input" value="">
             </div>
           </div>
@@ -245,6 +249,9 @@
             selected.push(activeBtn.getAttribute('data-value'));
           });
           document.getElementById('metrics-input').value = selected.join(',');
+          
+          // Actualizar recomendaciones según la combinación de métricas y tipo de gráfico
+          updateChartRecommendation(selected, document.getElementById('chart-type-input').value);
         });
       });
 
@@ -264,8 +271,45 @@
           card.querySelector('i').style.color = '#1976d2';
           card.querySelector('.mt-2').style.color = '#1976d2';
           card.style.boxShadow = '0 4px 16px rgba(33,150,243,0.12)';
-          document.getElementById('chart-type-input').value = card.getAttribute('data-value');
+          
+          var chartType = card.getAttribute('data-value');
+          document.getElementById('chart-type-input').value = chartType;
+          
+          // Actualizar recomendaciones
+          var selectedMetrics = document.getElementById('metrics-input').value.split(',');
+          updateChartRecommendation(selectedMetrics, chartType);
         });
+      });
+      
+      // --- Función para actualizar recomendaciones ---
+      function updateChartRecommendation(metrics, chartType) {
+        var recommendationElement = document.getElementById('chart-recommendation');
+        
+        if (chartType === 'bar' && metrics.includes('fc')) {
+          recommendationElement.textContent = '{% blocktranslate %}For heart rate data with many data points, line or area charts may provide a clearer visualization.{% endblocktranslate %}';
+          recommendationElement.style.display = 'block';
+        } else if (chartType === 'area' && metrics.length > 5) {
+          recommendationElement.textContent = '{% blocktranslate %}When visualizing many metrics, area charts may be harder to read than line charts.{% endblocktranslate %}';
+          recommendationElement.style.display = 'block';
+        } else if (chartType === 'bar' && metrics.length > 5) {
+          recommendationElement.textContent = '{% blocktranslate %}Bar charts work best with fewer metrics to maintain readability.{% endblocktranslate %}';
+          recommendationElement.style.display = 'block';
+        } else {
+          recommendationElement.style.display = 'none';
+        }
+      }
+      
+      // Verificar combinación inicial
+      var initialMetrics = document.getElementById('metrics-input').value.split(',');
+      updateChartRecommendation(initialMetrics, selectedChart);
+      
+      // Validación del formulario
+      document.getElementById('biometric-config-form').addEventListener('submit', function(e) {
+        var metrics = document.getElementById('metrics-input').value;
+        if (!metrics || metrics.split(',').length === 0 || metrics === '') {
+          e.preventDefault();
+          alert('{% blocktranslate %}Please select at least one metric to analyze.{% endblocktranslate %}');
+        }
       });
     });
   </script>

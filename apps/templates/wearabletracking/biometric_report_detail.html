@@ -393,6 +393,7 @@
 {{ stats|json_script:"stats-data" }}
 {{ events|json_script:"events-data" }}
 {{ indicators|json_script:"indicators-data" }}
+{{ report.chart_type|json_script:"chart-type-data" }}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -402,6 +403,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var statsData = JSON.parse(document.getElementById('stats-data').textContent);
   var eventsData = JSON.parse(document.getElementById('events-data').textContent);
   var indicatorsData = JSON.parse(document.getElementById('indicators-data').textContent);
+  var defaultChartType = JSON.parse(document.getElementById('chart-type-data').textContent) || 'line';
+  
+  console.log("Tipo de gráfico por defecto:", defaultChartType);
   
   // Crear gráficos para cada métrica
   var charts = {};
@@ -564,6 +568,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Actualizar la tabla con los eventos reales
     updateEventsTable(metric, events);
     
+    // Obtener el tipo de gráfico configurado
+    var chartType = dataset.chart_type || defaultChartType || 'line';
+    console.log(`Tipo de gráfico para ${metric}: ${chartType}`);
+    
     // Configuración para los puntos en el gráfico
     var pointRadius = Array(dataset.data.length).fill(0);
     var pointBackgroundColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
@@ -578,9 +586,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Configuración del gráfico
+    // Configuración del gráfico - Cambio principal aquí para gráficos de área
     var config = {
-      type: 'line',
+      // Para tipo 'area' usamos tipo 'line' con configuración especial
+      type: chartType === 'area' ? 'line' : chartType,
       data: {
         labels: chartLabels,
         datasets: [{
@@ -588,14 +597,19 @@ document.addEventListener('DOMContentLoaded', function() {
           data: dataset.data,
           borderColor: dataset.borderColor,
           backgroundColor: dataset.backgroundColor,
-          fill: true,
-          tension: 0.4,
-          pointRadius: pointRadius,
+          // Configuraciones según el tipo de gráfico
+          fill: chartType === 'area' ? 'origin' : false, // ÁREA: 'origin', LINE: false
+          tension: chartType === 'area' || chartType === 'line' ? 0.4 : 0,
+          pointRadius: chartType === 'bar' ? 0 : pointRadius,
           pointBackgroundColor: pointBackgroundColor,
           pointBorderColor: pointBorderColor,
-          pointHoverRadius: 8,
+          pointHoverRadius: chartType === 'bar' ? 0 : 8,
           pointHoverBackgroundColor: dataset.borderColor,
-          pointHoverBorderColor: '#fff'
+          pointHoverBorderColor: '#fff',
+          // Para gráficos de barras
+          borderWidth: chartType === 'bar' ? 1 : 2,
+          barPercentage: chartType === 'bar' ? 0.8 : 1,
+          categoryPercentage: chartType === 'bar' ? 0.9 : 1
         }]
       },
       options: {
@@ -611,6 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (label) {
                   label += ': ';
                 }
+                
                 if (context.parsed.y !== null) {
                   label += context.parsed.y;
                   if (metricConfig[metric]?.unit) {
@@ -629,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           },
           legend: {
-            display: false  // Ocultamos la leyenda ya que solo hay una serie
+            display: false
           }
         },
         hover: {
@@ -648,11 +663,70 @@ document.addEventListener('DOMContentLoaded', function() {
               display: true,
               color: "rgba(0,0,0,0.05)"
             },
-            beginAtZero: metric !== 'fc' // Para frecuencia cardíaca no empezar en cero
+            beginAtZero: metric !== 'fc'
           }
         }
       }
     };
+    
+    // Ajustes específicos para gráficos de área
+    if (chartType === 'area') {
+      // Aumentar la opacidad del color de fondo para área
+      if (config.data.datasets[0].backgroundColor.includes('rgba')) {
+        config.data.datasets[0].backgroundColor = config.data.datasets[0].backgroundColor.replace(
+          /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/,
+          'rgba($1, $2, $3, 0.5)' // Mayor opacidad (0.5) para que se vea mejor el área
+        );
+      } else {
+        // Si no es rgba, añadir opacidad
+        var color = config.data.datasets[0].backgroundColor;
+        if (color.startsWith('#')) {
+          // Convertir HEX a RGBA
+          var r = parseInt(color.slice(1, 3), 16);
+          var g = parseInt(color.slice(3, 5), 16);
+          var b = parseInt(color.slice(5, 7), 16);
+          config.data.datasets[0].backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+        }
+      }
+      
+      console.log("Aplicando configuración específica para gráfico de ÁREA", metric);
+    }
+    
+    // Optimizaciones específicas según métrica y tipo de gráfico
+    if (metric === 'fc' && chartType === 'bar') {
+      // Para FC en barras, usar un color más intenso
+      config.data.datasets[0].backgroundColor = 'rgba(245, 54, 92, 0.6)';
+    }
+    
+    if (metric === 'pasos' && chartType === 'line') {
+      // Para pasos en línea, usar línea escalonada (stepped)
+      config.data.datasets[0].stepped = true;
+    }
+    
+    // Para gráficos de barras con muchos datos, reducir la muestra si es necesario
+    if (chartType === 'bar' && dataset.data.length > 30) {
+      var decimation = Math.ceil(dataset.data.length / 30);
+      var decimatedData = [];
+      var decimatedLabels = [];
+      
+      for (var i = 0; i < dataset.data.length; i += decimation) {
+        // Calculamos el promedio de este segmento
+        var sum = 0;
+        var count = 0;
+        for (var j = i; j < i + decimation && j < dataset.data.length; j++) {
+          if (dataset.data[j] !== null) {
+            sum += dataset.data[j];
+            count++;
+          }
+        }
+        decimatedData.push(count > 0 ? sum / count : null);
+        decimatedLabels.push(chartLabels[i]);
+      }
+      
+      // Reemplazamos los datos en el config
+      config.data.labels = decimatedLabels;
+      config.data.datasets[0].data = decimatedData;
+    }
     
     // Crear el gráfico
     charts[metric] = new Chart(ctx.getContext('2d'), config);

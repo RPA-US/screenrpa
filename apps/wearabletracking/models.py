@@ -51,9 +51,9 @@ class BiometricAnalysisConfig(models.Model):
     ]
     
     CHART_TYPE_CHOICES = [
-    ('line', 'Gráfico de Líneas'),
-    ('bar', 'Gráfico de Barras'),
-    ('radar', 'Gráfico Radar'),
+        ('line', 'Gráfico de Líneas'),
+        ('bar', 'Gráfico de Barras'),
+        ('area', 'Gráfico de Área'),
     ]
     
     default_metrics = models.JSONField(default=list, verbose_name=_("Métricas por defecto"))

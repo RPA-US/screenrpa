@@ -541,7 +541,8 @@ def biometric_report_detail(request, report_id):
                 'backgroundColor': bg_color,
                 'fill': True,
                 'tension': 0.4,
-                'metric': metric  # Para identificar la métrica en JS
+                'metric': metric,  # Para identificar la métrica en JS
+                'chart_type': report.chart_type  # Añadir esta línea
             })
     
     # Rango de tiempo para mostrar en la interfaz
