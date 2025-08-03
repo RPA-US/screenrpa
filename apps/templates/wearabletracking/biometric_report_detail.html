@@ -143,7 +143,14 @@
             </div>
             <div>
               <small class="text-muted">{% blocktranslate %}Date{% endblocktranslate %}</small>
-              <h5 class="mb-0">{{ report.created_at|date:"F j, Y" }}</h5>
+              <!-- Cambio: Usar la fecha del CSV en lugar de la fecha de creación del reporte -->
+              <h5 class="mb-0">
+                {% if report.extra_data.csv_date %}
+                  {{ report.extra_data.csv_date }}
+                {% else %}
+                  {{ report.created_at|date:"Y-m-d" }}
+                {% endif %}
+              </h5>
             </div>
           </div>
           
@@ -162,7 +169,7 @@
       <!-- Indicators panel -->
       <div class="card shadow">
         <div class="card-header">
-          <h3 class="mb-0">{% blocktranslate %}Indicators{% endblocktranslate %}</h3>
+          <h3 class="mb-0">{% blocktranslate %}Daily Summary Indicators{% endblocktranslate %}</h3>
         </div>
         <div class="card-body">
           <div class="row">
@@ -243,7 +250,7 @@
   position: relative;
   padding-top: 30px; /* Más espacio arriba */
   margin-bottom: -1px;
-  z-index: 10;
+  z-index: 5; /* Reducido para no interferir con dropdown */
   /* Asegurar que el contenedor de pestañas no sea más ancho que su contenedor */
   max-width: 100%;
   overflow: hidden;
@@ -368,23 +375,57 @@
 .border-info { border: 1px solid #11cdef !important; }
 .border-purple { border: 1px solid #8965e0 !important; }
 
-/* Evitar desbordamiento horizontal */
-.container-fluid {
-  overflow-x: hidden;
+/* CORRECCIÓN DE PROBLEMAS CON DROPDOWNS Y Z-INDEX */
+/* Crear un nuevo contexto de apilamiento base */
+body {
+  position: relative;
+  z-index: 0;
 }
 
-/* Eliminar scrollbars innecesarios */
-.card-body {
-  overflow: visible;
+/* Asegurar que el navbar esté por encima de todo */
+.navbar.navbar-top.navbar-expand-md {
+  position: relative;
+  z-index: 10001 !important; /* Extremadamente alto para asegurar prioridad */
 }
 
-.tab-content {
-  overflow: hidden;
+/* Dar a los dropdown contenedores un z-index muy alto */
+.navbar .dropdown {
+  position: static !important; /* Static en lugar de relative */
 }
 
-.row {
-  margin-right: 0;
-  margin-left: 0;
+/* Asegurar que los menús dropdown estén siempre visibles */
+.dropdown-menu {
+  z-index: 10002 !important; 
+  position: absolute !important;
+}
+
+.dropdown-fix {
+  position: fixed !important; /* Posicionamiento fijo relativo a la ventana del navegador */
+  z-index: 99999 !important; /* Valor extremadamente alto */
+  display: block !important;
+  transform-origin: top right;
+  animation: dropdown-animation 0.2s ease forwards;
+  box-shadow: 0 0 20px rgba(0,0,0,0.15) !important; /* Sombra más visible */
+}
+
+@keyframes dropdown-animation {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ajustar tamaño del dropdown de notificaciones para que coincida con otras páginas */
+.dropdown-menu-notification.dropdown-fix {
+  width: 350px !important;
+  max-height: 500px !important;
+  overflow-y: auto !important;
+}
+
+/* Asegurar que los elementos internos del navbar también tengan z-index alto */
+.navbar-top .nav-item,
+.navbar-top .nav-link,
+.navbar-top .dropdown-toggle {
+  position: relative !important;
+  z-index: 99998 !important;
 }
 </style>
 {% endblock content %}
@@ -885,6 +926,114 @@ document.addEventListener('DOMContentLoaded', function() {
       row.style.marginLeft = '0';
     });
   })();
+  
+function fixDropdownsCompletely() {
+    // Eliminar cualquier dropdown ya fijado previamente
+    document.querySelectorAll('.dropdown-fix').forEach(el => el.remove());
+    
+    // Manejar los toggles de dropdown correctamente
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      // Eliminar cualquier manejador de eventos previo
+      toggle.removeEventListener('click', handleDropdownToggle);
+      toggle.addEventListener('click', handleDropdownToggle);
+    });
+  }
+  
+  function handleDropdownToggle(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Obtener el botón que activó el dropdown
+    const toggle = this;
+    // Encontrar el dropdown correspondiente
+    const dropdownMenu = toggle.nextElementSibling;
+    
+    if (!dropdownMenu || !dropdownMenu.classList.contains('dropdown-menu')) return;
+    
+    // Si ya hay un dropdown fijo con el mismo ID, eliminarlo (toggle)
+    const existingFixedDropdown = document.querySelector(`.dropdown-fix[data-original-id="${dropdownMenu.id}"]`);
+    if (existingFixedDropdown) {
+      existingFixedDropdown.remove();
+      return;
+    }
+    
+    // Eliminar cualquier otro dropdown fijado
+    document.querySelectorAll('.dropdown-fix').forEach(el => el.remove());
+    
+    // Clonar el dropdown para posicionarlo absolutamente
+    const clonedDropdown = dropdownMenu.cloneNode(true);
+    const rect = toggle.getBoundingClientRect();
+    
+    // Determinar si es dropdown de notificaciones o perfil
+    const isNotification = dropdownMenu.classList.contains('dropdown-menu-xl') || 
+                          dropdownMenu.classList.contains('dropdown-menu-notification');
+    const isUserMenu = toggle.querySelector('.ni-settings-gear-65') !== null;
+    
+    // Establecer ID de referencia para poder identificarlo después
+    clonedDropdown.setAttribute('data-original-id', dropdownMenu.id || '');
+    
+    // Aplicar clases y estilos
+    clonedDropdown.classList.add('dropdown-fix');
+    
+    // Posicionamiento específico según el tipo de dropdown
+    if (isNotification) {
+      // Dropdown de notificaciones - a la derecha
+      clonedDropdown.style.right = (window.innerWidth - rect.right) + 'px';
+      clonedDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+      clonedDropdown.classList.add('dropdown-menu-notification');
+    } else if (isUserMenu) {
+      // Dropdown de usuario - a la derecha
+      clonedDropdown.style.right = (window.innerWidth - rect.right) + 'px';
+      clonedDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+    } else {
+      // Otros dropdowns - debajo del botón
+      clonedDropdown.style.left = rect.left + 'px';
+      clonedDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+      clonedDropdown.style.minWidth = rect.width + 'px';
+    }
+    
+    // Agregar al body para evitar problemas de contención
+    document.body.appendChild(clonedDropdown);
+    
+    // Cerrar al hacer clic en cualquier lugar
+    setTimeout(() => {
+      document.addEventListener('click', function closeDropdown(e) {
+        if (!clonedDropdown.contains(e.target) && e.target !== toggle) {
+          clonedDropdown.remove();
+          document.removeEventListener('click', closeDropdown);
+        }
+      });
+      
+      // También cerrar al hacer clic en elementos internos del dropdown
+      clonedDropdown.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          clonedDropdown.remove();
+        });
+      });
+    }, 10);
+  }
+  
+  // Ejecutar la solución inmediatamente
+  fixDropdownsCompletely();
+  
+  // Y también después de un tiempo para asegurar que todo esté cargado
+  setTimeout(fixDropdownsCompletely, 500);
+  
+  // Observar cambios en el DOM para mantener la funcionalidad
+  const observer = new MutationObserver(() => {
+    setTimeout(fixDropdownsCompletely, 10);
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style']
+  });
+  
+  // Asegurarse de que funcione incluso después de cambios en la ventana
+  window.addEventListener('resize', fixDropdownsCompletely);
+  window.addEventListener('scroll', fixDropdownsCompletely);
 });
 </script>
 {% endblock javascripts %}

@@ -78,6 +78,51 @@ def procesar_analisis_biometrico(execution):
         print(f"Error al cargar el archivo: {str(e)}")
         raise Exception(f"Error al cargar el archivo biométrico: {str(e)}")
     
+    # Extraer la fecha del CSV desde los nombres de archivos de captura de pantalla
+    csv_date = None
+    if 'screenshot' in df_combined.columns and not df_combined['screenshot'].empty:
+        for screenshot in df_combined['screenshot'].dropna():
+            if isinstance(screenshot, str) and '_' in screenshot:
+                # Formato típico: 6_25268098_2025-01-24_13-24-19.png
+                parts = screenshot.split('_')
+                for part in parts:
+                    # Buscar patrón de fecha YYYY-MM-DD
+                    if len(part) == 10 and part.count('-') == 2:
+                        try:
+                            # Verificar que sea una fecha válida
+                            datetime.strptime(part, "%Y-%m-%d")
+                            csv_date = part
+                            break
+                        except ValueError:
+                            continue
+                if csv_date:
+                    break
+    
+    # Si no encontramos la fecha en los screenshots, intentar con los timestamps
+    if not csv_date:
+        if 'timestamp' in df_combined.columns and not df_combined['timestamp'].empty:
+            timestamp = df_combined['timestamp'].iloc[0]
+            try:
+                # Extraer solo la fecha (YYYY-MM-DD) si tiene formato completo
+                if isinstance(timestamp, str):
+                    if 'T' in timestamp:
+                        csv_date = timestamp.split('T')[0]
+                    elif ' ' in timestamp:
+                        csv_date = timestamp.split(' ')[0]
+            except (AttributeError, IndexError):
+                pass
+        elif 'time:timestamp' in df_combined.columns and not df_combined['time:timestamp'].empty:
+            timestamp = df_combined['time:timestamp'].iloc[0]
+            try:
+                # Extraer solo la fecha (YYYY-MM-DD) si tiene formato completo
+                if isinstance(timestamp, str):
+                    if 'T' in timestamp:
+                        csv_date = timestamp.split('T')[0]
+                    elif ' ' in timestamp:
+                        csv_date = timestamp.split(' ')[0]
+            except (AttributeError, IndexError):
+                pass
+    
     # Creamos el reporte
     report = BiometricAnalysisReport.objects.create(
         title=f"Análisis Biométrico - {config.title}",
@@ -355,13 +400,14 @@ def procesar_analisis_biometrico(execution):
                 'color': metric_config['color']
             }
     
-    # Guardar todos los datos procesados
+    # Guardar todos los datos procesados, incluyendo la fecha del CSV
     report.extra_data = {
         'stats': stats_data,
         'chart_data': chart_data,
         'chart_labels': chart_labels,
         'events': events_data,
-        'indicators': indicator_data
+        'indicators': indicator_data,
+        'csv_date': csv_date  # Añadir la fecha del CSV para mostrarla en la interfaz
     }
     report.save()
     
