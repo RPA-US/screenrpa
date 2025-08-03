@@ -182,7 +182,13 @@
                       </span>
                     </div>
                   </div>
-                  <div class="h2 font-weight-bold mb-0">{{ indicator.value }}{{ indicator.unit }}</div>
+                  <div class="h2 font-weight-bold mb-0">
+                    {% if key == 'temperatura' and indicator.value != 'N/A' %}
+                      {% if indicator.value >= 0 %}+{% endif %}{{ indicator.value }}{{ indicator.unit }}
+                    {% else %}
+                      {{ indicator.value }}{{ indicator.unit }}
+                    {% endif %}
+                  </div>
                   <div class="mini-chart" id="mini-chart-{{ key }}">
                     <!-- Mini chart will be added by JS -->
                   </div>
@@ -469,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'temperatura': {
       color: '#a38df8',
       bgColor: 'rgba(163, 141, 248, 0.2)',
-      displayName: 'Temperature',
+      displayName: 'Temperature Variation',
       unit: '°C'
     },
     'hrv': {
@@ -479,6 +485,21 @@ document.addEventListener('DOMContentLoaded', function() {
       unit: 'ms'
     }
   };
+  
+  // Función para formatear valores específicos según la métrica
+  function formatMetricValue(value, metric) {
+    if (metric === 'temperatura') {
+      // Para temperatura, mostrar variación con signo
+      let sign = value >= 0 ? '+' : '';
+      return `${sign}${value.toFixed(1)}°C`;
+    } else if (['fc', 'pasos', 'spo2'].includes(metric)) {
+      // Valores enteros para ciertas métricas
+      return Math.round(value);
+    } else {
+      // Una decimal para otras métricas
+      return value.toFixed(1);
+    }
+  }
   
   // Actualizar la tabla de eventos para cada métrica
   function updateEventsTable(metric, events) {
@@ -507,13 +528,23 @@ document.addEventListener('DOMContentLoaded', function() {
       tdTime.textContent = event.timestamp || 'N/A';
       tr.appendChild(tdTime);
       
-      // Columna de valor biométrico
+      // Columna de valor biométrico con formato mejorado
       var tdValue = document.createElement('td');
       var valueSpan = document.createElement('span');
       valueSpan.classList.add(event.is_abnormal ? 'text-warning' : 'text-success');
-      valueSpan.innerHTML = `${event.value} ${metricConfig[metric]?.unit || ''} 
-                           ${event.is_abnormal ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : 
-                                             '<i class="fas fa-check-circle ml-1"></i>'}`;
+      
+      // Formatear valor según tipo de métrica
+      let formattedValue;
+      if (metric === 'temperatura') {
+        let sign = event.value >= 0 ? '+' : '';
+        formattedValue = `${sign}${event.value.toFixed(1)}°C`;
+      } else {
+        formattedValue = `${event.value} ${metricConfig[metric]?.unit || ''}`;
+      }
+      
+      valueSpan.innerHTML = `${formattedValue} 
+                         ${event.is_abnormal ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : 
+                                           '<i class="fas fa-check-circle ml-1"></i>'}`;
       tdValue.appendChild(valueSpan);
       tr.appendChild(tdValue);
       
@@ -627,9 +658,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (context.parsed.y !== null) {
-                  label += context.parsed.y;
-                  if (metricConfig[metric]?.unit) {
-                    label += ' ' + metricConfig[metric].unit;
+                  // Formateo especial para temperatura
+                  if (metric === 'temperatura') {
+                    let value = context.parsed.y;
+                    let sign = value >= 0 ? '+' : '';
+                    label += `${sign}${value.toFixed(1)}°C`;
+                  } else {
+                    label += context.parsed.y;
+                    if (metricConfig[metric]?.unit) {
+                      label += ' ' + metricConfig[metric].unit;
+                    }
                   }
                 }
                 
@@ -663,7 +701,13 @@ document.addEventListener('DOMContentLoaded', function() {
               display: true,
               color: "rgba(0,0,0,0.05)"
             },
-            beginAtZero: metric !== 'fc'
+            beginAtZero: metric !== 'fc',
+            // Formato personalizado para el eje Y de temperatura
+            ticks: metric === 'temperatura' ? {
+              callback: function(value) {
+                return (value >= 0 ? '+' : '') + value.toFixed(1) + '°C';
+              }
+            } : undefined
           }
         }
       }
@@ -701,6 +745,33 @@ document.addEventListener('DOMContentLoaded', function() {
     if (metric === 'pasos' && chartType === 'line') {
       // Para pasos en línea, usar línea escalonada (stepped)
       config.data.datasets[0].stepped = true;
+    }
+    
+    // Ajustes específicos para temperatura
+    if (metric === 'temperatura') {
+      // Colores especiales para temperaturas positivas y negativas
+      const gradientAboveZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+      gradientAboveZero.addColorStop(0, 'rgba(251, 99, 64, 0.8)');   // Rojo cálido arriba
+      gradientAboveZero.addColorStop(1, 'rgba(251, 99, 64, 0.1)');   // Transparente abajo
+      
+      const gradientBelowZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+      gradientBelowZero.addColorStop(0, 'rgba(94, 114, 228, 0.1)');  // Transparente arriba
+      gradientBelowZero.addColorStop(1, 'rgba(94, 114, 228, 0.8)');  // Azul frío abajo
+      
+      // Aplicar colores según el tipo de gráfico
+      if (chartType === 'area') {
+        // Para área, usar gradientes según el valor
+        config.data.datasets[0].backgroundColor = function(context) {
+          const value = context.raw;
+          return value >= 0 ? gradientAboveZero : gradientBelowZero;
+        };
+      } else if (chartType === 'bar') {
+        // Para barras, color según el valor
+        config.data.datasets[0].backgroundColor = function(context) {
+          const value = context.raw;
+          return value >= 0 ? 'rgba(251, 99, 64, 0.6)' : 'rgba(94, 114, 228, 0.6)';
+        };
+      }
     }
     
     // Para gráficos de barras con muchos datos, reducir la muestra si es necesario

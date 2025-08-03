@@ -101,9 +101,22 @@ def procesar_analisis_biometrico(execution):
             numeric_values = []
             for val in df_combined[metric].dropna():
                 try:
-                    # Si es un diccionario en formato de cadena (como '{'nightlyRelative': -0.8}')
+                    # Caso especial para temperatura (formato {'nightlyRelative': -0.8})
+                    if metric == 'temperatura' and isinstance(val, str) and val.startswith('{'):
+                        import ast
+                        try:
+                            dict_val = ast.literal_eval(val)
+                            if 'nightlyRelative' in dict_val:
+                                numeric_val = dict_val['nightlyRelative']
+                                numeric_values.append(numeric_val)
+                                continue
+                        except (ValueError, SyntaxError):
+                            # Si hay error al procesar, intentaremos como número normal
+                            pass
+                    
+                    # Para otros tipos de datos, procesar normalmente 
                     if isinstance(val, str) and (val.startswith('{') or val.startswith('[')):
-                        continue  # Omitir estos valores
+                        continue  # Omitir estos valores que no podemos procesar
                     
                     # Convertir a número
                     numeric_val = float(val) if val != '' else None
@@ -215,7 +228,8 @@ def procesar_analisis_biometrico(execution):
                         elif metric == 'spo2':
                             is_abnormal = values[idx] < 95
                         elif metric == 'temperatura':
-                            is_abnormal = values[idx] > 37.5 or values[idx] < 35.5
+                            # Para temperatura relativa, valores fuera de ±1.0°C son anormales
+                            is_abnormal = values[idx] > 1.0 or values[idx] < -1.0
                         
                         # Timestamp para el evento
                         timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
@@ -267,7 +281,18 @@ def procesar_analisis_biometrico(execution):
             numeric_values = []
             for val in df_combined[metric_key].dropna():
                 try:
-                    # Ignorar valores no numéricos
+                    # Caso especial para temperatura
+                    if metric_key == 'temperatura' and isinstance(val, str) and val.startswith('{'):
+                        import ast
+                        try:
+                            dict_val = ast.literal_eval(val)
+                            if 'nightlyRelative' in dict_val:
+                                numeric_values.append(dict_val['nightlyRelative'])
+                                continue
+                        except (ValueError, SyntaxError):
+                            pass
+                    
+                    # Ignorar valores no numéricos en formato especial
                     if isinstance(val, str) and (val.startswith('{') or val.startswith('[')):
                         continue
                     
@@ -292,9 +317,10 @@ def procesar_analisis_biometrico(execution):
                     if last_value < 95:
                         status = "Low"
                 elif metric_key == 'temperatura':
-                    if last_value > 37.5:
+                    # Para temperatura relativa, valores fuera de ±0.8°C son anormales
+                    if last_value > 0.8:
                         status = "High"
-                    elif last_value < 35.5:
+                    elif last_value < -0.8:
                         status = "Low"
                 
                 indicator_data[metric_key] = {

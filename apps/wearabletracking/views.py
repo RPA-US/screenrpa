@@ -526,7 +526,7 @@ def biometric_report_detail(request, report_id):
                 'cvl': 'CVL',
                 'sdnn': 'SDNN (ms)',
                 'spo2': 'SpO₂ (%)',
-                'temperatura': 'Temperature (°C)',
+                'temperatura': 'Temperature Variation (°C)',  # Nombre más descriptivo
                 'hrv': 'HRV (ms)',
             }
             
