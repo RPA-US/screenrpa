@@ -210,8 +210,8 @@
       <!-- Download button -->
       <div class="card mt-4">
         <div class="card-body text-center">
-          <a href="#" onclick="alert('La descarga de datos estará disponible próximamente'); return false;" class="btn btn-primary">
-            <i class="fas fa-download"></i> {% blocktranslate %}Download Data{% endblocktranslate %}
+          <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-primary">
+            <i class="fas fa-download"></i> Descargar PDF
           </a>
         </div>
       </div>

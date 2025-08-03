@@ -9,6 +9,13 @@ from django.core.files.base import ContentFile
 from apps.wearabletracking.models import BiometricAnalysisReport
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 
 def validar_fechas(fecha_inicio, fecha_fin):
@@ -412,3 +419,69 @@ def procesar_analisis_biometrico(execution):
     report.save()
     
     return report
+
+
+def generate_biometric_report_pdf(report):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Título
+    elements.append(Paragraph(report.title, styles['Title']))
+    elements.append(Spacer(1, 12))
+
+    # Indicadores principales
+    indicators = report.extra_data.get('indicators', {})
+    if indicators:
+        data = [['Indicator', 'Value', 'Status']]
+        for key, ind in indicators.items():
+            data.append([ind['name'], f"{ind['value']} {ind['unit']}", ind['status']])
+        table = Table(data)
+        table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.lightblue)]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+
+    # Para cada métrica, gráfica y tabla de eventos
+    chart_data = report.extra_data.get('chart_data', {})
+    chart_labels = report.extra_data.get('chart_labels', [])
+    stats = report.extra_data.get('stats', {})
+    events = report.extra_data.get('events', {})
+
+    for metric in report.metrics:
+        elements.append(Paragraph(metric, styles['Heading2']))
+        # Gráfica
+        if metric in chart_data:
+            plt.figure(figsize=(6, 2))
+            plt.plot(chart_labels[:len(chart_data[metric])], chart_data[metric])
+            plt.title(metric)
+            plt.tight_layout()
+            img_buffer = BytesIO()
+            plt.savefig(img_buffer, format='png')
+            plt.close()
+            img_buffer.seek(0)
+            elements.append(Image(img_buffer, width=400, height=120))
+            elements.append(Spacer(1, 8))
+
+        # Estadísticas
+        if metric in stats:
+            s = stats[metric]
+            elements.append(Paragraph(f"Mean: {s['mean']}, Max: {s['max']}, Min: {s['min']}, Last: {s['current']}", styles['Normal']))
+            elements.append(Spacer(1, 8))
+
+        # Eventos
+        if metric in events and events[metric]:
+            data = [['Time', 'Value', 'Activity', 'Details']]
+            for ev in events[metric]:
+                data.append([ev['timestamp'], ev['value'], ev['activity_type'], str(ev['details'])])
+            table = Table(data)
+            table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.beige)]))
+            elements.append(table)
+            elements.append(Spacer(1, 12))
+
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+    # Guarda el PDF en el modelo si quieres
+    report.report_file.save(f"biometric_report_{report.id}.pdf", ContentFile(pdf))
+    return pdf

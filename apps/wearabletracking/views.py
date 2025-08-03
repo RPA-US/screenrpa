@@ -5,7 +5,7 @@ import zipfile
 import requests
 from django.conf import settings
 
-from apps.wearabletracking.utils import obtener_ultima_sync, validar_fechas, fechas_fuera_de_sync
+from apps.wearabletracking.utils import generate_biometric_report_pdf, obtener_ultima_sync, validar_fechas, fechas_fuera_de_sync
 from apps.analyzer.models import CaseStudy, Execution
 from .models import FitbitToken, BiometricAnalysisConfig, BiometricAnalysisReport
 from datetime import datetime, timedelta
@@ -581,18 +581,12 @@ def get_color_for_metric(metric):
 
 # Descargar reporte biométrico (PDF)
 def biometric_report_download(request, report_id):
-    """Vista para descargar los datos del reporte biométrico"""
     report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
-    file_path = report.get_merged_file_path()
-    
-    if file_path and os.path.exists(file_path):
-        with open(file_path, 'rb') as f:
-            response = HttpResponse(f.read(), content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
-            return response
-    
-    # Si no hay archivo, devolver error
-    return HttpResponse("No se encontró el archivo de datos", status=404)
+    # Generar PDF si no existe o siempre que se solicite
+    pdf = generate_biometric_report_pdf(report)
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="biometric_report_{report.id}.pdf"'
+    return response
 
 @login_required
 def biometric_config_delete(request, config_id):
