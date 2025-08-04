@@ -422,66 +422,415 @@ def procesar_analisis_biometrico(execution):
 
 
 def generate_biometric_report_pdf(report):
+    """
+    Genera un PDF con formato mejorado, elegante y profesional para el reporte biométrico
+    """
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    
+    # Fecha y metadata del reporte
+    date_str = report.extra_data.get('csv_date', report.created_at.strftime('%Y-%m-%d'))
+    
+    # Crear documento con márgenes adecuados
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=40,
+        rightMargin=40,
+        topMargin=50,
+        bottomMargin=40,
+        title=report.title
+    )
+    
+    # Obtener estilos y crear estilos personalizados
     styles = getSampleStyleSheet()
+    
+    # Personalizar estilo del título principal
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Title'],
+        fontSize=18,
+        textColor=colors.HexColor('#324b8b'),
+        spaceAfter=10,
+        alignment=1  # Centrado
+    )
+    
+    # Personalizar otros estilos
+    heading2_style = ParagraphStyle(
+        'CustomHeading2',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#324b8b'),
+        spaceBefore=15,
+        spaceAfter=8,
+        borderWidth=0,
+        borderColor=colors.HexColor('#324b8b'),
+        borderPadding=5,
+        borderRadius=2,
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=14,
+        spaceBefore=2,
+        spaceAfter=5
+    )
+    
+    # Estilo para subtítulos
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Heading3'],
+        fontSize=12,
+        textColor=colors.HexColor('#5e72e4'),
+        spaceBefore=10,
+        spaceAfter=5
+    )
+    
+    # Estilo para notas informativas
+    info_style = ParagraphStyle(
+        'InfoStyle',
+        parent=styles['Italic'],
+        fontSize=9,
+        textColor=colors.darkgrey,
+        leftIndent=10,
+        rightIndent=10,
+        spaceBefore=5,
+        spaceAfter=10
+    )
+    
+    # Lista para elementos del PDF
     elements = []
-
-    # Título
-    elements.append(Paragraph(report.title, styles['Title']))
-    elements.append(Spacer(1, 12))
-
-    # Indicadores principales
+    
+    # Encabezado más elegante con línea debajo
+    elements.append(Paragraph(report.title, title_style))
+    elements.append(Table([['']], colWidths=[450], rowHeights=[1], 
+                          style=[('LINEBELOW', (0, 0), (-1, -1), 1, colors.HexColor('#5e72e4'))]))
+    elements.append(Spacer(1, 15))
+    
+    # Información general del reporte en formato de tabla elegante
+    metadata_data = [
+        ['Fecha', date_str],
+        ['Configuración', report.config.title],
+        ['Tipo de gráfico', report.chart_type.capitalize()],
+    ]
+    
+    metadata_table = Table(metadata_data, colWidths=[120, 350])
+    metadata_table.setStyle(TableStyle([
+        # Bordes sutiles
+        ('LINEBELOW', (0, -1), (-1, -1), 0.5, colors.lightgrey),
+        ('LINEABOVE', (0, 0), (-1, 0), 0.5, colors.lightgrey),
+        # Alineación y espaciado
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        # Estilo de texto
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#5e72e4')),
+    ]))
+    elements.append(metadata_table)
+    elements.append(Spacer(1, 20))
+    
+    # Indicadores principales en una tabla bien formateada
     indicators = report.extra_data.get('indicators', {})
     if indicators:
-        data = [['Indicator', 'Value', 'Status']]
+        elements.append(Paragraph("Indicadores de Salud", heading2_style))
+        elements.append(Spacer(1, 5))
+        
+        # Preparar datos para la tabla de indicadores
+        indicator_data = [['Indicador', 'Valor', 'Estado']]
+        has_indicators = False
+        
         for key, ind in indicators.items():
-            data.append([ind['name'], f"{ind['value']} {ind['unit']}", ind['status']])
-        table = Table(data)
-        table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.lightblue)]))
-        elements.append(table)
-        elements.append(Spacer(1, 12))
-
-    # Para cada métrica, gráfica y tabla de eventos
+            if ind['value'] != 'N/A':
+                has_indicators = True
+                # Formateo especial para temperatura
+                if key == 'temperatura' and ind['value'] != 'N/A':
+                    value_display = f"{'+' if float(ind['value']) >= 0 else ''}{ind['value']}{ind['unit']}"
+                else:
+                    value_display = f"{ind['value']}{ind['unit']}"
+                
+                # Colorear el estado
+                status = ind['status']
+                indicator_data.append([ind['name'], value_display, status])
+        
+        if has_indicators:
+            # Crear tabla de indicadores con mejor formato
+            indicator_table = Table(indicator_data, colWidths=[200, 150, 100])
+            indicator_table.setStyle(TableStyle([
+                # Encabezado
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#5e72e4')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                ('TOPPADDING', (0, 0), (-1, 0), 8),
+                # Cuerpo de la tabla
+                ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                # Bordes y divisiones
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                ('BOX', (0, 0), (-1, -1), 1, colors.lightgrey),
+                ('LINEABOVE', (0, 1), (-1, 1), 1, colors.lightgrey),
+                # Espaciado interno de celdas
+                ('TOPPADDING', (0, 1), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+                ('LEFTPADDING', (0, 0), (-1, -1), 10),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ]))
+            
+            # Aplicar colores a los estados después, sin lambda
+            for i in range(1, len(indicator_data)):
+                status = indicator_data[i][2]
+                if status == 'Normal':
+                    indicator_table._cellStyles[i][2].textColor = colors.green
+                elif status == 'High':
+                    indicator_table._cellStyles[i][2].textColor = colors.orange
+                elif status == 'Low':
+                    indicator_table._cellStyles[i][2].textColor = colors.red
+            
+            elements.append(indicator_table)
+        else:
+            elements.append(Paragraph("No hay datos disponibles para los indicadores", info_style))
+        
+        elements.append(Spacer(1, 20))
+    
+    # Para cada métrica, crear una sección separada con título, gráfica y datos
     chart_data = report.extra_data.get('chart_data', {})
     chart_labels = report.extra_data.get('chart_labels', [])
     stats = report.extra_data.get('stats', {})
     events = report.extra_data.get('events', {})
-
+    
+    # Nombres legibles para métricas
+    metric_names = {
+        'fc': 'Frecuencia Cardíaca (bpm)',
+        'pasos': 'Pasos',
+        'calorias': 'Calorías',
+        'zona_activa': 'Zona Activa',
+        'sedentario': 'Tiempo Sedentario',
+        'ratio_fc_pasos': 'Ratio FC/Pasos',
+        'cvl': 'CVL',
+        'sdnn': 'SDNN (ms)',
+        'spo2': 'SpO₂ (%)',
+        'temperatura': 'Variación de Temperatura (°C)',
+        'hrv': 'HRV (ms)',
+    }
+    
+    # Colores para las gráficas
+    colors_dict = {
+        'fc': '#f5365c',
+        'pasos': '#5e72e4',
+        'calorias': '#fb6340',
+        'zona_activa': '#2dce89',
+        'sedentario': '#11cdef',
+        'ratio_fc_pasos': '#8965e0',
+        'cvl': '#ffd600',
+        'sdnn': '#8898aa',
+        'spo2': '#1d8cf8',
+        'temperatura': '#a38df8',
+        'hrv': '#f58231'
+    }
+    
     for metric in report.metrics:
-        elements.append(Paragraph(metric, styles['Heading2']))
-        # Gráfica
-        if metric in chart_data:
-            plt.figure(figsize=(6, 2))
-            plt.plot(chart_labels[:len(chart_data[metric])], chart_data[metric])
-            plt.title(metric)
-            plt.tight_layout()
-            img_buffer = BytesIO()
-            plt.savefig(img_buffer, format='png')
-            plt.close()
-            img_buffer.seek(0)
-            elements.append(Image(img_buffer, width=400, height=120))
-            elements.append(Spacer(1, 8))
-
-        # Estadísticas
-        if metric in stats:
-            s = stats[metric]
-            elements.append(Paragraph(f"Mean: {s['mean']}, Max: {s['max']}, Min: {s['min']}, Last: {s['current']}", styles['Normal']))
-            elements.append(Spacer(1, 8))
-
-        # Eventos
-        if metric in events and events[metric]:
-            data = [['Time', 'Value', 'Activity', 'Details']]
-            for ev in events[metric]:
-                data.append([ev['timestamp'], ev['value'], ev['activity_type'], str(ev['details'])])
-            table = Table(data)
-            table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.beige)]))
-            elements.append(table)
-            elements.append(Spacer(1, 12))
-
+        # Contenedor con borde para cada métrica
+        metric_elements = []
+        
+        # Título de la métrica
+        metric_elements.append(Paragraph(metric_names.get(metric, metric.capitalize()), heading2_style))
+        metric_elements.append(Spacer(1, 5))
+        
+        # Verificar si hay datos para esta métrica
+        has_data = metric in chart_data and chart_data[metric] and len(chart_data[metric]) > 0
+        
+        if has_data:
+            # Estadísticas en formato de tabla elegante
+            if metric in stats:
+                s = stats[metric]
+                
+                # Tabla de estadísticas con mejor formato
+                stat_data = [['Media', 'Máximo', 'Mínimo', 'Último Valor']]
+                stat_data.append([
+                    str(s['mean']), 
+                    str(s['max']), 
+                    str(s['min']), 
+                    str(s['current'])
+                ])
+                
+                stat_table = Table(stat_data, colWidths=[100, 100, 100, 100])
+                stat_table.setStyle(TableStyle([
+                    # Encabezado
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e6e9f0')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#324b8b')),
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    # Cuerpo
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+                    # Bordes
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                    ('BOX', (0, 0), (-1, -1), 1, colors.lightgrey),
+                    # Espaciado
+                    ('TOPPADDING', (0, 0), (-1, -1), 8),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ]))
+                metric_elements.append(stat_table)
+                metric_elements.append(Spacer(1, 15))
+            
+            # Gráfica
+            if metric in chart_data and chart_labels:
+                # Crear gráfica con matplotlib
+                plt.figure(figsize=(7, 3.5))
+                
+                # Obtener color para la métrica
+                color = colors_dict.get(metric, '#5e72e4')
+                
+                # Reducir la cantidad de puntos si hay demasiados
+                values = chart_data[metric]
+                labels = chart_labels
+                
+                if len(values) > 50:
+                    step = len(values) // 50
+                    values = [values[i] for i in range(0, len(values), step)]
+                    labels = [labels[i] for i in range(0, len(labels), step) if i < len(labels)]
+                
+                # Tipo de gráfico según configuración
+                if report.chart_type == 'bar':
+                    plt.bar(range(len(values)), values, color=color, alpha=0.6)
+                elif report.chart_type == 'area':
+                    plt.fill_between(range(len(values)), values, alpha=0.3, color=color)
+                    plt.plot(range(len(values)), values, color=color, linewidth=2)
+                else:  # 'line' (default)
+                    plt.plot(range(len(values)), values, color=color, linewidth=2)
+                
+                # Mejorar el estilo general del gráfico
+                plt.grid(True, linestyle='--', alpha=0.7, color='#e6e9f0')
+                plt.gcf().set_facecolor('#fcfcfc')
+                
+                # Configurar etiquetas del eje X
+                if len(labels) > 10:
+                    plt.xticks(
+                        range(0, len(values), len(values) // 10),
+                        [labels[i] for i in range(0, len(labels), len(labels) // 10) if i < len(labels)],
+                        rotation=45
+                    )
+                else:
+                    plt.xticks(range(len(values)), labels, rotation=45)
+                
+                # Añadir sombra para efecto 3D sutil
+                plt.gca().spines['bottom'].set_linewidth(1.5)
+                plt.gca().spines['left'].set_linewidth(1.5)
+                plt.gca().spines['top'].set_visible(False)
+                plt.gca().spines['right'].set_visible(False)
+                
+                # Título y ajustes
+                plt.title(metric_names.get(metric, metric.capitalize()), fontsize=12, color=color, fontweight='bold')
+                plt.tight_layout()
+                
+                # Guardar en buffer
+                img_buffer = BytesIO()
+                plt.savefig(img_buffer, format='png', dpi=120, bbox_inches='tight')
+                plt.close()
+                img_buffer.seek(0)
+                
+                # Añadir imagen al PDF con un marco
+                img = Image(img_buffer, width=450, height=225)
+                metric_elements.append(img)
+                metric_elements.append(Spacer(1, 15))
+            
+            # Tabla de eventos
+            if metric in events and events[metric]:
+                metric_elements.append(Paragraph("Eventos Significativos", subtitle_style))
+                metric_elements.append(Spacer(1, 5))
+                
+                # Datos para la tabla de eventos
+                event_data = [['Hora', 'Valor', 'Actividad', 'Detalles']]
+                
+                for event in events[metric][:5]:  # Limitar a 5 eventos para que se vea mejor
+                    # Formatear valor según el tipo de métrica
+                    if metric == 'temperatura' and event.get('value') is not None:
+                        sign = '+' if event['value'] >= 0 else ''
+                        value_str = f"{sign}{event['value']:.1f}°C"
+                    else:
+                        value_str = str(event.get('value', 'N/A'))
+                    
+                    # Formatear detalles
+                    details = event.get('details', {})
+                    details_str = ', '.join([f"{k}: {v}" for k, v in list(details.items())[:2] if v])
+                    
+                    event_data.append([
+                        event.get('timestamp', 'N/A')[-8:] if event.get('timestamp', 'N/A') else 'N/A',  # Solo la hora
+                        value_str,
+                        event.get('activity_type', 'Unknown')[:15],  # Limitar longitud
+                        details_str[:30] + ('...' if len(details_str) > 30 else '')  # Limitar longitud
+                    ])
+                
+                # Crear tabla de eventos con mejor formato
+                event_table = Table(event_data, colWidths=[70, 70, 120, 200])
+                event_table.setStyle(TableStyle([
+                    # Encabezado
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e6e9f0')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#324b8b')),
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    # Cuerpo
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('ALIGN', (0, 1), (1, -1), 'CENTER'),  # Hora y valor centrados
+                    ('ALIGN', (2, 1), (-1, -1), 'LEFT'),   # Actividad y detalles a la izquierda
+                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                    # Bordes
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                    ('BOX', (0, 0), (-1, -1), 1, colors.lightgrey),
+                    # Espaciado
+                    ('TOPPADDING', (0, 0), (-1, -1), 6),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                    # Tamaño de fuente
+                    ('FONTSIZE', (0, 1), (-1, -1), 8),  # Texto más pequeño para los datos
+                ]))
+                
+                # Aplicar colores alternos a las filas manualmente (sin lambda)
+                for i in range(1, len(event_data)):
+                    if i % 2 == 0:
+                        for j in range(len(event_data[i])):
+                            event_table._cellStyles[i][j].backColor = colors.HexColor('#f9f9f9')
+                
+                metric_elements.append(event_table)
+            else:
+                metric_elements.append(Paragraph("No hay eventos significativos registrados para esta métrica.", info_style))
+        else:
+            # Mensaje cuando no hay datos
+            metric_elements.append(Paragraph("No hay datos disponibles para esta métrica en el período analizado.", info_style))
+        
+        # Añadir todos los elementos de la métrica con un separador
+        for element in metric_elements:
+            elements.append(element)
+        
+        # Separador entre métricas
+        elements.append(Spacer(1, 20))
+        elements.append(Table([['']], colWidths=[450], rowHeights=[1], 
+                             style=[('LINEBELOW', (0, 0), (-1, -1), 1, colors.lightgrey)]))
+        elements.append(Spacer(1, 20))
+    
+    # Pie de página
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(f"Este reporte contiene información biométrica recopilada durante la ejecución del caso de estudio. La interpretación de los datos debe ser realizada por profesionales cualificados.", info_style))
+    
+    # Construir el PDF 
     doc.build(elements)
+    
+    # Obtener el contenido del PDF
     pdf = buffer.getvalue()
     buffer.close()
-    # Guarda el PDF en el modelo si quieres
+    
+    # Guardar en el modelo
     report.report_file.save(f"biometric_report_{report.id}.pdf", ContentFile(pdf))
+    
     return pdf
