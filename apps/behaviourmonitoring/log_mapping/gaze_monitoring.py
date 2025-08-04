@@ -13,6 +13,7 @@ from apps.analyzer.utils import convert_timestamps_and_clean_screenshot_name_in_
 from apps.analyzer.utils import format_mht_file
 from apps.behaviourmonitoring.log_mapping.eyetracker_log_decoders import decode_timezone, decode_imotions_native_slideevents, decode_imotions_monitoring
 from apps.behaviourmonitoring.log_mapping.merge_wearable_data_with_ui import merge_wearable_with_ui
+from apps.behaviourmonitoring.log_mapping.merge_emotion_data_with_wearable import merge_emotions_with_wearable
 
 ms_pattern = '%H-%M-%S.%f'
 # ui_log_timestamp_pattern = '%H:%M:%S %p'
@@ -607,6 +608,28 @@ def monitoring(log_path, root_path, execution):
           else:
               logging.warning("No se encontró el CSV global o el CSV de wearable para combinar.")
 # --- FIN INTEGRACIÓN WEARABLE ---
+
+# --- INTEGRACIÓN EMOTIONS ---
+      if (monitoring_obj.use_wearable_data and monitoring_obj.wearable_filename and 
+                monitoring_obj.use_emotions_data and monitoring_obj.emotions_filename):
+                emotions_csv_path = os.path.join(root_path, monitoring_obj.emotions_filename)
+                wearable_csv_path = os.path.join(root_path, monitoring_obj.wearable_filename)
+                output_emotions_wearable_path = os.path.join(root_path, "merged_emotions_wearable.csv")
+                
+                if os.path.exists(emotions_csv_path) and os.path.exists(wearable_csv_path):
+                    success = merge_emotions_with_wearable(emotions_csv_path, wearable_csv_path, output_emotions_wearable_path)
+                    if success:
+                        logging.info(f"Archivo combinado emociones-wearable guardado en: {output_emotions_wearable_path}")
+                    else:
+                        logging.error("Error al combinar datos de emociones y wearables")
+                else:
+                    logging.warning("No se encontró el CSV de emociones o el CSV de wearable para combinar.")
+                    if not os.path.exists(emotions_csv_path):
+                        logging.warning(f"Archivo de emociones no encontrado: {emotions_csv_path}")
+                    if not os.path.exists(wearable_csv_path):
+                        logging.warning(f"Archivo de wearables no encontrado: {wearable_csv_path}")
+
+# --- FIN INTEGRACIÓN EMOTIONS ---
         
       monitoring_obj.executed = 100
       monitoring_obj.ub_log_path =os.path.join( root_path , "fixation.json")
