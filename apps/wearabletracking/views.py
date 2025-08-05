@@ -360,69 +360,55 @@ def biometric_config_list(request, case_study_id):
         'object_list': configs,
         'case_study_id': case_study_id,
     })
-# def biometric_config_list(request, case_study_id):
-#     # Simulación de datos
-#     configs = [
-#         {
-#             'id': 1,
-#             'created_at': '2025-07-25',
-#             'title': 'Config ejemplo 1',
-#             'default_metrics': ['fc', 'pasos'],
-#             'default_chart_type': 'line',
-#             'freeze': False,
-#             'active': True,
-#         },
-#         {
-#             'id': 2,
-#             'created_at': '2025-07-20',
-#             'title': 'Config ejemplo 2',
-#             'default_metrics': ['calorias'],
-#             'default_chart_type': 'bar',
-#             'freeze': True,
-#             'active': False,
-#         },
-#     ]
-#     return render(request, 'wearabletracking/biometric_config_list.html', {
-#         'case_study': {'id': case_study_id},
-#         'object_list': configs,
-#         'case_study_id': case_study_id,
-#     })
 
 # Formulario para crear nueva configuración biométrica
 @login_required
 def biometric_config_create(request, case_study_id):
     case_study = get_object_or_404(CaseStudy, pk=case_study_id)
+    errors = {}
+    
     if request.method == 'POST':
         # Recoge los datos del formulario visual
         metrics = request.POST.get('metrics', '')
-        chart_type = request.POST.get('chart_type', 'line')
-        title = request.POST.get('title', 'Configuración biométrica')
+        chart_type = request.POST.get('chart_type', '')
+        title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '')
         metrics_list = [m for m in metrics.split(',') if m]
-
-        BiometricAnalysisConfig.objects.create(
-            case_study=case_study,
-            user=request.user,
-            default_metrics=metrics_list,
-            default_chart_type=chart_type,
-            active=False,
-            # Si tienes title y description en el modelo, añádelos aquí
-            title=title,
-            description=description,
-        )
-        return redirect('wearabletracking:biometric_config_list', case_study_id=case_study_id)
+        
+        # Validación de campos
+        if not title:
+            errors['title'] = _("Title is required")
+        if not metrics_list:
+            errors['metrics'] = _("At least one metric must be selected")
+        if not chart_type:
+            errors['chart_type'] = _("Chart type is required")
+            
+        # Si no hay errores, guarda la configuración
+        if not errors:
+            BiometricAnalysisConfig.objects.create(
+                case_study=case_study,
+                user=request.user,
+                default_metrics=metrics_list,
+                default_chart_type=chart_type,
+                active=False,
+                title=title,
+                description=description,
+            )
+            return redirect('wearabletracking:biometric_config_list', case_study_id=case_study_id)
+    
+    # Si hay errores o es GET, muestra el formulario
     return render(request, 'wearabletracking/biometric_config_form.html', {
         'case_study': case_study,
         'case_study_id': case_study_id,
+        'errors': errors,
+        # Preservar los datos ingresados en caso de error
+        'config': {
+            'title': request.POST.get('title', ''),
+            'description': request.POST.get('description', ''),
+            'default_metrics': request.POST.get('metrics', '').split(','),
+            'default_chart_type': request.POST.get('chart_type', 'line'),
+        } if request.method == 'POST' else None,
     })
-# def biometric_config_create(request, case_study_id):
-#     # Simulación: no uses BiometricAnalysisConfigForm ni lógica de guardado
-#     case_study = {'id': case_study_id, 'title': 'Estudio de ejemplo'}
-#     return render(request, 'wearabletracking/biometric_config_form.html', {
-#         'case_study': case_study,
-#         'case_study_id': case_study_id,
-#         # Puedes pasar datos simulados si quieres mostrar valores por defecto
-#     })
 
 # Detalle de configuración biométrica
 def biometric_config_detail(request, config_id):
@@ -463,30 +449,44 @@ def biometric_config_activate(request, config_id):
 @login_required
 def biometric_config_edit(request, config_id):
     config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
+    errors = {}
+    
     if config.freeze:
         return redirect('wearabletracking:biometric_config_detail', config_id=config.id)
         
     if request.method == 'POST':
         metrics = request.POST.get('metrics', '')
-        chart_type = request.POST.get('chart_type', 'line')
-        title = request.POST.get('title', config.title)
-        description = request.POST.get('description', config.description)
+        chart_type = request.POST.get('chart_type', '')
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '')
         
         metrics_list = [m for m in metrics.split(',') if m]
         
-        config.title = title
-        config.description = description
-        config.default_metrics = metrics_list
-        config.default_chart_type = chart_type
-        config.save()
-        
-        return redirect('wearabletracking:biometric_config_list', case_study_id=config.case_study.id)
-        
+        # Validación de campos
+        if not title:
+            errors['title'] = _("Title is required")
+        if not metrics_list:
+            errors['metrics'] = _("At least one metric must be selected")
+        if not chart_type:
+            errors['chart_type'] = _("Chart type is required")
+            
+        # Si no hay errores, actualiza la configuración
+        if not errors:
+            config.title = title
+            config.description = description
+            config.default_metrics = metrics_list
+            config.default_chart_type = chart_type
+            config.save()
+            
+            return redirect('wearabletracking:biometric_config_list', case_study_id=config.case_study.id)
+    
+    # Si hay errores o es GET, muestra el formulario
     return render(request, 'wearabletracking/biometric_config_form.html', {
         'case_study': config.case_study,
         'case_study_id': config.case_study.id,
         'config': config,
         'edit_mode': True,
+        'errors': errors,
     })
 
 # Lista de reportes biométricos de una ejecución
