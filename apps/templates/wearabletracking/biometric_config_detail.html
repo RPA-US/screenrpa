@@ -38,34 +38,97 @@
             <textarea class="form-control" rows="2" disabled>{{ config.description }}</textarea>
           </div>
         </div>
-        <!-- Métricas -->
+        
+        <!-- Métricas - CAMBIO CLAVE: usar btn-primary directamente en lugar de active -->
         <div class="card mb-5 shadow-sm">
           <div class="card-body">
             <h4 class="mb-3 text-primary">{% blocktranslate %}Metrics to Visualize{% endblocktranslate %}</h4>
             <div class="d-flex flex-wrap justify-content-center">
-              {% for metric, label in config.METRIC_CHOICES %}
-                <button type="button" class="btn btn-outline-primary metric-btn m-2 {% if metric in config.default_metrics %}active{% endif %}" style="border-radius: 20px; min-width: 140px;" disabled>
-                  {{ label }}
-                </button>
-              {% endfor %}
+              <button type="button" 
+                      class="btn {% if 'fc' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-heartbeat"></i> {% blocktranslate %}Heart Rate{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'pasos' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-shoe-prints"></i> {% blocktranslate %}Steps{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'calorias' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-fire"></i> {% blocktranslate %}Calories{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'zona_activa' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-bolt"></i> {% blocktranslate %}Active Zone{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'sedentario' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-couch"></i> {% blocktranslate %}Sedentary Time{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'ratio_fc_pasos' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-divide"></i> {% blocktranslate %}FC/Steps Ratio{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'cvl' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-chart-area"></i> {% blocktranslate %}CVL{% endblocktranslate %}
+              </button>
+              <button type="button" 
+                      class="btn {% if 'sdnn' in config.default_metrics %}btn-primary{% else %}btn-outline-primary{% endif %} metric-btn m-2" 
+                      style="border-radius: 20px; min-width: 140px;" 
+                      disabled>
+                <i class="fas fa-wave-square"></i> {% blocktranslate %}SDNN{% endblocktranslate %}
+              </button>
             </div>
           </div>
         </div>
-        <!-- Tipo de gráfico -->
+
+        <!-- Tipo de gráfico - MISMO CAMBIO: mejor visualización para disabled -->
         <div class="card mb-5 shadow-sm">
           <div class="card-body">
             <h4 class="mb-3 text-primary">{% blocktranslate %}Chart Type{% endblocktranslate %}</h4>
             <div class="d-flex flex-wrap justify-content-center">
-              {% for chart, label in config.CHART_TYPE_CHOICES %}
-                <div class="card chart-type-card mr-3 mb-2 {% if chart == config.default_chart_type %}active{% endif %}" style="width: 130px; border-radius: 15px; opacity: 0.7;" disabled>
-                  <div class="card-body text-center p-2">
-                    <div class="mt-2">{{ label }}</div>
-                  </div>
+              <div class="card chart-type-card mr-3 mb-2" 
+                   style="width: 130px; border-radius: 15px; {% if config.default_chart_type == 'line' %}box-shadow: 0 4px 16px rgba(33,150,243,0.3); border: 2px solid #5e72e4; opacity: 1;{% else %}opacity: 0.6;{% endif %}">
+                <div class="card-body text-center p-2">
+                  <i class="fas fa-chart-line" style="color: #1976d2; font-size: 2em;"></i>
+                  <div class="mt-2" style="color: #1976d2;">{% blocktranslate %}Line Chart{% endblocktranslate %}</div>
+                  <small class="text-muted">{% blocktranslate %}Best for trends{% endblocktranslate %}</small>
                 </div>
-              {% endfor %}
+              </div>
+              <div class="card chart-type-card mr-3 mb-2" 
+                   style="width: 130px; border-radius: 15px; {% if config.default_chart_type == 'bar' %}box-shadow: 0 4px 16px rgba(33,150,243,0.3); border: 2px solid #5e72e4; opacity: 1;{% else %}opacity: 0.6;{% endif %}">
+                <div class="card-body text-center p-2">
+                  <i class="fas fa-chart-bar" style="color: #adb5bd; font-size: 2em;"></i>
+                  <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Bar Chart{% endblocktranslate %}</div>
+                  <small class="text-muted">{% blocktranslate %}Compare values{% endblocktranslate %}</small>
+                </div>
+              </div>
+              <div class="card chart-type-card mb-2" 
+                   style="width: 130px; border-radius: 15px; {% if config.default_chart_type == 'area' %}box-shadow: 0 4px 16px rgba(33,150,243,0.3); border: 2px solid #5e72e4; opacity: 1;{% else %}opacity: 0.6;{% endif %}">
+                <div class="card-body text-center p-2">
+                  <i class="fas fa-chart-area" style="color: #adb5bd; font-size: 2em;"></i>
+                  <div class="mt-2" style="color: #adb5bd;">{% blocktranslate %}Area Chart{% endblocktranslate %}</div>
+                  <small class="text-muted">{% blocktranslate %}Volume & trends{% endblocktranslate %}</small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        
         <div class="text-center mb-5">
           <a href="{% url 'wearabletracking:biometric_config_list' case_study_id %}" class="btn btn-secondary">
             {% blocktranslate %}Back to list{% endblocktranslate %}

@@ -427,9 +427,29 @@ def biometric_config_create(request, case_study_id):
 # Detalle de configuración biométrica
 def biometric_config_detail(request, config_id):
     config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
+    
+    # Convierte default_metrics a lista Python si no lo es ya
+    if not isinstance(config.default_metrics, list):
+        try:
+            if isinstance(config.default_metrics, str):
+                # Si es un string JSON o una cadena separada por comas
+                if config.default_metrics.startswith('['):
+                    import json
+                    config.default_metrics = json.loads(config.default_metrics)
+                else:
+                    config.default_metrics = config.default_metrics.split(',')
+        except Exception as e:
+            print(f"Error procesando default_metrics: {e}")
+            config.default_metrics = []
+    
+    # Asegúrate que sea una lista de strings para comparar en la plantilla
+    config.default_metrics = [str(m).strip() for m in config.default_metrics]
+    
     return render(request, 'wearabletracking/biometric_config_detail.html', {
         'config': config,
         'case_study_id': config.case_study.id,
+        'METRIC_CHOICES': BiometricAnalysisConfig.METRIC_CHOICES,
+        'CHART_TYPE_CHOICES': BiometricAnalysisConfig.CHART_TYPE_CHOICES,
     })
 
 # Activar configuración biométrica
@@ -440,7 +460,6 @@ def biometric_config_activate(request, config_id):
     config.save()
     return redirect('wearabletracking:biometric_config_list', case_study_id=config.case_study.id)
 
-@login_required
 @login_required
 def biometric_config_edit(request, config_id):
     config = get_object_or_404(BiometricAnalysisConfig, pk=config_id)
