@@ -253,6 +253,16 @@ class Execution(models.Model):
 
         self.scenarios_to_study = self.case_study.scenarios_to_study
 
+        # Solo asignar biometric_config si monitoring tiene use_wearable_data=True
+        monitoring = self.monitoring
+        if monitoring and getattr(monitoring, "use_wearable_data", False):
+            from apps.wearabletracking.models import BiometricAnalysisConfig
+            self.biometric_config = BiometricAnalysisConfig.objects.filter(case_study=self.case_study, active=True).first()
+        else:
+            self.biometric_config = None  # Asegurarse de que sea None si monitoring no tiene datos wearable
+
+        self.scenarios_to_study = self.case_study.scenarios_to_study
+
         super().save(*args, **kwargs)
 
         active_feature_extraction_techniques = FeatureExtractionTechnique.objects.filter(case_study=self.case_study, active=True)

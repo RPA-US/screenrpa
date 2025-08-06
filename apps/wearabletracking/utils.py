@@ -54,8 +54,13 @@ def procesar_analisis_biometrico(execution):
     Procesa los datos biométricos según la configuración seleccionada,
     extrayendo datos y actividades del archivo merged_ui_wearable.csv.
     """
+    # SOLUCIÓN: Verificación adicional al inicio de la función
     if not execution.biometric_config:
         raise Exception("No hay configuración biométrica activa para esta ejecución")
+        
+    # Verificación adicional de que monitoring tiene habilitado use_wearable_data
+    if not hasattr(execution, 'monitoring') or not execution.monitoring or not getattr(execution.monitoring, 'use_wearable_data', False):
+        raise Exception("El procesamiento de logs no tiene habilitada la opción de datos wearable")
     
     # Obtener configuración
     config = execution.biometric_config
