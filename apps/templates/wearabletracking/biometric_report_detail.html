@@ -27,6 +27,30 @@
           </nav>
         </div>
       </div>
+      
+      <!-- SELECTOR DE ESCENARIOS -->
+      <div class="row mb-3">
+        <div class="col-md-12 text-center">
+          <div class="scenario-selector bg-secondary shadow p-2 rounded">
+            <div class="d-flex align-items-center justify-content-center">
+              <span class="mr-3 text-white">{% blocktranslate %}Scenario:{% endblocktranslate %}</span>
+              
+              <!-- Select en lugar de dropdown -->
+              <select id="scenarioSelect" class="form-control" style="max-width: 200px;">
+                {% for scenario, report_id in scenarios.items %}
+                <option value="{{ report_id }}" {% if scenario == current_scenario %}selected{% endif %}>{{ scenario }}</option>
+                {% endfor %}
+              </select>
+              
+              <!-- Botón de descarga -->
+              <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-success ml-3">
+                <i class="fas fa-download"></i> {% blocktranslate %}Download{% endblocktranslate %}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- FIN SELECTOR DE ESCENARIOS -->
     </div>
   </div>
 </div>
@@ -204,15 +228,6 @@
             </div>
             {% endfor %}
           </div>
-        </div>
-      </div>
-      
-      <!-- Download button -->
-      <div class="card mt-4">
-        <div class="card-body text-center">
-          <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-primary">
-            <i class="fas fa-download"></i> Descargar PDF
-          </a>
         </div>
       </div>
     </div>
@@ -427,6 +442,40 @@ body {
   position: relative !important;
   z-index: 99998 !important;
 }
+
+/* Estilos para el selector de escenarios */
+.scenario-selector {
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.scenario-selector:hover {
+  box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.scenario-selector .dropdown-toggle {
+  min-width: 150px;
+  text-align: left;
+  position: relative;
+  padding-right: 30px;
+}
+
+.scenario-selector .dropdown-toggle::after {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.scenario-selector .dropdown-menu {
+  min-width: 150px;
+}
+
+.scenario-selector .dropdown-item.active {
+  background-color: #5e72e4;
+  color: white;
+}
+
 </style>
 {% endblock content %}
 
@@ -1034,6 +1083,13 @@ function fixDropdownsCompletely() {
   // Asegurarse de que funcione incluso después de cambios en la ventana
   window.addEventListener('resize', fixDropdownsCompletely);
   window.addEventListener('scroll', fixDropdownsCompletely);
+});
+
+document.getElementById('scenarioSelect').addEventListener('change', function() {
+  const reportId = this.value;
+  if (reportId) {
+    window.location.href = `/wearabletracking/biometric-report/detail/${reportId}/`;
+  }
 });
 </script>
 {% endblock javascripts %}

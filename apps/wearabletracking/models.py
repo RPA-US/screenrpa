@@ -97,9 +97,9 @@ class BiometricAnalysisReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     # Relaciones
-    execution = models.OneToOneField(Execution, on_delete=models.CASCADE, related_name='biometric_report')
+    execution = models.ForeignKey(Execution, on_delete=models.CASCADE, related_name='biometric_reports')
     config = models.ForeignKey(BiometricAnalysisConfig, on_delete=models.CASCADE, related_name='reports')
-    
+    scenario = models.CharField(max_length=255, default='default')
     # Datos del reporte
     merged_file = models.CharField(max_length=255, default='merged_ui_wearable.csv')
     metrics = models.JSONField(default=list, verbose_name=_("Métricas seleccionadas"))
@@ -125,3 +125,4 @@ class BiometricAnalysisReport(models.Model):
     class Meta:
         verbose_name = _("Reporte de análisis biométrico")
         verbose_name_plural = _("Reportes de análisis biométrico")
+        unique_together = ('execution', 'scenario')

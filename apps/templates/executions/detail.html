@@ -309,8 +309,8 @@
                           <a class="dropdown-item" href="{% url 'wearabletracking:biometric_config_detail' execution.biometric_config.id %}">
                             <i class="fas fa-cog"></i> {% blocktranslate %}Configuration{% endblocktranslate %}
                           </a>
-                          {% if execution.biometric_report %}
-                            <a class="dropdown-item" href="{% url 'wearabletracking:biometric_report_detail' execution.biometric_report.id %}">
+                          {% if execution.biometric_reports.exists %}
+                            <a class="dropdown-item" href="{% url 'wearabletracking:biometric_report_detail' execution.biometric_reports.first.id %}">
                               <i class="fas fa-chart-line"></i> {% blocktranslate %}Results{% endblocktranslate %}
                             </a>
                           {% endif %}

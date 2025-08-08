@@ -492,16 +492,25 @@ def biometric_config_edit(request, config_id):
 # Lista de reportes biométricos de una ejecución
 def biometric_report_list(request, execution_id):
     execution = get_object_or_404(Execution, pk=execution_id)
-    report = getattr(execution, 'biometric_report', None)
+    reports = BiometricAnalysisReport.objects.filter(execution=execution)
+    
+    # Agrupar reportes por escenario
+    scenarios_reports = {report.scenario: report.id for report in reports}
+    
     return render(request, 'wearabletracking/biometric_report_list.html', {
         'execution': execution,
-        'report': report,
+        'reports': reports,
+        'scenarios_reports': scenarios_reports,
     })
 
 # Detalle de reporte biométrico
 def biometric_report_detail(request, report_id):
     """Vista para mostrar los resultados de un análisis biométrico"""
     report = get_object_or_404(BiometricAnalysisReport, pk=report_id)
+
+    # Obtener todos los reportes de esta ejecución para el selector
+    all_reports = BiometricAnalysisReport.objects.filter(execution=report.execution)
+    scenarios = {r.scenario: r.id for r in all_reports}
     
     # Extraer datos para el gráfico
     chart_labels = []
@@ -578,7 +587,9 @@ def biometric_report_detail(request, report_id):
         'stats': stats,
         'events': events,
         'indicators': indicators,
-        'time_range': time_range
+        'time_range': time_range,
+        'scenarios': scenarios,
+        'current_scenario': report.scenario
     }
     
     return render(request, 'wearabletracking/biometric_report_detail.html', context)

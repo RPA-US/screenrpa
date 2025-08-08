@@ -303,14 +303,34 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
                     
         if hasattr(execution, 'biometric_config') and execution.biometric_config:
             try:
+                # Verificar que todos los escenarios tienen los archivos necesarios
+                missing_files = []
+                
+                for scenario in execution.scenarios_to_study:
+                    scenario_path = os.path.join(execution.case_study.exp_folder_complete_path, scenario)
+                    if execution.monitoring and execution.monitoring.use_wearable_data and execution.monitoring.wearable_filename:
+                        wearable_csv_path = os.path.join(scenario_path, execution.monitoring.wearable_filename)
+                        ui_log_path = os.path.join(scenario_path, "ub_log_fixation.csv")
+                        
+                        if not os.path.exists(wearable_csv_path):
+                            missing_files.append(f"Escenario '{scenario}': Falta archivo de datos wearable ({execution.monitoring.wearable_filename})")
+                        if not os.path.exists(ui_log_path):
+                            missing_files.append(f"Escenario '{scenario}': Falta archivo ub_log_fixation.csv")
+                
+                if missing_files:
+                    error_message = "No se puede ejecutar el análisis biométrico. Faltan archivos necesarios:\n" + "\n".join(missing_files)
+                    raise Exception(error_message)
+                
+                # Procesar los datos biométricos para todos los escenarios
                 print(f"Processing biometric data with config: {execution.biometric_config.title}")
-                biometric_report = procesar_analisis_biometrico(execution)
-                print(f"Biometric analysis completed for execution {execution.id}")
+                biometric_reports = procesar_analisis_biometrico(execution)
+                print(f"Biometric analysis completed for execution {execution.id}, {len(biometric_reports)} reports generated")
+                
             except Exception as e:
                 print(f"Error processing biometric data: {str(e)}")
                 traceback.print_exc()
                 
-                # Marcar la ejecución como errónea, similar a otras fases
+                # Marcar la ejecución como errónea
                 execution.errored = True
                 execution.save()
                 

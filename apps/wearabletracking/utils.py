@@ -12,7 +12,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -51,14 +51,13 @@ def fechas_fuera_de_sync(fecha_fin, ultima_sync):
 
 def procesar_analisis_biometrico(execution):
     """
-    Procesa los datos biométricos según la configuración seleccionada,
-    extrayendo datos y actividades del archivo merged_ui_wearable.csv.
+    Procesa los datos biométricos para cada escenario de la ejecución.
+    Genera un reporte independiente para cada escenario.
     """
-    # SOLUCIÓN: Verificación adicional al inicio de la función
+    # Verificaciones iniciales
     if not execution.biometric_config:
         raise Exception("No hay configuración biométrica activa para esta ejecución")
         
-    # Verificación adicional de que monitoring tiene habilitado use_wearable_data
     if not hasattr(execution, 'monitoring') or not execution.monitoring or not getattr(execution.monitoring, 'use_wearable_data', False):
         raise Exception("El procesamiento de logs no tiene habilitada la opción de datos wearable")
     
@@ -66,364 +65,379 @@ def procesar_analisis_biometrico(execution):
     config = execution.biometric_config
     print(f"Configuración biométrica: {config.title}")
     
-    # Buscar el archivo merged_ui_wearable.csv
-    merged_file_name = 'merged_ui_wearable.csv'
-    possible_locations = [
-        os.path.join(execution.case_study.exp_folder_complete_path, merged_file_name),
-        *[os.path.join(execution.case_study.exp_folder_complete_path, scenario, merged_file_name) 
-          for scenario in execution.scenarios_to_study],
-        os.path.join(execution.exp_folder_complete_path, merged_file_name)
-    ]
+    # Lista para almacenar todos los reportes generados
+    reports = []
     
-    merged_file_path = next((loc for loc in possible_locations if os.path.exists(loc)), None)
-    
-    if not merged_file_path:
-        print(f"No se encontró el archivo merged_ui_wearable.csv")
-        print(f"Ubicaciones buscadas: {possible_locations}")
-        raise Exception("No se encontró el archivo merged_ui_wearable.csv necesario para el análisis biométrico")
-    
-    # Cargamos los datos
-    try:
-        print(f"Cargando archivo: {merged_file_path}")
-        df_combined = pd.read_csv(merged_file_path)
-    except Exception as e:
-        print(f"Error al cargar el archivo: {str(e)}")
-        raise Exception(f"Error al cargar el archivo biométrico: {str(e)}")
-    
-    # Extraer la fecha del CSV desde los nombres de archivos de captura de pantalla
-    csv_date = None
-    if 'screenshot' in df_combined.columns and not df_combined['screenshot'].empty:
-        for screenshot in df_combined['screenshot'].dropna():
-            if isinstance(screenshot, str) and '_' in screenshot:
-                # Formato típico: 6_25268098_2025-01-24_13-24-19.png
-                parts = screenshot.split('_')
-                for part in parts:
-                    # Buscar patrón de fecha YYYY-MM-DD
-                    if len(part) == 10 and part.count('-') == 2:
-                        try:
-                            # Verificar que sea una fecha válida
-                            datetime.strptime(part, "%Y-%m-%d")
-                            csv_date = part
-                            break
-                        except ValueError:
-                            continue
-                if csv_date:
-                    break
-    
-    # Si no encontramos la fecha en los screenshots, intentar con los timestamps
-    if not csv_date:
-        if 'timestamp' in df_combined.columns and not df_combined['timestamp'].empty:
-            timestamp = df_combined['timestamp'].iloc[0]
-            try:
-                # Extraer solo la fecha (YYYY-MM-DD) si tiene formato completo
-                if isinstance(timestamp, str):
-                    if 'T' in timestamp:
-                        csv_date = timestamp.split('T')[0]
-                    elif ' ' in timestamp:
-                        csv_date = timestamp.split(' ')[0]
-            except (AttributeError, IndexError):
-                pass
-        elif 'time:timestamp' in df_combined.columns and not df_combined['time:timestamp'].empty:
-            timestamp = df_combined['time:timestamp'].iloc[0]
-            try:
-                # Extraer solo la fecha (YYYY-MM-DD) si tiene formato completo
-                if isinstance(timestamp, str):
-                    if 'T' in timestamp:
-                        csv_date = timestamp.split('T')[0]
-                    elif ' ' in timestamp:
-                        csv_date = timestamp.split(' ')[0]
-            except (AttributeError, IndexError):
-                pass
-    
-    # Creamos el reporte
-    report = BiometricAnalysisReport.objects.create(
-        title=f"Análisis Biométrico - {config.title}",
-        execution=execution,
-        config=config,
-        metrics=config.default_metrics,
-        chart_type=config.default_chart_type,
-        merged_file=os.path.basename(merged_file_path)
-    )
-    
-    # Procesamiento mejorado
-    stats_data = {}
-    chart_data = {}
-    events_data = {}  # Para eventos destacados (picos, mínimos, etc.)
-    indicator_data = {}  # Para las tarjetas de indicadores
-    
-    # Procesar cada métrica seleccionada
-    for metric in config.default_metrics:
-        if metric in df_combined.columns:
-            # Filtrar y convertir valores a números
-            numeric_values = []
-            for val in df_combined[metric].dropna():
-                try:
-                    # Caso especial para temperatura (formato {'nightlyRelative': -0.8})
-                    if metric == 'temperatura' and isinstance(val, str) and val.startswith('{'):
-                        import ast
-                        try:
-                            dict_val = ast.literal_eval(val)
-                            if 'nightlyRelative' in dict_val:
-                                numeric_val = dict_val['nightlyRelative']
-                                numeric_values.append(numeric_val)
-                                continue
-                        except (ValueError, SyntaxError):
-                            # Si hay error al procesar, intentaremos como número normal
-                            pass
-                    
-                    # Para otros tipos de datos, procesar normalmente 
-                    if isinstance(val, str) and (val.startswith('{') or val.startswith('[')):
-                        continue  # Omitir estos valores que no podemos procesar
-                    
-                    # Convertir a número
-                    numeric_val = float(val) if val != '' else None
-                    if numeric_val is not None:
-                        numeric_values.append(numeric_val)
-                except (ValueError, TypeError):
-                    # Si no se puede convertir, ignorar
-                    continue
+    # Procesar cada escenario por separado
+    for scenario in execution.scenarios_to_study:
+        try:
+            print(f"Procesando escenario: {scenario}")
             
-            if not numeric_values:
+            # Ruta del archivo merged_ui_wearable.csv específica para este escenario
+            merged_file_path = os.path.join(execution.case_study.exp_folder_complete_path, scenario, "merged_ui_wearable.csv")
+            
+            print(f"Buscando archivo en: {merged_file_path}")
+            if not os.path.exists(merged_file_path):
+                print(f"No se encontró el archivo merged_ui_wearable.csv en el escenario {scenario}")
                 continue
             
-            # Usar solo los valores numéricos
-            values = numeric_values
-                
-            # Estadísticas básicas
-            stats_data[metric] = {
-                'mean': round(sum(values) / len(values), 2),
-                'max': round(max(values), 2),
-                'min': round(min(values), 2),
-                'current': round(values[-1], 2)
-            }
+            # Cargamos los datos
+            try:
+                print(f"Cargando archivo: {merged_file_path}")
+                df_combined = pd.read_csv(merged_file_path)
+            except Exception as e:
+                print(f"Error al cargar el archivo para el escenario {scenario}: {str(e)}")
+                continue
             
-            # Datos para gráficos (muestrear si son muchos)
-            if len(values) > 100:
-                step = len(values) // 100
-                indices = list(range(0, len(values), step))[:100]
-                chart_data[metric] = [values[i] for i in indices]
-            else:
-                indices = list(range(len(values)))
-                chart_data[metric] = values
+            # Crear un reporte específico para este escenario
+            report = BiometricAnalysisReport.objects.create(
+                title=f"Análisis Biométrico - {scenario}",
+                execution=execution,
+                config=config,
+                metrics=config.default_metrics,
+                chart_type=config.default_chart_type,
+                merged_file=os.path.basename(merged_file_path),
+                scenario=scenario  # Nuevo campo para identificar el escenario
+            )
             
-            # Detectar eventos destacados (picos, valores mínimos, cambios bruscos)
-            events_data[metric] = []
+            # Extraer la fecha del CSV desde los nombres de archivos de captura de pantalla
+            csv_date = None
+            if 'screenshot' in df_combined.columns and not df_combined['screenshot'].empty:
+                for screenshot in df_combined['screenshot'].dropna():
+                    if isinstance(screenshot, str) and '_' in screenshot:
+                        # Formato típico: 6_25268098_2025-01-24_13-24-19.png
+                        parts = screenshot.split('_')
+                        for part in parts:
+                            # Buscar patrón de fecha YYYY-MM-DD
+                            if len(part) == 10 and part.count('-') == 2:
+                                try:
+                                    # Verificar que sea una fecha válida
+                                    datetime.strptime(part, "%Y-%m-%d")
+                                    csv_date = part
+                                    break
+                                except ValueError:
+                                    continue
+                        if csv_date:
+                            break
             
-            # Índices para eventos importantes
-            if len(values) > 1:
-                max_index = values.index(max(values))
-                min_index = values.index(min(values))
-                
-                # Detectar cambios bruscos (diferencia con punto anterior)
-                changes = []
-                for i in range(1, len(values)):
-                    change = abs(values[i] - values[i-1])
-                    changes.append((i, change))
-                
-                # Ordenar por magnitud del cambio y tomar los más significativos
-                changes.sort(key=lambda x: x[1], reverse=True)
-                change_indices = [idx for idx, _ in changes[:2] if idx != max_index and idx != min_index]
-                
-                # Índices finales para eventos (máximo, mínimo y cambios significativos)
-                event_indices = list(set([max_index, min_index] + change_indices))
-                
-                # Para cada índice, extraer la actividad correspondiente
-                for idx in event_indices:
-                    if idx < len(df_combined):
-                        # Necesitamos mapear el índice en la lista de valores numéricos 
-                        # a su posición correspondiente en el DataFrame original
-                        # Esto es complicado porque hemos filtrado valores no numéricos
-                        
-                        # Enfoque simplificado: usar el índice directamente
-                        # (esto asume que la mayoría de los valores son numéricos)
-                        row_idx = min(idx, len(df_combined) - 1)
-                        row = df_combined.iloc[row_idx]
-                        
-                        # Extraer información rica del UI log
-                        activity_type = "Unknown"
-                        activity_details = {}
-                        
-                        # Columnas principales de actividad
-                        if 'category' in row and pd.notna(row['category']):
-                            activity_type = row['category']
-                            
-                        if 'application' in row and pd.notna(row['application']):
-                            activity_details['app'] = row['application']
-                            
-                        if 'concept:name' in row and pd.notna(row['concept:name']):
-                            activity_details['action'] = row['concept:name']
-                        
-                        # Detalles adicionales importantes
-                        ui_fields = [
-                            ('typed_word', 'Input'), 
-                            ('tag_innerText', 'Element Text'), 
-                            ('tag_name', 'Element Type'),
-                            ('tag_title', 'Element Title'),
-                            ('coordX', 'Position X'), 
-                            ('coordY', 'Position Y')
-                        ]
-                        
-                        for field, label in ui_fields:
-                            if field in row and pd.notna(row[field]) and row[field]:
-                                activity_details[label] = row[field]
-                        
-                        # Formatear detalles de forma legible
-                        details_text = []
-                        for key, val in activity_details.items():
-                            if val:  # Solo incluir si tiene valor
-                                details_text.append(f"{key}: {val}")
-                                
-                        # Construir descripción final
-                        activity_description = f"{activity_type}"
-                        if details_text:
-                            activity_description += f" ({'; '.join(details_text[:3])})"  # Limitar a 3 detalles
-                        
-                        # Determinar si es un valor anormal según la métrica
-                        is_abnormal = False
-                        if metric == 'fc':
-                            is_abnormal = values[idx] > 90 or values[idx] < 40
-                        elif metric == 'spo2':
-                            is_abnormal = values[idx] < 95
-                        elif metric == 'temperatura':
-                            # Para temperatura relativa, valores fuera de ±1.0°C son anormales
-                            is_abnormal = values[idx] > 1.0 or values[idx] < -1.0
-                        
-                        # Timestamp para el evento
-                        timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
-                        
-                        # Agregar el evento a la lista con información detallada
-                        events_data[metric].append({
-                            'index': indices.index(idx) if idx in indices else 0,
-                            'original_index': idx,
-                            'value': values[idx],
-                            'timestamp': timestamp,
-                            'activity': activity_description,
-                            'is_abnormal': is_abnormal,
-                            # Agregar campos adicionales para mejor visualización
-                            'activity_type': activity_type,
-                            'details': activity_details
-                        })
-    
-    # Preparar etiquetas para el eje X
-    chart_labels = []
-    if 'timestamp' in df_combined.columns:
-        timestamps = df_combined['timestamp'].tolist()
-        if len(timestamps) > 100:
-            step = len(timestamps) // 100
-            timestamps = [timestamps[i] for i in range(0, len(timestamps), step)][:100]
-        chart_labels = timestamps
-    elif 'time:timestamp' in df_combined.columns:
-        timestamps = df_combined['time:timestamp'].tolist()
-        if len(timestamps) > 100:
-            step = len(timestamps) // 100
-            timestamps = [timestamps[i] for i in range(0, len(timestamps), step)][:100]
-        chart_labels = timestamps
-    else:
-        if chart_data:
-            chart_labels = list(range(1, len(next(iter(chart_data.values()))) + 1))
-    
-    # Preparar datos de indicadores para las tarjetas
-    # Estos son los datos fijos que siempre queremos mostrar aunque no estén en el CSV
-    key_metrics = {
-        'fc': {'name': 'Heart rate', 'unit': 'bpm', 'icon': 'heartbeat', 'color': 'danger'},
-        'spo2': {'name': 'SpO₂', 'unit': '%', 'icon': 'tint', 'color': 'primary'},
-        'temperatura': {'name': 'Temperature', 'unit': '°C', 'icon': 'thermometer-half', 'color': 'purple'},
-        'hrv': {'name': 'HRV', 'unit': 'ms', 'icon': 'chart-line', 'color': 'warning'}
-    }
-    
-    # Para cada métrica clave, preparar datos para las tarjetas
-    for metric_key, metric_config in key_metrics.items():
-        if metric_key in df_combined.columns:
-            # Filtrar y convertir valores a números
-            numeric_values = []
-            for val in df_combined[metric_key].dropna():
-                try:
-                    # Caso especial para temperatura
-                    if metric_key == 'temperatura' and isinstance(val, str) and val.startswith('{'):
-                        import ast
+            # Si no encontramos la fecha en los screenshots, intentar con los timestamps
+            if not csv_date:
+                if 'timestamp' in df_combined.columns and not df_combined['timestamp'].empty:
+                    timestamp = df_combined['timestamp'].iloc[0]
+                    try:
+                        # Extraer solo la fecha (YYYY-MM-DD) si tiene formato completo
+                        if isinstance(timestamp, str):
+                            if 'T' in timestamp:
+                                csv_date = timestamp.split('T')[0]
+                            elif ' ' in timestamp:
+                                csv_date = timestamp.split(' ')[0]
+                    except (AttributeError, IndexError):
+                        pass
+                elif 'time:timestamp' in df_combined.columns and not df_combined['time:timestamp'].empty:
+                    timestamp = df_combined['time:timestamp'].iloc[0]
+                    try:
+                        # Extraer solo la fecha (YYYY-MM-DD) si tiene formato completo
+                        if isinstance(timestamp, str):
+                            if 'T' in timestamp:
+                                csv_date = timestamp.split('T')[0]
+                            elif ' ' in timestamp:
+                                csv_date = timestamp.split(' ')[0]
+                    except (AttributeError, IndexError):
+                        pass
+            
+            # Procesamiento mejorado
+            stats_data = {}
+            chart_data = {}
+            events_data = {}  # Para eventos destacados (picos, mínimos, etc.)
+            indicator_data = {}  # Para las tarjetas de indicadores
+            
+            # Procesar cada métrica seleccionada
+            for metric in config.default_metrics:
+                if metric in df_combined.columns:
+                    # Filtrar y convertir valores a números
+                    numeric_values = []
+                    for val in df_combined[metric].dropna():
                         try:
-                            dict_val = ast.literal_eval(val)
-                            if 'nightlyRelative' in dict_val:
-                                numeric_values.append(dict_val['nightlyRelative'])
-                                continue
-                        except (ValueError, SyntaxError):
-                            pass
+                            # Caso especial para temperatura (formato {'nightlyRelative': -0.8})
+                            if metric == 'temperatura' and isinstance(val, str) and val.startswith('{'):
+                                import ast
+                                try:
+                                    dict_val = ast.literal_eval(val)
+                                    if 'nightlyRelative' in dict_val:
+                                        numeric_val = dict_val['nightlyRelative']
+                                        numeric_values.append(numeric_val)
+                                        continue
+                                except (ValueError, SyntaxError):
+                                    # Si hay error al procesar, intentaremos como número normal
+                                    pass
+                            
+                            # Para otros tipos de datos, procesar normalmente 
+                            if isinstance(val, str) and (val.startswith('{') or val.startswith('[')):
+                                continue  # Omitir estos valores que no podemos procesar
+                            
+                            # Convertir a número
+                            numeric_val = float(val) if val != '' else None
+                            if numeric_val is not None:
+                                numeric_values.append(numeric_val)
+                        except (ValueError, TypeError):
+                            # Si no se puede convertir, ignorar
+                            continue
                     
-                    # Ignorar valores no numéricos en formato especial
-                    if isinstance(val, str) and (val.startswith('{') or val.startswith('[')):
+                    if not numeric_values:
                         continue
                     
-                    numeric_val = float(val) if val != '' else None
-                    if numeric_val is not None:
-                        numeric_values.append(numeric_val)
-                except (ValueError, TypeError):
-                    continue
+                    # Usar solo los valores numéricos
+                    values = numeric_values
+                        
+                    # Estadísticas básicas
+                    stats_data[metric] = {
+                        'mean': round(sum(values) / len(values), 2),
+                        'max': round(max(values), 2),
+                        'min': round(min(values), 2),
+                        'current': round(values[-1], 2)
+                    }
+                    
+                    # Datos para gráficos (muestrear si son muchos)
+                    if len(values) > 100:
+                        step = len(values) // 100
+                        indices = list(range(0, len(values), step))[:100]
+                        chart_data[metric] = [values[i] for i in indices]
+                    else:
+                        indices = list(range(len(values)))
+                        chart_data[metric] = values
+                    
+                    # Detectar eventos destacados (picos, valores mínimos, cambios bruscos)
+                    events_data[metric] = []
+                    
+                    # Índices para eventos importantes
+                    if len(values) > 1:
+                        max_index = values.index(max(values))
+                        min_index = values.index(min(values))
+                        
+                        # Detectar cambios bruscos (diferencia con punto anterior)
+                        changes = []
+                        for i in range(1, len(values)):
+                            change = abs(values[i] - values[i-1])
+                            changes.append((i, change))
+                        
+                        # Ordenar por magnitud del cambio y tomar los más significativos
+                        changes.sort(key=lambda x: x[1], reverse=True)
+                        change_indices = [idx for idx, _ in changes[:2] if idx != max_index and idx != min_index]
+                        
+                        # Índices finales para eventos (máximo, mínimo y cambios significativos)
+                        event_indices = list(set([max_index, min_index] + change_indices))
+                        
+                        # Para cada índice, extraer la actividad correspondiente
+                        for idx in event_indices:
+                            if idx < len(df_combined):
+                                # Necesitamos mapear el índice en la lista de valores numéricos 
+                                # a su posición correspondiente en el DataFrame original
+                                # Esto es complicado porque hemos filtrado valores no numéricos
+                                
+                                # Enfoque simplificado: usar el índice directamente
+                                # (esto asume que la mayoría de los valores son numéricos)
+                                row_idx = min(idx, len(df_combined) - 1)
+                                row = df_combined.iloc[row_idx]
+                                
+                                # Extraer información rica del UI log
+                                activity_type = "Unknown"
+                                activity_details = {}
+                                
+                                # Columnas principales de actividad
+                                if 'category' in row and pd.notna(row['category']):
+                                    activity_type = row['category']
+                                    
+                                if 'application' in row and pd.notna(row['application']):
+                                    activity_details['app'] = row['application']
+                                    
+                                if 'concept:name' in row and pd.notna(row['concept:name']):
+                                    activity_details['action'] = row['concept:name']
+                                
+                                # Detalles adicionales importantes
+                                ui_fields = [
+                                    ('typed_word', 'Input'), 
+                                    ('tag_innerText', 'Element Text'), 
+                                    ('tag_name', 'Element Type'),
+                                    ('tag_title', 'Element Title'),
+                                    ('coordX', 'Position X'), 
+                                    ('coordY', 'Position Y')
+                                ]
+                                
+                                for field, label in ui_fields:
+                                    if field in row and pd.notna(row[field]) and row[field]:
+                                        activity_details[label] = row[field]
+                                
+                                # Formatear detalles de forma legible
+                                details_text = []
+                                for key, val in activity_details.items():
+                                    if val:  # Solo incluir si tiene valor
+                                        details_text.append(f"{key}: {val}")
+                                        
+                                # Construir descripción final
+                                activity_description = f"{activity_type}"
+                                if details_text:
+                                    activity_description += f" ({'; '.join(details_text[:3])})"  # Limitar a 3 detalles
+                                
+                                # Determinar si es un valor anormal según la métrica
+                                is_abnormal = False
+                                if metric == 'fc':
+                                    is_abnormal = values[idx] > 90 or values[idx] < 40
+                                elif metric == 'spo2':
+                                    is_abnormal = values[idx] < 95
+                                elif metric == 'temperatura':
+                                    # Para temperatura relativa, valores fuera de ±1.0°C son anormales
+                                    is_abnormal = values[idx] > 1.0 or values[idx] < -1.0
+                                
+                                # Timestamp para el evento
+                                timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
+                                
+                                # Agregar el evento a la lista con información detallada
+                                events_data[metric].append({
+                                    'index': indices.index(idx) if idx in indices else 0,
+                                    'original_index': idx,
+                                    'value': values[idx],
+                                    'timestamp': timestamp,
+                                    'activity': activity_description,
+                                    'is_abnormal': is_abnormal,
+                                    # Agregar campos adicionales para mejor visualización
+                                    'activity_type': activity_type,
+                                    'details': activity_details
+                                })
             
-            if numeric_values:
-                last_value = numeric_values[-1]
-                mean_value = sum(numeric_values) / len(numeric_values)
-                
-                # Determinar estado según valores normales para cada métrica
-                status = "Normal"
-                if metric_key == 'fc':
-                    if last_value > 90:
-                        status = "High"
-                    elif last_value < 40:
-                        status = "Low"
-                elif metric_key == 'spo2':
-                    if last_value < 95:
-                        status = "Low"
-                elif metric_key == 'temperatura':
-                    # Para temperatura relativa, valores fuera de ±0.8°C son anormales
-                    if last_value > 0.8:
-                        status = "High"
-                    elif last_value < -0.8:
-                        status = "Low"
-                
-                indicator_data[metric_key] = {
-                    'name': metric_config['name'],
-                    'value': round(last_value, 2),
-                    'mean': round(mean_value, 2),
-                    'unit': metric_config['unit'],
-                    'status': status,
-                    'icon': metric_config['icon'],
-                    'color': metric_config['color']
-                }
+            # Preparar etiquetas para el eje X
+            chart_labels = []
+            if 'timestamp' in df_combined.columns:
+                timestamps = df_combined['timestamp'].tolist()
+                if len(timestamps) > 100:
+                    step = len(timestamps) // 100
+                    timestamps = [timestamps[i] for i in range(0, len(timestamps), step)][:100]
+                chart_labels = timestamps
+            elif 'time:timestamp' in df_combined.columns:
+                timestamps = df_combined['time:timestamp'].tolist()
+                if len(timestamps) > 100:
+                    step = len(timestamps) // 100
+                    timestamps = [timestamps[i] for i in range(0, len(timestamps), step)][:100]
+                chart_labels = timestamps
             else:
-                # No hay valores numéricos válidos
-                indicator_data[metric_key] = {
-                    'name': metric_config['name'],
-                    'value': 'N/A',
-                    'mean': 'N/A',
-                    'unit': metric_config['unit'],
-                    'status': 'Unknown',
-                    'icon': metric_config['icon'],
-                    'color': metric_config['color']
-                }
-        else:
-            # Si no está en el CSV, añadir un placeholder
-            indicator_data[metric_key] = {
-                'name': metric_config['name'],
-                'value': 'N/A',
-                'mean': 'N/A',
-                'unit': metric_config['unit'],
-                'status': 'Unknown',
-                'icon': metric_config['icon'],
-                'color': metric_config['color']
+                if chart_data:
+                    chart_labels = list(range(1, len(next(iter(chart_data.values()))) + 1))
+            
+            # Preparar datos de indicadores para las tarjetas
+            # Estos son los datos fijos que siempre queremos mostrar aunque no estén en el CSV
+            key_metrics = {
+                'fc': {'name': 'Heart rate', 'unit': 'bpm', 'icon': 'heartbeat', 'color': 'danger'},
+                'spo2': {'name': 'SpO₂', 'unit': '%', 'icon': 'tint', 'color': 'primary'},
+                'temperatura': {'name': 'Temperature', 'unit': '°C', 'icon': 'thermometer-half', 'color': 'purple'},
+                'hrv': {'name': 'HRV', 'unit': 'ms', 'icon': 'chart-line', 'color': 'warning'}
             }
+            
+            # Para cada métrica clave, preparar datos para las tarjetas
+            for metric_key, metric_config in key_metrics.items():
+                if metric_key in df_combined.columns:
+                    # Filtrar y convertir valores a números
+                    numeric_values = []
+                    for val in df_combined[metric_key].dropna():
+                        try:
+                            # Caso especial para temperatura
+                            if metric_key == 'temperatura' and isinstance(val, str) and val.startswith('{'):
+                                import ast
+                                try:
+                                    dict_val = ast.literal_eval(val)
+                                    if 'nightlyRelative' in dict_val:
+                                        numeric_values.append(dict_val['nightlyRelative'])
+                                        continue
+                                except (ValueError, SyntaxError):
+                                    pass
+                            
+                            # Ignorar valores no numéricos en formato especial
+                            if isinstance(val, str) and (val.startswith('{') or val.startswith('[')):
+                                continue
+                            
+                            numeric_val = float(val) if val != '' else None
+                            if numeric_val is not None:
+                                numeric_values.append(numeric_val)
+                        except (ValueError, TypeError):
+                            continue
+                    
+                    if numeric_values:
+                        last_value = numeric_values[-1]
+                        mean_value = sum(numeric_values) / len(numeric_values)
+                        
+                        # Determinar estado según valores normales para cada métrica
+                        status = "Normal"
+                        if metric_key == 'fc':
+                            if last_value > 90:
+                                status = "High"
+                            elif last_value < 40:
+                                status = "Low"
+                        elif metric_key == 'spo2':
+                            if last_value < 95:
+                                status = "Low"
+                        elif metric_key == 'temperatura':
+                            # Para temperatura relativa, valores fuera de ±0.8°C son anormales
+                            if last_value > 0.8:
+                                status = "High"
+                            elif last_value < -0.8:
+                                status = "Low"
+                        
+                        indicator_data[metric_key] = {
+                            'name': metric_config['name'],
+                            'value': round(last_value, 2),
+                            'mean': round(mean_value, 2),
+                            'unit': metric_config['unit'],
+                            'status': status,
+                            'icon': metric_config['icon'],
+                            'color': metric_config['color']
+                        }
+                    else:
+                        # No hay valores numéricos válidos
+                        indicator_data[metric_key] = {
+                            'name': metric_config['name'],
+                            'value': 'N/A',
+                            'mean': 'N/A',
+                            'unit': metric_config['unit'],
+                            'status': 'Unknown',
+                            'icon': metric_config['icon'],
+                            'color': metric_config['color']
+                        }
+                else:
+                    # Si no está en el CSV, añadir un placeholder
+                    indicator_data[metric_key] = {
+                        'name': metric_config['name'],
+                        'value': 'N/A',
+                        'mean': 'N/A',
+                        'unit': metric_config['unit'],
+                        'status': 'Unknown',
+                        'icon': metric_config['icon'],
+                        'color': metric_config['color']
+                    }
+            
+            # Guardar todos los datos procesados, incluyendo la fecha del CSV
+            report.extra_data = {
+                'stats': stats_data,
+                'chart_data': chart_data,
+                'chart_labels': chart_labels,
+                'events': events_data,
+                'indicators': indicator_data,
+                'csv_date': csv_date
+            }
+            report.save()
+            
+            # Añadir el reporte a la lista de reportes generados
+            reports.append(report)
+            print(f"Reporte generado para escenario {scenario} con ID: {report.id}")
+            
+        except Exception as e:
+            print(f"Error procesando escenario {scenario}: {str(e)}")
+            # Continuar con el siguiente escenario
+            continue
     
-    # Guardar todos los datos procesados, incluyendo la fecha del CSV
-    report.extra_data = {
-        'stats': stats_data,
-        'chart_data': chart_data,
-        'chart_labels': chart_labels,
-        'events': events_data,
-        'indicators': indicator_data,
-        'csv_date': csv_date  # Añadir la fecha del CSV para mostrarla en la interfaz
-    }
-    report.save()
+    # Verificar que se haya generado al menos un reporte
+    if not reports:
+        raise Exception("No se pudo procesar ningún escenario para análisis biométrico")
     
-    return report
+    # Devolver la lista de reportes generados
+    return reports
 
 
 def generate_biometric_report_pdf(report):
