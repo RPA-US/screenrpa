@@ -172,6 +172,23 @@ def exportar_datos_fitbit(request):
         edad = 30  # Ajustar según usuario real
         fc_reposo = 65  # Ajustar según usuario real
 
+        # Obtener edad real del usuario desde el perfil Fitbit
+        profile_url = "https://api.fitbit.com/1/user/-/profile.json"
+        profile_resp = requests.get(profile_url, headers=headers)
+        if profile_resp.status_code == 200:
+            user = profile_resp.json().get("user", {})
+            edad = user.get("age", edad)  # Usa el valor por defecto si no está
+
+        # Obtener FC de reposo real del usuario para la fecha de inicio
+        fc_reposo_url = f"https://api.fitbit.com/1/user/-/activities/heart/date/{fecha_inicio}/1d.json"
+        fc_reposo_resp = requests.get(fc_reposo_url, headers=headers)
+        if fc_reposo_resp.status_code == 200:
+            activities = fc_reposo_resp.json().get("activities-heart", [])
+            if activities and "value" in activities[0]:
+                fc_reposo_val = activities[0]["value"].get("restingHeartRate")
+                if fc_reposo_val:
+                    fc_reposo = fc_reposo_val
+
         current_date = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
         end_date = datetime.strptime(fecha_fin, "%Y-%m-%d").date()
 
