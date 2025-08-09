@@ -148,6 +148,8 @@
                       </tbody>
                     </table>
                   </div>
+                  <!-- NUEVO: Contenedor de paginación -->
+                  <div class="mt-2" id="{{ metric }}-pagination"></div>
                 </div>
               </div>
             {% endfor %}
@@ -211,7 +213,8 @@
                     </div>
                     <div class="text-right">
                       <h4 class="mb-0">{{ indicator.name }}</h4>
-                      <span class="text-{% if indicator.status == 'Normal' %}success{% elif indicator.status == 'High' %}warning{% elif indicator.status == 'Low' %}danger{% else %}info{% endif %}">
+                      <span class="text-{% if indicator.status == 'Normal' %}success{% elif indicator.status == 'High' %}warning{% elif indicator.status == 'Low' %}danger{% else %}info{% endif %}"
+                            data-toggle="tooltip" title="{{ indicator.reason|default:'No additional information' }}">
                         {{ indicator.status }}
                       </span>
                     </div>
@@ -231,6 +234,30 @@
             </div>
             {% endfor %}
           </div>
+        </div>
+      </div>
+      
+      <!-- NUEVO: Información sobre criterios científicos -->
+      <div class="card shadow mt-4">
+        <div class="card-header">
+          <h3 class="mb-0">{% blocktranslate %}Criterios de Evaluación{% endblocktranslate %}</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-2">Los valores biométricos se evalúan según criterios científicos basados en la edad, condición física y contexto de actividad del usuario.</p>
+          <ul class="mb-0">
+            <li><strong>Frecuencia Cardíaca:</strong> Normal en reposo (60-100 lpm), atletas (40-60 lpm)</li>
+            <li><strong>SpO₂:</strong> Normal (≥95%), adultos mayores (≥92%)</li>
+            <li><strong>Temperatura:</strong> Variaciones normales de hasta ±1.0°C</li>
+            <li><strong>HRV:</strong> Normal (≥50ms)</li>
+            <li><strong>Ratio FC/Pasos:</strong> 
+              <ul>
+                <li>Sedentario (0-5 pasos): Normal entre 3.0-8.0</li>
+                <li>Movimiento ligero (6-20 pasos): Normal entre 2.0-5.0</li>
+                <li>Actividad (21+ pasos): Normal menor a 3.0</li>
+              </ul>
+            </li>
+            <li><strong>Pasos:</strong> Sedentarismo (<30 min consecutivos sin movimiento)</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -479,6 +506,61 @@ body {
   color: white;
 }
 
+/* NUEVO: Estilos para tooltips mejorados */
+.tooltip-inner {
+  max-width: 250px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  background-color: rgba(50, 50, 93, 0.95);
+  border-radius: 0.5rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* NUEVO: Estilos para paginación de eventos */
+.pagination {
+  margin-bottom: 8px;
+}
+
+.pagination .page-link {
+  padding: 0.5rem 0.8rem;       /* Botones más grandes */
+  font-size: 0.9rem;            /* Texto más grande */
+  min-width: 2.5rem;            /* Ancho mínimo para botones numéricos */
+  text-align: center;           /* Centrar números */
+  background-color: #f8f9fe;    /* Fondo más claro */
+  border-color: #e9ecef;        /* Borde más suave */
+  color: #525f7f;               /* Color de texto más oscuro */
+  transition: all 0.2s;         /* Transición suave */
+}
+
+.pagination .page-link:hover {
+  background-color: #eaecf4;    /* Color hover más oscuro */
+  border-color: #d3d9e5;        /* Borde hover más oscuro */
+  color: #32325d;               /* Texto hover más oscuro */
+  z-index: 2;                   /* Asegurar que esté por encima */
+}
+
+.pagination .active .page-link {
+  background-color: #5e72e4;    /* Color primario */
+  border-color: #5e72e4;        /* Borde del mismo color */
+  color: white;                 /* Texto blanco */
+  font-weight: bold;            /* Negrita */
+  box-shadow: 0 2px 5px rgba(94, 114, 228, 0.3); /* Sombra suave */
+}
+
+/* Estilos para el texto de contador de eventos */
+.pagination-container {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.event-counter {
+  font-size: 0.85rem;
+  color: #8898aa;
+  font-style: italic;
+  display: block;
+  text-align: center;
+  margin-top: 0.5rem;
+}
 </style>
 {% endblock content %}
 
@@ -594,12 +676,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Actualizar la tabla de eventos para cada métrica
+  // NUEVA FUNCIÓN: Actualizar la tabla de eventos para cada métrica CON PAGINACIÓN
   function updateEventsTable(metric, events) {
     var tbody = document.getElementById(metric + '-events');
+    var paginationContainer = document.getElementById(metric + '-pagination');
     if (!tbody) return;
     
+    // Limpiar contenido anterior
     tbody.innerHTML = '';
+    if (paginationContainer) paginationContainer.innerHTML = '';
     
     // Si no hay eventos, mostrar mensaje
     if (!events || events.length === 0) {
@@ -613,69 +698,263 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    events.forEach(event => {
-      var tr = document.createElement('tr');
+    // Configuración de paginación
+    const eventsPerPage = 5;
+    const totalPages = Math.ceil(events.length / eventsPerPage);
+    let currentPage = 1;
+    
+    // Función para mostrar eventos de la página actual
+    function displayEvents(page) {
+      tbody.innerHTML = '';
+      currentPage = page;
       
-      // Columna de tiempo
-      var tdTime = document.createElement('td');
-      tdTime.textContent = event.timestamp || 'N/A';
-      tr.appendChild(tdTime);
+      const start = (page - 1) * eventsPerPage;
+      const end = Math.min(start + eventsPerPage, events.length);
+      const pageEvents = events.slice(start, end);
       
-      // Columna de valor biométrico con formato mejorado
-      var tdValue = document.createElement('td');
-      var valueSpan = document.createElement('span');
-      valueSpan.classList.add(event.is_abnormal ? 'text-warning' : 'text-success');
-      
-      // Formatear valor según tipo de métrica
-      let formattedValue;
-      if (metric === 'temperatura') {
-        let sign = event.value >= 0 ? '+' : '';
-        formattedValue = `${sign}${event.value.toFixed(1)}°C`;
-      } else {
-        formattedValue = `${event.value} ${metricConfig[metric]?.unit || ''}`;
-      }
-      
-      valueSpan.innerHTML = `${formattedValue} 
-                         ${event.is_abnormal ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : 
-                                           '<i class="fas fa-check-circle ml-1"></i>'}`;
-      tdValue.appendChild(valueSpan);
-      tr.appendChild(tdValue);
-      
-      // Columna de actividad
-      var tdActivity = document.createElement('td');
-      tdActivity.innerHTML = `<strong>${event.activity_type || 'Unknown'}</strong>`;
-      tr.appendChild(tdActivity);
-      
-      // Columna de detalles
-      var tdDetails = document.createElement('td');
-      if (event.details) {
-        var detailsList = document.createElement('ul');
-        detailsList.className = 'mb-0 pl-3';
+      pageEvents.forEach(event => {
+        var tr = document.createElement('tr');
         
-        // Mostrar solo los 3 detalles más relevantes
-        const keysToShow = Object.keys(event.details).slice(0, 3);
+        // Columna de tiempo
+        var tdTime = document.createElement('td');
+        tdTime.textContent = event.timestamp || 'N/A';
+        tr.appendChild(tdTime);
         
-        keysToShow.forEach(key => {
-          const value = event.details[key];
-          if (value) {
-            var li = document.createElement('li');
-            li.innerHTML = `<small>${key}: <span class="text-primary">${value}</span></small>`;
-            detailsList.appendChild(li);
+        // Columna de valor biométrico con formato mejorado
+        var tdValue = document.createElement('td');
+        var valueSpan = document.createElement('span');
+        valueSpan.classList.add(event.is_abnormal ? 'text-warning' : 'text-success');
+        
+        // Formatear valor según tipo de métrica
+        let formattedValue;
+        if (metric === 'temperatura') {
+          let sign = event.value >= 0 ? '+' : '';
+          formattedValue = `${sign}${event.value.toFixed(1)}°C`;
+        } else {
+          formattedValue = `${event.value} ${metricConfig[metric]?.unit || ''}`;
+        }
+        
+        // Añadir tooltip con razón de anormalidad
+        if (event.is_abnormal) {
+          let tooltipText = event.abnormal_reason || 'Valor anormal';
+          valueSpan.innerHTML = `${formattedValue} 
+                        <i class="fas fa-exclamation-triangle ml-1" data-toggle="tooltip" title="${tooltipText}"></i>`;
+        } else {
+          valueSpan.innerHTML = `${formattedValue} 
+                        <i class="fas fa-check-circle ml-1" data-toggle="tooltip" title="Valor normal"></i>`;
+        }
+        
+        tdValue.appendChild(valueSpan);
+        tr.appendChild(tdValue);
+        
+        // Columna de actividad
+        var tdActivity = document.createElement('td');
+        tdActivity.innerHTML = `<strong>${event.activity_type || 'Unknown'}</strong>`;
+        tr.appendChild(tdActivity);
+        
+        // Columna de detalles
+        var tdDetails = document.createElement('td');
+        if (event.details) {
+          var detailsList = document.createElement('ul');
+          detailsList.className = 'mb-0 pl-3';
+          
+          // Mostrar solo los 3 detalles más relevantes
+          const keysToShow = Object.keys(event.details).slice(0, 3);
+          
+          keysToShow.forEach(key => {
+            const value = event.details[key];
+            if (value) {
+              var li = document.createElement('li');
+              li.innerHTML = `<small>${key}: <span class="text-primary">${value}</span></small>`;
+              detailsList.appendChild(li);
+            }
+          });
+          
+          if (detailsList.children.length > 0) {
+            tdDetails.appendChild(detailsList);
+          } else {
+            tdDetails.textContent = 'No additional details';
           }
-        });
-        
-        if (detailsList.children.length > 0) {
-          tdDetails.appendChild(detailsList);
         } else {
           tdDetails.textContent = 'No additional details';
         }
-      } else {
-        tdDetails.textContent = 'No additional details';
-      }
-      tr.appendChild(tdDetails);
+        tr.appendChild(tdDetails);
+        
+        tbody.appendChild(tr);
+      });
       
-      tbody.appendChild(tr);
-    });
+      // Reinicializar tooltips para los nuevos elementos
+      $('[data-toggle="tooltip"]').tooltip();
+      
+      // Actualizar controles de paginación
+      updatePaginationControls();
+    }
+    
+    // Función para actualizar controles de paginación
+    function updatePaginationControls() {
+      if (!paginationContainer) return;
+      
+      // No mostrar paginación si solo hay una página
+      if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        
+        // Si hay eventos pero no suficientes para paginar, mostrar un contador simple
+        if (events.length > 0) {
+          const countDiv = document.createElement('div');
+          countDiv.className = 'text-center text-muted mt-2';
+          countDiv.innerHTML = `<small>${events.length} evento${events.length !== 1 ? 's' : ''} en total</small>`;
+          paginationContainer.appendChild(countDiv);
+        }
+        return;
+      }
+      
+      paginationContainer.innerHTML = '';
+      
+      // Contenedor principal para centrar toda la paginación
+      const paginationWrapper = document.createElement('div');
+      paginationWrapper.className = 'd-flex flex-column align-items-center';
+      
+      // Contenedor de paginación con estilo
+      const paginationNav = document.createElement('nav');
+      paginationNav.setAttribute('aria-label', 'Events pagination');
+      paginationNav.className = 'mb-2'; // Agregar margen inferior
+      
+      const paginationUl = document.createElement('ul');
+      paginationUl.className = 'pagination pagination-sm justify-content-center';
+      
+      // Botón Anterior
+      const prevLi = document.createElement('li');
+      prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+      
+      const prevLink = document.createElement('a');
+      prevLink.className = 'page-link';
+      prevLink.href = '#';
+      prevLink.textContent = 'Prev';
+      prevLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) displayEvents(currentPage - 1);
+      });
+      
+      prevLi.appendChild(prevLink);
+      paginationUl.appendChild(prevLi);
+      
+      // Botones de páginas (con simplificación para muchas páginas)
+      const maxPageButtons = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+      
+      if (endPage - startPage + 1 < maxPageButtons) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+      }
+      
+      // Añadir primera página y elipsis si es necesario
+      if (startPage > 1) {
+        const firstLi = document.createElement('li');
+        firstLi.className = 'page-item';
+        
+        const firstLink = document.createElement('a');
+        firstLink.className = 'page-link';
+        firstLink.href = '#';
+        firstLink.textContent = '1';
+        firstLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          displayEvents(1);
+        });
+        
+        firstLi.appendChild(firstLink);
+        paginationUl.appendChild(firstLi);
+        
+        if (startPage > 2) {
+          const ellipsisLi = document.createElement('li');
+          ellipsisLi.className = 'page-item disabled';
+          
+          const ellipsisSpan = document.createElement('span');
+          ellipsisSpan.className = 'page-link';
+          ellipsisSpan.innerHTML = '&hellip;';
+          
+          ellipsisLi.appendChild(ellipsisSpan);
+          paginationUl.appendChild(ellipsisLi);
+        }
+      }
+      
+      // Páginas numeradas
+      for (let i = startPage; i <= endPage; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        
+        const pageLink = document.createElement('a');
+        pageLink.className = 'page-link';
+        pageLink.href = '#';
+        pageLink.textContent = i;
+        pageLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          displayEvents(i);
+        });
+        
+        pageLi.appendChild(pageLink);
+        paginationUl.appendChild(pageLi);
+      }
+      
+      // Añadir última página y elipsis si es necesario
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          const ellipsisLi = document.createElement('li');
+          ellipsisLi.className = 'page-item disabled';
+          
+          const ellipsisSpan = document.createElement('span');
+          ellipsisSpan.className = 'page-link';
+          ellipsisSpan.innerHTML = '&hellip;';
+          
+          ellipsisLi.appendChild(ellipsisSpan);
+          paginationUl.appendChild(ellipsisLi);
+        }
+        
+        const lastLi = document.createElement('li');
+        lastLi.className = 'page-item';
+        
+        const lastLink = document.createElement('a');
+        lastLink.className = 'page-link';
+        lastLink.href = '#';
+        lastLink.textContent = totalPages;
+        lastLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          displayEvents(totalPages);
+        });
+        
+        lastLi.appendChild(lastLink);
+        paginationUl.appendChild(lastLi);
+      }
+      
+      // Botón Siguiente
+      const nextLi = document.createElement('li');
+      nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+      
+      const nextLink = document.createElement('a');
+      nextLink.className = 'page-link';
+      nextLink.href = '#';
+      nextLink.textContent = 'Next';
+      nextLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) displayEvents(currentPage + 1);
+      });
+      
+      nextLi.appendChild(nextLink);
+      paginationUl.appendChild(nextLi);
+      
+      paginationNav.appendChild(paginationUl);
+      paginationWrapper.appendChild(paginationNav);
+      
+      // Contador de eventos debajo de la paginación
+      const countDiv = document.createElement('div');
+      countDiv.className = 'text-center text-muted';
+      countDiv.innerHTML = `<small>${events.length} evento${events.length !== 1 ? 's' : ''} en total</small>`;
+      paginationWrapper.appendChild(countDiv);
+      
+      paginationContainer.appendChild(paginationWrapper);
+    }
+    
+    // Mostrar la primera página de eventos
+    displayEvents(1);
   }
   
   // Crear gráficos para cada dataset
@@ -768,6 +1047,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 var eventIndex = events.findIndex(e => e.index === context.dataIndex);
                 if (eventIndex !== -1) {
                   label += ' - ' + events[eventIndex].activity_type;
+                  
+                  // NUEVO: Mostrar razón de anormalidad si existe
+                  if (events[eventIndex].is_abnormal && events[eventIndex].abnormal_reason) {
+                    label += ' (' + events[eventIndex].abnormal_reason + ')';
+                  }
                 }
                 
                 return label;
@@ -1086,6 +1370,11 @@ function fixDropdownsCompletely() {
   // Asegurarse de que funcione incluso después de cambios en la ventana
   window.addEventListener('resize', fixDropdownsCompletely);
   window.addEventListener('scroll', fixDropdownsCompletely);
+  
+  // NUEVO: Inicializar todos los tooltips en el documento
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
 });
 
 document.getElementById('scenarioSelect').addEventListener('change', function() {

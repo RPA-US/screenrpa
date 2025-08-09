@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import requests
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,6 +16,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from io import BytesIO
 from django.core.files.base import ContentFile
+from apps.wearabletracking.models import FitbitToken
+from django.contrib.auth.models import User
 
 
 def validar_fechas(fecha_inicio, fecha_fin):
@@ -64,6 +66,47 @@ def procesar_analisis_biometrico(execution):
     # Obtener configuración
     config = execution.biometric_config
     print(f"Configuración biométrica: {config.title}")
+    
+    # Obtener datos del usuario de Fitbit si están disponibles
+    user_data = {'age': 30, 'weight': 70, 'athlete': False}  # Valores por defecto
+    
+    # Intentar obtener token de Fitbit para este usuario
+    try:
+        
+        # Usar el usuario asociado a la ejecución o configuración
+        user_id = execution.user_id if hasattr(execution, 'user_id') else config.user_id
+        if user_id:
+            token = FitbitToken.objects.filter(user_id=user_id).first()
+            if token:
+                headers = {"Authorization": f"Bearer {token.access_token}"}
+                
+                # Obtener perfil de usuario desde la API de Fitbit
+                profile_url = "https://api.fitbit.com/1/user/-/profile.json"
+                profile_resp = requests.get(profile_url, headers=headers)
+                if profile_resp.status_code == 200:
+                    user_profile = profile_resp.json().get("user", {})
+                    
+                    # Actualizar datos del usuario con los reales
+                    user_data = {
+                        'age': user_profile.get("age", 30),
+                        'weight': user_profile.get("weight", 70),
+                        'height': user_profile.get("height", None),
+                        'gender': user_profile.get("gender", None),
+                        # Determinar si es atleta basado en pasos diarios promedio
+                        'athlete': user_profile.get("averageDailySteps", 0) > 10000
+                    }
+                    
+                    # Guardar el perfil del usuario para uso posterior
+                    if not hasattr(execution.monitoring, 'extra_data'):
+                        execution.monitoring.extra_data = {}
+                    
+                    execution.monitoring.extra_data['user_profile'] = user_profile
+                    execution.monitoring.save()
+                    
+                    print(f"Datos de usuario obtenidos: Edad {user_data['age']}, Peso {user_data['weight']}kg")
+    except Exception as e:
+        print(f"Error al obtener datos del usuario de Fitbit: {str(e)}")
+        # Continuar con los valores por defecto
     
     # Lista para almacenar todos los reportes generados
     reports = []
@@ -278,15 +321,22 @@ def procesar_analisis_biometrico(execution):
                                 if details_text:
                                     activity_description += f" ({'; '.join(details_text[:3])})"  # Limitar a 3 detalles
                                 
-                                # Determinar si es un valor anormal según la métrica
-                                is_abnormal = False
-                                if metric == 'fc':
-                                    is_abnormal = values[idx] > 90 or values[idx] < 40
-                                elif metric == 'spo2':
-                                    is_abnormal = values[idx] < 95
-                                elif metric == 'temperatura':
-                                    # Para temperatura relativa, valores fuera de ±1.0°C son anormales
-                                    is_abnormal = values[idx] > 1.0 or values[idx] < -1.0
+                                # NUEVO: Preparar contexto para evaluación biométrica
+                                context = {
+                                    'activity_type': activity_type,
+                                    'pasos': row.get('pasos', 0) if 'pasos' in row else None,
+                                    'fc': row.get('fc') if 'fc' in row else None
+                                }
+                                
+                                # Añadir valores anteriores para detectar patrones
+                                if idx > 30:  # Si hay suficientes datos previos
+                                    previous_values = values[max(0, idx-120):idx]  # Hasta 2 horas antes
+                                    context['previous_values'] = previous_values
+                                
+                                # NUEVO: Usar función evaluar_metrica_biometrica
+                                evaluation = evaluar_metrica_biometrica(metric, values[idx], user_data, context)
+                                is_abnormal = evaluation['is_abnormal']
+                                abnormal_reason = evaluation['reason']
                                 
                                 # Timestamp para el evento
                                 timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
@@ -299,7 +349,7 @@ def procesar_analisis_biometrico(execution):
                                     'timestamp': timestamp,
                                     'activity': activity_description,
                                     'is_abnormal': is_abnormal,
-                                    # Agregar campos adicionales para mejor visualización
+                                    'abnormal_reason': abnormal_reason,  # NUEVO: Añadir razón
                                     'activity_type': activity_type,
                                     'details': activity_details
                                 })
@@ -363,22 +413,12 @@ def procesar_analisis_biometrico(execution):
                         last_value = numeric_values[-1]
                         mean_value = sum(numeric_values) / len(numeric_values)
                         
-                        # Determinar estado según valores normales para cada métrica
-                        status = "Normal"
-                        if metric_key == 'fc':
-                            if last_value > 90:
-                                status = "High"
-                            elif last_value < 40:
-                                status = "Low"
-                        elif metric_key == 'spo2':
-                            if last_value < 95:
-                                status = "Low"
-                        elif metric_key == 'temperatura':
-                            # Para temperatura relativa, valores fuera de ±0.8°C son anormales
-                            if last_value > 0.8:
-                                status = "High"
-                            elif last_value < -0.8:
-                                status = "Low"
+                        # NUEVO: Usar criterios científicos para indicadores
+                        context = {'activity_type': 'Unknown'}
+                        evaluation = evaluar_metrica_biometrica(metric_key, last_value, user_data, context)
+                        
+                        # Determinar estado según la evaluación
+                        status = "Normal" if not evaluation['is_abnormal'] else "High" if last_value > stats_data.get(metric_key, {}).get('mean', last_value) else "Low"
                         
                         indicator_data[metric_key] = {
                             'name': metric_config['name'],
@@ -387,7 +427,8 @@ def procesar_analisis_biometrico(execution):
                             'unit': metric_config['unit'],
                             'status': status,
                             'icon': metric_config['icon'],
-                            'color': metric_config['color']
+                            'color': metric_config['color'],
+                            'reason': evaluation['reason']  # NUEVO: Añadir razón
                         }
                     else:
                         # No hay valores numéricos válidos
@@ -412,14 +453,22 @@ def procesar_analisis_biometrico(execution):
                         'color': metric_config['color']
                     }
             
-            # Guardar todos los datos procesados, incluyendo la fecha del CSV
+            # NUEVO: Añadir datos de usuario al reporte para referencia
+            user_data_safe = {
+                'age': user_data.get('age', 30),
+                'weight': user_data.get('weight', 70),
+                'athlete': user_data.get('athlete', False)
+            }
+            
+            # Guardar todos los datos procesados
             report.extra_data = {
                 'stats': stats_data,
                 'chart_data': chart_data,
                 'chart_labels': chart_labels,
                 'events': events_data,
                 'indicators': indicator_data,
-                'csv_date': csv_date
+                'csv_date': csv_date,
+                'user_data': user_data_safe  # NUEVO: Añadir datos de usuario
             }
             report.save()
             
@@ -439,6 +488,213 @@ def procesar_analisis_biometrico(execution):
     # Devolver la lista de reportes generados
     return reports
 
+def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
+    """
+    Evalúa si un valor biométrico es normal o anormal según criterios científicos.
+    
+    Args:
+        metric (str): Nombre de la métrica ('fc', 'pasos', 'spo2', etc.)
+        value (float): Valor de la métrica
+        user_data (dict): Datos del usuario (edad, peso, etc.)
+        context (dict): Contexto adicional (actividad actual, valores previos, etc.)
+        
+    Returns:
+        dict: Diccionario con 'is_abnormal' (bool) y 'reason' (str) explicando la razón
+    """
+    # Valores por defecto si no se proporcionan
+    if user_data is None:
+        user_data = {'age': 30, 'weight': 70, 'athlete': False}
+    if context is None:
+        context = {'activity_type': 'Unknown', 'previous_values': []}
+        
+    is_abnormal = False
+    reason = "Normal"
+    
+    # Frecuencia Cardíaca
+    if metric == 'fc':
+        edad = user_data.get('age', 30)
+        fc_max_teorica = 208 - (0.7 * edad)
+        es_atleta = user_data.get('athlete', False)
+        
+        # Determinar tipo de actividad
+        if 'activity_type' in context and ('Exercise' in str(context['activity_type']) or 
+                                           'Running' in str(context['activity_type']) or 
+                                           'Workout' in str(context['activity_type'])):
+            # Durante ejercicio
+            if value > fc_max_teorica:
+                is_abnormal = True
+                reason = f"FC por encima del máximo teórico ({fc_max_teorica:.0f} lpm)"
+        else:
+            # En reposo
+            if es_atleta:
+                # Criterios para atletas
+                if value < 40:
+                    is_abnormal = False  # Normal para atletas
+                    reason = "FC en reposo normal para atletas"
+                elif value > 100:
+                    is_abnormal = True
+                    reason = "Taquicardia (>100 lpm en reposo)"
+            else:
+                # Criterios para no atletas
+                if value < 60:
+                    is_abnormal = True
+                    reason = "Bradicardia (<60 lpm en reposo)"
+                elif value > 100:
+                    is_abnormal = True
+                    reason = "Taquicardia (>100 lpm en reposo)"
+    
+    # Saturación de Oxígeno
+    elif metric == 'spo2':
+        edad = user_data.get('age', 30)
+        
+        if edad > 65:  # Criterios para adultos mayores
+            if value < 92:
+                is_abnormal = True
+                if value < 88:
+                    reason = "SpO₂ peligrosamente baja (<88%)"
+                else:
+                    reason = "SpO₂ baja (<92%)"
+        else:  # Criterios para adultos generales
+            if value < 95:
+                is_abnormal = True
+                if value < 93:
+                    reason = "SpO₂ baja (<93%)"
+                else:
+                    reason = "SpO₂ ligeramente reducida (93-94%)"
+    
+    # Pasos por minuto
+    elif metric == 'pasos':
+        if 'activity_type' in context:
+            activity = str(context['activity_type']).lower()
+            
+            # Detectar ejercicio moderado o vigoroso por descripción
+            is_exercise = any(term in activity for term in ['exercise', 'workout', 'running', 'jogging', 'training'])
+            
+            if is_exercise:
+                if 'moderate' in activity and value < 100:
+                    is_abnormal = True
+                    reason = "Intensidad insuficiente para ejercicio moderado (<100 pasos/min)"
+                elif ('vigorous' in activity or 'intense' in activity) and value < 130:
+                    is_abnormal = True
+                    reason = "Intensidad insuficiente para ejercicio vigoroso (<130 pasos/min)"
+            else:
+                # Verificar periodos sedentarios prolongados
+                if value == 0 and 'previous_values' in context:
+                    consecutive_zeros = sum(1 for v in context['previous_values'] if v == 0)
+                    if consecutive_zeros >= 30:  # >30 minutos consecutivos
+                        is_abnormal = True
+                        reason = f"Periodo sedentario prolongado ({consecutive_zeros} min sin actividad)"
+    
+    # Variabilidad de frecuencia cardíaca (SDNN)
+    elif metric == 'sdnn' or metric == 'hrv':
+        if value < 50:
+            is_abnormal = True
+            reason = "HRV baja (<50ms), posible indicador de estrés elevado"
+    
+    # Índice de Carga Cardiovascular
+    elif metric == 'cvl':
+        if value > 40:
+            is_abnormal = True
+            reason = "Carga cardiovascular elevada (>40%)"
+            
+            # Si además está en reposo, es más preocupante
+            if 'activity_type' in context and not any(term in str(context['activity_type']).lower() 
+                                                   for term in ['exercise', 'workout', 'running']):
+                reason += " durante actividad sedentaria"
+    
+    # RATIO FC/PASOS - ACTUALIZADO PARA CONTEXTO DE OFICINA
+    elif metric == 'ratio_fc_pasos':
+        # Obtener pasos actuales del contexto
+        pasos_actual = 0
+        if context and 'pasos' in context:
+            pasos_actual = context.get('pasos', 0)
+            if pasos_actual is None:
+                pasos_actual = 0
+        
+        # Obtener FC actual si está disponible
+        fc_actual = None
+        if context and 'fc' in context:
+            fc_actual = context.get('fc')
+        
+        # Interpretación contextualizada según nivel de actividad
+        if pasos_actual <= 5:  # Sedentario completo
+            if value > 9.0:  # Umbral para estrés mental/cognitivo en estado sedentario
+                is_abnormal = True
+                reason = f"Ratio elevado ({value:.1f}) en estado sedentario, posible estrés mental"
+                if fc_actual and fc_actual > 90:
+                    reason += f" (FC={fc_actual} lpm)"
+            elif value > 8.0:  # Límite superior para estado sedentario
+                is_abnormal = True
+                reason = f"Ratio ligeramente elevado ({value:.1f}) para estado sedentario"
+            else:
+                is_abnormal = False
+                reason = f"Ratio normal ({value:.1f}) para trabajo sedentario de oficina"
+                
+        elif pasos_actual <= 20:  # Movimiento ligero
+            if value > 5.0:
+                is_abnormal = True
+                reason = f"Ratio elevado ({value:.1f}) para movimiento ligero"
+            else:
+                is_abnormal = False
+                reason = f"Ratio normal ({value:.1f}) para movimiento ligero en oficina"
+                
+        else:  # Actividad (21+ pasos)
+            if value > 3.0:
+                is_abnormal = True
+                reason = f"Ratio elevado ({value:.1f}) durante actividad, posible ineficiencia cardíaca"
+            else:
+                is_abnormal = False
+                reason = f"Ratio eficiente ({value:.1f}) durante actividad"
+        
+        # Detección de incrementos súbitos
+        if 'previous_values' in context and context['previous_values']:
+            prev_values = context['previous_values']
+            if len(prev_values) >= 5:  # Al menos 5 minutos previos
+                # Calculamos la media de los últimos 5 minutos
+                recent_avg = sum(prev_values[-5:]) / 5
+                
+                # Si hay un incremento súbito de más del 50%
+                if value > recent_avg * 1.5 and pasos_actual <= 5:
+                    is_abnormal = True
+                    reason = f"Incremento súbito del ratio: {value:.1f} vs. promedio reciente {recent_avg:.1f}, posible respuesta de estrés"
+    
+    # Temperatura
+    elif metric == 'temperatura':
+        # Para variaciones de temperatura relativa (desviación del baseline personal)
+        if value > 1.0 or value < -1.0:
+            is_abnormal = True
+            if value > 1.0:
+                reason = f"Temperatura elevada (+{value:.1f}°C sobre baseline)"
+            else:
+                reason = f"Temperatura reducida ({value:.1f}°C bajo baseline)"
+    
+    # Calorías
+    elif metric == 'calorias':
+        peso = user_data.get('weight', 70)  # kg
+        calorias_reposo = 1.0 * (peso/70)  # Valor base para reposo
+        
+        if 'pasos' in context:
+            pasos_actual = context.get('pasos', 0)
+            
+            # Evaluar según nivel de actividad estimado por pasos
+            if pasos_actual < 20:  # Reposo/sedentario
+                if value > calorias_reposo * 2:
+                    is_abnormal = True
+                    reason = "Gasto calórico elevado para estado sedentario"
+            elif pasos_actual >= 130:  # Actividad vigorosa
+                if value < calorias_reposo * 5:
+                    is_abnormal = True
+                    reason = "Gasto calórico insuficiente para nivel de actividad intensa"
+    
+    # Para métricas no específicamente implementadas
+    else:
+        is_abnormal = False
+        reason = "Métrica dentro de rango normal"
+        
+    return {
+        'is_abnormal': is_abnormal,
+        'reason': reason
+    }
 
 def generate_biometric_report_pdf(report):
     """
@@ -559,7 +815,7 @@ def generate_biometric_report_pdf(report):
         elements.append(Spacer(1, 5))
         
         # Preparar datos para la tabla de indicadores
-        indicator_data = [['Indicador', 'Valor', 'Estado']]
+        indicator_data = [['Indicador', 'Valor', 'Estado', 'Evaluación']]
         has_indicators = False
         
         for key, ind in indicators.items():
@@ -573,11 +829,13 @@ def generate_biometric_report_pdf(report):
                 
                 # Colorear el estado
                 status = ind['status']
-                indicator_data.append([ind['name'], value_display, status])
+                # Incluir la razón de evaluación
+                reason = ind.get('reason', 'No disponible')
+                indicator_data.append([ind['name'], value_display, status, reason])
         
         if has_indicators:
             # Crear tabla de indicadores con mejor formato
-            indicator_table = Table(indicator_data, colWidths=[200, 150, 100])
+            indicator_table = Table(indicator_data, colWidths=[100, 80, 70, 200])
             indicator_table.setStyle(TableStyle([
                 # Encabezado
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#5e72e4')),
@@ -590,7 +848,8 @@ def generate_biometric_report_pdf(report):
                 ('BACKGROUND', (0, 1), (-1, -1), colors.white),
                 ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
                 ('ALIGN', (0, 1), (0, -1), 'LEFT'),
-                ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+                ('ALIGN', (1, 1), (2, -1), 'CENTER'),
+                ('ALIGN', (3, 1), (3, -1), 'LEFT'),
                 ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
                 # Bordes y divisiones
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
@@ -603,7 +862,7 @@ def generate_biometric_report_pdf(report):
                 ('RIGHTPADDING', (0, 0), (-1, -1), 10),
             ]))
             
-            # Aplicar colores a los estados después, sin lambda
+            # Aplicar colores a los estados 
             for i in range(1, len(indicator_data)):
                 status = indicator_data[i][2]
                 if status == 'Normal':
@@ -642,17 +901,17 @@ def generate_biometric_report_pdf(report):
     
     # Colores para las gráficas
     colors_dict = {
-        'fc': '#f5365c',
-        'pasos': '#5e72e4',
-        'calorias': '#fb6340',
-        'zona_activa': '#2dce89',
-        'sedentario': '#11cdef',
-        'ratio_fc_pasos': '#8965e0',
-        'cvl': '#ffd600',
-        'sdnn': '#8898aa',
-        'spo2': '#1d8cf8',
-        'temperatura': '#a38df8',
-        'hrv': '#f58231'
+        'fc': '#FF6384',           # Rojo para frecuencia cardíaca
+        'pasos': '#36A2EB',        # Azul para pasos
+        'calorias': '#FFCE56',     # Amarillo para calorías
+        'zona_activa': '#4BC0C0',  # Verde azulado para zona activa
+        'sedentario': '#9966FF',   # Púrpura para sedentario
+        'ratio_fc_pasos': '#FF9F40', # Naranja para ratio FC/pasos
+        'cvl': '#C9CBCF',          # Gris para CVL
+        'sdnn': '#7FC97F',         # Verde para SDNN
+        'spo2': '#1d8cf8',         # Azul claro para SpO2
+        'temperatura': '#a38df8',  # Púrpura para temperatura
+        'hrv': '#f58231'           # Naranja para HRV
     }
     
     for metric in report.metrics:
@@ -763,15 +1022,16 @@ def generate_biometric_report_pdf(report):
                 metric_elements.append(img)
                 metric_elements.append(Spacer(1, 15))
             
-            # Tabla de eventos
+            # Tabla de eventos - MODIFICADO para incluir todos los eventos
             if metric in events and events[metric]:
                 metric_elements.append(Paragraph("Eventos Significativos", subtitle_style))
                 metric_elements.append(Spacer(1, 5))
                 
                 # Datos para la tabla de eventos
-                event_data = [['Hora', 'Valor', 'Actividad', 'Detalles']]
+                event_data = [['Hora', 'Valor', 'Estado', 'Actividad', 'Detalles']]
                 
-                for event in events[metric][:5]:  # Limitar a 5 eventos para que se vea mejor
+                # Incluir todos los eventos, sin limitación
+                for event in events[metric]:  # Sin límite [:5]
                     # Formatear valor según el tipo de métrica
                     if metric == 'temperatura' and event.get('value') is not None:
                         sign = '+' if event['value'] >= 0 else ''
@@ -783,15 +1043,26 @@ def generate_biometric_report_pdf(report):
                     details = event.get('details', {})
                     details_str = ', '.join([f"{k}: {v}" for k, v in list(details.items())[:2] if v])
                     
+                    # Incluir el estado y la razón
+                    is_abnormal = event.get('is_abnormal', False)
+                    reason = event.get('abnormal_reason', 'Normal')
+                    
+                    # Estado formateado para el PDF
+                    if is_abnormal:
+                        status_str = "⚠️ Anormal"
+                    else:
+                        status_str = "✓ Normal"
+                    
                     event_data.append([
                         event.get('timestamp', 'N/A')[-8:] if event.get('timestamp', 'N/A') else 'N/A',  # Solo la hora
                         value_str,
+                        status_str,
                         event.get('activity_type', 'Unknown')[:15],  # Limitar longitud
-                        details_str[:30] + ('...' if len(details_str) > 30 else '')  # Limitar longitud
+                        f"{reason[:20]}{'...' if len(reason) > 20 else ''}"  # Incluir razón
                     ])
                 
                 # Crear tabla de eventos con mejor formato
-                event_table = Table(event_data, colWidths=[70, 70, 120, 200])
+                event_table = Table(event_data, colWidths=[40, 60, 60, 100, 190])
                 event_table.setStyle(TableStyle([
                     # Encabezado
                     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e6e9f0')),
@@ -800,26 +1071,35 @@ def generate_biometric_report_pdf(report):
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                     # Cuerpo
                     ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                    ('ALIGN', (0, 1), (1, -1), 'CENTER'),  # Hora y valor centrados
-                    ('ALIGN', (2, 1), (-1, -1), 'LEFT'),   # Actividad y detalles a la izquierda
+                    ('ALIGN', (0, 1), (2, -1), 'CENTER'),  # Hora, valor y estado centrados
+                    ('ALIGN', (3, 1), (-1, -1), 'LEFT'),   # Actividad y detalles a la izquierda
                     ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
                     # Bordes
                     ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
                     ('BOX', (0, 0), (-1, -1), 1, colors.lightgrey),
                     # Espaciado
-                    ('TOPPADDING', (0, 0), (-1, -1), 6),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 6),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                    ('TOPPADDING', (0, 0), (-1, -1), 4),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 4),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 4),
                     # Tamaño de fuente
                     ('FONTSIZE', (0, 1), (-1, -1), 8),  # Texto más pequeño para los datos
                 ]))
                 
-                # Aplicar colores alternos a las filas manualmente (sin lambda)
+                # Aplicar colores alternos a las filas
                 for i in range(1, len(event_data)):
                     if i % 2 == 0:
                         for j in range(len(event_data[i])):
                             event_table._cellStyles[i][j].backColor = colors.HexColor('#f9f9f9')
+                
+                # Aplicar colores según estado
+                for i in range(1, len(event_data)):
+                    # Color basado en normal/anormal
+                    status = event_data[i][2]
+                    if "Anormal" in status:
+                        event_table._cellStyles[i][2].textColor = colors.orange
+                    else:
+                        event_table._cellStyles[i][2].textColor = colors.green
                 
                 metric_elements.append(event_table)
             else:
@@ -837,6 +1117,28 @@ def generate_biometric_report_pdf(report):
         elements.append(Table([['']], colWidths=[450], rowHeights=[1], 
                              style=[('LINEBELOW', (0, 0), (-1, -1), 1, colors.lightgrey)]))
         elements.append(Spacer(1, 20))
+    
+    # NUEVO: Añadir sección de criterios científicos al PDF
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Criterios de Evaluación Biométrica", heading2_style))
+    elements.append(Spacer(1, 5))
+
+    criteria_text = """
+    Los valores biométricos se evalúan según criterios científicos basados en la edad, condición física y contexto de actividad del usuario:
+
+    • <b>Frecuencia Cardíaca:</b> Normal en reposo (60-100 lpm), atletas (40-60 lpm)
+    • <b>SpO₂:</b> Normal (≥95%), adultos mayores (≥92%)
+    • <b>Temperatura:</b> Variaciones normales de hasta ±1.0°C
+    • <b>HRV:</b> Normal (≥50ms)
+    • <b>Ratio FC/Pasos:</b>
+       - Sedentario (0-5 pasos): Normal entre 3.0-8.0
+       - Movimiento ligero (6-20 pasos): Normal entre 2.0-5.0
+       - Actividad (21+ pasos): Normal menor a 3.0
+    • <b>Pasos:</b> Sedentarismo (<30 min consecutivos sin movimiento)
+    """
+
+    elements.append(Paragraph(criteria_text, normal_style))
+    elements.append(Spacer(1, 10))
     
     # Pie de página
     elements.append(Spacer(1, 10))
