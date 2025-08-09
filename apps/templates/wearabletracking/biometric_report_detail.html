@@ -29,23 +29,26 @@
       </div>
       
       <!-- SELECTOR DE ESCENARIOS -->
-      <div class="row mb-3">
-        <div class="col-md-12 text-center">
-          <div class="scenario-selector bg-secondary shadow p-2 rounded">
-            <div class="d-flex align-items-center justify-content-center">
-              <span class="mr-3 text-white">{% blocktranslate %}Scenario:{% endblocktranslate %}</span>
-              
-              <!-- Select en lugar de dropdown -->
-              <select id="scenarioSelect" class="form-control" style="max-width: 200px;">
-                {% for scenario, report_id in scenarios.items %}
-                <option value="{{ report_id }}" {% if scenario == current_scenario %}selected{% endif %}>{{ scenario }}</option>
-                {% endfor %}
-              </select>
-              
-              <!-- Botón de descarga -->
-              <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-success ml-3">
-                <i class="fas fa-download"></i> {% blocktranslate %}Download{% endblocktranslate %}
-              </a>
+      <div class="row mb-4">
+        <div class="col-md-12">
+          <div class="card shadow">
+            <div class="card-body py-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <span class="mr-3 font-weight-bold text-primary">{% blocktranslate %}Scenario:{% endblocktranslate %}</span>
+                  <select id="scenarioSelect" class="form-control form-control-sm" style="width: 200px;">
+                    {% for scenario, report_id in scenarios.items %}
+                    <option value="{{ report_id }}" {% if scenario == current_scenario %}selected{% endif %}>{{ scenario }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+                <div>
+                  <a href="{% url 'wearabletracking:biometric_report_download' report.id %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-download mr-1"></i> {% blocktranslate %}Download Report{% endblocktranslate %}
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
