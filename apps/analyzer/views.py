@@ -350,13 +350,14 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
         print(
             f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}"
         )
-        create_notification(
-            User.objects.get(id=user_id),
-            _(f"{execution.case_study.title} Execution Completed"),
-            _("Case study executed successfully"),
-            reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}),
-            status=NotifStatus.SUCCESS.value,
-        )
+        if not execution.errored:
+            create_notification(
+                User.objects.get(id=user_id),
+                _(f"{execution.case_study.title} Execution Completed"),
+                _("Case study executed successfully"),
+                reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}),
+                status=NotifStatus.SUCCESS.value,
+            )
     except Exception as e:
         print(traceback.format_exc())
         # TODO: View the error trace in the frontend or link to gtihub issues with description filled
