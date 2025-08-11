@@ -21,10 +21,12 @@ def detect_duplicates(detected_shapes):
     return duplicates
 
 
-def save_bordered_images(img_path, detected_shapes, path_to_save_bordered_images, tint_colors):
+def save_bordered_images(
+    img_path, detected_shapes, path_to_save_bordered_images, tint_colors
+):
     img = cv2.imread(img_path)
     for i in range(len(detected_shapes)):
-        # Draw Polygons 
+        # Draw Polygons
         cv2.polylines(
             img,
             np.int32([detected_shapes[i]["points"]]),
@@ -42,7 +44,13 @@ def save_bordered_images(img_path, detected_shapes, path_to_save_bordered_images
 
         img = cv2.addWeighted(img_aux, 0.2, img, 0.8, 0)
 
-    cv2.imwrite(os.path.join(path_to_save_bordered_images, os.path.basename(img_path) + "_bordered.png"), img)
+    cv2.imwrite(
+        os.path.join(
+            path_to_save_bordered_images, os.path.basename(img_path) + "_bordered.png"
+        ),
+        img,
+    )
+
 
 def coco_to_compos(coco_anns, type="bbox", id_start=1):
     res = []
@@ -62,9 +70,9 @@ def coco_to_compos(coco_anns, type="bbox", id_start=1):
             res.append(
                 {
                     "class": ann["category_name"],
-                    "text": "", #TODO,
+                    "text": "",  # TODO,
                     "points": points,
-                    "centroid": list(Polygon(points).centroid.coords[0])
+                    "centroid": list(Polygon(points).centroid.coords[0]),
                 }
             )
 
@@ -77,9 +85,9 @@ def coco_to_compos(coco_anns, type="bbox", id_start=1):
             res.append(
                 {
                     "class": ann["category_name"],
-                    "text": "", #TODO,
+                    "text": "",  # TODO,
                     "points": points.tolist(),
-                    "centroid": list(Polygon(points).centroid.coords[0])
+                    "centroid": list(Polygon(points).centroid.coords[0]),
                 }
             )
         else:
@@ -87,9 +95,8 @@ def coco_to_compos(coco_anns, type="bbox", id_start=1):
 
         for i, shape in enumerate(res):
             shape["id"] = i + id_start
-    
-    return res
 
+    return res
 
 
 def json_inference_to_compos(anns, type="bbox", id_start=1):
@@ -111,9 +118,9 @@ def json_inference_to_compos(anns, type="bbox", id_start=1):
             res.append(
                 {
                     "class": ann["name"],
-                    "text": "", #TODO,
+                    "text": "",  # TODO,
                     "points": points,
-                    "centroid": list(Polygon(points).centroid.coords[0])
+                    "centroid": list(Polygon(points).centroid.coords[0]),
                 }
             )
 
@@ -128,22 +135,63 @@ def json_inference_to_compos(anns, type="bbox", id_start=1):
             res.append(
                 {
                     "class": ann["name"],
-                    "text": "", #TODO,
+                    "text": "",  # TODO,
                     "points": points.tolist(),
-                    "centroid": list(Polygon(points).centroid.coords[0])
+                    "centroid": list(Polygon(points).centroid.coords[0]),
                 }
             )
         else:
             raise ValueError("Invalid type. Valid types are 'bbox' and 'seg'")
-        
+
         for i, shape in enumerate(res):
             shape["id"] = i + id_start
 
     return res
 
+
+def include_OCR_as_text(detections, img_index, text_detected_by_OCR):
+    id_start = 0 if len(detections["compos"]) == 0 else len(detections["compos"]) + 1
+    if len(text_detected_by_OCR) > 0:
+        for j in range(0, len(text_detected_by_OCR[img_index])):
+            coords = np.array(text_detected_by_OCR[img_index][j][1], dtype=float)
+            coordenada_x = coords[:, 0]
+            coordenada_y = coords[:, 1]
+
+            component = {
+                "id": id_start + j,
+                "class": "Text",
+                "text": text_detected_by_OCR[img_index][j][0],
+                "points": [
+                    (
+                        text_detected_by_OCR[img_index][j][1][0].tolist()
+                        if type(text_detected_by_OCR[img_index][j][1][0]) is not list
+                        else text_detected_by_OCR[img_index][j][1][0]
+                    ),
+                    (
+                        text_detected_by_OCR[img_index][j][1][3].tolist()
+                        if type(text_detected_by_OCR[img_index][j][1][3]) is not list
+                        else text_detected_by_OCR[img_index][j][1][3]
+                    ),
+                    (
+                        text_detected_by_OCR[img_index][j][1][2].tolist()
+                        if type(text_detected_by_OCR[img_index][j][1][2]) is not list
+                        else text_detected_by_OCR[img_index][j][1][2]
+                    ),
+                    (
+                        text_detected_by_OCR[img_index][j][1][1].tolist()
+                        if type(text_detected_by_OCR[img_index][j][1][1]) is not list
+                        else text_detected_by_OCR[img_index][j][1][1]
+                    ),
+                ],
+                "centroid": [np.mean(coordenada_x), np.mean(coordenada_y)],
+            }
+
+            detections["compos"].append(component)
+
+
 def merge_text_with_OCR(detections, img_index, text_detected_by_OCR):
     # Store on global_y all the "y" coordinates and text boxes
-    # Each row is a different text box, much more friendly than the format returned by keras_ocr 
+    # Each row is a different text box, much more friendly than the format returned by keras_ocr
     global_y = []
     global_x = []
     words = {}
