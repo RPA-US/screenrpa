@@ -94,6 +94,8 @@ from apps.notification.views import create_notification
 from apps.wearabletracking.utils import procesar_analisis_biometrico
 from apps.wearabletracking.models import BiometricAnalysisConfig
 
+from apps.emotions.utils import procesar_analisis_emociones
+
 # Result Treeimport json
 import matplotlib.pyplot as plt
 from sklearn import tree
@@ -346,6 +348,20 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
                 # No lanzamos la excepción para que no interrumpa el flujo principal
                 # Si se desea interrumpir el flujo, descomentar: 
                 # raise Exception(f"Error en análisis biométrico: {str(e)}")
+        if execution.monitoring and getattr(execution.monitoring, 'use_emotions_data', False):
+            try:
+                print(f"Procesando datos de emociones para ejecución {execution.id}")
+                emotion_reports = procesar_analisis_emociones(execution)
+                print(f"Análisis de emociones completado para ejecución {execution.id}, {len(emotion_reports)} reportes generados")
+                
+            except Exception as e:
+                print(f"Error procesando datos de emociones: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                
+                # No interrumpimos el flujo principal, solo registramos el error
+                error_message = "No se puede ejecutar el análisis de emociones."
+                raise Exception(error_message)
 
         print(
             f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}"
