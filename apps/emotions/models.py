@@ -18,13 +18,14 @@ class EmotionAnalysisReport(models.Model):
     
     # Datos del reporte
     emotions_file = models.CharField(max_length=255, default='registros_emociones.csv')
-    #merged_file = models.CharField(max_length=255, default='merged_emotions_wearable.csv', blank=True)
+    merged_file = models.CharField(max_length=255, default='merged_emotions_wearable.csv', blank=True)
     
     # Archivo del reporte generado
     report_file = PrivateFileField("Reporte PDF", upload_to='emotion_reports/', null=True, blank=True)
     
     # Datos procesados del CSV
     extra_data = models.JSONField(default=dict, blank=True)
+    has_merged_data = models.BooleanField(default=False)
     
     def get_emotions_file_path(self):
         """Retorna la ruta completa al archivo CSV de emociones"""

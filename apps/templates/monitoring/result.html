@@ -63,6 +63,400 @@
                 </ul>
               </nav>
             </div>
+
+
+            {% comment %} —— EMOTIONS ANALYTICS (solo si existen datos) —— {% endcomment %}
+            {% if emotion_report and emotion_report.extra_data %}
+              {% load static %}
+              {% load i18n %}
+
+              {# Carga Chart.js una sola vez #}
+              <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+              <div class="card mb-4">
+                <div class="card-header border-0">
+                  <h3 class="mb-0">{% blocktranslate %}Emotional Analysis{% endblocktranslate %} — {{scenario}}</h3>
+                </div>
+
+                <div class="card-body">
+
+                  {# ---------- KPIs: Dominante y Duración ---------- #}
+                  <div class="row mb-4">
+                    <div class="col-md-4">
+                      <div class="card shadow-sm">
+                        <div class="card-body">
+                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Dominant Emotion{% endblocktranslate %}</div>
+                          <div class="h4 mb-0">
+                            {{ emotion_report.extra_data.dominant_emotion|default:"—" }}
+                            {% if emotion_report.extra_data.dominant_percentage is not None %}
+                              ({{ emotion_report.extra_data.dominant_percentage }}%)
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card shadow-sm">
+                        <div class="card-body">
+                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Total Duration{% endblocktranslate %}</div>
+                          <div class="h4 mb-0">
+                            {% if emotion_report.extra_data.duration_seconds %}
+                              {{ emotion_report.extra_data.duration_seconds }} s
+                            {% else %}
+                              0 s
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {% if emotion_report.extra_data.chart_path %}
+                    <div class="col-md-4">
+                      <div class="card shadow-sm">
+                        <div class="card-body">
+                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Pie Chart{% endblocktranslate %}</div>
+                          <img src="/{{ emotion_report.extra_data.chart_path }}" alt="Emotions pie chart" style="max-width:100%; height:auto;"/>
+                        </div>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+
+                  {# ---------- Recuento (barras) + Porcentajes (tabla) ---------- #}
+                  <div class="row mb-4">
+                    <div class="col-md-8">
+                      <canvas id="emotionsCountBar"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                      <h6 class="mb-2">{% blocktranslate %}Percentages by Emotion{% endblocktranslate %}</h6>
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>{% blocktranslate %}Emotion{% endblocktranslate %}</th>
+                            <th class="text-right">%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {# orden descendente por porcentaje #}
+                          {% for emo, pct in emotion_report.extra_data.emotion_percentages.items|dictsortreversed:"1" %}
+                            <tr>
+                              <td>{{ emo }}</td>
+                              <td class="text-right">{{ pct }}</td>
+                            </tr>
+                          {% empty %}
+                            <tr><td colspan="2" class="text-muted">{% blocktranslate %}No data{% endblocktranslate %}</td></tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {# ---------- Evolución temporal por segmentos (barras apiladas) ---------- #}
+                  {% if emotion_report.extra_data.time_segments %}
+                  <div class="mb-4">
+                    <h6 class="mb-2">{% blocktranslate %}Temporal Evolution (10s segments){% endblocktranslate %}</h6>
+                    <canvas id="segmentsStacked"></canvas>
+                  </div>
+                  {% endif %}
+
+                  {# ---------- Transiciones (tabla simple) ---------- #}
+                  {% if emotion_report.extra_data.emotion_transitions %}
+                  <div>
+                    <h6 class="mb-2">{% blocktranslate %}Emotion Transitions{% endblocktranslate %}</h6>
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>{% blocktranslate %}Transition{% endblocktranslate %}</th>
+                          <th class="text-right">{% blocktranslate %}Count{% endblocktranslate %}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for trans, cnt in emotion_report.extra_data.emotion_transitions.items|dictsortreversed:"1" %}
+                          <tr>
+                            <td>{{ trans }}</td>
+                            <td class="text-right">{{ cnt }}</td>
+                          </tr>
+                        {% empty %}
+                          <tr><td colspan="2" class="text-muted">{% blocktranslate %}No data{% endblocktranslate %}</td></tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% endif %}
+
+                </div>
+              </div>
+
+              {# ---------- Pasamos extra_data a JS de forma segura ---------- #}
+              {{ emotion_report.extra_data|json_script:"extraData" }}
+
+              <script>
+                (function() {
+                  const extra = JSON.parse(document.getElementById('extraData').textContent);
+
+                  // ----- Grafico de barras: recuento por emoción -----
+                  if (extra.emotions_count && Object.keys(extra.emotions_count).length) {
+                    const ctx = document.getElementById('emotionsCountBar').getContext('2d');
+                    const labels = Object.keys(extra.emotions_count);
+                    const data = Object.values(extra.emotions_count);
+
+                    new Chart(ctx, {
+                      type: 'bar',
+                      data: {
+                        labels,
+                        datasets: [{
+                          label: 'Count',
+                          data
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        plugins: {
+                          legend: { display: false },
+                          title: { display: true, text: 'Emotion Counts' }
+                        },
+                        scales: {
+                          x: { title: { display: true, text: 'Emotion' } },
+                          y: { title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
+                        }
+                      }
+                    });
+                  }
+
+                  // ----- Barras apiladas por segmento (si hay segmentos) -----
+                  if (extra.time_segments && Object.keys(extra.time_segments).length) {
+                    const segCtx = document.getElementById('segmentsStacked').getContext('2d');
+                    const segmentKeys = Object.keys(extra.time_segments).map(k => parseInt(k, 10)).sort((a,b)=>a-b);
+                    // Obtener todas las emociones presentes en los segmentos
+                    const emotionSet = new Set();
+                    segmentKeys.forEach(s => {
+                      const m = extra.time_segments[s] || extra.time_segments[String(s)];
+                      Object.keys(m || {}).forEach(e => emotionSet.add(e));
+                    });
+                    const emotions = Array.from(emotionSet);
+
+                    const datasets = emotions.map((emo) => {
+                      const arr = segmentKeys.map((s) => {
+                        const m = extra.time_segments[s] || extra.time_segments[String(s)];
+                        return m && m[emo] ? m[emo] : 0;
+                      });
+                      return { label: emo, data: arr, stack: 'stack1' };
+                    });
+
+                    new Chart(segCtx, {
+                      type: 'bar',
+                      data: {
+                        labels: segmentKeys.map(s => s.toString()),
+                        datasets
+                      },
+                      options: {
+                        responsive: true,
+                        plugins: {
+                          title: { display: true, text: 'Emotions by 10s segments' },
+                          legend: { position: 'bottom' }
+                        },
+                        scales: {
+                          x: { stacked: true, title: { display: true, text: 'Segment' } },
+                          y: { stacked: true, title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
+                        }
+                      }
+                    });
+                  }
+                })();
+              </script>
+            {% endif %}
+            {% if emotion_report and emotion_report.extra_data and emotion_report.extra_data.multimodal %}
+            {# Chart.js + plugins para boxplot y heatmap/matrix #}
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin-plot@4"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+              {# Solo pasamos la parte multimodal al script (más ligero y claro) #}
+              {{ emotion_report.extra_data.multimodal|json_script:"multimodalData" }}
+
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Análisis Multimodal (Emociones + Wearable) — {{ scenario }}</h5>
+                </div>
+                <div class="card-body">
+                  <!-- Primera fila de gráficos -->
+                  <div class="row mb-4">
+                    <!-- FC por emoción -->
+                    <div class="col-lg-6 mb-4">
+                      <div class="card shadow-sm h-100">
+                        <div class="card-header bg-light">
+                          <h6 class="mb-0">Frecuencia Cardíaca por Emoción</h6>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="fcByEmotion"></canvas>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Actividad por emoción -->
+                    <div class="col-lg-6 mb-4">
+                      <div class="card shadow-sm h-100">
+                        <div class="card-header bg-light">
+                          <h6 class="mb-0">Actividad por Emoción</h6>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="activityByEmotion"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Segunda fila de gráficos -->
+                  <div class="row">
+                    <!-- Métricas biométricas promedio por emoción -->
+                    <div class="col-lg-12">
+                      <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                          <h6 class="mb-0">Métricas Biométricas por Emoción</h6>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="avgMetricsByEmotion"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <script>
+              (function() {
+                try {
+                  // Cargar datos multimodales desde el elemento específico
+                  const multimodalData = JSON.parse(document.getElementById('multimodalData').textContent || '{}');
+                  console.log("Datos multimodales cargados:", Object.keys(multimodalData));
+
+                  // ========== GRÁFICO 1: FC POR EMOCIÓN (barras con promedio) ==========
+                  if (multimodalData.boxplot && multimodalData.boxplot.fc_by_emotion) {
+                    try {
+                      const ctx = document.getElementById('fcByEmotion').getContext('2d');
+                      const fcData = multimodalData.boxplot.fc_by_emotion;
+                      const labels = Object.keys(fcData);
+
+                      const avgData = labels.map(label => {
+                        const values = (fcData[label] || []).filter(v => typeof v === 'number');
+                        return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+                      });
+
+                      new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                          labels,
+                          datasets: [{
+                            label: 'FC Promedio',
+                            data: avgData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                          }]
+                        },
+                        options: {
+                          responsive: true,
+                          plugins: {
+                            title: { display: true, text: 'Frecuencia Cardíaca por Emoción' },
+                            legend: { display: false }
+                          },
+                          scales: {
+                            y: { beginAtZero: false, title: { display: true, text: 'FC (bpm)' } }
+                          }
+                        }
+                      });
+                      console.log("Gráfico FC por emoción creado");
+                    } catch (e) {
+                      console.error("Error al crear gráfico FC por emoción:", e);
+                    }
+                  }
+
+                  // ========== GRÁFICO 2: ACTIVIDAD POR EMOCIÓN (barras apiladas %) ==========
+                  if (multimodalData.activity_by_emotion) {
+                    try {
+                      const ctx = document.getElementById('activityByEmotion').getContext('2d');
+                      const activityData = multimodalData.activity_by_emotion;
+                      const labels = Object.keys(activityData);
+
+                      const activeData = labels.map(l => (activityData[l]?.activo ?? 0));
+                      const sedentaryData = labels.map(l => (activityData[l]?.sedentario ?? 0));
+
+                      new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                          labels,
+                          datasets: [
+                            { label: 'Activo (%)', data: activeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                            { label: 'Sedentario (%)', data: sedentaryData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }
+                          ]
+                        },
+                        options: {
+                          responsive: true,
+                          plugins: { title: { display: true, text: 'Actividad por Emoción' } },
+                          scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, beginAtZero: true, max: 100, title: { display: true, text: 'Porcentaje (%)' } }
+                          }
+                        }
+                      });
+                      console.log("Gráfico Actividad por emoción creado");
+                    } catch (e) {
+                      console.error("Error al crear gráfico de actividad por emoción:", e);
+                    }
+                  }
+
+                  // ========== GRÁFICO 3: MÉTRICAS PROMEDIO POR EMOCIÓN (barras agrupadas) ==========
+                  if (multimodalData.avg_by_emotion) {
+                    try {
+                      const ctx = document.getElementById('avgMetricsByEmotion').getContext('2d');
+                      const avgData = multimodalData.avg_by_emotion;
+                      const emotions = Object.keys(avgData);
+
+                      let availableMetrics = [];
+                      if (emotions.length > 0) {
+                        availableMetrics = Object.keys(avgData[emotions[0]] || {});
+                      }
+
+                      // Filtrar métricas de interés si existen
+                      const metrics = ['fc', 'hrv', 'spo2', 'temperatura'].filter(m => availableMetrics.includes(m));
+
+                      const palette = [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                      ];
+
+                      const datasets = metrics.map((metric, i) => ({
+                        label: metric.toUpperCase(),
+                        data: emotions.map(emo => avgData[emo]?.[metric] ?? 0),
+                        backgroundColor: palette[i % palette.length]
+                      }));
+
+                      if (datasets.length > 0) {
+                        new Chart(ctx, {
+                          type: 'bar',
+                          data: { labels: emotions, datasets },
+                          options: {
+                            responsive: true,
+                            plugins: { title: { display: true, text: 'Métricas por Emoción' } },
+                            scales: { y: { beginAtZero: false } }
+                          }
+                        });
+                        console.log("Gráfico de métricas promedio creado");
+                      }
+                    } catch (e) {
+                      console.error("Error al crear gráfico de métricas promedio:", e);
+                    }
+                  }
+                } catch (e) {
+                  console.error("Error general en script multimodal:", e);
+                }
+              })();
+              </script>
+            {% endif %}
+            
+
+            
             <div class="table-responsive custom-scroll">
             <table id="csvDataTable" class="table align-items-center table-flush">
               <thead class="thead-light">

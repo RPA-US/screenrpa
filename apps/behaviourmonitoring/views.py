@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.core.exceptions import ValidationError, PermissionDenied
 from .models import Monitoring
+from apps.emotions.models import EmotionAnalysisReport
+from apps.emotions.utils import procesar_analisis_emociones
 from apps.analyzer.models import CaseStudy, Execution
 from .forms import MonitoringForm
 from django.utils.translation import gettext_lazy as _
@@ -181,38 +183,51 @@ def delete_monitoring(request):
 
 class MonitoringResultDetailView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
+
     def get(self, request, *args, **kwargs):
-        # Get the Execution object or raise a 404 error if not found
+        # 1) Obtener ejecución
         execution = get_object_or_404(Execution, id=kwargs["execution_id"])     
         if not execution.case_study.user == request.user:
             raise PermissionDenied("This object doesn't belong to the authenticated user")
+
         scenario = request.GET.get('scenario')
         download = request.GET.get('download')
+        recompute = request.GET.get('recompute') == '1'   # <-- NUEVO
 
-        if scenario == None:
-            #scenario = "1"
-            scenario = execution.scenarios_to_study[0] # by default, the first one that was indicated
-            
-        #path_to_csv_file = execution.exp_folder_complete_path + "/"+ scenario +"/log.csv"  
+        if scenario is None:
+            scenario = execution.scenarios_to_study[0]
+
+        # 2) CSV principal (UI log)
         path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario, "log.csv")
-        # CSV Download
-        if path_to_csv_file and download=="True":
+        if path_to_csv_file and download == "True":
             return ResultDownload(path_to_csv_file)  
 
-        # CSV Reading and Conversion to JSON
         csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, lib='polars').to_dicts()
 
-        # Include CSV data in the context for the template
+        # 3) Buscar reporte de emociones
+        emotion_report = EmotionAnalysisReport.objects.filter(
+            execution=execution,
+            scenario=scenario
+        ).first()
+
+        # 4) Si pedimos recompute o no hay datos -> reprocesar
+        if recompute or not (emotion_report and emotion_report.extra_data):
+            procesar_analisis_emociones(execution)
+            emotion_report = EmotionAnalysisReport.objects.filter(
+                execution=execution,
+                scenario=scenario
+            ).first()
+
+        # 5) Contexto
         context = {
             "execution_id": execution.id,
-            "csv_data": csv_data_json,  # Data to be used in the HTML template
+            "csv_data": csv_data_json,
             "scenarios": execution.scenarios_to_study,
-            "scenario": scenario
-            } 
+            "scenario": scenario,
+            "emotion_report": emotion_report
+        } 
 
-        # Render the HTML template with the context including the CSV data
         return render(request, "monitoring/result.html", context)
-
 
 #############################################33
 def read_csv_to_json(path_to_csv_file):
