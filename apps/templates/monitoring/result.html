@@ -109,45 +109,12 @@
                         </div>
                       </div>
                     </div>
-
-                    {% if emotion_report.extra_data.chart_path %}
-                    <div class="col-md-4">
-                      <div class="card shadow-sm">
-                        <div class="card-body">
-                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Pie Chart{% endblocktranslate %}</div>
-                          <img src="/{{ emotion_report.extra_data.chart_path }}" alt="Emotions pie chart" style="max-width:100%; height:auto;"/>
-                        </div>
-                      </div>
-                    </div>
-                    {% endif %}
                   </div>
 
                   {# ---------- Recuento (barras) + Porcentajes (tabla) ---------- #}
                   <div class="row mb-4">
                     <div class="col-md-8">
                       <canvas id="emotionsCountBar"></canvas>
-                    </div>
-                    <div class="col-md-4">
-                      <h6 class="mb-2">{% blocktranslate %}Percentages by Emotion{% endblocktranslate %}</h6>
-                      <table class="table table-sm">
-                        <thead>
-                          <tr>
-                            <th>{% blocktranslate %}Emotion{% endblocktranslate %}</th>
-                            <th class="text-right">%</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {# orden descendente por porcentaje #}
-                          {% for emo, pct in emotion_report.extra_data.emotion_percentages.items|dictsortreversed:"1" %}
-                            <tr>
-                              <td>{{ emo }}</td>
-                              <td class="text-right">{{ pct }}</td>
-                            </tr>
-                          {% empty %}
-                            <tr><td colspan="2" class="text-muted">{% blocktranslate %}No data{% endblocktranslate %}</td></tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
                     </div>
                   </div>
 
