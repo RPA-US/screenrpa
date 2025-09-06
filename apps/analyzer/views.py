@@ -350,18 +350,41 @@ def case_study_generator_execution(user_id: int, case_study_id: int):
                 # raise Exception(f"Error en análisis biométrico: {str(e)}")
         if execution.monitoring and getattr(execution.monitoring, 'use_emotions_data', False):
             try:
+                # Verificar que todos los escenarios tienen los archivos necesarios de emociones
+                missing_files = []
+                
+                for scenario in execution.scenarios_to_study:
+                    scenario_path = os.path.join(execution.case_study.exp_folder_complete_path, scenario)
+                    if execution.monitoring and execution.monitoring.use_emotions_data and execution.monitoring.emotions_filename:
+                        emotions_csv_path = os.path.join(scenario_path, execution.monitoring.emotions_filename)
+                        
+                        if not os.path.exists(emotions_csv_path):
+                            missing_files.append(f"Escenario '{scenario}': Falta archivo de datos de emociones ({execution.monitoring.emotions_filename})")
+                
+                if missing_files:
+                    error_message = "No se puede ejecutar el análisis de emociones. Faltan archivos necesarios:\n" + "\n".join(missing_files)
+                    raise Exception(error_message)
+                    
                 print(f"Procesando datos de emociones para ejecución {execution.id}")
                 emotion_reports = procesar_analisis_emociones(execution)
                 print(f"Análisis de emociones completado para ejecución {execution.id}, {len(emotion_reports)} reportes generados")
                 
             except Exception as e:
                 print(f"Error procesando datos de emociones: {str(e)}")
-                import traceback
                 traceback.print_exc()
                 
-                # No interrumpimos el flujo principal, solo registramos el error
-                error_message = "No se puede ejecutar el análisis de emociones."
-                raise Exception(error_message)
+                # Marcar la ejecución como errónea
+                execution.errored = True
+                execution.save()
+                
+                # Crear notificación de error
+                create_notification(
+                    User.objects.get(id=user_id),
+                    _(f"{case_study.title} Execution Error"),
+                    _(f"Error en análisis de emociones: {str(e)}"),
+                    reverse("analyzer:execution_detail", kwargs={"execution_id": execution.id}),
+                    status=NotifStatus.ERROR.value,
+                )
 
         print(
             f"Case study {execution.case_study.title} executed!!. Case study foldername: {execution.exp_foldername}.Metadata saved in: {metadata_final_path}"
