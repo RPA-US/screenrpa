@@ -424,29 +424,107 @@
             
 
             
-            <div class="table-responsive custom-scroll">
-            <table id="csvDataTable" class="table align-items-center table-flush">
-              <thead class="thead-light">
-                <tr>
-                  {% for key in csv_data.0 %}
-                  <th>{{ key }}</th>
-                  {% endfor %}
-                </tr>
-              </thead>
-              <tbody class="list">
-                {% for row in csv_data %}
-                  <tr>  
-                    {% for key, value in row.items %}
-                    <td>{{ value }}</td>
+            <div class="card">
+              <!-- Mover el filtro fuera del contenedor de scroll -->
+              <div class="mb-3 position-sticky bg-white" style="top: 0; z-index: 100; padding: 15px; border-bottom: 1px solid #e6e9ec;">
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="columnFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-filter"></i> {% blocktranslate %}Filter Columns{% endblocktranslate %}
+                  </button>
+                  <div class="dropdown-menu p-3" aria-labelledby="columnFilterDropdown" style="max-height: 300px; overflow-y: auto; width: 300px;">
+                    <div class="d-flex justify-content-between mb-2">
+                      <button id="selectAllColumns" class="btn btn-sm btn-primary">{% blocktranslate %}Select All{% endblocktranslate %}</button>
+                      <button id="deselectAllColumns" class="btn btn-sm btn-outline-primary">{% blocktranslate %}Deselect All{% endblocktranslate %}</button>
+                    </div>
+                    <div id="columnCheckboxes">
+                      {% if csv_data.0 %}
+                        {% for key in csv_data.0 %}
+                          <div class="form-check">
+                            <input class="form-check-input column-toggle" type="checkbox" id="check_{{ key|slugify }}" data-column="{{ forloop.counter0 }}" checked>
+                            <label class="form-check-label" for="check_{{ key|slugify }}">
+                              {{ key }}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ahora el contenedor de la tabla con scroll -->
+              <div class="table-responsive custom-scroll">
+                <table id="csvDataTable" class="table align-items-center table-flush">
+                  <thead class="thead-light">
+                    <tr>
+                      {% for key in csv_data.0 %}
+                      <th class="column-{{ forloop.counter0 }}">{{ key }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody class="list">
+                    {% for row in csv_data %}
+                      <tr>  
+                        {% for key, value in row.items %}
+                        <td class="column-{{ forloop.counter0 }}">{{ value }}</td>
+                        {% endfor %}
+                      </tr>
                     {% endfor %}
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div> 
       {% include "includes/footer.html" %}
     </div>
   {% endblock content %}
+  
+  {% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle column visibility toggling
+      const columnToggles = document.querySelectorAll('.column-toggle');
+      const selectAllBtn = document.getElementById('selectAllColumns');
+      const deselectAllBtn = document.getElementById('deselectAllColumns');
+      
+      // Function to update column visibility
+      function updateColumnVisibility(columnIndex, visible) {
+        const columnElements = document.querySelectorAll(`.column-${columnIndex}`);
+        columnElements.forEach(el => {
+          el.style.display = visible ? '' : 'none';
+        });
+      }
+      
+      // Setup event listeners for each checkbox
+      columnToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+          const columnIndex = this.getAttribute('data-column');
+          updateColumnVisibility(columnIndex, this.checked);
+        });
+      });
+      
+      // Select all columns button
+      selectAllBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        columnToggles.forEach(toggle => {
+          toggle.checked = true;
+          const columnIndex = toggle.getAttribute('data-column');
+          updateColumnVisibility(columnIndex, true);
+        });
+      });
+      
+      // Deselect all columns button
+      deselectAllBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        columnToggles.forEach(toggle => {
+          toggle.checked = false;
+          const columnIndex = toggle.getAttribute('data-column');
+          updateColumnVisibility(columnIndex, false);
+        });
+      });
+    });
+  </script>
+  {% endblock javascripts %}
