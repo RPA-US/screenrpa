@@ -54,7 +54,7 @@
                     </div>
                   </div>
                   <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
-                  <a href="/monitoring/result/{{execution_id}}/?download=True&scenario={{scenario}}">
+                  <a href="#" id="downloadFilteredButton">
                     <button class="btn btn-success" style="float: right;" type="button">
                       <i class="ni ni-cloud-download-95"></i> 
                       {% blocktranslate %}Download{% endblocktranslate %}
@@ -525,6 +525,36 @@
           updateColumnVisibility(columnIndex, false);
         });
       });
+
+      const downloadBtn = document.getElementById('downloadFilteredButton');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Recopilar columnas visibles (las que están activas/checked)
+          const activeColumns = [];
+          const activeColumnNames = [];
+          
+          columnToggles.forEach(toggle => {
+            if (toggle.checked) {
+              activeColumns.push(toggle.getAttribute('data-column'));
+              // Obtener el texto de la etiqueta asociada al checkbox
+              const labelText = toggle.nextElementSibling.textContent.trim();
+              activeColumnNames.push(labelText);
+            }
+          });
+          
+          // Construir URL con columnas activas
+          const baseUrl = "/monitoring/result/{{execution_id}}/?download=True&scenario={{scenario}}";
+          const columnsParam = activeColumns.length > 0 ? 
+                              `&columns=${activeColumns.join(',')}` : "";
+          const namesParam = activeColumnNames.length > 0 ?
+                            `&column_names=${encodeURIComponent(JSON.stringify(activeColumnNames))}` : "";
+          
+          // Redirigir para descargar
+          window.location.href = baseUrl + columnsParam + namesParam;
+        });
+      }
     });
   </script>
   {% endblock javascripts %}

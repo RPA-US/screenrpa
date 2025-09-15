@@ -200,8 +200,37 @@ class MonitoringResultDetailView(LoginRequiredMixin, DetailView):
         # 2) CSV principal (UI log)
         path_to_csv_file = os.path.join(execution.exp_folder_complete_path, scenario, "log.csv")
         if path_to_csv_file and download == "True":
-            return ResultDownload(path_to_csv_file)  
-
+            # Verificar si hay columnas específicas para filtrar
+            columns_param = request.GET.get('columns')
+            column_names_param = request.GET.get('column_names')
+            
+            if columns_param and column_names_param:
+                try:
+                    # Parsear nombres de columnas
+                    import json
+                    import pandas as pd
+                    
+                    column_names = json.loads(column_names_param)
+                    
+                    # Leer el CSV completo
+                    df = pd.read_csv(path_to_csv_file)
+                    
+                    # Filtrar para mantener solo las columnas seleccionadas que existen en el DataFrame
+                    valid_columns = [col for col in column_names if col in df.columns]
+                    if valid_columns:
+                        df = df[valid_columns]
+                    
+                    # Generar respuesta HTTP con el CSV filtrado
+                    response = HttpResponse(content_type='text/csv')
+                    response['Content-Disposition'] = f'attachment; filename="filtered_log.csv"'
+                    df.to_csv(response, index=False)
+                    return response
+                except Exception as e:
+                    print(f"Error filtrando columnas: {e}")
+                    # En caso de error, caer al comportamiento por defecto
+            
+            # Comportamiento original si no hay filtros o hubo un error
+            return ResultDownload(path_to_csv_file)
         csv_data_json = read_ui_log_as_dataframe(path_to_csv_file, lib='polars').to_dicts()
 
         # 3) Buscar reporte de emociones
