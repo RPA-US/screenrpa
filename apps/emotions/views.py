@@ -27,9 +27,9 @@ def _emotion_worker():
     while _running:
         ret, frame = _cap.read()
         if not ret:
-            time.sleep(0.1)  # Pequeña pausa si no hay frame
+            time.sleep(0.1)
             continue
-            
+
         try:
             result = DeepFace.analyze(
                 img_path=frame,
@@ -44,6 +44,16 @@ def _emotion_worker():
             dominant, confidence = "No detectado", 0.0
             _current_emotion = "No detectado"
 
+        # Clasificación positiva/negativa/neutral
+        if dominant in ["happy", "surprise"]:
+            sentimiento = "positivo"
+        elif dominant in ["neutral"]:
+            sentimiento = "neutral"
+        elif dominant in ["angry", "fear", "sad", "disgust"]:
+            sentimiento = "negativo"
+        else:
+            sentimiento = "desconocido"
+
         now_ts = datetime.now().timestamp()
         if _first_ts is None:
             _first_ts = now_ts
@@ -52,16 +62,15 @@ def _emotion_worker():
                 "TimeZone": datetime.now().astimezone().tzname()
             }
 
-        elapsed_ms = int((now_ts - _first_ts) * 1000)
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _data_points.append({
             'timestamp': timestamp,
             'emocion': dominant,
+            'sentimiento': sentimiento,  # ✅ Nueva columna
         })
-        
-        time.sleep(0.1)  # Pausa para no sobrecargar el sistema
 
-    # Liberar cámara al parar
+        time.sleep(0.1)
+
     if _cap:
         _cap.release()
 
