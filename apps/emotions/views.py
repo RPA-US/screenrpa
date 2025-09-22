@@ -55,10 +55,8 @@ def _emotion_worker():
         elapsed_ms = int((now_ts - _first_ts) * 1000)
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _data_points.append({
-            'fecha_hora': timestamp,
+            'timestamp': timestamp,
             'emocion': dominant,
-            'confidence': f"{confidence:.4f}",
-            'elapsed_ms': elapsed_ms
         })
         
         time.sleep(0.1)  # Pausa para no sobrecargar el sistema
