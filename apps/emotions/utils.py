@@ -168,6 +168,10 @@ def process_emotions_data(report) -> bool:
             metrics['time_segments'] = segment_emotions
         else:
             metrics['time_segments'] = {}
+        
+        if 'sentimiento' in df.columns:
+            sentimiento_counts = df['sentimiento'].value_counts()
+            metrics['sentimiento_counts'] = {str(k): int(v) for k, v in sentimiento_counts.to_dict().items()}
 
         # Transiciones
         s = df['emocion'].astype(str)

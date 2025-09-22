@@ -118,6 +118,17 @@
                     </div>
                   </div>
 
+                  <div class="row mb-4">
+                    <div class="col-md-4">
+                      <div class="card shadow-sm">
+                        <div class="card-body">
+                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Sentiment Distribution{% endblocktranslate %}</div>
+                          <canvas id="sentimentPie"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {# ---------- Evolución temporal por segmentos (barras apiladas) ---------- #}
                   {% if emotion_report.extra_data.time_segments %}
                   <div class="mb-4">
@@ -231,6 +242,44 @@
                   }
                 })();
               </script>
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  if (document.getElementById('extraData')) {
+                    const extra = JSON.parse(document.getElementById('extraData').textContent);
+                    if (extra.sentimiento_counts) {
+                      const labels = ['positivo', 'neutral', 'negativo'];
+                      const data = labels.map(l => extra.sentimiento_counts[l] || 0);
+
+                      const ctx = document.getElementById('sentimentPie').getContext('2d');
+                      new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                          labels: ['Positivo', 'Neutral', 'Negativo'],
+                          datasets: [{
+                            data: data,
+                            backgroundColor: [
+                              'rgba(75, 192, 192, 0.7)',
+                              'rgba(255, 206, 86, 0.7)',
+                              'rgba(255, 99, 132, 0.7)'
+                            ]
+                          }]
+                        },
+                        options: {
+                          responsive: true,
+                          plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: true, text: 'Distribución de Sentimientos' }
+                          }
+                        }
+                      });
+                    } else {
+                      document.getElementById('sentimentPie').parentNode.innerHTML +=
+                        '<div class="text-muted mt-2">No hay datos de sentimiento</div>';
+                    }
+                  }
+                });
+              </script>
+
             {% endif %}
             {% if emotion_report and emotion_report.extra_data and emotion_report.extra_data.multimodal %}
             {# Chart.js + plugins para boxplot y heatmap/matrix #}
