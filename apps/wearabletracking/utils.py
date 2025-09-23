@@ -240,22 +240,12 @@ def procesar_analisis_biometrico(execution):
                         'current': round(values[-1], 2)
                     }
                     
-                    # Datos para gráficos (muestrear si son muchos)
-                    if len(values) > 100:
-                        step = len(values) // 100
-                        indices = list(range(0, len(values), step))[:100]
-                        chart_data[metric] = [values[i] for i in indices]
-                    else:
-                        indices = list(range(len(values)))
-                        chart_data[metric] = values
-                    
-                    # Detectar eventos destacados (picos, valores mínimos, cambios bruscos)
-                    events_data[metric] = []
-                    
-                    # Índices para eventos importantes
+                    # Primero identificar eventos importantes
+                    important_indices = []
                     if len(values) > 1:
                         max_index = values.index(max(values))
                         min_index = values.index(min(values))
+                        important_indices.extend([max_index, min_index])
                         
                         # Detectar cambios bruscos (diferencia con punto anterior)
                         changes = []
@@ -265,91 +255,125 @@ def procesar_analisis_biometrico(execution):
                         
                         # Ordenar por magnitud del cambio y tomar los más significativos
                         changes.sort(key=lambda x: x[1], reverse=True)
-                        change_indices = [idx for idx, _ in changes[:2] if idx != max_index and idx != min_index]
+                        change_indices = [idx for idx, _ in changes[:28] if idx != max_index and idx != min_index]
+                        important_indices.extend(change_indices)
                         
-                        # Índices finales para eventos (máximo, mínimo y cambios significativos)
-                        event_indices = list(set([max_index, min_index] + change_indices))
+                        # Eliminar duplicados y ordenar
+                        important_indices = sorted(list(set(important_indices)))
+                    
+                    # Datos para gráficos (muestreo inteligente: puntos regulares + eventos importantes)
+                    if len(values) > 100:
+                        # Paso 1: Muestreo básico (80 puntos aprox)
+                        step = len(values) // 80
+                        regular_indices = list(range(0, len(values), step))[:80]
                         
-                        # Para cada índice, extraer la actividad correspondiente
-                        for idx in event_indices:
-                            if idx < len(df_combined):
-                                # Necesitamos mapear el índice en la lista de valores numéricos 
-                                # a su posición correspondiente en el DataFrame original
-                                # Esto es complicado porque hemos filtrado valores no numéricos
+                        # Paso 2: Combinar índices regulares y eventos importantes
+                        all_indices = sorted(list(set(regular_indices + important_indices)))
+                        
+                        # Paso 3: Limitar a un máximo de 120 puntos si hay demasiados
+                        if len(all_indices) > 120:
+                            # Preservar eventos importantes y completar con puntos regulares
+                            non_important = [i for i in regular_indices if i not in important_indices]
+                            remaining_slots = 120 - len(important_indices)
+                            if remaining_slots > 0:
+                                # Seleccionar puntos regulares distribuidos uniformemente
+                                step_regular = max(1, len(non_important) // remaining_slots)
+                                selected_regular = non_important[::step_regular][:remaining_slots]
+                                final_indices = sorted(list(set(important_indices + selected_regular)))
+                            else:
+                                final_indices = important_indices[:120]  # Solo eventos importantes
+                        else:
+                            final_indices = all_indices
+                        
+                        # Usar los índices finales para el muestreo
+                        indices = final_indices
+                        chart_data[metric] = [values[i] for i in indices]
+                    else:
+                        indices = list(range(len(values)))
+                        chart_data[metric] = values
+                    
+                    # Detectar eventos destacados (picos, valores mínimos, cambios bruscos)
+                    events_data[metric] = []
+                    
+                    # Para cada índice importante, extraer la actividad correspondiente
+                    for idx in important_indices:
+                        if idx < len(df_combined):
+                            # Enfoque simplificado: usar el índice directamente
+                            # (esto asume que la mayoría de los valores son numéricos)
+                            row_idx = min(idx, len(df_combined) - 1)
+                            row = df_combined.iloc[row_idx]
+                            
+                            # Extraer información rica del UI log
+                            activity_type = "Unknown"
+                            activity_details = {}
+                            
+                            # Columnas principales de actividad
+                            if 'category' in row and pd.notna(row['category']):
+                                activity_type = row['category']
                                 
-                                # Enfoque simplificado: usar el índice directamente
-                                # (esto asume que la mayoría de los valores son numéricos)
-                                row_idx = min(idx, len(df_combined) - 1)
-                                row = df_combined.iloc[row_idx]
+                            if 'application' in row and pd.notna(row['application']):
+                                activity_details['app'] = row['application']
                                 
-                                # Extraer información rica del UI log
-                                activity_type = "Unknown"
-                                activity_details = {}
-                                
-                                # Columnas principales de actividad
-                                if 'category' in row and pd.notna(row['category']):
-                                    activity_type = row['category']
+                            if 'concept:name' in row and pd.notna(row['concept:name']):
+                                activity_details['action'] = row['concept:name']
+                            
+                            # Detalles adicionales importantes
+                            ui_fields = [
+                                ('typed_word', 'Input'), 
+                                ('tag_innerText', 'Element Text'), 
+                                ('tag_name', 'Element Type'),
+                                ('tag_title', 'Element Title'),
+                                ('coordX', 'Position X'), 
+                                ('coordY', 'Position Y')
+                            ]
+                            
+                            for field, label in ui_fields:
+                                if field in row and pd.notna(row[field]) and row[field]:
+                                    activity_details[label] = row[field]
+                            
+                            # Formatear detalles de forma legible
+                            details_text = []
+                            for key, val in activity_details.items():
+                                if val:  # Solo incluir si tiene valor
+                                    details_text.append(f"{key}: {val}")
                                     
-                                if 'application' in row and pd.notna(row['application']):
-                                    activity_details['app'] = row['application']
-                                    
-                                if 'concept:name' in row and pd.notna(row['concept:name']):
-                                    activity_details['action'] = row['concept:name']
-                                
-                                # Detalles adicionales importantes
-                                ui_fields = [
-                                    ('typed_word', 'Input'), 
-                                    ('tag_innerText', 'Element Text'), 
-                                    ('tag_name', 'Element Type'),
-                                    ('tag_title', 'Element Title'),
-                                    ('coordX', 'Position X'), 
-                                    ('coordY', 'Position Y')
-                                ]
-                                
-                                for field, label in ui_fields:
-                                    if field in row and pd.notna(row[field]) and row[field]:
-                                        activity_details[label] = row[field]
-                                
-                                # Formatear detalles de forma legible
-                                details_text = []
-                                for key, val in activity_details.items():
-                                    if val:  # Solo incluir si tiene valor
-                                        details_text.append(f"{key}: {val}")
-                                        
-                                # Construir descripción final
-                                activity_description = f"{activity_type}"
-                                if details_text:
-                                    activity_description += f" ({'; '.join(details_text[:3])})"  # Limitar a 3 detalles
-                                
-                                # NUEVO: Preparar contexto para evaluación biométrica
-                                context = {
-                                    'activity_type': activity_type,
-                                    'pasos': row.get('pasos', 0) if 'pasos' in row else None,
-                                    'fc': row.get('fc') if 'fc' in row else None
-                                }
-                                
-                                # Añadir valores anteriores para detectar patrones
-                                if idx > 30:  # Si hay suficientes datos previos
-                                    previous_values = values[max(0, idx-120):idx]  # Hasta 2 horas antes
-                                    context['previous_values'] = previous_values
-                                
-                                # NUEVO: Usar función evaluar_metrica_biometrica
-                                evaluation = evaluar_metrica_biometrica(metric, values[idx], user_data, context)
-                                is_abnormal = evaluation['is_abnormal']
-                                abnormal_reason = evaluation['reason']
-                                
-                                # Timestamp para el evento
-                                timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
-                                
-                                # Agregar el evento a la lista con información detallada
+                            # Construir descripción final
+                            activity_description = f"{activity_type}"
+                            if details_text:
+                                activity_description += f" ({'; '.join(details_text[:3])})"  # Limitar a 3 detalles
+                            
+                            context = {
+                                'activity_type': activity_type,
+                                'pasos': row.get('pasos', 0) if 'pasos' in row else None,
+                                'fc': row.get('fc') if 'fc' in row else None
+                            }
+                            
+                            # Añadir valores anteriores para detectar patrones
+                            if idx > 30:  # Si hay suficientes datos previos
+                                previous_values = values[max(0, idx-120):idx]  # Hasta 2 horas antes
+                                context['previous_values'] = previous_values
+                            
+                            # Usar función evaluar_metrica_biometrica
+                            evaluation = evaluar_metrica_biometrica(metric, values[idx], user_data, context)
+                            is_abnormal = evaluation['is_abnormal']
+                            abnormal_reason = evaluation['reason']
+                            
+                            # Timestamp para el evento
+                            timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
+                            
+                            # SOLUCIÓN: Actualizar índice para que refleje su posición en el conjunto muestreado
+                            sampled_index = indices.index(idx) if idx in indices else -1
+                            
+                            # Solo agregar eventos que estén incluidos en el muestreo
+                            if sampled_index != -1:
                                 events_data[metric].append({
-                                    'index': indices.index(idx) if idx in indices else 0,
-                                    'original_index': idx,
+                                    'index': sampled_index,  # Índice en el array muestreado
+                                    'original_index': idx,   # Índice original
                                     'value': values[idx],
                                     'timestamp': timestamp,
                                     'activity': activity_description,
                                     'is_abnormal': is_abnormal,
-                                    'abnormal_reason': abnormal_reason,  # NUEVO: Añadir razón
+                                    'abnormal_reason': abnormal_reason,
                                     'activity_type': activity_type,
                                     'details': activity_details
                                 })
@@ -359,15 +383,23 @@ def procesar_analisis_biometrico(execution):
             if 'timestamp' in df_combined.columns:
                 timestamps = df_combined['timestamp'].tolist()
                 if len(timestamps) > 100:
-                    step = len(timestamps) // 100
-                    timestamps = [timestamps[i] for i in range(0, len(timestamps), step)][:100]
-                chart_labels = timestamps
+                    # Esto garantiza que las etiquetas correspondan exactamente a los puntos
+                    for metric, data in chart_data.items():
+                        # Usar el primer conjunto de datos para obtener los índices
+                        indices = [i for i in range(len(timestamps)) if i < len(timestamps)][:len(data)]
+                        chart_labels = [timestamps[i] if i < len(timestamps) else f"Punto {i}" for i in indices]
+                        break
+                else:
+                    chart_labels = timestamps
             elif 'time:timestamp' in df_combined.columns:
                 timestamps = df_combined['time:timestamp'].tolist()
                 if len(timestamps) > 100:
-                    step = len(timestamps) // 100
-                    timestamps = [timestamps[i] for i in range(0, len(timestamps), step)][:100]
-                chart_labels = timestamps
+                    for metric, data in chart_data.items():
+                        indices = [i for i in range(len(timestamps)) if i < len(timestamps)][:len(data)]
+                        chart_labels = [timestamps[i] if i < len(timestamps) else f"Punto {i}" for i in indices]
+                        break
+                else:
+                    chart_labels = timestamps
             else:
                 if chart_data:
                     chart_labels = list(range(1, len(next(iter(chart_data.values()))) + 1))
@@ -412,23 +444,26 @@ def procesar_analisis_biometrico(execution):
                     if numeric_values:
                         last_value = numeric_values[-1]
                         mean_value = sum(numeric_values) / len(numeric_values)
-                        
-                        # NUEVO: Usar criterios científicos para indicadores
                         context = {'activity_type': 'Unknown'}
-                        evaluation = evaluar_metrica_biometrica(metric_key, last_value, user_data, context)
-                        
-                        # Determinar estado según la evaluación
-                        status = "Normal" if not evaluation['is_abnormal'] else "High" if last_value > stats_data.get(metric_key, {}).get('mean', last_value) else "Low"
-                        
+                        # Para FC, usar la media como valor principal y evaluar la media
+                        if metric_key == 'fc':
+                            indicator_value = mean_value
+                            evaluation = evaluar_metrica_biometrica(metric_key, mean_value, user_data, context)
+                            status = "Normal" if not evaluation['is_abnormal'] else "High" if mean_value > stats_data.get(metric_key, {}).get('mean', mean_value) else "Low"
+                        else:
+                            indicator_value = last_value
+                            evaluation = evaluar_metrica_biometrica(metric_key, last_value, user_data, context)
+                            status = "Normal" if not evaluation['is_abnormal'] else "High" if last_value > stats_data.get(metric_key, {}).get('mean', last_value) else "Low"
+
                         indicator_data[metric_key] = {
                             'name': metric_config['name'],
-                            'value': round(last_value, 2),
+                            'value': round(indicator_value, 2),
                             'mean': round(mean_value, 2),
                             'unit': metric_config['unit'],
                             'status': status,
                             'icon': metric_config['icon'],
                             'color': metric_config['color'],
-                            'reason': evaluation['reason']  # NUEVO: Añadir razón
+                            'reason': evaluation['reason']
                         }
                     else:
                         # No hay valores numéricos válidos
@@ -452,8 +487,8 @@ def procesar_analisis_biometrico(execution):
                         'icon': metric_config['icon'],
                         'color': metric_config['color']
                     }
-            
-            # NUEVO: Añadir datos de usuario al reporte para referencia
+
+            # Añadir datos de usuario al reporte para referencia
             user_data_safe = {
                 'age': user_data.get('age', 30),
                 'weight': user_data.get('weight', 70),
@@ -468,7 +503,7 @@ def procesar_analisis_biometrico(execution):
                 'events': events_data,
                 'indicators': indicator_data,
                 'csv_date': csv_date,
-                'user_data': user_data_safe  # NUEVO: Añadir datos de usuario
+                'user_data': user_data_safe
             }
             report.save()
             

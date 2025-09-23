@@ -123,7 +123,7 @@
           </div>
         </div>
         <div class="card-body">
-          <!-- Eliminada la leyenda ya que cada pestaña muestra solo un tipo de datos -->
+          
           
           <div class="tab-content">
             {% for metric in report.metrics %}
@@ -204,7 +204,7 @@
       <!-- Indicators panel -->
       <div class="card shadow">
         <div class="card-header">
-          <h3 class="mb-0">{% blocktranslate %}Daily Summary Indicators{% endblocktranslate %}</h3>
+          <h3 class="mb-0">{% blocktranslate %}Daily Summary Indicators (Average values){% endblocktranslate %}</h3>
         </div>
         <div class="card-body">
           <div class="row">
@@ -243,7 +243,6 @@
         </div>
       </div>
       
-      <!-- NUEVO: Información sobre criterios científicos -->
       <div class="card shadow mt-4">
         <div class="card-header">
           <h3 class="mb-0">{% blocktranslate %}Criterios de Evaluación{% endblocktranslate %}</h3>

@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // NUEVA FUNCIÓN: Actualizar la tabla de eventos para cada métrica CON PAGINACIÓN
+  // FUNCIÓN: Actualizar la tabla de eventos para cada métrica CON PAGINACIÓN
   function updateEventsTable(metric, events) {
     var tbody = document.getElementById(metric + '-events');
     var paginationContainer = document.getElementById(metric + '-pagination');
@@ -152,7 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
           let sign = event.value >= 0 ? '+' : '';
           formattedValue = `${sign}${event.value.toFixed(1)}°C`;
         } else {
-            formattedValue = `${event.value} ${window.metricConfig && window.metricConfig[metric]?.unit || ''}`;        }
+          formattedValue = `${event.value} ${window.metricConfig && window.metricConfig[metric]?.unit || ''}`;
+        }
         
         // Añadir tooltip con razón de anormalidad
         if (event.is_abnormal) {
@@ -385,33 +386,109 @@ document.addEventListener('DOMContentLoaded', function() {
     var ctx = document.getElementById(metric + '-chart');
     if (!ctx) return;
     
-    // Usar eventos reales del backend
-    var events = eventsData[metric] || [];
+    // SOLUCIÓN MEJORADA: Usar directamente los eventos del backend sin reprocesarlos
+    // El backend ya se encarga de garantizar que todos los eventos importantes estén incluidos
+    function processEvents(rawEvents, dataLength) {
+      console.log(`Procesando ${rawEvents ? rawEvents.length : 0} eventos para ${metric}`);
+      
+      if (!rawEvents || !rawEvents.length) {
+        return [];
+      }
+
+      // Los eventos ya vienen con el índice correcto del backend,
+      // solo validamos que el índice esté dentro del rango de datos
+      return rawEvents.filter(event => 
+        event.index !== undefined && 
+        event.index >= 0 && 
+        event.index < dataLength
+      );
+    }
     
-    // Actualizar la tabla con los eventos reales
-    updateEventsTable(metric, events);
+    // SOLUCIÓN: Procesar eventos para esta métrica
+    const tableEvents = processEvents(eventsData[metric], dataset.data.length);
+    
+    // Actualizar la tabla con los eventos procesados
+    updateEventsTable(metric, tableEvents);
     
     // Obtener el tipo de gráfico configurado
     var chartType = dataset.chart_type || defaultChartType || 'line';
     console.log(`Tipo de gráfico para ${metric}: ${chartType}`);
     
-    // Configuración para los puntos en el gráfico
-    var pointRadius = Array(dataset.data.length).fill(0);
-    var pointBackgroundColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
-    var pointBorderColor = Array(dataset.data.length).fill('rgba(0,0,0,0)');
+    // SOLUCIÓN: Configuración para puntos en la gráfica
+    // 1. Configuración base para todos los puntos
+    var pointRadius = Array(dataset.data.length).fill(2); // Puntos más pequeños por defecto
+    var pointBackgroundColor = Array(dataset.data.length).fill(dataset.borderColor);
+    var pointBorderColor = Array(dataset.data.length).fill('#fff');
+    var pointBorderWidth = Array(dataset.data.length).fill(1);
     
-    // Resaltar los puntos de eventos importantes
-    events.forEach(event => {
-      if (event.index >= 0 && event.index < pointRadius.length) {
-        pointRadius[event.index] = 6;
-        pointBackgroundColor[event.index] = event.is_abnormal ? '#fb6340' : '#2dce89';
-        pointBorderColor[event.index] = event.is_abnormal ? '#fb6340' : '#2dce89';
+    // 2. CLAVE: Resaltar SOLO los puntos de eventos (ahora funcionará porque el backend garantiza su inclusión)
+    tableEvents.forEach(event => {
+      if (event.index >= 0 && event.index < dataset.data.length) {
+        pointRadius[event.index] = 6; // Puntos más grandes para eventos
+        pointBackgroundColor[event.index] = event.is_abnormal ? '#fb6340' : '#2dce89'; // Rojo para anormales, verde para normales
+        pointBorderColor[event.index] = '#ffffff';
+        pointBorderWidth[event.index] = 2;
       }
     });
     
-    // Configuración del gráfico - Cambio principal aquí para gráficos de área
+    // Información de actividad para todos los puntos (para tooltips)
+    var activityInfo = Array(dataset.data.length);
+    
+    // PARTE 1: Asignar información de eventos a sus puntos correspondientes
+    tableEvents.forEach(event => {
+      if (event.index >= 0 && event.index < dataset.data.length) {
+        activityInfo[event.index] = {
+          timestamp: event.timestamp || chartLabels[event.index] || '',
+          activity_type: event.activity_type || 'Actividad',
+          is_abnormal: event.is_abnormal || false,
+          abnormal_reason: event.abnormal_reason || 'Normal',
+          details: event.details || {},
+          isEvent: true
+        };
+      }
+    });
+    
+    // PARTE 2: Asignar información aproximada a puntos sin eventos directos
+    for (let i = 0; i < dataset.data.length; i++) {
+      if (!activityInfo[i]) {
+        // Buscar el evento más cercano para obtener información relacionada
+        let nearestEvent = null;
+        let minDistance = Infinity;
+        
+        tableEvents.forEach(event => {
+          const distance = Math.abs(event.index - i);
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestEvent = event;
+          }
+        });
+        
+        // Usar información del evento más cercano o información genérica
+        if (nearestEvent) {
+          activityInfo[i] = {
+            timestamp: chartLabels[i] || '',
+            activity_type: nearestEvent.activity_type || 'Actividad',
+            is_abnormal: nearestEvent.is_abnormal || false,
+            abnormal_reason: nearestEvent.abnormal_reason || 'Normal',
+            details: nearestEvent.details || {},
+            isEvent: false,
+            nearestEventDistance: minDistance
+          };
+        } else {
+          activityInfo[i] = {
+            timestamp: chartLabels[i] || '',
+            activity_type: 'Actividad regular',
+            is_abnormal: false,
+            abnormal_reason: 'Sin eventos significativos',
+            details: {},
+            isEvent: false
+          };
+        }
+      }
+    }
+    
+    // Configuración del gráfico
     var config = {
-      // Para tipo 'area' usamos tipo 'line' con configuración especial
       type: chartType === 'area' ? 'line' : chartType,
       data: {
         labels: chartLabels,
@@ -420,16 +497,15 @@ document.addEventListener('DOMContentLoaded', function() {
           data: dataset.data,
           borderColor: dataset.borderColor,
           backgroundColor: dataset.backgroundColor,
-          // Configuraciones según el tipo de gráfico
-          fill: chartType === 'area' ? 'origin' : false, // ÁREA: 'origin', LINE: false
+          fill: chartType === 'area' ? 'origin' : false,
           tension: chartType === 'area' || chartType === 'line' ? 0.4 : 0,
           pointRadius: chartType === 'bar' ? 0 : pointRadius,
           pointBackgroundColor: pointBackgroundColor,
           pointBorderColor: pointBorderColor,
+          pointBorderWidth: pointBorderWidth,
           pointHoverRadius: chartType === 'bar' ? 0 : 8,
           pointHoverBackgroundColor: dataset.borderColor,
           pointHoverBorderColor: '#fff',
-          // Para gráficos de barras
           borderWidth: chartType === 'bar' ? 1 : 2,
           barPercentage: chartType === 'bar' ? 0.8 : 1,
           categoryPercentage: chartType === 'bar' ? 0.9 : 1
@@ -443,38 +519,69 @@ document.addEventListener('DOMContentLoaded', function() {
             mode: 'index',
             intersect: false,
             callbacks: {
+              title: function(context) {
+                return chartLabels[context[0].dataIndex];
+              },
               label: function(context) {
-                var label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
+                const dataIndex = context.dataIndex;
+                let lines = [];
+                
+                // Línea 1: Valor básico con unidades
+                var basicLabel = context.dataset.label || '';
+                if (basicLabel) basicLabel += ': ';
                 
                 if (context.parsed.y !== null) {
                   // Formateo especial para temperatura
                   if (metric === 'temperatura') {
                     let value = context.parsed.y;
                     let sign = value >= 0 ? '+' : '';
-                    label += `${sign}${value.toFixed(1)}°C`;
+                    basicLabel += `${sign}${value.toFixed(1)}°C`;
                   } else {
-                    label += context.parsed.y;
+                    basicLabel += context.parsed.y;
                     if (metricConfig[metric]?.unit) {
-                      label += ' ' + metricConfig[metric].unit;
+                      basicLabel += ' ' + metricConfig[metric].unit;
                     }
                   }
                 }
                 
-                // Mostrar actividad si es un punto destacado
-                var eventIndex = events.findIndex(e => e.index === context.dataIndex);
-                if (eventIndex !== -1) {
-                  label += ' - ' + events[eventIndex].activity_type;
+                lines.push(basicLabel);
+                
+                // Mostrar información de actividad para todos los puntos
+                const info = activityInfo[dataIndex];
+                
+                if (info) {
+                  // Actividad
+                  if (info.isEvent) {
+                    lines.push(`Actividad: ${info.activity_type || 'Desconocida'} ✓`);
+                  } else {
+                    lines.push(`Actividad: ${info.activity_type || 'Desconocida'}`);
+                  }
                   
-                  // NUEVO: Mostrar razón de anormalidad si existe
-                  if (events[eventIndex].is_abnormal && events[eventIndex].abnormal_reason) {
-                    label += ' (' + events[eventIndex].abnormal_reason + ')';
+                  // Estado
+                  if (info.is_abnormal) {
+                    lines.push(`Estado: Anormal (${info.abnormal_reason || 'Sin detalles'})`);
+                  } else {
+                    lines.push('Estado: Normal');
+                  }
+                  
+                  // Detalles si existen
+                  if (info.details) {
+                    const keys = Object.keys(info.details);
+                    for (let i = 0; i < Math.min(2, keys.length); i++) {
+                      const key = keys[i];
+                      if (info.details[key]) {
+                        lines.push(`${key}: ${info.details[key]}`);
+                      }
+                    }
+                  }
+                  
+                  // Indicar aproximación
+                  if (!info.isEvent && info.nearestEventDistance) {
+                    lines.push(`(Información aproximada)`);
                   }
                 }
                 
-                return label;
+                return lines;
               }
             }
           },
@@ -499,7 +606,6 @@ document.addEventListener('DOMContentLoaded', function() {
               color: "rgba(0,0,0,0.05)"
             },
             beginAtZero: metric !== 'fc',
-            // Formato personalizado para el eje Y de temperatura
             ticks: metric === 'temperatura' ? {
               callback: function(value) {
                 return (value >= 0 ? '+' : '') + value.toFixed(1) + '°C';
@@ -529,18 +635,14 @@ document.addEventListener('DOMContentLoaded', function() {
           config.data.datasets[0].backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
         }
       }
-      
-      console.log("Aplicando configuración específica para gráfico de ÁREA", metric);
     }
     
     // Optimizaciones específicas según métrica y tipo de gráfico
     if (metric === 'fc' && chartType === 'bar') {
-      // Para FC en barras, usar un color más intenso
       config.data.datasets[0].backgroundColor = 'rgba(245, 54, 92, 0.6)';
     }
     
     if (metric === 'pasos' && chartType === 'line') {
-      // Para pasos en línea, usar línea escalonada (stepped)
       config.data.datasets[0].stepped = true;
     }
     
@@ -791,7 +893,7 @@ function fixDropdownsCompletely() {
   window.addEventListener('resize', fixDropdownsCompletely);
   window.addEventListener('scroll', fixDropdownsCompletely);
   
-  // NUEVO: Inicializar todos los tooltips en el documento
+  // Inicializar todos los tooltips en el documento
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });
