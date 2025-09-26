@@ -141,7 +141,7 @@ pycparser==2.21
 pydot==1.4.2
 pydotplus==2.0.2
 Pygments==2.14.0
-pygraphviz==1.13
+pygraphviz
 PyJWT==2.6.0
 pypandoc==1.13
 pyparsing==3.0.9
@@ -211,3 +211,4 @@ whitenoise==6.2.0
 wrapt==1.14.1
 yarl==1.9.4
 deepface
+reportlab

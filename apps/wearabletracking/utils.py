@@ -261,36 +261,9 @@ def procesar_analisis_biometrico(execution):
                         # Eliminar duplicados y ordenar
                         important_indices = sorted(list(set(important_indices)))
                     
-                    # Datos para gráficos (muestreo inteligente: puntos regulares + eventos importantes)
-                    if len(values) > 100:
-                        # Paso 1: Muestreo básico (80 puntos aprox)
-                        step = len(values) // 80
-                        regular_indices = list(range(0, len(values), step))[:80]
-                        
-                        # Paso 2: Combinar índices regulares y eventos importantes
-                        all_indices = sorted(list(set(regular_indices + important_indices)))
-                        
-                        # Paso 3: Limitar a un máximo de 120 puntos si hay demasiados
-                        if len(all_indices) > 120:
-                            # Preservar eventos importantes y completar con puntos regulares
-                            non_important = [i for i in regular_indices if i not in important_indices]
-                            remaining_slots = 120 - len(important_indices)
-                            if remaining_slots > 0:
-                                # Seleccionar puntos regulares distribuidos uniformemente
-                                step_regular = max(1, len(non_important) // remaining_slots)
-                                selected_regular = non_important[::step_regular][:remaining_slots]
-                                final_indices = sorted(list(set(important_indices + selected_regular)))
-                            else:
-                                final_indices = important_indices[:120]  # Solo eventos importantes
-                        else:
-                            final_indices = all_indices
-                        
-                        # Usar los índices finales para el muestreo
-                        indices = final_indices
-                        chart_data[metric] = [values[i] for i in indices]
-                    else:
-                        indices = list(range(len(values)))
-                        chart_data[metric] = values
+                    # SOLUCIÓN: Guardar TODOS los datos sin muestreo
+                    chart_data[metric] = values
+                    indices = list(range(len(values)))
                     
                     # Detectar eventos destacados (picos, valores mínimos, cambios bruscos)
                     events_data[metric] = []
@@ -299,7 +272,6 @@ def procesar_analisis_biometrico(execution):
                     for idx in important_indices:
                         if idx < len(df_combined):
                             # Enfoque simplificado: usar el índice directamente
-                            # (esto asume que la mayoría de los valores son numéricos)
                             row_idx = min(idx, len(df_combined) - 1)
                             row = df_combined.iloc[row_idx]
                             
@@ -361,45 +333,25 @@ def procesar_analisis_biometrico(execution):
                             # Timestamp para el evento
                             timestamp = str(row.get('timestamp', '')) or str(row.get('time:timestamp', ''))
                             
-                            # SOLUCIÓN: Actualizar índice para que refleje su posición en el conjunto muestreado
-                            sampled_index = indices.index(idx) if idx in indices else -1
-                            
-                            # Solo agregar eventos que estén incluidos en el muestreo
-                            if sampled_index != -1:
-                                events_data[metric].append({
-                                    'index': sampled_index,  # Índice en el array muestreado
-                                    'original_index': idx,   # Índice original
-                                    'value': values[idx],
-                                    'timestamp': timestamp,
-                                    'activity': activity_description,
-                                    'is_abnormal': is_abnormal,
-                                    'abnormal_reason': abnormal_reason,
-                                    'activity_type': activity_type,
-                                    'details': activity_details
-                                })
+                            # SOLUCIÓN: Guardar TODOS los eventos importantes con su índice original
+                            events_data[metric].append({
+                                'index': idx,  # Índice directo en el array completo
+                                'original_index': idx,  # Mantener para compatibilidad
+                                'value': values[idx],
+                                'timestamp': timestamp,
+                                'activity': activity_description,
+                                'is_abnormal': is_abnormal,
+                                'abnormal_reason': abnormal_reason,
+                                'activity_type': activity_type,
+                                'details': activity_details
+                            })
             
-            # Preparar etiquetas para el eje X
+            # Preparar etiquetas para el eje X - Usar TODAS las etiquetas originales
             chart_labels = []
             if 'timestamp' in df_combined.columns:
-                timestamps = df_combined['timestamp'].tolist()
-                if len(timestamps) > 100:
-                    # Esto garantiza que las etiquetas correspondan exactamente a los puntos
-                    for metric, data in chart_data.items():
-                        # Usar el primer conjunto de datos para obtener los índices
-                        indices = [i for i in range(len(timestamps)) if i < len(timestamps)][:len(data)]
-                        chart_labels = [timestamps[i] if i < len(timestamps) else f"Punto {i}" for i in indices]
-                        break
-                else:
-                    chart_labels = timestamps
+                chart_labels = df_combined['timestamp'].tolist()
             elif 'time:timestamp' in df_combined.columns:
-                timestamps = df_combined['time:timestamp'].tolist()
-                if len(timestamps) > 100:
-                    for metric, data in chart_data.items():
-                        indices = [i for i in range(len(timestamps)) if i < len(timestamps)][:len(data)]
-                        chart_labels = [timestamps[i] if i < len(timestamps) else f"Punto {i}" for i in indices]
-                        break
-                else:
-                    chart_labels = timestamps
+                chart_labels = df_combined['time:timestamp'].tolist()
             else:
                 if chart_data:
                     chart_labels = list(range(1, len(next(iter(chart_data.values()))) + 1))

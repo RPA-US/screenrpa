@@ -378,67 +378,324 @@ document.addEventListener('DOMContentLoaded', function() {
     displayEvents(1);
   }
   
-  // Crear gráficos para cada dataset
+  // Función para formatear las etiquetas de tiempo de forma más legible
+  function formatTimeLabel(timeStr) {
+    if (!timeStr) return '';
+    
+    // Intentar diferentes formatos de tiempo
+    try {
+      // Si es un timestamp completo ISO
+      if (timeStr.includes('T')) {
+        const date = new Date(timeStr);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      }
+      
+      // Si es un formato timestamp estándar con espacio
+      if (timeStr.includes(' ') && timeStr.length > 8) {
+        const timePart = timeStr.split(' ')[1];
+        if (timePart && timePart.includes(':')) {
+          return timePart.substring(0, 5); // HH:MM
+        }
+      }
+      
+      // Si ya es una hora, solo devolver los primeros 5 caracteres (HH:MM)
+      if (timeStr.includes(':') && timeStr.length >= 5) {
+        return timeStr.substring(0, 5);
+      }
+    } catch (e) {
+      console.warn("Error al formatear etiqueta de tiempo:", e);
+    }
+    
+    return timeStr; // Devolver el original si no se puede formatear
+  }
+  
+  // NUEVA FUNCIÓN: Extraer timestamps por hora para el eje X
+  function extractHourlyTimestamps(timestamps, totalDuration) {
+    if (!timestamps || timestamps.length === 0) return [];
+
+    try {
+      // Intentar convertir a objetos Date
+      const dateTimes = timestamps
+        .map(ts => {
+          try {
+            // Manejar diferentes formatos
+            if (typeof ts === 'string') {
+              if (ts.includes('T')) return new Date(ts); // ISO format
+              if (ts.includes(' ') && ts.includes(':')) {
+                const parts = ts.split(' ');
+                return new Date(parts[0] + 'T' + parts[1]);
+              }
+            }
+            return null;
+          } catch (e) {
+            return null;
+          }
+        })
+        .filter(dt => dt !== null);
+
+      if (dateTimes.length === 0) return [];
+
+      // Ordenar los tiempos
+      dateTimes.sort((a, b) => a - b);
+
+      // Obtener la hora inicial y final
+      const startTime = dateTimes[0];
+      const endTime = dateTimes[dateTimes.length - 1];
+      
+      // Duración total en horas
+      const durationHours = (endTime - startTime) / (1000 * 60 * 60);
+      
+      // Si la duración es menor a 2 horas, usamos intervalos más cortos
+      const hourInterval = durationHours < 2 ? 0.5 : 1;
+      
+      // Generar timestamps por hora
+      const hourlyTimestamps = [];
+      let currentTime = new Date(startTime);
+      
+      // Añadir la hora inicial
+      hourlyTimestamps.push({
+        timestamp: currentTime.toISOString(),
+        label: formatTimeLabel(currentTime.toTimeString()),
+        position: 0 // Posición relativa (0 = inicio)
+      });
+      
+      // Añadir horas intermedias
+      while (currentTime < endTime) {
+        currentTime = new Date(currentTime.getTime() + hourInterval * 60 * 60 * 1000);
+        if (currentTime <= endTime) {
+          const position = (currentTime - startTime) / (endTime - startTime);
+          hourlyTimestamps.push({
+            timestamp: currentTime.toISOString(),
+            label: formatTimeLabel(currentTime.toTimeString()),
+            position: position
+          });
+        }
+      }
+      
+      return hourlyTimestamps;
+    } catch (e) {
+      console.error("Error al extraer timestamps por hora:", e);
+      return [];
+    }
+  }
+
+  // NUEVA FUNCIÓN: Optimizar la visualización de datos para mostrar una vista completa
+  function createOptimizedView(originalData, originalLabels, eventIndices) {
+    // Si hay pocos datos, mostrarlos todos
+    if (originalData.length <= 1000) {
+      return {
+        data: originalData,
+        indices: Array.from({ length: originalData.length }, (_, i) => i),
+        labels: originalLabels
+      };
+    }
+
+    // Crear arrays para datos y sus índices correspondientes
+    const viewData = [];
+    const viewIndices = [];
+    const viewLabels = [];
+    
+    // Obtener los timestamps horarios para mejorar la visualización
+    const hourlyTimestamps = extractHourlyTimestamps(originalLabels, originalData.length);
+    
+    // Convertir índices de eventos en un conjunto para búsqueda rápida
+    const eventSet = new Set(eventIndices);
+    
+    // Incluir siempre el primer y último punto
+    viewData.push(originalData[0]);
+    viewIndices.push(0);
+    viewLabels.push(originalLabels[0]);
+    
+    // Añadir todos los puntos de eventos importantes
+    for (const idx of eventIndices) {
+      if (idx > 0 && idx < originalData.length - 1) {  // Evitar duplicar primer/último punto
+        viewData.push(originalData[idx]);
+        viewIndices.push(idx);
+        viewLabels.push(originalLabels[idx]);
+      }
+    }
+    
+    // Añadir puntos en intervalos regulares
+    const step = Math.max(1, Math.floor(originalData.length / 100));
+    for (let i = step; i < originalData.length - 1; i += step) {
+      // Evitar duplicar puntos de eventos
+      if (!eventSet.has(i)) {
+        viewData.push(originalData[i]);
+        viewIndices.push(i);
+        viewLabels.push(originalLabels[i]);
+      }
+    }
+    
+    // Siempre incluir el último punto si no está ya incluido
+    if (!eventSet.has(originalData.length - 1)) {
+      viewData.push(originalData[originalData.length - 1]);
+      viewIndices.push(originalData.length - 1);
+      viewLabels.push(originalLabels[originalData.length - 1]);
+    }
+    
+    // Ordenar por índice para mantener el orden cronológico
+    const sortedItems = viewIndices.map((idx, pos) => ({ 
+      idx, 
+      data: viewData[pos],
+      label: viewLabels[pos]
+    })).sort((a, b) => a.idx - b.idx);
+    
+    return {
+      data: sortedItems.map(item => item.data),
+      indices: sortedItems.map(item => item.idx),
+      labels: sortedItems.map(item => item.label)
+    };
+  }
+  
+  // Agregar banner de instrucciones de zoom
+  function addZoomInstructionsBanner() {
+    // Verificar si ya existe
+    if (document.getElementById('zoom-instructions-banner')) return;
+    
+    // Encontrar el primer contenedor donde insertarlo
+    const container = document.querySelector('.container-fluid');
+    if (!container) return;
+    
+    const banner = document.createElement('div');
+    banner.id = 'zoom-instructions-banner';
+    banner.className = 'alert alert-info alert-dismissible fade show mb-4';
+    banner.role = 'alert';
+    banner.innerHTML = `
+      <div class="d-flex align-items-center">
+        <i class="fas fa-mouse mr-2"></i>
+        <div><strong>Consejo:</strong> Puedes hacer zoom en los gráficos girando la rueda del ratón sobre ellos</div>
+      </div>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    `;
+    
+    // Insertar al inicio del contenedor
+    container.insertBefore(banner, container.firstChild);
+  }
+  
+  // Agregar el banner de instrucciones solo una vez
+  addZoomInstructionsBanner();
+  
+  // Función para añadir mensaje de zoom y botón de reinicio debajo del gráfico
+  function addZoomMessage(chartContainer, chartInstance) {
+    // Verificar si ya existe
+    if (chartContainer.querySelector('.zoom-message-container')) return;
+    
+    // Crear el contenedor para el mensaje de zoom
+    const zoomMessageContainer = document.createElement('div');
+    zoomMessageContainer.className = 'zoom-message-container text-center mt-2';
+    
+    // Crear el mensaje
+    const zoomMessage = document.createElement('div');
+    zoomMessage.className = 'zoom-message text-muted small';
+    zoomMessage.innerHTML = '<i class="fas fa-mouse mr-1"></i> Usa la rueda del ratón para hacer zoom';
+    
+    // Crear el botón de reinicio
+    const resetButton = document.createElement('button');
+    resetButton.type = 'button';
+    resetButton.className = 'btn btn-sm btn-outline-primary ml-2';
+    resetButton.innerHTML = '<i class="fas fa-undo mr-1"></i> Reiniciar zoom';
+    resetButton.onclick = function() {
+      // Intentar diferentes métodos para resetear el zoom
+      try {
+        if (chartInstance.resetZoom) {
+          chartInstance.resetZoom();
+        } else if (chartInstance.scales && chartInstance.scales.x) {
+          // Alternativa para Chart.js más reciente
+          chartInstance.scales.x.options.min = undefined;
+          chartInstance.scales.x.options.max = undefined;
+          chartInstance.scales.y.options.min = undefined;
+          chartInstance.scales.y.options.max = undefined;
+          chartInstance.update();
+        } else {
+          // Última opción: recrear el gráfico
+          chartInstance.update();
+        }
+      } catch (error) {
+        console.error("Error al reiniciar zoom:", error);
+      }
+    };
+    
+    // Añadir mensaje y botón al contenedor
+    const wrapper = document.createElement('div');
+    wrapper.className = 'd-flex align-items-center justify-content-center';
+    wrapper.appendChild(zoomMessage);
+    wrapper.appendChild(resetButton);
+    
+    zoomMessageContainer.appendChild(wrapper);
+    
+    // Insertar el contenedor después del canvas
+    chartContainer.appendChild(zoomMessageContainer);
+  }
+  
+  // Crear gráficos para cada dataset con mejoras visuales
   chartDatasets.forEach(dataset => {
     var metric = dataset.metric;
     if (!metric) return;
     
     var ctx = document.getElementById(metric + '-chart');
     if (!ctx) return;
-    
-    // SOLUCIÓN MEJORADA: Usar directamente los eventos del backend sin reprocesarlos
-    // El backend ya se encarga de garantizar que todos los eventos importantes estén incluidos
-    function processEvents(rawEvents, dataLength) {
-      console.log(`Procesando ${rawEvents ? rawEvents.length : 0} eventos para ${metric}`);
-      
-      if (!rawEvents || !rawEvents.length) {
-        return [];
-      }
 
-      // Los eventos ya vienen con el índice correcto del backend,
-      // solo validamos que el índice esté dentro del rango de datos
-      return rawEvents.filter(event => 
-        event.index !== undefined && 
-        event.index >= 0 && 
-        event.index < dataLength
-      );
-    }
+    // Procesar eventos para esta métrica
+    const events = eventsData[metric] || [];
     
-    // SOLUCIÓN: Procesar eventos para esta métrica
-    const tableEvents = processEvents(eventsData[metric], dataset.data.length);
+    // Extraer índices de eventos importantes
+    const eventIndices = events.map(event => event.index || 0);
     
-    // Actualizar la tabla con los eventos procesados
-    updateEventsTable(metric, tableEvents);
+    // Actualizar la tabla de eventos
+    updateEventsTable(metric, events);
+    
+    // SOLUCIÓN MEJORADA: Preprocesar las etiquetas para el eje X
+    const processedLabels = Array.isArray(chartLabels) ? chartLabels.map(label => {
+      if (typeof label === 'string') {
+        return formatTimeLabel(label);
+      }
+      return label;
+    }) : [];
+    
+    // Crear vista optimizada para la visualización
+    const optimizedView = createOptimizedView(
+      dataset.data, 
+      processedLabels.length === dataset.data.length ? processedLabels : Array(dataset.data.length).fill(''),
+      eventIndices
+    );
+    
+    const optimizedData = optimizedView.data;
+    const optimizedIndices = optimizedView.indices;
+    const optimizedLabels = optimizedView.labels;
     
     // Obtener el tipo de gráfico configurado
     var chartType = dataset.chart_type || defaultChartType || 'line';
-    console.log(`Tipo de gráfico para ${metric}: ${chartType}`);
     
-    // SOLUCIÓN: Configuración para puntos en la gráfica
-    // 1. Configuración base para todos los puntos
-    var pointRadius = Array(dataset.data.length).fill(2); // Puntos más pequeños por defecto
-    var pointBackgroundColor = Array(dataset.data.length).fill(dataset.borderColor);
-    var pointBorderColor = Array(dataset.data.length).fill('#fff');
-    var pointBorderWidth = Array(dataset.data.length).fill(1);
+    // Configuración para puntos en la gráfica
+    var pointRadius = Array(optimizedData.length).fill(2);
+    var pointBackgroundColor = Array(optimizedData.length).fill(dataset.borderColor);
+    var pointBorderColor = Array(optimizedData.length).fill('#fff');
+    var pointBorderWidth = Array(optimizedData.length).fill(1);
     
-    // 2. CLAVE: Resaltar SOLO los puntos de eventos (ahora funcionará porque el backend garantiza su inclusión)
-    tableEvents.forEach(event => {
-      if (event.index >= 0 && event.index < dataset.data.length) {
-        pointRadius[event.index] = 6; // Puntos más grandes para eventos
-        pointBackgroundColor[event.index] = event.is_abnormal ? '#fb6340' : '#2dce89'; // Rojo para anormales, verde para normales
-        pointBorderColor[event.index] = '#ffffff';
-        pointBorderWidth[event.index] = 2;
+    // Resaltar puntos de eventos importantes
+    events.forEach(event => {
+      const idx = optimizedIndices.indexOf(event.index);
+      if (idx !== -1) {
+        pointRadius[idx] = event.is_abnormal ? 6 : 5;
+        pointBackgroundColor[idx] = event.is_abnormal ? '#fb6340' : '#2dce89';
+        pointBorderColor[idx] = '#ffffff';
+        pointBorderWidth[idx] = 2;
       }
     });
     
-    // Información de actividad para todos los puntos (para tooltips)
-    var activityInfo = Array(dataset.data.length);
+    // Información para tooltips (contexto de cada punto)
+    var activityInfo = Array(optimizedData.length).fill(null);
     
-    // PARTE 1: Asignar información de eventos a sus puntos correspondientes
-    tableEvents.forEach(event => {
-      if (event.index >= 0 && event.index < dataset.data.length) {
-        activityInfo[event.index] = {
-          timestamp: event.timestamp || chartLabels[event.index] || '',
+    // Asociar información de eventos con sus puntos correspondientes
+    events.forEach(event => {
+      const idx = optimizedIndices.indexOf(event.index);
+      if (idx !== -1) {
+        activityInfo[idx] = {
+          timestamp: event.timestamp || '',
           activity_type: event.activity_type || 'Actividad',
           is_abnormal: event.is_abnormal || false,
           abnormal_reason: event.abnormal_reason || 'Normal',
@@ -448,57 +705,109 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // PARTE 2: Asignar información aproximada a puntos sin eventos directos
-    for (let i = 0; i < dataset.data.length; i++) {
+    // Completar información de puntos que no tienen eventos asociados
+    for (let i = 0; i < optimizedData.length; i++) {
       if (!activityInfo[i]) {
-        // Buscar el evento más cercano para obtener información relacionada
-        let nearestEvent = null;
-        let minDistance = Infinity;
-        
-        tableEvents.forEach(event => {
-          const distance = Math.abs(event.index - i);
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestEvent = event;
-          }
-        });
-        
-        // Usar información del evento más cercano o información genérica
-        if (nearestEvent) {
-          activityInfo[i] = {
-            timestamp: chartLabels[i] || '',
-            activity_type: nearestEvent.activity_type || 'Actividad',
-            is_abnormal: nearestEvent.is_abnormal || false,
-            abnormal_reason: nearestEvent.abnormal_reason || 'Normal',
-            details: nearestEvent.details || {},
-            isEvent: false,
-            nearestEventDistance: minDistance
-          };
-        } else {
-          activityInfo[i] = {
-            timestamp: chartLabels[i] || '',
-            activity_type: 'Actividad regular',
-            is_abnormal: false,
-            abnormal_reason: 'Sin eventos significativos',
-            details: {},
-            isEvent: false
-          };
-        }
+        activityInfo[i] = {
+          timestamp: optimizedLabels[i] || '',
+          activity_type: '',  // Eliminado "Punto de datos"
+          is_abnormal: false,
+          abnormal_reason: 'Valor normal',
+          details: {},
+          isEvent: false
+        };
       }
     }
     
-    // Configuración del gráfico
+    // MEJORA VISUAL: Extraer horas para anotaciones y líneas de referencia
+    const hourlyTimestamps = extractHourlyTimestamps(chartLabels, dataset.data.length);
+    
+    // MEJORA VISUAL: Preparar anotaciones y líneas de referencia
+    const annotations = {};
+    
+    // Añadir líneas verticales para cada hora
+    hourlyTimestamps.forEach((hourPoint, idx) => {
+      // Encontrar el índice más cercano en datos optimizados
+      const nearestIdx = optimizedIndices.reduce((prev, curr, i) => {
+        const prevDiff = Math.abs((prev / dataset.data.length) - hourPoint.position);
+        const currDiff = Math.abs((curr / dataset.data.length) - hourPoint.position);
+        return currDiff < prevDiff ? curr : prev;
+      }, optimizedIndices[0]);
+      
+      const annotationIndex = optimizedIndices.indexOf(nearestIdx);
+      if (annotationIndex !== -1) {
+        annotations[`hour-line-${idx}`] = {
+          type: 'line',
+          scaleID: 'x',
+          value: annotationIndex,
+          borderColor: 'rgba(136, 152, 170, 0.3)',
+          borderWidth: 1,
+          borderDash: [5, 5],
+          label: {
+            content: hourPoint.label,
+            enabled: true,
+            position: 'start',
+            backgroundColor: 'rgba(136, 152, 170, 0.7)',
+            color: '#ffffff',
+            font: {
+              size: 10
+            }
+          }
+        };
+      }
+    });
+    
+    // MEJORA: Añadir líneas horizontales para valores de referencia según métrica
+    if (metric === 'fc') {
+      // Línea para frecuencia cardíaca normal máxima en reposo
+      annotations['fc-normal-max'] = {
+        type: 'line',
+        scaleID: 'y',
+        value: 100,
+        borderColor: 'rgba(245, 54, 92, 0.5)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        label: {
+          content: 'FC normal máx.',
+          enabled: true,
+          position: 'end',
+          backgroundColor: 'rgba(245, 54, 92, 0.7)',
+          color: '#ffffff',
+          font: { size: 10 }
+        }
+      };
+    } else if (metric === 'spo2') {
+      // Línea para nivel óptimo de saturación de oxígeno
+      annotations['spo2-normal'] = {
+        type: 'line',
+        scaleID: 'y',
+        value: 95,
+        borderColor: 'rgba(29, 140, 248, 0.5)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        label: {
+          content: 'SpO₂ óptimo',
+          enabled: true,
+          position: 'end',
+          backgroundColor: 'rgba(29, 140, 248, 0.7)',
+          color: '#ffffff',
+          font: { size: 10 }
+        }
+      };
+    }
+    
+    // MEJORA: Configuración del gráfico con mejor visualización
     var config = {
       type: chartType === 'area' ? 'line' : chartType,
       data: {
-        labels: chartLabels,
+        labels: optimizedLabels,
         datasets: [{
           label: metricConfig[metric]?.displayName || metric,
-          data: dataset.data,
+          data: optimizedData,
           borderColor: dataset.borderColor,
           backgroundColor: dataset.backgroundColor,
           fill: chartType === 'area' ? 'origin' : false,
-          tension: chartType === 'area' || chartType === 'line' ? 0.4 : 0,
+          tension: chartType === 'area' || chartType === 'line' ? 0.3 : 0,
           pointRadius: chartType === 'bar' ? 0 : pointRadius,
           pointBackgroundColor: pointBackgroundColor,
           pointBorderColor: pointBorderColor,
@@ -514,13 +823,29 @@ document.addEventListener('DOMContentLoaded', function() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
         plugins: {
           tooltip: {
-            mode: 'index',
-            intersect: false,
+            enabled: true,
+            position: 'nearest',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleFont: { size: 13 },
+            bodyFont: { size: 12 },
+            padding: 10,
+            displayColors: false,
             callbacks: {
               title: function(context) {
-                return chartLabels[context[0].dataIndex];
+                const dataIndex = context[0].dataIndex;
+                const info = activityInfo[dataIndex];
+                
+                // Mostrar solo la hora como título
+                if (info && info.timestamp) {
+                  return info.timestamp;
+                }
+                return optimizedLabels[dataIndex] || 'Tiempo no disponible';
               },
               label: function(context) {
                 const dataIndex = context.dataIndex;
@@ -537,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     let sign = value >= 0 ? '+' : '';
                     basicLabel += `${sign}${value.toFixed(1)}°C`;
                   } else {
-                    basicLabel += context.parsed.y;
+                    basicLabel += formatMetricValue(context.parsed.y, metric);
                     if (metricConfig[metric]?.unit) {
                       basicLabel += ' ' + metricConfig[metric].unit;
                     }
@@ -546,38 +871,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 lines.push(basicLabel);
                 
-                // Mostrar información de actividad para todos los puntos
+                // Mostrar información relevante
                 const info = activityInfo[dataIndex];
                 
                 if (info) {
-                  // Actividad
-                  if (info.isEvent) {
-                    lines.push(`Actividad: ${info.activity_type || 'Desconocida'} ✓`);
-                  } else {
-                    lines.push(`Actividad: ${info.activity_type || 'Desconocida'}`);
+                  // Solo mostrar actividad si es un evento real con actividad definida
+                  if (info.isEvent && info.activity_type) {
+                    lines.push(`Actividad: ${info.activity_type}`);
                   }
                   
-                  // Estado
+                  // Estado (siempre mostrar, con razón si es anormal)
                   if (info.is_abnormal) {
                     lines.push(`Estado: Anormal (${info.abnormal_reason || 'Sin detalles'})`);
                   } else {
                     lines.push('Estado: Normal');
                   }
                   
-                  // Detalles si existen
+                  // Detalles de la aplicación y acción (máximo 2 detalles)
                   if (info.details) {
-                    const keys = Object.keys(info.details);
-                    for (let i = 0; i < Math.min(2, keys.length); i++) {
-                      const key = keys[i];
+                    // Priorizar mostrar la aplicación
+                    if (info.details['app']) {
+                      lines.push(`App: ${info.details['app']}`);
+                    }
+                    
+                    // Buscar información de acción relevante
+                    const actionKeys = ['action', 'Element Text', 'Element Type', 'Input'];
+                    for (const key of actionKeys) {
                       if (info.details[key]) {
-                        lines.push(`${key}: ${info.details[key]}`);
+                        lines.push(`${key === 'action' ? 'Acción' : key}: ${info.details[key]}`);
+                        break; // Solo mostrar una acción
                       }
                     }
-                  }
-                  
-                  // Indicar aproximación
-                  if (!info.isEvent && info.nearestEventDistance) {
-                    lines.push(`(Información aproximada)`);
                   }
                 }
                 
@@ -587,30 +911,81 @@ document.addEventListener('DOMContentLoaded', function() {
           },
           legend: {
             display: false
+          },
+          annotation: {
+            annotations: annotations
+          },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x'
+            },
+            zoom: {
+              wheel: { 
+                enabled: true,
+                speed: 0.1,
+                modifierKey: null  // No requiere tecla modificadora (Ctrl)
+              },
+              pinch: { 
+                enabled: true 
+              },
+              mode: 'x',
+              onZoom: function() {
+                // Este callback es importante para que el evento de zoom se registre correctamente
+              }
+            },
+            limits: {
+              x: {min: 'original', max: 'original'},
+              y: {min: 'original', max: 'original'}
+            }
           }
-        },
-        hover: {
-          mode: 'index',
-          intersect: false
         },
         scales: {
           x: {
-            grid: {
-              display: true,
-              color: "rgba(0,0,0,0.05)"
+            grid: { 
+              display: true, 
+              color: "rgba(0,0,0,0.05)",
+              drawBorder: true
+            },
+            ticks: {
+              maxRotation: 45, // Rotar las etiquetas para evitar superposición
+              minRotation: 45, // Mantener una rotación constante
+              autoSkip: true, // Activar el salto automático de etiquetas
+              autoSkipPadding: 15, // Espacio mínimo entre etiquetas
+              callback: function(val, index) {
+                // Mostrar etiquetas en intervalos para evitar sobrecargar
+                if (optimizedLabels.length > 50) {
+                  // Para muchos datos, mostrar menos etiquetas
+                  if (index % 5 === 0) {
+                    return this.getLabelForValue(val);
+                  }
+                  return '';
+                }
+                return this.getLabelForValue(val);
+              },
+              color: 'rgba(0, 0, 0, 0.75)', // Hacer las etiquetas más visibles
+              font: {
+                size: 10,
+                weight: 'bold' // Fuente más destacada
+              }
             }
           },
           y: {
-            grid: {
-              display: true,
-              color: "rgba(0,0,0,0.05)"
+            grid: { 
+              display: true, 
+              color: "rgba(0,0,0,0.05)",
+              drawBorder: true 
             },
-            beginAtZero: metric !== 'fc',
-            ticks: metric === 'temperatura' ? {
+            beginAtZero: metric !== 'fc' && metric !== 'spo2',
+            ticks: {
+              padding: 8,
               callback: function(value) {
-                return (value >= 0 ? '+' : '') + value.toFixed(1) + '°C';
+                if (metric === 'temperatura') {
+                  return (value >= 0 ? '+' : '') + value.toFixed(1) + '°C';
+                }
+                return value;
               }
-            } : undefined
+            }
           }
         }
       }
@@ -622,7 +997,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (config.data.datasets[0].backgroundColor.includes('rgba')) {
         config.data.datasets[0].backgroundColor = config.data.datasets[0].backgroundColor.replace(
           /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/,
-          'rgba($1, $2, $3, 0.5)' // Mayor opacidad (0.5) para que se vea mejor el área
+          'rgba($1, $2, $3, 0.5)'
         );
       } else {
         // Si no es rgba, añadir opacidad
@@ -648,62 +1023,137 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Ajustes específicos para temperatura
     if (metric === 'temperatura') {
-      // Colores especiales para temperaturas positivas y negativas
-      const gradientAboveZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-      gradientAboveZero.addColorStop(0, 'rgba(251, 99, 64, 0.8)');   // Rojo cálido arriba
-      gradientAboveZero.addColorStop(1, 'rgba(251, 99, 64, 0.1)');   // Transparente abajo
-      
-      const gradientBelowZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-      gradientBelowZero.addColorStop(0, 'rgba(94, 114, 228, 0.1)');  // Transparente arriba
-      gradientBelowZero.addColorStop(1, 'rgba(94, 114, 228, 0.8)');  // Azul frío abajo
-      
-      // Aplicar colores según el tipo de gráfico
-      if (chartType === 'area') {
-        // Para área, usar gradientes según el valor
-        config.data.datasets[0].backgroundColor = function(context) {
-          const value = context.raw;
-          return value >= 0 ? gradientAboveZero : gradientBelowZero;
-        };
-      } else if (chartType === 'bar') {
-        // Para barras, color según el valor
-        config.data.datasets[0].backgroundColor = function(context) {
-          const value = context.raw;
-          return value >= 0 ? 'rgba(251, 99, 64, 0.6)' : 'rgba(94, 114, 228, 0.6)';
-        };
-      }
-    }
-    
-    // Para gráficos de barras con muchos datos, reducir la muestra si es necesario
-    if (chartType === 'bar' && dataset.data.length > 30) {
-      var decimation = Math.ceil(dataset.data.length / 30);
-      var decimatedData = [];
-      var decimatedLabels = [];
-      
-      for (var i = 0; i < dataset.data.length; i += decimation) {
-        // Calculamos el promedio de este segmento
-        var sum = 0;
-        var count = 0;
-        for (var j = i; j < i + decimation && j < dataset.data.length; j++) {
-          if (dataset.data[j] !== null) {
-            sum += dataset.data[j];
-            count++;
-          }
+      try {
+        // Colores especiales para temperaturas positivas y negativas
+        const gradientAboveZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+        gradientAboveZero.addColorStop(0, 'rgba(251, 99, 64, 0.8)');
+        gradientAboveZero.addColorStop(1, 'rgba(251, 99, 64, 0.1)');
+        
+        const gradientBelowZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+        gradientBelowZero.addColorStop(0, 'rgba(94, 114, 228, 0.1)');
+        gradientBelowZero.addColorStop(1, 'rgba(94, 114, 228, 0.8)');
+        
+        // Aplicar colores según el tipo de gráfico
+        if (chartType === 'area') {
+          // Para área, usar gradientes según el valor
+          config.data.datasets[0].backgroundColor = function(context) {
+            const value = context.raw;
+            return value >= 0 ? gradientAboveZero : gradientBelowZero;
+          };
+        } else if (chartType === 'bar') {
+          // Para barras, color según el valor
+          config.data.datasets[0].backgroundColor = function(context) {
+            const value = context.raw;
+            return value >= 0 ? 'rgba(251, 99, 64, 0.6)' : 'rgba(94, 114, 228, 0.6)';
+          };
         }
-        decimatedData.push(count > 0 ? sum / count : null);
-        decimatedLabels.push(chartLabels[i]);
+      } catch (error) {
+        console.warn("Error configurando gradientes para temperatura:", error);
       }
-      
-      // Reemplazamos los datos en el config
-      config.data.labels = decimatedLabels;
-      config.data.datasets[0].data = decimatedData;
     }
     
-    // Crear el gráfico
-    charts[metric] = new Chart(ctx.getContext('2d'), config);
+    // MEJORA: Cargar plugins necesarios de forma dinámica y luego crear el gráfico
+    function loadPlugins() {
+      return new Promise((resolve, reject) => {
+        // Lista de plugins que necesitamos
+        const plugins = [
+          {
+            name: 'chartjs-plugin-annotation',
+            url: 'https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js'
+          },
+          {
+            name: 'chartjs-plugin-zoom',
+            url: 'https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.0/dist/chartjs-plugin-zoom.min.js',
+            requires: ['hammer']
+          },
+          {
+            name: 'hammer',
+            url: 'https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js'
+          }
+        ];
+        
+        // Registrar los plugins que ya están cargados
+        const loadedPlugins = {};
+        plugins.forEach(plugin => {
+          loadedPlugins[plugin.name] = window[plugin.name] !== undefined;
+        });
+        
+        // Función para cargar un plugin
+        function loadPlugin(plugin) {
+          return new Promise((resolvePlugin, rejectPlugin) => {
+            // Si ya está cargado, resolver inmediatamente
+            if (loadedPlugins[plugin.name]) {
+              resolvePlugin();
+              return;
+            }
+            
+            // Verificar dependencias
+            if (plugin.requires) {
+              for (const dep of plugin.requires) {
+                if (!loadedPlugins[dep]) {
+                  rejectPlugin(`El plugin ${plugin.name} requiere ${dep} que no está cargado`);
+                  return;
+                }
+              }
+            }
+            
+            // Cargar el script
+            const script = document.createElement('script');
+            script.src = plugin.url;
+            script.onload = () => {
+              loadedPlugins[plugin.name] = true;
+              resolvePlugin();
+            };
+            script.onerror = () => rejectPlugin(`Error al cargar ${plugin.name}`);
+            document.head.appendChild(script);
+          });
+        }
+        
+        // Cargar plugins en orden específico (primero hammer, luego los demás)
+        loadPlugin(plugins.find(p => p.name === 'hammer'))
+          .then(() => {
+            // Cargar los plugins restantes en paralelo
+            return Promise.all(
+              plugins
+                .filter(p => p.name !== 'hammer')
+                .map(loadPlugin)
+            );
+          })
+          .then(resolve)
+          .catch(reject);
+      });
+    }
+    
+    // Crear el gráfico con los plugins necesarios
+    loadPlugins().then(() => {
+      // Registrar los plugins globalmente para Chart.js si es necesario
+      if (window['chartjs-plugin-zoom'] && typeof Chart.register === 'function') {
+        Chart.register(window['chartjs-plugin-zoom']);
+      }
+      
+      if (window['chartjs-plugin-annotation'] && typeof Chart.register === 'function') {
+        Chart.register(window['chartjs-plugin-annotation']);
+      }
+      
+      // Crear el gráfico una vez que todos los plugins estén cargados
+      charts[metric] = new Chart(ctx, config);
+      
+      // Encontrar el contenedor del gráfico para añadir el mensaje de zoom
+      const chartContainer = ctx.parentNode;
+      addZoomMessage(chartContainer, charts[metric]);
+      
+    }).catch(err => {
+      console.error('Error al cargar plugins:', err);
+      
+      // Si falla la carga de plugins, crear una versión simplificada del gráfico
+      delete config.options.plugins.annotation;
+      delete config.options.plugins.zoom;
+      
+      charts[metric] = new Chart(ctx, config);
+    });
   });
   
-  // SOLUCIÓN COMPLETA: Navegación de pestañas usando JavaScript puro
-  // Esto evita dependencias con jQuery y soluciona los problemas de navegación
+  // Navegación de pestañas usando JavaScript puro
   var tabLinks = document.querySelectorAll('.custom-tabs .nav-link');
   var tabContents = document.querySelectorAll('.tab-pane');
   
@@ -772,26 +1222,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Eliminar cualquier scrollbar innecesario
-  (function removeUnnecessaryScrollbars() {
-    // Eliminar scrollbars de todos los contenedores relevantes
-    document.querySelectorAll('.card-body, .nav-tabs-container, .custom-tabs, .tab-content').forEach(function(element) {
-      element.classList.add('no-scroll');
-    });
-    
-    // Asegurar que no haya overflow visible que cause scrollbars
-    document.querySelectorAll('.row').forEach(function(row) {
-      row.style.marginRight = '0';
-      row.style.marginLeft = '0';
-    });
-  })();
+  document.querySelectorAll('.card-body, .nav-tabs-container, .custom-tabs, .tab-content').forEach(function(element) {
+    element.classList.add('no-scroll');
+  });
   
-function fixDropdownsCompletely() {
-    // Eliminar cualquier dropdown ya fijado previamente
+  // Arreglo de dropdowns
+  function fixDropdowns() {
     document.querySelectorAll('.dropdown-fix').forEach(el => el.remove());
-    
-    // Manejar los toggles de dropdown correctamente
     document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-      // Eliminar cualquier manejador de eventos previo
       toggle.removeEventListener('click', handleDropdownToggle);
       toggle.addEventListener('click', handleDropdownToggle);
     });
@@ -801,59 +1239,44 @@ function fixDropdownsCompletely() {
     e.preventDefault();
     e.stopPropagation();
     
-    // Obtener el botón que activó el dropdown
     const toggle = this;
-    // Encontrar el dropdown correspondiente
     const dropdownMenu = toggle.nextElementSibling;
     
     if (!dropdownMenu || !dropdownMenu.classList.contains('dropdown-menu')) return;
     
-    // Si ya hay un dropdown fijo con el mismo ID, eliminarlo (toggle)
     const existingFixedDropdown = document.querySelector(`.dropdown-fix[data-original-id="${dropdownMenu.id}"]`);
     if (existingFixedDropdown) {
       existingFixedDropdown.remove();
       return;
     }
     
-    // Eliminar cualquier otro dropdown fijado
     document.querySelectorAll('.dropdown-fix').forEach(el => el.remove());
     
-    // Clonar el dropdown para posicionarlo absolutamente
     const clonedDropdown = dropdownMenu.cloneNode(true);
     const rect = toggle.getBoundingClientRect();
     
-    // Determinar si es dropdown de notificaciones o perfil
     const isNotification = dropdownMenu.classList.contains('dropdown-menu-xl') || 
-                          dropdownMenu.classList.contains('dropdown-menu-notification');
+                        dropdownMenu.classList.contains('dropdown-menu-notification');
     const isUserMenu = toggle.querySelector('.ni-settings-gear-65') !== null;
     
-    // Establecer ID de referencia para poder identificarlo después
     clonedDropdown.setAttribute('data-original-id', dropdownMenu.id || '');
-    
-    // Aplicar clases y estilos
     clonedDropdown.classList.add('dropdown-fix');
     
-    // Posicionamiento específico según el tipo de dropdown
     if (isNotification) {
-      // Dropdown de notificaciones - a la derecha
       clonedDropdown.style.right = (window.innerWidth - rect.right) + 'px';
       clonedDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
       clonedDropdown.classList.add('dropdown-menu-notification');
     } else if (isUserMenu) {
-      // Dropdown de usuario - a la derecha
       clonedDropdown.style.right = (window.innerWidth - rect.right) + 'px';
       clonedDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
     } else {
-      // Otros dropdowns - debajo del botón
       clonedDropdown.style.left = rect.left + 'px';
       clonedDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
       clonedDropdown.style.minWidth = rect.width + 'px';
     }
     
-    // Agregar al body para evitar problemas de contención
     document.body.appendChild(clonedDropdown);
     
-    // Cerrar al hacer clic en cualquier lugar
     setTimeout(() => {
       document.addEventListener('click', function closeDropdown(e) {
         if (!clonedDropdown.contains(e.target) && e.target !== toggle) {
@@ -862,7 +1285,6 @@ function fixDropdownsCompletely() {
         }
       });
       
-      // También cerrar al hacer clic en elementos internos del dropdown
       clonedDropdown.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
           clonedDropdown.remove();
@@ -871,15 +1293,12 @@ function fixDropdownsCompletely() {
     }, 10);
   }
   
-  // Ejecutar la solución inmediatamente
-  fixDropdownsCompletely();
+  fixDropdowns();
+  setTimeout(fixDropdowns, 500);
   
-  // Y también después de un tiempo para asegurar que todo esté cargado
-  setTimeout(fixDropdownsCompletely, 500);
-  
-  // Observar cambios en el DOM para mantener la funcionalidad
+  // Observar cambios en el DOM
   const observer = new MutationObserver(() => {
-    setTimeout(fixDropdownsCompletely, 10);
+    setTimeout(fixDropdowns, 10);
   });
   
   observer.observe(document.body, {
@@ -889,11 +1308,10 @@ function fixDropdownsCompletely() {
     attributeFilter: ['class', 'style']
   });
   
-  // Asegurarse de que funcione incluso después de cambios en la ventana
-  window.addEventListener('resize', fixDropdownsCompletely);
-  window.addEventListener('scroll', fixDropdownsCompletely);
+  window.addEventListener('resize', fixDropdowns);
+  window.addEventListener('scroll', fixDropdowns);
   
-  // Inicializar todos los tooltips en el documento
+  // Inicializar tooltips
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });
