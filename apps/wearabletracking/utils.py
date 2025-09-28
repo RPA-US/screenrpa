@@ -401,7 +401,14 @@ def procesar_analisis_biometrico(execution):
                         if metric_key == 'fc':
                             indicator_value = mean_value
                             evaluation = evaluar_metrica_biometrica(metric_key, mean_value, user_data, context)
-                            status = "Normal" if not evaluation['is_abnormal'] else "High" if mean_value > stats_data.get(metric_key, {}).get('mean', mean_value) else "Low"
+                            if not evaluation['is_abnormal']:
+                                status = "Normal"
+                            else:
+                                # Si es anormal, usar criterios médicos para determinar si es alto o bajo
+                                if mean_value > 100:
+                                    status = "High"
+                                else:
+                                    status = "Low"
                         else:
                             indicator_value = last_value
                             evaluation = evaluar_metrica_biometrica(metric_key, last_value, user_data, context)
