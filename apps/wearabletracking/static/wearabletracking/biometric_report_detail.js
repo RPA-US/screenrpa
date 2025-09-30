@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Obtener los datos JSON
+  // Get JSON data
   var chartLabels = JSON.parse(document.getElementById('chart-labels-data').textContent);
   var chartDatasets = JSON.parse(document.getElementById('chart-datasets-data').textContent);
   var statsData = JSON.parse(document.getElementById('stats-data').textContent);
@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
   var indicatorsData = JSON.parse(document.getElementById('indicators-data').textContent);
   var defaultChartType = JSON.parse(document.getElementById('chart-type-data').textContent) || 'line';
   
-  console.log("Tipo de gráfico por defecto:", defaultChartType);
+  console.log("Default chart type:", defaultChartType);
   
-  // Crear gráficos para cada métrica
+  // Create charts for each metric
   var charts = {};
   
-  // Configuración de métricas
+  // Metrics configuration
   window.metricConfig = {
     'fc': {
       color: '#f5365c', 
@@ -53,13 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
     'cvl': {
       color: '#ffd600',
       bgColor: 'rgba(255, 214, 0, 0.2)',
-      displayName: 'CVL',
+      displayName: 'Cardiovascular Load Index (CVL)',
       unit: ''
     },
     'sdnn': {
       color: '#8898aa',
       bgColor: 'rgba(136, 152, 170, 0.2)',
-      displayName: 'SDNN',
+      displayName: 'Heart Rate Variability (SDNN)',
       unit: 'ms'
     },
     'spo2': {
@@ -82,32 +82,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
   
-  // Función para formatear valores específicos según la métrica
+  // Function to format specific values according to the metric
   function formatMetricValue(value, metric) {
     if (metric === 'temperatura') {
-      // Para temperatura, mostrar variación con signo
+      // For temperature, show variation with sign
       let sign = value >= 0 ? '+' : '';
       return `${sign}${value.toFixed(1)}°C`;
     } else if (['fc', 'pasos', 'spo2'].includes(metric)) {
-      // Valores enteros para ciertas métricas
+      // Integer values for certain metrics
       return Math.round(value);
     } else {
-      // Una decimal para otras métricas
+      // One decimal for other metrics
       return value.toFixed(1);
     }
   }
   
-  // FUNCIÓN: Actualizar la tabla de eventos para cada métrica CON PAGINACIÓN
+  // FUNCTION: Update events table for each metric WITH PAGINATION
   function updateEventsTable(metric, events) {
     var tbody = document.getElementById(metric + '-events');
     var paginationContainer = document.getElementById(metric + '-pagination');
     if (!tbody) return;
     
-    // Limpiar contenido anterior
+    // Clear previous content
     tbody.innerHTML = '';
     if (paginationContainer) paginationContainer.innerHTML = '';
     
-    // Si no hay eventos, mostrar mensaje
+    // If no events, show message
     if (!events || events.length === 0) {
       var tr = document.createElement('tr');
       var td = document.createElement('td');
@@ -119,12 +119,12 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Configuración de paginación
+    // Pagination configuration
     const eventsPerPage = 5;
     const totalPages = Math.ceil(events.length / eventsPerPage);
     let currentPage = 1;
     
-    // Función para mostrar eventos de la página actual
+    // Function to display events of the current page
     function displayEvents(page) {
       tbody.innerHTML = '';
       currentPage = page;
@@ -136,17 +136,17 @@ document.addEventListener('DOMContentLoaded', function() {
       pageEvents.forEach(event => {
         var tr = document.createElement('tr');
         
-        // Columna de tiempo
+        // Time column
         var tdTime = document.createElement('td');
         tdTime.textContent = event.timestamp || 'N/A';
         tr.appendChild(tdTime);
         
-        // Columna de valor biométrico con formato mejorado
+        // Biometric value column with improved formatting
         var tdValue = document.createElement('td');
         var valueSpan = document.createElement('span');
         valueSpan.classList.add(event.is_abnormal ? 'text-warning' : 'text-success');
         
-        // Formatear valor según tipo de métrica
+        // Format value according to metric type
         let formattedValue;
         if (metric === 'temperatura') {
           let sign = event.value >= 0 ? '+' : '';
@@ -155,31 +155,31 @@ document.addEventListener('DOMContentLoaded', function() {
           formattedValue = `${event.value} ${window.metricConfig && window.metricConfig[metric]?.unit || ''}`;
         }
         
-        // Añadir tooltip con razón de anormalidad
+        // Add tooltip with abnormality reason
         if (event.is_abnormal) {
-          let tooltipText = event.abnormal_reason || 'Valor anormal';
+          let tooltipText = event.abnormal_reason || 'Abnormal value';
           valueSpan.innerHTML = `${formattedValue} 
                         <i class="fas fa-exclamation-triangle ml-1" data-toggle="tooltip" title="${tooltipText}"></i>`;
         } else {
           valueSpan.innerHTML = `${formattedValue} 
-                        <i class="fas fa-check-circle ml-1" data-toggle="tooltip" title="Valor normal"></i>`;
+                        <i class="fas fa-check-circle ml-1" data-toggle="tooltip" title="Normal value"></i>`;
         }
         
         tdValue.appendChild(valueSpan);
         tr.appendChild(tdValue);
         
-        // Columna de actividad
+        // Activity column
         var tdActivity = document.createElement('td');
         tdActivity.innerHTML = `<strong>${event.activity_type || 'Unknown'}</strong>`;
         tr.appendChild(tdActivity);
         
-        // Columna de detalles
+        // Details column
         var tdDetails = document.createElement('td');
         if (event.details) {
           var detailsList = document.createElement('ul');
           detailsList.className = 'mb-0 pl-3';
           
-          // Mostrar solo los 3 detalles más relevantes
+          // Show only the 3 most relevant details
           const keysToShow = Object.keys(event.details).slice(0, 3);
           
           keysToShow.forEach(key => {
@@ -204,26 +204,26 @@ document.addEventListener('DOMContentLoaded', function() {
         tbody.appendChild(tr);
       });
       
-      // Reinicializar tooltips para los nuevos elementos
+      // Reinitialize tooltips for new elements
       $('[data-toggle="tooltip"]').tooltip();
       
-      // Actualizar controles de paginación
+      // Update pagination controls
       updatePaginationControls();
     }
     
-    // Función para actualizar controles de paginación
+    // Function to update pagination controls
     function updatePaginationControls() {
       if (!paginationContainer) return;
       
-      // No mostrar paginación si solo hay una página
+      // Don't show pagination if there's only one page
       if (totalPages <= 1) {
         paginationContainer.innerHTML = '';
         
-        // Si hay eventos pero no suficientes para paginar, mostrar un contador simple
+        // If there are events but not enough to paginate, show a simple counter
         if (events.length > 0) {
           const countDiv = document.createElement('div');
           countDiv.className = 'text-center text-muted mt-2';
-          countDiv.innerHTML = `<small>${events.length} evento${events.length !== 1 ? 's' : ''} en total</small>`;
+          countDiv.innerHTML = `<small>${events.length} event${events.length !== 1 ? 's' : ''} in total</small>`;
           paginationContainer.appendChild(countDiv);
         }
         return;
@@ -231,19 +231,19 @@ document.addEventListener('DOMContentLoaded', function() {
       
       paginationContainer.innerHTML = '';
       
-      // Contenedor principal para centrar toda la paginación
+      // Main container to center all pagination
       const paginationWrapper = document.createElement('div');
       paginationWrapper.className = 'd-flex flex-column align-items-center';
       
-      // Contenedor de paginación con estilo
+      // Pagination container with style
       const paginationNav = document.createElement('nav');
       paginationNav.setAttribute('aria-label', 'Events pagination');
-      paginationNav.className = 'mb-2'; // Agregar margen inferior
+      paginationNav.className = 'mb-2'; // Add bottom margin
       
       const paginationUl = document.createElement('ul');
       paginationUl.className = 'pagination pagination-sm justify-content-center';
       
-      // Botón Anterior
+      // Previous button
       const prevLi = document.createElement('li');
       prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
       
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
       prevLi.appendChild(prevLink);
       paginationUl.appendChild(prevLi);
       
-      // Botones de páginas (con simplificación para muchas páginas)
+      // Page buttons (with simplification for many pages)
       const maxPageButtons = 5;
       let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
       let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startPage = Math.max(1, endPage - maxPageButtons + 1);
       }
       
-      // Añadir primera página y elipsis si es necesario
+      // Add first page and ellipsis if necessary
       if (startPage > 1) {
         const firstLi = document.createElement('li');
         firstLi.className = 'page-item';
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // Páginas numeradas
+      // Numbered pages
       for (let i = startPage; i <= endPage; i++) {
         const pageLi = document.createElement('li');
         pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
         paginationUl.appendChild(pageLi);
       }
       
-      // Añadir última página y elipsis si es necesario
+      // Add last page and ellipsis if necessary
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
           const ellipsisLi = document.createElement('li');
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
         paginationUl.appendChild(lastLi);
       }
       
-      // Botón Siguiente
+      // Next button
       const nextLi = document.createElement('li');
       nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
       
@@ -365,26 +365,26 @@ document.addEventListener('DOMContentLoaded', function() {
       paginationNav.appendChild(paginationUl);
       paginationWrapper.appendChild(paginationNav);
       
-      // Contador de eventos debajo de la paginación
+      // Event counter below pagination
       const countDiv = document.createElement('div');
       countDiv.className = 'text-center text-muted';
-      countDiv.innerHTML = `<small>${events.length} evento${events.length !== 1 ? 's' : ''} en total</small>`;
+      countDiv.innerHTML = `<small>${events.length} event${events.length !== 1 ? 's' : ''} in total</small>`;
       paginationWrapper.appendChild(countDiv);
       
       paginationContainer.appendChild(paginationWrapper);
     }
     
-    // Mostrar la primera página de eventos
+    // Show the first page of events
     displayEvents(1);
   }
   
-  // Función para formatear las etiquetas de tiempo de forma más legible
+  // Function to format time labels more readably
   function formatTimeLabel(timeStr) {
     if (!timeStr) return '';
     
-    // Intentar diferentes formatos de tiempo
+    // Try different time formats
     try {
-      // Si es un timestamp completo ISO
+      // If it's a complete ISO timestamp
       if (timeStr.includes('T')) {
         const date = new Date(timeStr);
         if (!isNaN(date.getTime())) {
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // Si es un formato timestamp estándar con espacio
+      // If it's a standard timestamp format with space
       if (timeStr.includes(' ') && timeStr.length > 8) {
         const timePart = timeStr.split(' ')[1];
         if (timePart && timePart.includes(':')) {
@@ -400,27 +400,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // Si ya es una hora, solo devolver los primeros 5 caracteres (HH:MM)
+      // If it's already an hour, only return the first 5 characters (HH:MM)
       if (timeStr.includes(':') && timeStr.length >= 5) {
         return timeStr.substring(0, 5);
       }
     } catch (e) {
-      console.warn("Error al formatear etiqueta de tiempo:", e);
+      console.warn("Error formatting time label:", e);
     }
     
-    return timeStr; // Devolver el original si no se puede formatear
+    return timeStr; // Return the original if it can't be formatted
   }
   
-  // NUEVA FUNCIÓN: Extraer timestamps por hora para el eje X
+  // NEW FUNCTION: Extract hourly timestamps for X axis
   function extractHourlyTimestamps(timestamps, totalDuration) {
     if (!timestamps || timestamps.length === 0) return [];
 
     try {
-      // Intentar convertir a objetos Date
+      // Try to convert to Date objects
       const dateTimes = timestamps
         .map(ts => {
           try {
-            // Manejar diferentes formatos
+            // Handle different formats
             if (typeof ts === 'string') {
               if (ts.includes('T')) return new Date(ts); // ISO format
               if (ts.includes(' ') && ts.includes(':')) {
@@ -437,31 +437,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (dateTimes.length === 0) return [];
 
-      // Ordenar los tiempos
+      // Sort the times
       dateTimes.sort((a, b) => a - b);
 
-      // Obtener la hora inicial y final
+      // Get the initial and final time
       const startTime = dateTimes[0];
       const endTime = dateTimes[dateTimes.length - 1];
       
-      // Duración total en horas
+      // Total duration in hours
       const durationHours = (endTime - startTime) / (1000 * 60 * 60);
       
-      // Si la duración es menor a 2 horas, usamos intervalos más cortos
+      // If the duration is less than 2 hours, use shorter intervals
       const hourInterval = durationHours < 2 ? 0.5 : 1;
       
-      // Generar timestamps por hora
+      // Generate timestamps per hour
       const hourlyTimestamps = [];
       let currentTime = new Date(startTime);
       
-      // Añadir la hora inicial
+      // Add the initial time
       hourlyTimestamps.push({
         timestamp: currentTime.toISOString(),
         label: formatTimeLabel(currentTime.toTimeString()),
-        position: 0 // Posición relativa (0 = inicio)
+        position: 0 // Relative position (0 = start)
       });
       
-      // Añadir horas intermedias
+      // Add intermediate hours
       while (currentTime < endTime) {
         currentTime = new Date(currentTime.getTime() + hourInterval * 60 * 60 * 1000);
         if (currentTime <= endTime) {
@@ -476,14 +476,14 @@ document.addEventListener('DOMContentLoaded', function() {
       
       return hourlyTimestamps;
     } catch (e) {
-      console.error("Error al extraer timestamps por hora:", e);
+      console.error("Error extracting hourly timestamps:", e);
       return [];
     }
   }
 
-  // NUEVA FUNCIÓN: Optimizar la visualización de datos para mostrar una vista completa
+  // NEW FUNCTION: Optimize data visualization to show a complete view
   function createOptimizedView(originalData, originalLabels, eventIndices) {
-    // Si hay pocos datos, mostrarlos todos
+    // If there is little data, show all of it
     if (originalData.length <= 1000) {
       return {
         data: originalData,
@@ -492,35 +492,35 @@ document.addEventListener('DOMContentLoaded', function() {
       };
     }
 
-    // Crear arrays para datos y sus índices correspondientes
+    // Create arrays for data and their corresponding indices
     const viewData = [];
     const viewIndices = [];
     const viewLabels = [];
     
-    // Obtener los timestamps horarios para mejorar la visualización
+    // Get hourly timestamps to improve visualization
     const hourlyTimestamps = extractHourlyTimestamps(originalLabels, originalData.length);
     
-    // Convertir índices de eventos en un conjunto para búsqueda rápida
+    // Convert event indices to a set for quick lookup
     const eventSet = new Set(eventIndices);
     
-    // Incluir siempre el primer y último punto
+    // Always include the first and last point
     viewData.push(originalData[0]);
     viewIndices.push(0);
     viewLabels.push(originalLabels[0]);
     
-    // Añadir todos los puntos de eventos importantes
+    // Add all important event points
     for (const idx of eventIndices) {
-      if (idx > 0 && idx < originalData.length - 1) {  // Evitar duplicar primer/último punto
+      if (idx > 0 && idx < originalData.length - 1) {  // Avoid duplicating first/last point
         viewData.push(originalData[idx]);
         viewIndices.push(idx);
         viewLabels.push(originalLabels[idx]);
       }
     }
     
-    // Añadir puntos en intervalos regulares
+    // Add points at regular intervals
     const step = Math.max(1, Math.floor(originalData.length / 100));
     for (let i = step; i < originalData.length - 1; i += step) {
-      // Evitar duplicar puntos de eventos
+      // Avoid duplicating event points
       if (!eventSet.has(i)) {
         viewData.push(originalData[i]);
         viewIndices.push(i);
@@ -528,14 +528,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // Siempre incluir el último punto si no está ya incluido
+    // Always include the last point if it's not already included
     if (!eventSet.has(originalData.length - 1)) {
       viewData.push(originalData[originalData.length - 1]);
       viewIndices.push(originalData.length - 1);
       viewLabels.push(originalLabels[originalData.length - 1]);
     }
     
-    // Ordenar por índice para mantener el orden cronológico
+    // Sort by index to maintain chronological order
     const sortedItems = viewIndices.map((idx, pos) => ({ 
       idx, 
       data: viewData[pos],
@@ -549,12 +549,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
   
-  // Agregar banner de instrucciones de zoom
+  // Add zoom instructions banner
   function addZoomInstructionsBanner() {
-    // Verificar si ya existe
+    // Check if it already exists
     if (document.getElementById('zoom-instructions-banner')) return;
     
-    // Encontrar el primer contenedor donde insertarlo
+    // Find the first container to insert it
     const container = document.querySelector('.container-fluid');
     if (!container) return;
     
@@ -565,61 +565,61 @@ document.addEventListener('DOMContentLoaded', function() {
     banner.innerHTML = `
       <div class="d-flex align-items-center">
         <i class="fas fa-mouse mr-2"></i>
-        <div><strong>Consejo:</strong> Puedes hacer zoom en los gráficos girando la rueda del ratón sobre ellos</div>
+        <div><strong>Tip:</strong> You can zoom in on the charts by scrolling the mouse wheel over them</div>
       </div>
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
     `;
     
-    // Insertar al inicio del contenedor
+    // Insert at the beginning of the container
     container.insertBefore(banner, container.firstChild);
   }
   
-  // Agregar el banner de instrucciones solo una vez
+  // Add the instructions banner only once
   addZoomInstructionsBanner();
   
-  // Función para añadir mensaje de zoom y botón de reinicio debajo del gráfico
+  // Function to add zoom message and reset button below the chart
   function addZoomMessage(chartContainer, chartInstance) {
-    // Verificar si ya existe
+    // Check if it already exists
     if (chartContainer.querySelector('.zoom-message-container')) return;
     
-    // Crear el contenedor para el mensaje de zoom
+    // Create the container for the zoom message
     const zoomMessageContainer = document.createElement('div');
     zoomMessageContainer.className = 'zoom-message-container text-center mt-2';
     
-    // Crear el mensaje
+    // Create the message
     const zoomMessage = document.createElement('div');
     zoomMessage.className = 'zoom-message text-muted small';
-    zoomMessage.innerHTML = '<i class="fas fa-mouse mr-1"></i> Usa la rueda del ratón para hacer zoom';
+    zoomMessage.innerHTML = '<i class="fas fa-mouse mr-1"></i> Use the mouse wheel to zoom';
     
-    // Crear el botón de reinicio
+    // Create the reset button
     const resetButton = document.createElement('button');
     resetButton.type = 'button';
     resetButton.className = 'btn btn-sm btn-outline-primary ml-2';
-    resetButton.innerHTML = '<i class="fas fa-undo mr-1"></i> Reiniciar zoom';
+    resetButton.innerHTML = '<i class="fas fa-undo mr-1"></i> Reset zoom';
     resetButton.onclick = function() {
-      // Intentar diferentes métodos para resetear el zoom
+      // Try different methods to reset the zoom
       try {
         if (chartInstance.resetZoom) {
           chartInstance.resetZoom();
         } else if (chartInstance.scales && chartInstance.scales.x) {
-          // Alternativa para Chart.js más reciente
+          // Alternative for newer Chart.js
           chartInstance.scales.x.options.min = undefined;
           chartInstance.scales.x.options.max = undefined;
           chartInstance.scales.y.options.min = undefined;
           chartInstance.scales.y.options.max = undefined;
           chartInstance.update();
         } else {
-          // Última opción: recrear el gráfico
+          // Last option: recreate the chart
           chartInstance.update();
         }
       } catch (error) {
-        console.error("Error al reiniciar zoom:", error);
+        console.error("Error resetting zoom:", error);
       }
     };
     
-    // Añadir mensaje y botón al contenedor
+    // Add message and button to the container
     const wrapper = document.createElement('div');
     wrapper.className = 'd-flex align-items-center justify-content-center';
     wrapper.appendChild(zoomMessage);
@@ -627,11 +627,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     zoomMessageContainer.appendChild(wrapper);
     
-    // Insertar el contenedor después del canvas
+    // Insert the container after the canvas
     chartContainer.appendChild(zoomMessageContainer);
   }
   
-  // Crear gráficos para cada dataset con mejoras visuales
+  // Create charts for each dataset with visual improvements
   chartDatasets.forEach(dataset => {
     var metric = dataset.metric;
     if (!metric) return;
@@ -639,16 +639,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var ctx = document.getElementById(metric + '-chart');
     if (!ctx) return;
 
-    // Procesar eventos para esta métrica
+    // Process events for this metric
     const events = eventsData[metric] || [];
     
-    // Extraer índices de eventos importantes
+    // Extract important event indices
     const eventIndices = events.map(event => event.index || 0);
     
-    // Actualizar la tabla de eventos
+    // Update the events table
     updateEventsTable(metric, events);
     
-    // SOLUCIÓN MEJORADA: Preprocesar las etiquetas para el eje X
+    // IMPROVED SOLUTION: Preprocess labels for X axis
     const processedLabels = Array.isArray(chartLabels) ? chartLabels.map(label => {
       if (typeof label === 'string') {
         return formatTimeLabel(label);
@@ -656,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return label;
     }) : [];
     
-    // Crear vista optimizada para la visualización
+    // Create optimized view for visualization
     const optimizedView = createOptimizedView(
       dataset.data, 
       processedLabels.length === dataset.data.length ? processedLabels : Array(dataset.data.length).fill(''),
@@ -667,16 +667,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const optimizedIndices = optimizedView.indices;
     const optimizedLabels = optimizedView.labels;
     
-    // Obtener el tipo de gráfico configurado
+    // Get the configured chart type
     var chartType = dataset.chart_type || defaultChartType || 'line';
     
-    // Configuración para puntos en la gráfica
+    // Configuration for points on the chart
     var pointRadius = Array(optimizedData.length).fill(2);
     var pointBackgroundColor = Array(optimizedData.length).fill(dataset.borderColor);
     var pointBorderColor = Array(optimizedData.length).fill('#fff');
     var pointBorderWidth = Array(optimizedData.length).fill(1);
     
-    // Resaltar puntos de eventos importantes
+    // Highlight important event points
     events.forEach(event => {
       const idx = optimizedIndices.indexOf(event.index);
       if (idx !== -1) {
@@ -687,16 +687,16 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Información para tooltips (contexto de cada punto)
+    // Information for tooltips (context of each point)
     var activityInfo = Array(optimizedData.length).fill(null);
     
-    // Asociar información de eventos con sus puntos correspondientes
+    // Associate event information with their corresponding points
     events.forEach(event => {
       const idx = optimizedIndices.indexOf(event.index);
       if (idx !== -1) {
         activityInfo[idx] = {
           timestamp: event.timestamp || '',
-          activity_type: event.activity_type || 'Actividad',
+          activity_type: event.activity_type || 'Activity',
           is_abnormal: event.is_abnormal || false,
           abnormal_reason: event.abnormal_reason || 'Normal',
           details: event.details || {},
@@ -705,29 +705,29 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Completar información de puntos que no tienen eventos asociados
+    // Complete information for points that don't have associated events
     for (let i = 0; i < optimizedData.length; i++) {
       if (!activityInfo[i]) {
         activityInfo[i] = {
           timestamp: optimizedLabels[i] || '',
-          activity_type: '',  // Eliminado "Punto de datos"
+          activity_type: '',  // Removed "Data point"
           is_abnormal: false,
-          abnormal_reason: 'Valor normal',
+          abnormal_reason: 'Normal value',
           details: {},
           isEvent: false
         };
       }
     }
     
-    // MEJORA VISUAL: Extraer horas para anotaciones y líneas de referencia
+    // VISUAL IMPROVEMENT: Extract hours for annotations and reference lines
     const hourlyTimestamps = extractHourlyTimestamps(chartLabels, dataset.data.length);
     
-    // MEJORA VISUAL: Preparar anotaciones y líneas de referencia
+    // VISUAL IMPROVEMENT: Prepare annotations and reference lines
     const annotations = {};
     
-    // Añadir líneas verticales para cada hora
+    // Add vertical lines for each hour
     hourlyTimestamps.forEach((hourPoint, idx) => {
-      // Encontrar el índice más cercano en datos optimizados
+      // Find the nearest index in optimized data
       const nearestIdx = optimizedIndices.reduce((prev, curr, i) => {
         const prevDiff = Math.abs((prev / dataset.data.length) - hourPoint.position);
         const currDiff = Math.abs((curr / dataset.data.length) - hourPoint.position);
@@ -757,9 +757,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // MEJORA: Añadir líneas horizontales para valores de referencia según métrica
+    // IMPROVEMENT: Add horizontal lines for reference values according to metric
     if (metric === 'fc') {
-      // Línea para frecuencia cardíaca normal máxima en reposo
+      // Line for maximum normal heart rate at rest
       annotations['fc-normal-max'] = {
         type: 'line',
         scaleID: 'y',
@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
         borderWidth: 2,
         borderDash: [5, 5],
         label: {
-          content: 'FC normal máx.',
+          content: 'Max normal HR',
           enabled: true,
           position: 'end',
           backgroundColor: 'rgba(245, 54, 92, 0.7)',
@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       };
     } else if (metric === 'spo2') {
-      // Línea para nivel óptimo de saturación de oxígeno
+      // Line for optimal oxygen saturation level
       annotations['spo2-normal'] = {
         type: 'line',
         scaleID: 'y',
@@ -786,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
         borderWidth: 2,
         borderDash: [5, 5],
         label: {
-          content: 'SpO₂ óptimo',
+          content: 'Optimal SpO₂',
           enabled: true,
           position: 'end',
           backgroundColor: 'rgba(29, 140, 248, 0.7)',
@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
       };
     }
     
-    // MEJORA: Configuración del gráfico con mejor visualización
+    // IMPROVEMENT: Chart configuration with better visualization
     var config = {
       type: chartType === 'area' ? 'line' : chartType,
       data: {
@@ -841,22 +841,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dataIndex = context[0].dataIndex;
                 const info = activityInfo[dataIndex];
                 
-                // Mostrar solo la hora como título
+                // Show only the time as title
                 if (info && info.timestamp) {
                   return info.timestamp;
                 }
-                return optimizedLabels[dataIndex] || 'Tiempo no disponible';
+                return optimizedLabels[dataIndex] || 'Time not available';
               },
               label: function(context) {
                 const dataIndex = context.dataIndex;
                 let lines = [];
                 
-                // Línea 1: Valor básico con unidades
+                // Line 1: Basic value with units
                 var basicLabel = context.dataset.label || '';
                 if (basicLabel) basicLabel += ': ';
                 
                 if (context.parsed.y !== null) {
-                  // Formateo especial para temperatura
+                  // Special formatting for temperature
                   if (metric === 'temperatura') {
                     let value = context.parsed.y;
                     let sign = value >= 0 ? '+' : '';
@@ -871,35 +871,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 lines.push(basicLabel);
                 
-                // Mostrar información relevante
+                // Show relevant information
                 const info = activityInfo[dataIndex];
                 
                 if (info) {
-                  // Solo mostrar actividad si es un evento real con actividad definida
+                  // Only show activity if it's a real event with defined activity
                   if (info.isEvent && info.activity_type) {
-                    lines.push(`Actividad: ${info.activity_type}`);
+                    lines.push(`Activity: ${info.activity_type}`);
                   }
                   
-                  // Estado (siempre mostrar, con razón si es anormal)
+                  // Status (always show, with reason if abnormal)
                   if (info.is_abnormal) {
-                    lines.push(`Estado: Anormal (${info.abnormal_reason || 'Sin detalles'})`);
+                    lines.push(`Status: Abnormal (${info.abnormal_reason || 'No details'})`);
                   } else {
-                    lines.push('Estado: Normal');
+                    lines.push('Status: Normal');
                   }
                   
-                  // Detalles de la aplicación y acción (máximo 2 detalles)
+                  // Application and action details (maximum 2 details)
                   if (info.details) {
-                    // Priorizar mostrar la aplicación
+                    // Prioritize showing the application
                     if (info.details['app']) {
                       lines.push(`App: ${info.details['app']}`);
                     }
                     
-                    // Buscar información de acción relevante
+                    // Look for relevant action information
                     const actionKeys = ['action', 'Element Text', 'Element Type', 'Input'];
                     for (const key of actionKeys) {
                       if (info.details[key]) {
-                        lines.push(`${key === 'action' ? 'Acción' : key}: ${info.details[key]}`);
-                        break; // Solo mostrar una acción
+                        lines.push(`${key === 'action' ? 'Action' : key}: ${info.details[key]}`);
+                        break; // Only show one action
                       }
                     }
                   }
@@ -924,14 +924,14 @@ document.addEventListener('DOMContentLoaded', function() {
               wheel: { 
                 enabled: true,
                 speed: 0.1,
-                modifierKey: null  // No requiere tecla modificadora (Ctrl)
+                modifierKey: null  // No modifier key required (Ctrl)
               },
               pinch: { 
                 enabled: true 
               },
               mode: 'x',
               onZoom: function() {
-                // Este callback es importante para que el evento de zoom se registre correctamente
+                // This callback is important for the zoom event to be properly registered
               }
             },
             limits: {
@@ -948,14 +948,14 @@ document.addEventListener('DOMContentLoaded', function() {
               drawBorder: true
             },
             ticks: {
-              maxRotation: 45, // Rotar las etiquetas para evitar superposición
-              minRotation: 45, // Mantener una rotación constante
-              autoSkip: true, // Activar el salto automático de etiquetas
-              autoSkipPadding: 15, // Espacio mínimo entre etiquetas
+              maxRotation: 45, // Rotate labels to avoid overlap
+              minRotation: 45, // Keep a constant rotation
+              autoSkip: true, // Enable automatic label skipping
+              autoSkipPadding: 15, // Minimum space between labels
               callback: function(val, index) {
-                // Mostrar etiquetas en intervalos para evitar sobrecargar
+                // Show labels at intervals to avoid overloading
                 if (optimizedLabels.length > 50) {
-                  // Para muchos datos, mostrar menos etiquetas
+                  // For many data points, show fewer labels
                   if (index % 5 === 0) {
                     return this.getLabelForValue(val);
                   }
@@ -963,10 +963,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 return this.getLabelForValue(val);
               },
-              color: 'rgba(0, 0, 0, 0.75)', // Hacer las etiquetas más visibles
+              color: 'rgba(0, 0, 0, 0.75)', // Make labels more visible
               font: {
                 size: 10,
-                weight: 'bold' // Fuente más destacada
+                weight: 'bold' // More prominent font
               }
             }
           },
@@ -991,19 +991,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
     
-    // Ajustes específicos para gráficos de área
+    // Specific adjustments for area charts
     if (chartType === 'area') {
-      // Aumentar la opacidad del color de fondo para área
+      // Increase background color opacity for area
       if (config.data.datasets[0].backgroundColor.includes('rgba')) {
         config.data.datasets[0].backgroundColor = config.data.datasets[0].backgroundColor.replace(
           /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/,
           'rgba($1, $2, $3, 0.5)'
         );
       } else {
-        // Si no es rgba, añadir opacidad
+        // If not rgba, add opacity
         var color = config.data.datasets[0].backgroundColor;
         if (color.startsWith('#')) {
-          // Convertir HEX a RGBA
+          // Convert HEX to RGBA
           var r = parseInt(color.slice(1, 3), 16);
           var g = parseInt(color.slice(3, 5), 16);
           var b = parseInt(color.slice(5, 7), 16);
@@ -1012,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // Optimizaciones específicas según métrica y tipo de gráfico
+    // Specific optimizations by metric and chart type
     if (metric === 'fc' && chartType === 'bar') {
       config.data.datasets[0].backgroundColor = 'rgba(245, 54, 92, 0.6)';
     }
@@ -1021,10 +1021,10 @@ document.addEventListener('DOMContentLoaded', function() {
       config.data.datasets[0].stepped = true;
     }
     
-    // Ajustes específicos para temperatura
+    // Specific adjustments for temperature
     if (metric === 'temperatura') {
       try {
-        // Colores especiales para temperaturas positivas y negativas
+        // Special colors for positive and negative temperatures
         const gradientAboveZero = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
         gradientAboveZero.addColorStop(0, 'rgba(251, 99, 64, 0.8)');
         gradientAboveZero.addColorStop(1, 'rgba(251, 99, 64, 0.1)');
@@ -1033,29 +1033,29 @@ document.addEventListener('DOMContentLoaded', function() {
         gradientBelowZero.addColorStop(0, 'rgba(94, 114, 228, 0.1)');
         gradientBelowZero.addColorStop(1, 'rgba(94, 114, 228, 0.8)');
         
-        // Aplicar colores según el tipo de gráfico
+        // Apply colors according to chart type
         if (chartType === 'area') {
-          // Para área, usar gradientes según el valor
+          // For area, use gradients according to value
           config.data.datasets[0].backgroundColor = function(context) {
             const value = context.raw;
             return value >= 0 ? gradientAboveZero : gradientBelowZero;
           };
         } else if (chartType === 'bar') {
-          // Para barras, color según el valor
+          // For bars, color according to value
           config.data.datasets[0].backgroundColor = function(context) {
             const value = context.raw;
             return value >= 0 ? 'rgba(251, 99, 64, 0.6)' : 'rgba(94, 114, 228, 0.6)';
           };
         }
       } catch (error) {
-        console.warn("Error configurando gradientes para temperatura:", error);
+        console.warn("Error configuring gradients for temperature:", error);
       }
     }
     
-    // MEJORA: Cargar plugins necesarios de forma dinámica y luego crear el gráfico
+    // IMPROVEMENT: Load necessary plugins dynamically and then create the chart
     function loadPlugins() {
       return new Promise((resolve, reject) => {
-        // Lista de plugins que necesitamos
+        // List of plugins we need
         const plugins = [
           {
             name: 'chartjs-plugin-annotation',
@@ -1072,47 +1072,47 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         ];
         
-        // Registrar los plugins que ya están cargados
+        // Register plugins that are already loaded
         const loadedPlugins = {};
         plugins.forEach(plugin => {
           loadedPlugins[plugin.name] = window[plugin.name] !== undefined;
         });
         
-        // Función para cargar un plugin
+        // Function to load a plugin
         function loadPlugin(plugin) {
           return new Promise((resolvePlugin, rejectPlugin) => {
-            // Si ya está cargado, resolver inmediatamente
+            // If already loaded, resolve immediately
             if (loadedPlugins[plugin.name]) {
               resolvePlugin();
               return;
             }
             
-            // Verificar dependencias
+            // Check dependencies
             if (plugin.requires) {
               for (const dep of plugin.requires) {
                 if (!loadedPlugins[dep]) {
-                  rejectPlugin(`El plugin ${plugin.name} requiere ${dep} que no está cargado`);
+                  rejectPlugin(`Plugin ${plugin.name} requires ${dep} which is not loaded`);
                   return;
                 }
               }
             }
             
-            // Cargar el script
+            // Load the script
             const script = document.createElement('script');
             script.src = plugin.url;
             script.onload = () => {
               loadedPlugins[plugin.name] = true;
               resolvePlugin();
             };
-            script.onerror = () => rejectPlugin(`Error al cargar ${plugin.name}`);
+            script.onerror = () => rejectPlugin(`Error loading ${plugin.name}`);
             document.head.appendChild(script);
           });
         }
         
-        // Cargar plugins en orden específico (primero hammer, luego los demás)
+        // Load plugins in specific order (hammer first, then the rest)
         loadPlugin(plugins.find(p => p.name === 'hammer'))
           .then(() => {
-            // Cargar los plugins restantes en paralelo
+            // Load the remaining plugins in parallel
             return Promise.all(
               plugins
                 .filter(p => p.name !== 'hammer')
@@ -1124,9 +1124,9 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Crear el gráfico con los plugins necesarios
+    // Create the chart with the necessary plugins
     loadPlugins().then(() => {
-      // Registrar los plugins globalmente para Chart.js si es necesario
+      // Register plugins globally for Chart.js if needed
       if (window['chartjs-plugin-zoom'] && typeof Chart.register === 'function') {
         Chart.register(window['chartjs-plugin-zoom']);
       }
@@ -1135,17 +1135,17 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.register(window['chartjs-plugin-annotation']);
       }
       
-      // Crear el gráfico una vez que todos los plugins estén cargados
+      // Create the chart once all plugins are loaded
       charts[metric] = new Chart(ctx, config);
       
-      // Encontrar el contenedor del gráfico para añadir el mensaje de zoom
+      // Find the chart container to add the zoom message
       const chartContainer = ctx.parentNode;
       addZoomMessage(chartContainer, charts[metric]);
       
     }).catch(err => {
-      console.error('Error al cargar plugins:', err);
+      console.error('Error loading plugins:', err);
       
-      // Si falla la carga de plugins, crear una versión simplificada del gráfico
+      // If plugin loading fails, create a simplified version of the chart
       delete config.options.plugins.annotation;
       delete config.options.plugins.zoom;
       
@@ -1153,37 +1153,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Navegación de pestañas usando JavaScript puro
+  // Tab navigation using pure JavaScript
   var tabLinks = document.querySelectorAll('.custom-tabs .nav-link');
   var tabContents = document.querySelectorAll('.tab-pane');
   
-  // Función para mostrar una pestaña específica
+  // Function to show a specific tab
   function showTab(tabId) {
-    // Ocultar todos los contenidos de pestañas
+    // Hide all tab contents
     tabContents.forEach(function(content) {
       content.classList.remove('show', 'active');
     });
     
-    // Desactivar todas las pestañas
+    // Deactivate all tabs
     tabLinks.forEach(function(link) {
       link.classList.remove('active');
       link.setAttribute('aria-selected', 'false');
     });
     
-    // Activar la pestaña seleccionada
+    // Activate the selected tab
     var selectedTab = document.getElementById(tabId + '-tab');
     if (selectedTab) {
       selectedTab.classList.add('active');
       selectedTab.setAttribute('aria-selected', 'true');
     }
     
-    // Mostrar el contenido de la pestaña
+    // Show the tab content
     var selectedContent = document.getElementById(tabId + '-content');
     if (selectedContent) {
       selectedContent.classList.add('show', 'active');
     }
     
-    // Redimensionar el gráfico si existe
+    // Resize the chart if it exists
     if (charts[tabId]) {
       setTimeout(function() {
         charts[tabId].resize();
@@ -1191,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Asignar eventos de clic a las pestañas
+  // Assign click events to tabs
   tabLinks.forEach(function(link) {
     link.addEventListener('click', function(e) {
       e.preventDefault();
@@ -1200,33 +1200,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Activar la primera pestaña por defecto
+  // Activate the first tab by default
   if (tabLinks.length > 0) {
     var firstTabId = tabLinks[0].id.replace('-tab', '');
     showTab(firstTabId);
   }
   
-  // Aplicar colores a los indicadores
+  // Apply colors to indicators
   for (const [key, indicator] of Object.entries(indicatorsData)) {
     const card = document.getElementById('indicator-' + key);
     if (card && indicator.color) {
-      // Usar las clases predefinidas
+      // Use predefined classes
       if (indicator.color === 'primary') card.classList.add('border-primary');
       else if (indicator.color === 'danger') card.classList.add('border-danger');
       else if (indicator.color === 'warning') card.classList.add('border-warning');
       else if (indicator.color === 'success') card.classList.add('border-success');
       else if (indicator.color === 'info') card.classList.add('border-info');
       else if (indicator.color === 'purple') card.classList.add('border-purple');
-      else card.style.borderColor = indicator.color; // Fallback a estilo inline
+      else card.style.borderColor = indicator.color; // Fallback to inline style
     }
   }
   
-  // Eliminar cualquier scrollbar innecesario
+  // Remove any unnecessary scrollbar
   document.querySelectorAll('.card-body, .nav-tabs-container, .custom-tabs, .tab-content').forEach(function(element) {
     element.classList.add('no-scroll');
   });
   
-  // Arreglo de dropdowns
+  // Fix dropdowns
   function fixDropdowns() {
     document.querySelectorAll('.dropdown-fix').forEach(el => el.remove());
     document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
@@ -1296,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', function() {
   fixDropdowns();
   setTimeout(fixDropdowns, 500);
   
-  // Observar cambios en el DOM
+  // Observe changes in DOM
   const observer = new MutationObserver(() => {
     setTimeout(fixDropdowns, 10);
   });
@@ -1311,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', fixDropdowns);
   window.addEventListener('scroll', fixDropdowns);
   
-  // Inicializar tooltips
+  // Initialize tooltips
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });

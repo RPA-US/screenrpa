@@ -134,7 +134,7 @@ def procesar_analisis_biometrico(execution):
             
             # Crear un reporte específico para este escenario
             report = BiometricAnalysisReport.objects.create(
-                title=f"Análisis Biométrico - {scenario}",
+                title=f"Biometric Analysis - {scenario}",
                 execution=execution,
                 config=config,
                 metrics=config.default_metrics,
@@ -517,25 +517,25 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
             # Durante ejercicio
             if value > fc_max_teorica:
                 is_abnormal = True
-                reason = f"FC por encima del máximo teórico ({fc_max_teorica:.0f} lpm)"
+                reason = f"HR above theoretical maximum ({fc_max_teorica:.0f} bpm)"
         else:
             # En reposo
             if es_atleta:
                 # Criterios para atletas
                 if value < 40:
                     is_abnormal = False  # Normal para atletas
-                    reason = "FC en reposo normal para atletas"
+                    reason = "Normal resting HR for athletes"
                 elif value > 100:
                     is_abnormal = True
-                    reason = "Taquicardia (>100 lpm en reposo)"
+                    reason = "Tachycardia (>100 bpm at rest)"
             else:
                 # Criterios para no atletas
                 if value < 60:
                     is_abnormal = True
-                    reason = "Bradicardia (<60 lpm en reposo)"
+                    reason = "Bradycardia (<60 bpm at rest)"
                 elif value > 100:
                     is_abnormal = True
-                    reason = "Taquicardia (>100 lpm en reposo)"
+                    reason = "Tachycardia (>100 bpm at rest)"
     
     # Saturación de Oxígeno
     elif metric == 'spo2':
@@ -545,16 +545,16 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
             if value < 92:
                 is_abnormal = True
                 if value < 88:
-                    reason = "SpO₂ peligrosamente baja (<88%)"
+                    reason = "Dangerously low SpO₂ (<88%)"
                 else:
-                    reason = "SpO₂ baja (<92%)"
+                    reason = "Low SpO₂ (<92%)"
         else:  # Criterios para adultos generales
             if value < 95:
                 is_abnormal = True
                 if value < 93:
-                    reason = "SpO₂ baja (<93%)"
+                    reason = "Low SpO₂ (<93%)"
                 else:
-                    reason = "SpO₂ ligeramente reducida (93-94%)"
+                    reason = "Slightly reduced SpO₂ (93-94%)"
     
     # Pasos por minuto
     elif metric == 'pasos':
@@ -567,34 +567,34 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
             if is_exercise:
                 if 'moderate' in activity and value < 100:
                     is_abnormal = True
-                    reason = "Intensidad insuficiente para ejercicio moderado (<100 pasos/min)"
+                    reason = "Insufficient intensity for moderate exercise (<100 steps/min)"
                 elif ('vigorous' in activity or 'intense' in activity) and value < 130:
                     is_abnormal = True
-                    reason = "Intensidad insuficiente para ejercicio vigoroso (<130 pasos/min)"
+                    reason = "Insufficient intensity for vigorous exercise (<130 steps/min)"
             else:
                 # Verificar periodos sedentarios prolongados
                 if value == 0 and 'previous_values' in context:
                     consecutive_zeros = sum(1 for v in context['previous_values'] if v == 0)
                     if consecutive_zeros >= 30:  # >30 minutos consecutivos
                         is_abnormal = True
-                        reason = f"Periodo sedentario prolongado ({consecutive_zeros} min sin actividad)"
+                        reason = f"Prolonged sedentary period ({consecutive_zeros} min without activity)"
     
     # Variabilidad de frecuencia cardíaca (SDNN)
     elif metric == 'sdnn' or metric == 'hrv':
         if value < 50:
             is_abnormal = True
-            reason = "HRV baja (<50ms), posible indicador de estrés elevado"
+            reason = "Low HRV (<50ms), possible indicator of elevated stress"
     
     # Índice de Carga Cardiovascular
     elif metric == 'cvl':
         if value > 40:
             is_abnormal = True
-            reason = "Carga cardiovascular elevada (>40%)"
+            reason = "Elevated cardiovascular load (>40%)"
             
             # Si además está en reposo, es más preocupante
             if 'activity_type' in context and not any(term in str(context['activity_type']).lower() 
                                                    for term in ['exercise', 'workout', 'running']):
-                reason += " durante actividad sedentaria"
+                reason += " during sedentary activity"
     
     # RATIO FC/PASOS - ACTUALIZADO PARA CONTEXTO DE OFICINA
     elif metric == 'ratio_fc_pasos':
@@ -614,31 +614,31 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
         if pasos_actual <= 5:  # Sedentario completo
             if value > 9.0:  # Umbral para estrés mental/cognitivo en estado sedentario
                 is_abnormal = True
-                reason = f"Ratio elevado ({value:.1f}) en estado sedentario, posible estrés mental"
+                reason = f"Elevated ratio ({value:.1f}) in sedentary state, possible mental stress"
                 if fc_actual and fc_actual > 90:
-                    reason += f" (FC={fc_actual} lpm)"
+                    reason += f" (HR={fc_actual} bpm)"
             elif value > 8.0:  # Límite superior para estado sedentario
                 is_abnormal = True
-                reason = f"Ratio ligeramente elevado ({value:.1f}) para estado sedentario"
+                reason = f"Slightly elevated ratio ({value:.1f}) for sedentary state"
             else:
                 is_abnormal = False
-                reason = f"Ratio normal ({value:.1f}) para trabajo sedentario de oficina"
+                reason = f"Normal ratio ({value:.1f}) for sedentary office work"
                 
         elif pasos_actual <= 20:  # Movimiento ligero
             if value > 5.0:
                 is_abnormal = True
-                reason = f"Ratio elevado ({value:.1f}) para movimiento ligero"
+                reason = f"Elevated ratio ({value:.1f}) for light movement"
             else:
                 is_abnormal = False
-                reason = f"Ratio normal ({value:.1f}) para movimiento ligero en oficina"
+                reason = f"Normal ratio ({value:.1f}) for light movement in office"
                 
         else:  # Actividad (21+ pasos)
             if value > 3.0:
                 is_abnormal = True
-                reason = f"Ratio elevado ({value:.1f}) durante actividad, posible ineficiencia cardíaca"
+                reason = f"Elevated ratio ({value:.1f}) during activity, possible cardiac inefficiency"
             else:
                 is_abnormal = False
-                reason = f"Ratio eficiente ({value:.1f}) durante actividad"
+                reason = f"Efficient ratio ({value:.1f}) during activity"
         
         # Detección de incrementos súbitos
         if 'previous_values' in context and context['previous_values']:
@@ -650,7 +650,7 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
                 # Si hay un incremento súbito de más del 50%
                 if value > recent_avg * 1.5 and pasos_actual <= 5:
                     is_abnormal = True
-                    reason = f"Incremento súbito del ratio: {value:.1f} vs. promedio reciente {recent_avg:.1f}, posible respuesta de estrés"
+                    reason = f"Sudden increase in ratio: {value:.1f} vs. recent average {recent_avg:.1f}, possible stress response"
     
     # Temperatura
     elif metric == 'temperatura':
@@ -658,9 +658,9 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
         if value > 1.0 or value < -1.0:
             is_abnormal = True
             if value > 1.0:
-                reason = f"Temperatura elevada (+{value:.1f}°C sobre baseline)"
+                reason = f"Elevated temperature (+{value:.1f}°C above baseline)"
             else:
-                reason = f"Temperatura reducida ({value:.1f}°C bajo baseline)"
+                reason = f"Reduced temperature ({value:.1f}°C below baseline)"
     
     # Calorías
     elif metric == 'calorias':
@@ -674,16 +674,16 @@ def evaluar_metrica_biometrica(metric, value, user_data=None, context=None):
             if pasos_actual < 20:  # Reposo/sedentario
                 if value > calorias_reposo * 2:
                     is_abnormal = True
-                    reason = "Gasto calórico elevado para estado sedentario"
+                    reason = "Elevated caloric expenditure for sedentary state"
             elif pasos_actual >= 130:  # Actividad vigorosa
                 if value < calorias_reposo * 5:
                     is_abnormal = True
-                    reason = "Gasto calórico insuficiente para nivel de actividad intensa"
+                    reason = "Insufficient caloric expenditure for intense activity level"
     
     # Para métricas no específicamente implementadas
     else:
         is_abnormal = False
-        reason = "Métrica dentro de rango normal"
+        reason = "Metric within normal range"
         
     return {
         'is_abnormal': is_abnormal,

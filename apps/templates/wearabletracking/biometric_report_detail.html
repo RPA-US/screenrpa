@@ -77,30 +77,36 @@
           {% for metric in report.metrics %}
             <li class="nav-item">
               <a class="nav-link {% if forloop.first %}active{% endif %}" 
-                 id="{{ metric }}-tab" 
-                 data-toggle="tab" 
-                 href="#{{ metric }}-content" 
-                 role="tab" 
-                 aria-controls="{{ metric }}-content" 
-                 aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                id="{{ metric }}-tab" 
+                data-toggle="tab" 
+                href="#{{ metric }}-content" 
+                role="tab" 
+                aria-controls="{{ metric }}-content" 
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
                 {% if metric == 'fc' %}
-                  <i class="ni ni-favourite-28 text-danger mr-2"></i> Heart Rate
+                  <i class="fas fa-heartbeat text-danger mr-2"></i> Heart Rate
                 {% elif metric == 'pasos' %}
-                  <i class="ni ni-user-run text-primary mr-2"></i> Steps
+                  <i class="fas fa-shoe-prints text-primary mr-2"></i> Steps
                 {% elif metric == 'calorias' %}
-                  <i class="ni ni-flame text-warning mr-2"></i> Calories
+                  <i class="fas fa-fire text-warning mr-2"></i> Calories
                 {% elif metric == 'zona_activa' %}
-                  <i class="ni ni-watch-time text-success mr-2"></i> Active Zone
+                  <i class="fas fa-bolt text-success mr-2"></i> Active Zone
                 {% elif metric == 'sedentario' %}
-                  <i class="ni ni-button-pause text-info mr-2"></i> Sedentary Time
+                  <i class="fas fa-couch text-info mr-2"></i> Sedentary Time
                 {% elif metric == 'spo2' %}
-                  <i class="ni ni-air-baloon text-info mr-2"></i> SpO₂
+                  <i class="fas fa-tint text-info mr-2"></i> SpO₂
                 {% elif metric == 'temperatura' %}
-                  <i class="ni ni-thermometer-98 text-purple mr-2"></i> Temperature
+                  <i class="fas fa-thermometer-half text-purple mr-2"></i> Temperature
                 {% elif metric == 'hrv' %}
-                  <i class="ni ni-chart-bar-32 text-warning mr-2"></i> HRV
+                  <i class="fas fa-chart-line text-warning mr-2"></i> HRV
+                {% elif metric == 'sdnn' %}
+                  <i class="fas fa-wave-square text-muted mr-2"></i> SDNN
+                {% elif metric == 'cvl' %}
+                  <i class="fas fa-chart-area text-warning mr-2"></i> CVL
+                {% elif metric == 'ratio_fc_pasos' %}
+                  <i class="fas fa-divide text-purple mr-2"></i> FC/Steps Ratio
                 {% else %}
-                  <i class="ni ni-chart-bar-32 text-primary mr-2"></i> {{ metric }}
+                  <i class="fas fa-chart-bar text-primary mr-2"></i> {{ metric }}
                 {% endif %}
               </a>
             </li>
@@ -245,23 +251,23 @@
       
       <div class="card shadow mt-4">
         <div class="card-header">
-          <h3 class="mb-0">{% blocktranslate %}Criterios de Evaluación{% endblocktranslate %}</h3>
+          <h3 class="mb-0">{% blocktranslate %}Evaluation Criteria{% endblocktranslate %}</h3>
         </div>
         <div class="card-body">
-          <p class="text-muted mb-2">Los valores biométricos se evalúan según criterios científicos basados en la edad, condición física y contexto de actividad del usuario.</p>
+          <p class="text-muted mb-2">Biometric values are evaluated according to scientific criteria based on the user's age, physical condition, and activity context.</p>
           <ul class="mb-0">
-            <li><strong>Frecuencia Cardíaca:</strong> Normal en reposo (60-100 lpm), atletas (40-60 lpm)</li>
-            <li><strong>SpO₂:</strong> Normal (≥95%), adultos mayores (≥92%)</li>
-            <li><strong>Temperatura:</strong> Variaciones normales de hasta ±1.0°C</li>
+            <li><strong>Heart Rate:</strong> Normal at rest (60-100 bpm), athletes (40-60 bpm)</li>
+            <li><strong>SpO₂:</strong> Normal (≥95%), older adults (≥92%)</li>
+            <li><strong>Temperature:</strong> Normal variations up to ±1.0°C</li>
             <li><strong>HRV:</strong> Normal (≥50ms)</li>
-            <li><strong>Ratio FC/Pasos:</strong> 
+            <li><strong>HR/Steps Ratio:</strong> 
               <ul>
-                <li>Sedentario (0-5 pasos): Normal entre 3.0-8.0</li>
-                <li>Movimiento ligero (6-20 pasos): Normal entre 2.0-5.0</li>
-                <li>Actividad (21+ pasos): Normal menor a 3.0</li>
+                <li>Sedentary (0-5 steps): Normal between 3.0-8.0</li>
+                <li>Light movement (6-20 steps): Normal between 2.0-5.0</li>
+                <li>Activity (21+ steps): Normal less than 3.0</li>
               </ul>
             </li>
-            <li><strong>Pasos:</strong> Sedentarismo (<30 min consecutivos sin movimiento)</li>
+            <li><strong>Steps:</strong> Sedentary behavior (<30 consecutive minutes without movement)</li>
           </ul>
         </div>
       </div>
