@@ -1,5 +1,6 @@
 import base64
 import io
+import logging
 import os
 from tempfile import NamedTemporaryFile
 import zipfile
@@ -22,6 +23,7 @@ import pm4py
 from pm4py.algo.discovery.inductive import algorithm as inductive_miner
 from pm4py.visualization.bpmn import visualizer as bpmn_visualizer
 from apps.analyzer.models import CaseStudy, Execution
+from apps.behaviourmonitoring.log_mapping.merge_emotion_data_with_pd import merge_emotions_with_process_discovery
 from apps.decisiondiscovery.utils import rename_columns_with_centroids
 from core.utils import read_ui_log_as_dataframe
 from core.settings import PROCESS_DISCOVERY_LOG_FILENAME, ENRICHED_LOG_SUFFIX
@@ -454,7 +456,29 @@ def process_discovery(log_path, scenario_path, execution):
     #Pasar execution.process_discovery
     folder_path, ui_log, fe_log = scene_level(log_path, scenario_path, execution)
     process_level(folder_path, ui_log, fe_log, execution)
+    
+        # --- INTEGRACIÓN EMOTIONS CON PROCESS DISCOVERY ---
+    if (execution.monitoring and execution.monitoring.use_emotions_data and 
+        execution.monitoring.emotions_filename):
         
+        emotions_csv_path = os.path.join(scenario_path, execution.monitoring.emotions_filename)
+        pd_log_csv_path = os.path.join(folder_path, PROCESS_DISCOVERY_LOG_FILENAME)
+        output_emotions_pd_path = os.path.join(folder_path, "merged_emotions_pd_log.csv")
+        
+        if os.path.exists(emotions_csv_path) and os.path.exists(pd_log_csv_path):
+            success = merge_emotions_with_process_discovery(
+                emotions_csv_path, pd_log_csv_path, output_emotions_pd_path
+            )
+            if success:
+                logging.info(f"Archivo combinado emociones-process discovery guardado en: {output_emotions_pd_path}")
+            else:
+                logging.error("Error al combinar datos de emociones y process discovery")
+        else:
+            if not os.path.exists(emotions_csv_path):
+                logging.warning(f"Archivo de emociones no encontrado: {emotions_csv_path}")
+            if not os.path.exists(pd_log_csv_path):
+                logging.warning(f"Archivo pd_log.csv no encontrado: {pd_log_csv_path}")
+    # --- FIN INTEGRACIÓN EMOTIONS CON PROCESS DISCOVERY ---
     
 class ProcessDiscoveryCreateView(LoginRequiredMixin, CreateView):
     login_url = '/login/'
