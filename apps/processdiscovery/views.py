@@ -259,7 +259,8 @@ def scene_level(log_path, scenario_path, execution):
                 if row[special_colnames["Activity"]] == activity_inicial:
                     trace_id += 1
                 trace_ids.append(trace_id)
-        df['trace_id'] = trace_ids
+        # TODO: REMOVE HARDCODED USED FOR GEFOC LOG
+        # df["trace_id"] = trace_ids
         return df, fe_log
 
     def manual_labeling(df):
