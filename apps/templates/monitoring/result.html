@@ -127,13 +127,7 @@
                 </div>
               </div>
 
-              {# ---------- Evolución temporal por segmentos (barras apiladas) ---------- #}
-              {% if emotion_report.extra_data.time_segments %}
-              <div class="mb-4">
-                <h6 class="mb-2">{% blocktranslate %}Temporal Evolution (10s segments){% endblocktranslate %}</h6>
-                <canvas id="segmentsStacked"></canvas>
-              </div>
-              {% endif %}
+
 
 
           {# ---------- Pasamos extra_data a JS de forma segura ---------- #}
@@ -315,40 +309,6 @@
           scales: {
             x: { title: { display: true, text: 'Emotion' } },
             y: { title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
-          }
-        }
-      });
-    }
-
-    // Time Segments Stacked
-    if (extra.time_segments && Object.keys(extra.time_segments).length) {
-      const segCtx = document.getElementById('segmentsStacked').getContext('2d');
-      const segmentKeys = Object.keys(extra.time_segments).map(k => parseInt(k, 10)).sort((a,b)=>a-b);
-
-      const emotionSet = new Set();
-      segmentKeys.forEach(s => {
-        const m = extra.time_segments[s] || extra.time_segments[String(s)];
-        Object.keys(m || {}).forEach(e => emotionSet.add(e));
-      });
-      const emotions = Array.from(emotionSet);
-
-      const datasets = emotions.map((emo) => {
-        const arr = segmentKeys.map((s) => {
-          const m = extra.time_segments[s] || extra.time_segments[String(s)];
-          return m && m[emo] ? m[emo] : 0;
-        });
-        return { label: emo, data: arr, stack: 'stack1' };
-      });
-
-      new Chart(segCtx, {
-        type: 'bar',
-        data: { labels: segmentKeys.map(s => s.toString()), datasets },
-        options: {
-          responsive: true,
-          plugins: { title: { display: true, text: 'Emotions by 10s segments' }, legend: { position: 'bottom' } },
-          scales: {
-            x: { stacked: true, title: { display: true, text: 'Segment' } },
-            y: { stacked: true, title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
           }
         }
       });
