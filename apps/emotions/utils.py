@@ -4,6 +4,9 @@ import numpy as np
 import logging
 from .models import EmotionAnalysisReport
 
+# -------------------------
+# Constantes
+# -------------------------
 REQUIRED_COLUMNS = ['timestamp', 'emocion']
 WEARABLE_COLUMNS = [
     "fc", "pasos", "calorias", "zona_activa", "sedentario",
@@ -13,8 +16,14 @@ NUMERIC_WEARABLE = [
     "fc", "pasos", "calorias", "zona_activa", "ratio_fc_pasos",
     "cvl", "spo2", "temperatura", "hrv", "sdnn"
 ]
-MERGED_EMOTIONS_FILENAME = "merged_emotions_wearable.csv"
 
+MERGED_EMOTIONS_FILENAME = "merged_emotions_wearable.csv"
+PD_LOG_FILENAME = "merged_emotions_pd_log.csv"
+
+
+# -------------------------
+# Función principal
+# -------------------------
 def procesar_analisis_emociones(execution):
     reports = []
 
@@ -33,7 +42,7 @@ def procesar_analisis_emociones(execution):
             emotions_file_path = os.path.join(scenario_path, emotions_filename)
             merged_file_path   = os.path.join(scenario_path, MERGED_EMOTIONS_FILENAME)
 
-            # 1) Preferimos el fusionado si existe
+            # 1) Preferimos el fusionado wearable si existe
             if os.path.exists(merged_file_path):
                 selected_filename = MERGED_EMOTIONS_FILENAME
                 has_merged = True
@@ -69,12 +78,17 @@ def procesar_analisis_emociones(execution):
             if to_update:
                 report.save(update_fields=to_update)
 
-            # 3) Procesamos
-            if process_emotions_data(report):
+            # 3) Procesamos datos de emociones (clásico + wearable)
+            ok1 = process_emotions_data(report)
+
+            # 4) Procesamos datos adicionales desde pd_log
+            ok2 = process_emotions_pd_log(report)
+
+            if ok1 or ok2:
                 reports.append(report)
-                logging.info(f"[{scenario}] Procesado OK usando '{selected_filename}' (has_merged={has_merged})")
+                logging.info(f"[{scenario}] Procesado OK (wearable={ok1}, pd_log={ok2})")
             else:
-                logging.error(f"[{scenario}] Error procesando datos ({selected_filename})")
+                logging.error(f"[{scenario}] Ningún dataset válido procesado en {scenario}")
 
         except Exception as e:
             logging.exception(f"[{scenario}] Excepción procesando emociones: {e}")
@@ -82,6 +96,9 @@ def procesar_analisis_emociones(execution):
     return reports
 
 
+# -------------------------
+# Lectura CSV
+# -------------------------
 def _read_emotions_csv(file_path: str) -> pd.DataFrame | None:
     """
     Lector robusto para CSV con columnas: timestamp (ISO8601) y emocion (str).
@@ -118,12 +135,16 @@ def _read_emotions_csv(file_path: str) -> pd.DataFrame | None:
         logging.warning(f"{os.path.basename(file_path)} sin datos válidos tras limpieza.")
         return None
 
-    # elapsed_ms relativo al primer timestamp (para métricas temporales)
+    # elapsed_ms relativo al primer timestamp
     t0 = df['timestamp'].min()
     df['elapsed_ms'] = (df['timestamp'] - t0).dt.total_seconds() * 1000.0
 
     return df
 
+
+# -------------------------
+# Procesamiento principal (wearable)
+# -------------------------
 def process_emotions_data(report) -> bool:
     try:
         file_path = report.get_emotions_file_path()
@@ -268,12 +289,10 @@ def process_emotions_data(report) -> bool:
                     }
 
             metrics["multimodal"] = multimodal
-            # marca en el reporte (si quieres mantener coherencia con el modelo)
             if not report.has_merged_data:
                 report.has_merged_data = True
 
         # --------- GUARDAR Y GRÁFICO ---------
-        # guardamos extra_data y, si cambió, has_merged_data
         if report.has_merged_data:
             report.extra_data = metrics
             report.save(update_fields=['extra_data', 'has_merged_data'])
@@ -289,6 +308,201 @@ def process_emotions_data(report) -> bool:
         return False
 
 
+# -------------------------
+# Procesamiento pd_log
+# -------------------------
+def process_emotions_pd_log(report) -> bool:
+    """
+    Procesa merged_emotions_pd_log.csv y guarda SIEMPRE lo que haya podido calcular
+    (parcial o completo) en extra_data["pd_log"], sin tumbarse por fallos parciales.
+    """
+    import pandas as pd
+    import numpy as np
+    import os
+    import logging
+
+    try:
+        base_dir = os.path.dirname(report.get_emotions_file_path())
+        parent_dir = os.path.dirname(base_dir)
+        scenario_results_dir = os.path.join(parent_dir, f"{report.scenario}_results")
+        merged_emotions_path = os.path.join(scenario_results_dir, PD_LOG_FILENAME)
+
+        if not os.path.exists(merged_emotions_path):
+            logging.info(f"[{report.scenario}] No existe {PD_LOG_FILENAME}, se omite.")
+            return False
+
+        df = pd.read_csv(merged_emotions_path, on_bad_lines='skip', low_memory=False)
+        if df.empty:
+            logging.info(f"[{report.scenario}] PD_LOG - DataFrame vacío")
+            return False
+
+        # ---------- Normalización de columnas ----------
+        df.columns = [str(c).strip() for c in df.columns]
+        required_pd_columns = ['ocel:activity', 'time:timestamp']
+        missing_pd = [c for c in required_pd_columns if c not in df.columns]
+        if missing_pd:
+            logging.error(f"[{report.scenario}] PD_LOG - Faltan columnas requeridas: {missing_pd}")
+            return False
+
+        # Tiempos
+        df['time:timestamp'] = pd.to_datetime(df['time:timestamp'], errors='coerce', utc=True)
+        df = df.dropna(subset=['time:timestamp']).sort_values('time:timestamp')
+        if df.empty:
+            logging.info(f"[{report.scenario}] PD_LOG - sin timestamps válidos tras limpieza")
+            return False
+
+        # Emoción / Sentimiento (si faltan, crear y/o normalizar)
+        if 'emocion' not in df.columns:
+            df['emocion'] = 'neutral'
+        else:
+            df['emocion'] = (
+                df['emocion']
+                .astype('string', copy=False)
+                .str.strip()
+                .replace('', 'neutral')
+                .fillna('neutral')
+            )
+
+        if 'sentimiento' not in df.columns:
+            df['sentimiento'] = 'neutral'
+        else:
+            df['sentimiento'] = (
+                df['sentimiento']
+                .astype('string', copy=False)
+                .str.strip()
+                .replace('', 'neutral')
+                .fillna('neutral')
+            )
+
+        # Elapsed
+        t0 = df['time:timestamp'].min()
+        df['elapsed_ms'] = (df['time:timestamp'] - t0).dt.total_seconds() * 1000.0
+
+        metrics = {}
+        pd_analysis = {}
+
+        # ---------- 1) Emociones básicas (robusto) ----------
+        try:
+            emotion_counts = df['emocion'].value_counts(dropna=True)
+            metrics['emotions_count'] = {str(k): int(v) for k, v in emotion_counts.items()}
+
+            total_emotions = int(emotion_counts.sum())  # <-- evita .values()
+            if total_emotions > 0:
+                emotion_percentages = {
+                    str(k): round((int(v) / total_emotions) * 100.0, 2)
+                    for k, v in emotion_counts.items()
+                }
+                metrics['emotion_percentages'] = emotion_percentages
+                metrics['dominant_emotion'] = max(emotion_counts, key=emotion_counts.get)
+        except Exception as e:
+            logging.exception(f"[{report.scenario}] PD_LOG - fallo en emociones básicas: {e}")
+
+        # ---------- 2) Actividad × Emoción (stacked + heatmap) ----------
+        try:
+            ct = pd.crosstab(df['ocel:activity'], df['emocion'])
+            pd_analysis['stacked_bar_data'] = {
+                'activities': [str(x) for x in ct.index.tolist()],
+                'emotions': [str(x) for x in ct.columns.tolist()],
+                'data': {
+                    str(activity): {str(em): int(count) for em, count in row.items()}
+                    for activity, row in ct.iterrows()
+                }
+            }
+
+            ht = ct.T  # emociones × actividades
+            pd_analysis['heatmap_data'] = {
+                'activities': [str(x) for x in ht.columns.tolist()],
+                'emotions': [str(x) for x in ht.index.tolist()],
+                'intensity': {
+                    str(em): {str(act): float(cnt) for act, cnt in row.items()}
+                    for em, row in ht.iterrows()
+                }
+            }
+        except Exception as e:
+            logging.exception(f"[{report.scenario}] PD_LOG - fallo en crosstab/heatmap: {e}")
+
+        # ---------- 3) Ranking de negatividad por actividad ----------
+        try:
+            # keywords simples; ajusta según tu taxonomía
+            negative_keywords = ['negativo', 'negative', 'angry', 'sad', 'fear', 'disgust', 'frustrated']
+            df['is_negative'] = (
+                df['sentimiento'].str.lower().str.contains('|'.join(negative_keywords), na=False) |
+                df['emocion'].str.lower().str.contains('|'.join(negative_keywords), na=False)
+            )
+
+            neg = df.groupby('ocel:activity').agg(
+                negative_count=('is_negative', 'sum'),
+                total_count=('is_negative', 'count')
+            )
+            neg['negativity_ratio'] = (neg['negative_count'] / neg['total_count']).fillna(0.0)
+            neg = neg.sort_values('negativity_ratio', ascending=False)
+
+            pd_analysis['negativity_ranking'] = {
+                str(act): {
+                    'negative_count': int(row['negative_count']),
+                    'total_count': int(row['total_count']),
+                    'negativity_ratio': float(round(row['negativity_ratio'], 3))
+                }
+                for act, row in neg.iterrows()
+            }
+        except Exception as e:
+            logging.exception(f"[{report.scenario}] PD_LOG - fallo en negatividad: {e}")
+
+        # ---------- 4) Estadísticas por actividad (sin claves duplicadas) ----------
+        try:
+            activity_stats = df.groupby('ocel:activity').agg(
+                dominant_emotion=('emocion', lambda x: x.mode().iloc[0] if not x.mode().empty else 'neutral'),
+                dominant_sentiment=('sentimiento', lambda x: x.mode().iloc[0] if not x.mode().empty else 'neutral'),
+                frequency=('emocion', 'count'),
+            )
+
+            pd_analysis['activity_stats'] = {
+                str(idx): {
+                    'dominant_emotion': str(row['dominant_emotion']),
+                    'dominant_sentiment': str(row['dominant_sentiment']),
+                    'frequency': int(row['frequency'])
+                }
+                for idx, row in activity_stats.iterrows()
+            }
+        except Exception as e:
+            logging.exception(f"[{report.scenario}] PD_LOG - fallo en activity_stats: {e}")
+
+        # ---------- 5) Segmentación temporal ----------
+        try:
+            if df['elapsed_ms'].notna().any():
+                df['segment'] = (df['elapsed_ms'] // 30_000).astype(int)
+                time_segments = {}
+                for segment, group in df.groupby('segment', sort=True):
+                    segment_activities = group['ocel:activity'].value_counts().to_dict()
+                    dom = group['ocel:activity'].mode()
+                    time_segments[int(segment)] = {
+                        'activities': {str(k): int(v) for k, v in segment_activities.items()},
+                        'dominant_activity': str(dom.iloc[0]) if not dom.empty else None
+                    }
+                pd_analysis['time_segments'] = time_segments
+        except Exception as e:
+            logging.exception(f"[{report.scenario}] PD_LOG - fallo en segmentación temporal: {e}")
+
+        # ---------- Guardar SIEMPRE lo que haya ----------
+        metrics['process_discovery_analysis'] = pd_analysis
+        extra = report.extra_data or {}
+        extra['pd_log'] = metrics  # dict puro con ints/floats/str
+        report.extra_data = extra
+        report.save(update_fields=['extra_data'])
+
+        logging.info(
+            f"[{report.scenario}] PD_LOG procesado OK - {len(df)} eventos, "
+            f"{len(pd_analysis.get('stacked_bar_data', {}).get('activities', []))} actividades"
+        )
+        return True
+
+    except Exception as e:
+        logging.exception(f"[{report.scenario}] Error procesando pd_log (bloque externo): {e}")
+        return False
+
+# -------------------------
+# Generación de gráfico
+# -------------------------
 def generate_emotion_chart(report, df: pd.DataFrame) -> None:
     """
     Gráfico de pastel con distribución de emociones (backend Agg).
@@ -318,7 +532,6 @@ def generate_emotion_chart(report, df: pd.DataFrame) -> None:
         plt.close(fig)
 
         extra = report.extra_data or {}
-        # ruta relativa respecto a la carpeta de la ejecución (dos niveles por encima del CSV)
         rel_path = os.path.relpath(
             chart_path,
             os.path.dirname(os.path.dirname(report.get_emotions_file_path()))

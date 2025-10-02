@@ -1,0 +1,94 @@
+/* Estilos para la sección de análisis de proceso y emociones */
+.process-emotions-card {
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+}
+.chart-container, .emotion-heatmap-container { min-height: 420px; }
+
+/* Asegura que los canvas tengan área calculable */
+#pdActivityEmotionsChart,
+#pdHeatmapChart {
+  width: 100% !important;
+  height: 420px !important;
+  display: block;
+}
+
+.chart-container {
+  position: relative;
+  margin: 1rem 0;
+  min-height: 300px;
+}
+
+.emotion-heatmap-container {
+  height: 400px; /* Ajustar según necesidad */
+}
+
+.emotion-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.emotion-badge-neutral { 
+  background-color: rgba(255, 206, 86, 0.2); 
+  border: 1px solid rgba(255, 206, 86, 1); 
+  color: #856404;
+}
+
+.emotion-badge-positive { 
+  background-color: rgba(75, 192, 192, 0.2); 
+  border: 1px solid rgba(75, 192, 192, 1); 
+  color: #155724;
+}
+
+.emotion-badge-negative { 
+  background-color: rgba(255, 99, 132, 0.2); 
+  border: 1px solid rgba(255, 99, 132, 1); 
+  color: #721c24;
+}
+
+.ranking-bar {
+  height: 20px;
+  background: linear-gradient(to right, #f5365c, #fb6340, #ffd600);
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.ranking-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f6f9fc;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Tooltips personalizados */
+.process-emotions-tooltip {
+  background-color: rgba(50, 50, 50, 0.9) !important;
+  border-radius: 4px !important;
+  padding: 8px 12px !important;
+  color: white !important;
+  font-size: 12px !important;
+  pointer-events: none !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+}
+
+/* Colores para emociones específicas */
+.color-neutral { color: #ffc107; background-color: rgba(255, 193, 7, 0.1); }
+.color-happy { color: #28a745; background-color: rgba(40, 167, 69, 0.1); }
+.color-sad { color: #6c757d; background-color: rgba(108, 117, 125, 0.1); }
+.color-angry { color: #dc3545; background-color: rgba(220, 53, 69, 0.1); }
+.color-surprised { color: #17a2b8; background-color: rgba(23, 162, 184, 0.1); }
+.color-fearful { color: #6f42c1; background-color: rgba(111, 66, 193, 0.1); }
+.color-disgusted { color: #fd7e14; background-color: rgba(253, 126, 20, 0.1); }

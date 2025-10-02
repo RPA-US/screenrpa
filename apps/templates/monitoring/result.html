@@ -3,559 +3,739 @@
 {% load i18n %}
 
 {% block title %} Case studies {% endblock title %}
+{% block stylesheets %}
+  {{ block.super }}
+  {% load static %}
+  <link href="{% static 'emotions/process_emotions.css' %}" rel="stylesheet">
+  <!-- Altura mínima para charts dentro de tabs ocultas -->
+  <style>
+    .chart-container, .emotion-heatmap-container { min-height: 360px; }
+  </style>
+{% endblock stylesheets %}
 
 {% block content %}
 
 <div class="header bg-primary pb-6">
-    <div class="container-fluid">
-      <div class="header-body">
-        <div class="row align-items-center py-4">
-          <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="/case-study/execution/detail/{{ execution_id }}" class="btn btn-neutral"><i class="fas fa-arrow-left" style="margin-right: 5px;">
-            </i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}</a>
-            <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Log Processing Results Details{% endblocktranslate %}</h6>
-            <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
-              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
-                <li value="{{execution_id}}" class="breadcrumb-item"><a href="/case-study/execution/detail/{{ execution_id }}">{% blocktranslate %}Execution {{ execution_id}} {% endblocktranslate %}</a> </li>
-                <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Log Processing result{% endblocktranslate %}</a></li>
-              </ol>
-            </nav>
-          </div>         
-        </div>
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="/case-study/execution/detail/{{ execution_id }}" class="btn btn-neutral">
+            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>{% blocktranslate %}Go Back to Execution{% endblocktranslate %}
+          </a>
+          <h6 class="h2 text-white d-inline-block ml-2">{% blocktranslate %}Log Processing Results Details{% endblocktranslate %}</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block mt-md-3 ml-md-2">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="/case-study/execution/list/"><i class="fas fa-home"></i></a></li>
+              <li value="{{execution_id}}" class="breadcrumb-item">
+                <a href="/case-study/execution/detail/{{ execution_id }}">{% blocktranslate %}Execution {{ execution_id}} {% endblocktranslate %}</a> 
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">{% blocktranslate %}Log Processing result{% endblocktranslate %}</li>
+            </ol>
+          </nav>
+        </div>         
       </div>
     </div>
   </div>
+</div>
 
-    <div class="container-fluid mt--6">
-      <div class="row">
-        <div class="col">
-          <div class="card">
-            <div class="card-footer py-4">
-              <nav aria-label="...">
-                <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
-                  <!-- <select id="scenarios-select" class="btn btn-secondary dropdown-toggle" style="float: left;">
-                    {% for scenario in scenarios %}
-                      {% if scenario == scenario %}
-                        <option  value="{{ scenario }}" selected>{{ scenario }}</option>
-                      {% else %}
-                        <option value="{{ scenario }}">{{ scenario }}</option>
-                      {% endif %}
-                    {% endfor %}
-                  </select> -->
-                  <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      {{scenario}}
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      {% for scenario in scenarios %}
-                      <a class="dropdown-item" href="/monitoring/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
-                      {% endfor %}
-                    </div>
-                  </div>
-                  <!-- <a href="/case-study/execution/monitoring_result/download/{{execution_id}}/?scenario={{scenario}}"> -->
-                  <a href="#" id="downloadFilteredButton">
-                    <button class="btn btn-success" style="float: right;" type="button">
-                      <i class="ni ni-cloud-download-95"></i> 
-                      {% blocktranslate %}Download{% endblocktranslate %}
-                    </button>
-                  </a>
-                </ul>
-              </nav>
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-footer py-4">
+          <nav aria-label="...">
+            <ul class="pagination mb-0" style="justify-content: space-between;" id="pagination">
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{scenario}}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  {% for scenario in scenarios %}
+                  <a class="dropdown-item" href="/monitoring/result/{{execution_id}}/?scenario={{scenario}}"> {{scenario}}</a>
+                  {% endfor %}
+                </div>
+              </div>
+              <a href="#" id="downloadFilteredButton">
+                <button class="btn btn-success" style="float: right;" type="button">
+                  <i class="ni ni-cloud-download-95"></i> 
+                  {% blocktranslate %}Download{% endblocktranslate %}
+                </button>
+              </a>
+            </ul>
+          </nav>
+        </div>
+
+        {% comment %} —— EMOTIONS ANALYTICS (solo si existen datos) —— {% endcomment %}
+        {% if emotion_report and emotion_report.extra_data %}
+          {% load static %}
+          {% load i18n %}
+
+          <div class="card mb-4">
+            <div class="card-header border-0">
+              <h3 class="mb-0">{% blocktranslate %}Emotional Analysis{% endblocktranslate %} — {{scenario}}</h3>
             </div>
 
+            <div class="card-body">
 
-            {% comment %} —— EMOTIONS ANALYTICS (solo si existen datos) —— {% endcomment %}
-            {% if emotion_report and emotion_report.extra_data %}
-              {% load static %}
-              {% load i18n %}
-
-              {# Carga Chart.js una sola vez #}
-              <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-              <div class="card mb-4">
-                <div class="card-header border-0">
-                  <h3 class="mb-0">{% blocktranslate %}Emotional Analysis{% endblocktranslate %} — {{scenario}}</h3>
+              {# ---------- KPIs: Dominante y Duración ---------- #}
+              <div class="row mb-4">
+                <div class="col-md-4">
+                  <div class="card shadow-sm">
+                    <div class="card-body">
+                      <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Dominant Emotion{% endblocktranslate %}</div>
+                      <div class="h4 mb-0">
+                        {{ emotion_report.extra_data.dominant_emotion|default:"—" }}
+                        {% if emotion_report.extra_data.dominant_percentage is not None %}
+                          ({{ emotion_report.extra_data.dominant_percentage }}%)
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-
-                <div class="card-body">
-
-                  {# ---------- KPIs: Dominante y Duración ---------- #}
-                  <div class="row mb-4">
-                    <div class="col-md-4">
-                      <div class="card shadow-sm">
-                        <div class="card-body">
-                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Dominant Emotion{% endblocktranslate %}</div>
-                          <div class="h4 mb-0">
-                            {{ emotion_report.extra_data.dominant_emotion|default:"—" }}
-                            {% if emotion_report.extra_data.dominant_percentage is not None %}
-                              ({{ emotion_report.extra_data.dominant_percentage }}%)
-                            {% endif %}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="card shadow-sm">
-                        <div class="card-body">
-                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Total Duration{% endblocktranslate %}</div>
-                          <div class="h4 mb-0">
-                            {% if emotion_report.extra_data.duration_seconds %}
-                              {{ emotion_report.extra_data.duration_seconds }} s
-                            {% else %}
-                              0 s
-                            {% endif %}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {# ---------- Recuento (barras) + Porcentajes (tabla) ---------- #}
-                  <div class="row mb-4">
-                    <div class="col-md-8">
-                      <canvas id="emotionsCountBar"></canvas>
-                    </div>
-                  </div>
-
-                  <div class="row mb-4">
-                    <div class="col-md-4">
-                      <div class="card shadow-sm">
-                        <div class="card-body">
-                          <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Sentiment Distribution{% endblocktranslate %}</div>
-                          <canvas id="sentimentPie"></canvas>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {# ---------- Evolución temporal por segmentos (barras apiladas) ---------- #}
-                  {% if emotion_report.extra_data.time_segments %}
-                  <div class="mb-4">
-                    <h6 class="mb-2">{% blocktranslate %}Temporal Evolution (10s segments){% endblocktranslate %}</h6>
-                    <canvas id="segmentsStacked"></canvas>
-                  </div>
-                  {% endif %}
-
-                  {# ---------- Transiciones (tabla simple) ---------- #}
-                  {% if emotion_report.extra_data.emotion_transitions %}
-                  <div>
-                    <h6 class="mb-2">{% blocktranslate %}Emotion Transitions{% endblocktranslate %}</h6>
-                    <table class="table table-sm">
-                      <thead>
-                        <tr>
-                          <th>{% blocktranslate %}Transition{% endblocktranslate %}</th>
-                          <th class="text-right">{% blocktranslate %}Count{% endblocktranslate %}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for trans, cnt in emotion_report.extra_data.emotion_transitions.items|dictsortreversed:"1" %}
-                          <tr>
-                            <td>{{ trans }}</td>
-                            <td class="text-right">{{ cnt }}</td>
-                          </tr>
-                        {% empty %}
-                          <tr><td colspan="2" class="text-muted">{% blocktranslate %}No data{% endblocktranslate %}</td></tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-                  {% endif %}
-
-                </div>
-              </div>
-
-              {# ---------- Pasamos extra_data a JS de forma segura ---------- #}
-              {{ emotion_report.extra_data|json_script:"extraData" }}
-
-              <script>
-                (function() {
-                  const extra = JSON.parse(document.getElementById('extraData').textContent);
-
-                  // ----- Grafico de barras: recuento por emoción -----
-                  if (extra.emotions_count && Object.keys(extra.emotions_count).length) {
-                    const ctx = document.getElementById('emotionsCountBar').getContext('2d');
-                    const labels = Object.keys(extra.emotions_count);
-                    const data = Object.values(extra.emotions_count);
-
-                    new Chart(ctx, {
-                      type: 'bar',
-                      data: {
-                        labels,
-                        datasets: [{
-                          label: 'Count',
-                          data
-                        }]
-                      },
-                      options: {
-                        responsive: true,
-                        plugins: {
-                          legend: { display: false },
-                          title: { display: true, text: 'Emotion Counts' }
-                        },
-                        scales: {
-                          x: { title: { display: true, text: 'Emotion' } },
-                          y: { title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
-                        }
-                      }
-                    });
-                  }
-
-                  // ----- Barras apiladas por segmento (si hay segmentos) -----
-                  if (extra.time_segments && Object.keys(extra.time_segments).length) {
-                    const segCtx = document.getElementById('segmentsStacked').getContext('2d');
-                    const segmentKeys = Object.keys(extra.time_segments).map(k => parseInt(k, 10)).sort((a,b)=>a-b);
-                    // Obtener todas las emociones presentes en los segmentos
-                    const emotionSet = new Set();
-                    segmentKeys.forEach(s => {
-                      const m = extra.time_segments[s] || extra.time_segments[String(s)];
-                      Object.keys(m || {}).forEach(e => emotionSet.add(e));
-                    });
-                    const emotions = Array.from(emotionSet);
-
-                    const datasets = emotions.map((emo) => {
-                      const arr = segmentKeys.map((s) => {
-                        const m = extra.time_segments[s] || extra.time_segments[String(s)];
-                        return m && m[emo] ? m[emo] : 0;
-                      });
-                      return { label: emo, data: arr, stack: 'stack1' };
-                    });
-
-                    new Chart(segCtx, {
-                      type: 'bar',
-                      data: {
-                        labels: segmentKeys.map(s => s.toString()),
-                        datasets
-                      },
-                      options: {
-                        responsive: true,
-                        plugins: {
-                          title: { display: true, text: 'Emotions by 10s segments' },
-                          legend: { position: 'bottom' }
-                        },
-                        scales: {
-                          x: { stacked: true, title: { display: true, text: 'Segment' } },
-                          y: { stacked: true, title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
-                        }
-                      }
-                    });
-                  }
-                })();
-              </script>
-              <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                  if (document.getElementById('extraData')) {
-                    const extra = JSON.parse(document.getElementById('extraData').textContent);
-                    if (extra.sentimiento_counts) {
-                      const labels = ['positivo', 'neutral', 'negativo'];
-                      const data = labels.map(l => extra.sentimiento_counts[l] || 0);
-
-                      const ctx = document.getElementById('sentimentPie').getContext('2d');
-                      new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                          labels: ['Positivo', 'Neutral', 'Negativo'],
-                          datasets: [{
-                            data: data,
-                            backgroundColor: [
-                              'rgba(75, 192, 192, 0.7)',
-                              'rgba(255, 206, 86, 0.7)',
-                              'rgba(255, 99, 132, 0.7)'
-                            ]
-                          }]
-                        },
-                        options: {
-                          responsive: true,
-                          plugins: {
-                            legend: { position: 'bottom' },
-                            title: { display: true, text: 'Distribución de Sentimientos' }
-                          }
-                        }
-                      });
-                    } else {
-                      document.getElementById('sentimentPie').parentNode.innerHTML +=
-                        '<div class="text-muted mt-2">No hay datos de sentimiento</div>';
-                    }
-                  }
-                });
-              </script>
-
-            {% endif %}
-            {% if emotion_report and emotion_report.extra_data and emotion_report.extra_data.multimodal %}
-            {# Chart.js + plugins para boxplot y heatmap/matrix #}
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin-plot@4"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
-              {# Solo pasamos la parte multimodal al script (más ligero y claro) #}
-              {{ emotion_report.extra_data.multimodal|json_script:"multimodalData" }}
-
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Análisis Multimodal (Emociones + Wearable) — {{ scenario }}</h5>
-                </div>
-                <div class="card-body">
-                  <!-- Primera fila de gráficos -->
-                  <div class="row mb-4">
-                    <!-- FC por emoción -->
-                    <div class="col-lg-6 mb-4">
-                      <div class="card shadow-sm h-100">
-                        <div class="card-header bg-light">
-                          <h6 class="mb-0">Frecuencia Cardíaca por Emoción</h6>
-                        </div>
-                        <div class="card-body">
-                          <canvas id="fcByEmotion"></canvas>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Actividad por emoción -->
-                    <div class="col-lg-6 mb-4">
-                      <div class="card shadow-sm h-100">
-                        <div class="card-header bg-light">
-                          <h6 class="mb-0">Actividad por Emoción</h6>
-                        </div>
-                        <div class="card-body">
-                          <canvas id="activityByEmotion"></canvas>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Segunda fila de gráficos -->
-                  <div class="row">
-                    <!-- Métricas biométricas promedio por emoción -->
-                    <div class="col-lg-12">
-                      <div class="card shadow-sm">
-                        <div class="card-header bg-light">
-                          <h6 class="mb-0">Métricas Biométricas por Emoción</h6>
-                        </div>
-                        <div class="card-body">
-                          <canvas id="avgMetricsByEmotion"></canvas>
-                        </div>
+                <div class="col-md-4">
+                  <div class="card shadow-sm">
+                    <div class="card-body">
+                      <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Total Duration{% endblocktranslate %}</div>
+                      <div class="h4 mb-0">
+                        {% if emotion_report.extra_data.duration_seconds %}
+                          {{ emotion_report.extra_data.duration_seconds }} s
+                        {% else %}
+                          0 s
+                        {% endif %}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <script>
-              (function() {
-                try {
-                  // Cargar datos multimodales desde el elemento específico
-                  const multimodalData = JSON.parse(document.getElementById('multimodalData').textContent || '{}');
-                  console.log("Datos multimodales cargados:", Object.keys(multimodalData));
+              {# ---------- Recuento (barras) + Porcentajes (pie) ---------- #}
+              <div class="row mb-4">
+                <div class="col-md-8">
+                  <canvas id="emotionsCountBar"></canvas>
+                </div>
+              </div>
 
-                  // ========== GRÁFICO 1: FC POR EMOCIÓN (barras con promedio) ==========
-                  if (multimodalData.boxplot && multimodalData.boxplot.fc_by_emotion) {
-                    try {
-                      const ctx = document.getElementById('fcByEmotion').getContext('2d');
-                      const fcData = multimodalData.boxplot.fc_by_emotion;
-                      const labels = Object.keys(fcData);
-
-                      const avgData = labels.map(label => {
-                        const values = (fcData[label] || []).filter(v => typeof v === 'number');
-                        return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
-                      });
-
-                      new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                          labels,
-                          datasets: [{
-                            label: 'FC Promedio',
-                            data: avgData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)'
-                          }]
-                        },
-                        options: {
-                          responsive: true,
-                          plugins: {
-                            title: { display: true, text: 'Frecuencia Cardíaca por Emoción' },
-                            legend: { display: false }
-                          },
-                          scales: {
-                            y: { beginAtZero: false, title: { display: true, text: 'FC (bpm)' } }
-                          }
-                        }
-                      });
-                      console.log("Gráfico FC por emoción creado");
-                    } catch (e) {
-                      console.error("Error al crear gráfico FC por emoción:", e);
-                    }
-                  }
-
-                  // ========== GRÁFICO 2: ACTIVIDAD POR EMOCIÓN (barras apiladas %) ==========
-                  if (multimodalData.activity_by_emotion) {
-                    try {
-                      const ctx = document.getElementById('activityByEmotion').getContext('2d');
-                      const activityData = multimodalData.activity_by_emotion;
-                      const labels = Object.keys(activityData);
-
-                      const activeData = labels.map(l => (activityData[l]?.activo ?? 0));
-                      const sedentaryData = labels.map(l => (activityData[l]?.sedentario ?? 0));
-
-                      new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                          labels,
-                          datasets: [
-                            { label: 'Activo (%)', data: activeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-                            { label: 'Sedentario (%)', data: sedentaryData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }
-                          ]
-                        },
-                        options: {
-                          responsive: true,
-                          plugins: { title: { display: true, text: 'Actividad por Emoción' } },
-                          scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true, max: 100, title: { display: true, text: 'Porcentaje (%)' } }
-                          }
-                        }
-                      });
-                      console.log("Gráfico Actividad por emoción creado");
-                    } catch (e) {
-                      console.error("Error al crear gráfico de actividad por emoción:", e);
-                    }
-                  }
-
-                  // ========== GRÁFICO 3: MÉTRICAS PROMEDIO POR EMOCIÓN (barras agrupadas) ==========
-                  if (multimodalData.avg_by_emotion) {
-                    try {
-                      const ctx = document.getElementById('avgMetricsByEmotion').getContext('2d');
-                      const avgData = multimodalData.avg_by_emotion;
-                      const emotions = Object.keys(avgData);
-
-                      let availableMetrics = [];
-                      if (emotions.length > 0) {
-                        availableMetrics = Object.keys(avgData[emotions[0]] || {});
-                      }
-
-                      // Filtrar métricas de interés si existen
-                      const metrics = ['fc', 'hrv', 'spo2', 'temperatura'].filter(m => availableMetrics.includes(m));
-
-                      const palette = [
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)',
-                      ];
-
-                      const datasets = metrics.map((metric, i) => ({
-                        label: metric.toUpperCase(),
-                        data: emotions.map(emo => avgData[emo]?.[metric] ?? 0),
-                        backgroundColor: palette[i % palette.length]
-                      }));
-
-                      if (datasets.length > 0) {
-                        new Chart(ctx, {
-                          type: 'bar',
-                          data: { labels: emotions, datasets },
-                          options: {
-                            responsive: true,
-                            plugins: { title: { display: true, text: 'Métricas por Emoción' } },
-                            scales: { y: { beginAtZero: false } }
-                          }
-                        });
-                        console.log("Gráfico de métricas promedio creado");
-                      }
-                    } catch (e) {
-                      console.error("Error al crear gráfico de métricas promedio:", e);
-                    }
-                  }
-                } catch (e) {
-                  console.error("Error general en script multimodal:", e);
-                }
-              })();
-              </script>
-            {% endif %}
-            
-
-            
-            <div class="card">
-              <!-- Mover el filtro fuera del contenedor de scroll -->
-              <div class="mb-3 position-sticky bg-white" style="top: 0; z-index: 100; padding: 15px; border-bottom: 1px solid #e6e9ec;">
-                <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="columnFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-filter"></i> {% blocktranslate %}Filter Columns{% endblocktranslate %}
-                  </button>
-                  <div class="dropdown-menu p-3" aria-labelledby="columnFilterDropdown" style="max-height: 300px; overflow-y: auto; width: 300px;">
-                    <div class="d-flex justify-content-between mb-2">
-                      <button id="selectAllColumns" class="btn btn-sm btn-primary">{% blocktranslate %}Select All{% endblocktranslate %}</button>
-                      <button id="deselectAllColumns" class="btn btn-sm btn-outline-primary">{% blocktranslate %}Deselect All{% endblocktranslate %}</button>
-                    </div>
-                    <div id="columnCheckboxes">
-                      {% if csv_data.0 %}
-                        {% for key in csv_data.0 %}
-                          <div class="form-check">
-                            <input class="form-check-input column-toggle" type="checkbox" id="check_{{ key|slugify }}" data-column="{{ forloop.counter0 }}" checked>
-                            <label class="form-check-label" for="check_{{ key|slugify }}">
-                              {{ key }}
-                            </label>
-                          </div>
-                        {% endfor %}
-                      {% endif %}
+              <div class="row mb-4">
+                <div class="col-md-4">
+                  <div class="card shadow-sm">
+                    <div class="card-body">
+                      <div class="text-uppercase text-muted mb-1">{% blocktranslate %}Sentiment Distribution{% endblocktranslate %}</div>
+                      <canvas id="sentimentPie"></canvas>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Ahora el contenedor de la tabla con scroll -->
-              <div class="table-responsive custom-scroll">
-                <table id="csvDataTable" class="table align-items-center table-flush">
-                  <thead class="thead-light">
+              {# ---------- Evolución temporal por segmentos (barras apiladas) ---------- #}
+              {% if emotion_report.extra_data.time_segments %}
+              <div class="mb-4">
+                <h6 class="mb-2">{% blocktranslate %}Temporal Evolution (10s segments){% endblocktranslate %}</h6>
+                <canvas id="segmentsStacked"></canvas>
+              </div>
+              {% endif %}
+
+              {# ---------- Transiciones (tabla simple) ---------- #}
+              {% if emotion_report.extra_data.emotion_transitions %}
+              <div>
+                <h6 class="mb-2">{% blocktranslate %}Emotion Transitions{% endblocktranslate %}</h6>
+                <table class="table table-sm">
+                  <thead>
                     <tr>
-                      {% for key in csv_data.0 %}
-                      <th class="column-{{ forloop.counter0 }}">{{ key }}</th>
-                      {% endfor %}
+                      <th>{% blocktranslate %}Transition{% endblocktranslate %}</th>
+                      <th class="text-right">{% blocktranslate %}Count{% endblocktranslate %}</th>
                     </tr>
                   </thead>
-                  <tbody class="list">
-                    {% for row in csv_data %}
-                      <tr>  
-                        {% for key, value in row.items %}
-                        <td class="column-{{ forloop.counter0 }}">{{ value }}</td>
-                        {% endfor %}
+                  <tbody>
+                    {% for trans, cnt in emotion_report.extra_data.emotion_transitions.items|dictsortreversed:"1" %}
+                      <tr>
+                        <td>{{ trans }}</td>
+                        <td class="text-right">{{ cnt }}</td>
                       </tr>
+                    {% empty %}
+                      <tr><td colspan="2" class="text-muted">{% blocktranslate %}No data{% endblocktranslate %}</td></tr>
                     {% endfor %}
                   </tbody>
                 </table>
               </div>
+              {% endif %}
+
+            </div>
+          </div>
+
+          {# ---------- Pasamos extra_data a JS de forma segura ---------- #}
+          {{ emotion_report.extra_data|json_script:"extraData" }}
+
+        {% endif %}
+
+        {% if emotion_report and emotion_report.extra_data and emotion_report.extra_data.multimodal %}
+          {# Solo pasamos la parte multimodal al script (más ligero y claro) #}
+          {{ emotion_report.extra_data.multimodal|json_script:"multimodalData" }}
+
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Análisis Multimodal (Emociones + Wearable) — {{ scenario }}</h5>
+            </div>
+            <div class="card-body">
+              <!-- Primera fila de gráficos -->
+              <div class="row mb-4">
+                <!-- FC por emoción -->
+                <div class="col-lg-6 mb-4">
+                  <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0">Frecuencia Cardíaca por Emoción</h6>
+                    </div>
+                    <div class="card-body">
+                      <canvas id="fcByEmotion"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Actividad por emoción -->
+                <div class="col-lg-6 mb-4">
+                  <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0">Actividad por Emoción</h6>
+                    </div>
+                    <div class="card-body">
+                      <canvas id="activityByEmotion"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Segunda fila de gráficos -->
+              <div class="row">
+                <!-- Métricas biométricas promedio por emoción -->
+                <div class="col-lg-12">
+                  <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0">Métricas Biométricas por Emoción</h6>
+                    </div>
+                    <div class="card-body">
+                      <canvas id="avgMetricsByEmotion"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        {# ======== CARD de Proceso × Emociones desde pd_log ======== #}
+        {% if emotion_report and emotion_report.extra_data and emotion_report.extra_data.pd_log and emotion_report.extra_data.pd_log.process_discovery_analysis %}
+        <div class="card mb-4 process-emotions-card">
+          <div class="card-header border-0">
+            <h3 class="mb-0">{% blocktranslate %}Análisis de Emociones en el Proceso{% endblocktranslate %} — {{scenario}}</h3>
+          </div>
+          <div class="card-body">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="processEmotionsTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="process-stacked-tab" data-toggle="tab" href="#process-stacked" role="tab" 
+                  aria-controls="process-stacked" aria-selected="true">
+                  {% blocktranslate %}Distribución por Actividad{% endblocktranslate %}
+                </a>
+              </li>
+            </ul>
+
+            <!-- Contenido tabs -->
+            <div class="tab-content" id="processEmotionsTabContent">
+              <!-- Barras apiladas (SE MANTIENE) -->
+              <div class="tab-pane fade show active" id="process-stacked" role="tabpanel" aria-labelledby="process-stacked-tab">
+                <div class="chart-container">
+                  <canvas id="pdActivityEmotionsChart"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div> 
-      {% include "includes/footer.html" %}
+        {% endif %}
+
+        <div class="card">
+          <!-- Filtro de columnas -->
+          <div class="mb-3 position-sticky bg-white" style="top: 0; z-index: 100; padding: 15px; border-bottom: 1px solid #e6e9ec;">
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="columnFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-filter"></i> {% blocktranslate %}Filter Columns{% endblocktranslate %}
+              </button>
+              <div class="dropdown-menu p-3" aria-labelledby="columnFilterDropdown" style="max-height: 300px; overflow-y: auto; width: 300px;">
+                <div class="d-flex justify-content-between mb-2">
+                  <button id="selectAllColumns" class="btn btn-sm btn-primary">{% blocktranslate %}Select All{% endblocktranslate %}</button>
+                  <button id="deselectAllColumns" class="btn btn-sm btn-outline-primary">{% blocktranslate %}Deselect All{% endblocktranslate %}</button>
+                </div>
+                <div id="columnCheckboxes">
+                  {% if csv_data.0 %}
+                    {% for key in csv_data.0 %}
+                      <div class="form-check">
+                        <input class="form-check-input column-toggle" type="checkbox" id="check_{{ key|slugify }}" data-column="{{ forloop.counter0 }}" checked>
+                        <label class="form-check-label" for="check_{{ key|slugify }}">
+                          {{ key }}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla -->
+          <div class="table-responsive custom-scroll">
+            <table id="csvDataTable" class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  {% for key in csv_data.0 %}
+                  <th class="column-{{ forloop.counter0 }}">{{ key }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for row in csv_data %}
+                  <tr>  
+                    {% for key, value in row.items %}
+                    <td class="column-{{ forloop.counter0 }}">{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
-  {% endblock content %}
-  
-  {% block javascripts %}
-  {{ block.super }}
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Handle column visibility toggling
-      const columnToggles = document.querySelectorAll('.column-toggle');
-      const selectAllBtn = document.getElementById('selectAllColumns');
-      const deselectAllBtn = document.getElementById('deselectAllColumns');
-      
-      // Function to update column visibility
-      function updateColumnVisibility(columnIndex, visible) {
-        const columnElements = document.querySelectorAll(`.column-${columnIndex}`);
-        columnElements.forEach(el => {
-          el.style.display = visible ? '' : 'none';
+  </div> 
+  {% include "includes/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+{{ block.super }}
+<!-- Cargar UNA sola vez Chart.js v4 y plugins -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin-plot@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2"></script>
+
+<script>
+  // ====== EMOTIONAL ANALYSIS CHARTS (si hay extraData) ======
+  document.addEventListener('DOMContentLoaded', function() {
+    const extraScript = document.getElementById('extraData');
+    if (!extraScript) return;
+    const extra = JSON.parse(extraScript.textContent || '{}');
+
+    // Emotions Count Bar
+    if (extra.emotions_count && Object.keys(extra.emotions_count).length) {
+      const ctx = document.getElementById('emotionsCountBar').getContext('2d');
+      const labels = Object.keys(extra.emotions_count);
+      const data = Object.values(extra.emotions_count);
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Count', data }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false }, title: { display: true, text: 'Emotion Counts' } },
+          scales: {
+            x: { title: { display: true, text: 'Emotion' } },
+            y: { title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+    }
+
+    // Time Segments Stacked
+    if (extra.time_segments && Object.keys(extra.time_segments).length) {
+      const segCtx = document.getElementById('segmentsStacked').getContext('2d');
+      const segmentKeys = Object.keys(extra.time_segments).map(k => parseInt(k, 10)).sort((a,b)=>a-b);
+
+      const emotionSet = new Set();
+      segmentKeys.forEach(s => {
+        const m = extra.time_segments[s] || extra.time_segments[String(s)];
+        Object.keys(m || {}).forEach(e => emotionSet.add(e));
+      });
+      const emotions = Array.from(emotionSet);
+
+      const datasets = emotions.map((emo) => {
+        const arr = segmentKeys.map((s) => {
+          const m = extra.time_segments[s] || extra.time_segments[String(s)];
+          return m && m[emo] ? m[emo] : 0;
+        });
+        return { label: emo, data: arr, stack: 'stack1' };
+      });
+
+      new Chart(segCtx, {
+        type: 'bar',
+        data: { labels: segmentKeys.map(s => s.toString()), datasets },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'Emotions by 10s segments' }, legend: { position: 'bottom' } },
+          scales: {
+            x: { stacked: true, title: { display: true, text: 'Segment' } },
+            y: { stacked: true, title: { display: true, text: 'Count' }, beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+    }
+
+    // Sentiment Pie
+    if (extra.sentimiento_counts) {
+      const labels = ['positivo', 'neutral', 'negativo'];
+      const data = labels.map(l => extra.sentimiento_counts[l] || 0);
+      const ctx = document.getElementById('sentimentPie').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Positivo', 'Neutral', 'Negativo'],
+          datasets: [{ data }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Distribución de Sentimientos' } } }
+      });
+    } else if (document.getElementById('sentimentPie')) {
+      document.getElementById('sentimentPie').parentNode.innerHTML += '<div class="text-muted mt-2">No hay datos de sentimiento</div>';
+    }
+  });
+</script>
+
+<script>
+  // ====== MULTIMODAL CHARTS (si hay multimodalData) ======
+  document.addEventListener('DOMContentLoaded', function() {
+    const multiEl = document.getElementById('multimodalData');
+    if (!multiEl) return;
+    const multimodalData = JSON.parse(multiEl.textContent || '{}');
+
+    // FC por Emoción (barras con promedio)
+    if (multimodalData.boxplot && multimodalData.boxplot.fc_by_emotion) {
+      const ctx = document.getElementById('fcByEmotion').getContext('2d');
+      const fcData = multimodalData.boxplot.fc_by_emotion;
+      const labels = Object.keys(fcData);
+      const avgData = labels.map(label => {
+        const values = (fcData[label] || []).filter(v => typeof v === 'number');
+        return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+      });
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'FC Promedio', data: avgData }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Frecuencia Cardíaca por Emoción' }, legend: { display: false } },
+                   scales: { y: { beginAtZero: false, title: { display: true, text: 'FC (bpm)' } } } }
+      });
+    }
+
+    // Actividad por emoción (apiladas %)
+    if (multimodalData.activity_by_emotion) {
+      const ctx = document.getElementById('activityByEmotion').getContext('2d');
+      const activityData = multimodalData.activity_by_emotion;
+      const labels = Object.keys(activityData);
+      const activeData = labels.map(l => (activityData[l]?.activo ?? 0));
+      const sedentaryData = labels.map(l => (activityData[l]?.sedentario ?? 0));
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Activo (%)', data: activeData },
+            { label: 'Sedentario (%)', data: sedentaryData }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'Actividad por Emoción' } },
+          scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, max: 100, title: { display: true, text: 'Porcentaje (%)' } } }
+        }
+      });
+    }
+
+    // Métricas promedio por emoción (agrupadas)
+    if (multimodalData.avg_by_emotion) {
+      const ctx = document.getElementById('avgMetricsByEmotion').getContext('2d');
+      const avgData = multimodalData.avg_by_emotion;
+      const emotions = Object.keys(avgData);
+      let availableMetrics = [];
+      if (emotions.length > 0) availableMetrics = Object.keys(avgData[emotions[0]] || {});
+      const metrics = ['fc', 'hrv', 'spo2', 'temperatura'].filter(m => availableMetrics.includes(m));
+      const datasets = metrics.map(metric => ({
+        label: metric.toUpperCase(),
+        data: emotions.map(emo => avgData[emo]?.[metric] ?? 0)
+      }));
+      if (datasets.length) {
+        new Chart(ctx, {
+          type: 'bar',
+          data: { labels: emotions, datasets },
+          options: { responsive: true, plugins: { title: { display: true, text: 'Métricas por Emoción' } },
+                     scales: { y: { beginAtZero: false } } }
         });
       }
-      
-      // Setup event listeners for each checkbox
-      columnToggles.forEach(toggle => {
-        toggle.addEventListener('change', function() {
-          const columnIndex = this.getAttribute('data-column');
-          updateColumnVisibility(columnIndex, this.checked);
+    }
+  });
+</script>
+
+<script>
+  // ====== PROCESO × EMOCIONES (tabs con render diferido) ======
+  (function(){
+    const extraEl = document.getElementById('extraData');
+    if (!extraEl) return;
+    const extra = JSON.parse(extraEl.textContent || '{}');
+    const pda = extra?.pd_log?.process_discovery_analysis;
+    if (!pda) return;
+
+    let stackedRendered = false;
+    let heatmapRendered = false;
+    let rankingRendered = false;
+    let stackedChart = null;
+    let heatmapChart = null;
+
+    const EMOTION_COLORS = {
+      'neutral': 'rgba(255, 206, 86, 0.7)',
+      'happy': 'rgba(75, 192, 192, 0.7)',
+      'sad': 'rgba(108, 117, 125, 0.7)',
+      'angry': 'rgba(255, 99, 132, 0.7)',
+      'surprised': 'rgba(23, 162, 184, 0.7)',
+      'fearful': 'rgba(111, 66, 193, 0.7)',
+      'disgusted': 'rgba(253, 126, 20, 0.7)'
+    };
+    function fallbackColor(key) {
+      let hash = 0; for (let i=0;i<key.length;i++) hash = key.charCodeAt(i) + ((hash<<5)-hash);
+      const hue = Math.abs(hash) % 360;
+      return `hsla(${hue},70%,55%,0.7)`;
+    }
+
+    function renderStacked(){
+      if (stackedRendered) { if (stackedChart) stackedChart.resize(); return; }
+      const el = document.getElementById('pdActivityEmotionsChart');
+      const sbd = pda?.stacked_bar_data;
+      if (!el || !sbd) return;
+      const activities = (sbd.activities || []).map(String);
+      const emotions = (sbd.emotions || []).map(String);
+      const data = sbd.data || {};
+      if (!activities.length || !emotions.length) {
+        el.parentNode.innerHTML = '<div class="alert alert-info">No hay datos suficientes para visualizar</div>';
+        return;
+      }
+      const datasets = emotions.map(em => {
+        const color = EMOTION_COLORS[em] || fallbackColor(em);
+        const border = color.replace('0.7','1');
+        return {
+          label: em,
+          data: activities.map(a => (data[a] && data[a][em]) ? data[a][em] : 0),
+          backgroundColor: color,
+          borderColor: border,
+          borderWidth: 1,
+          stack: 'total'
+        };
+      });
+      stackedChart = new Chart(el.getContext('2d'), {
+        type: 'bar',
+        data: { labels: activities, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, title: { display: true, text: 'Actividades (ocel:activity)' } },
+            y: { stacked: true, title: { display: true, text: 'Frecuencia' } }
+          },
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Distribución de Emociones por Actividad' },
+            tooltip: {
+              callbacks: {
+                footer: (items) => {
+                  const total = items.reduce((acc, it) => acc + (it.raw||0), 0);
+                  return 'Total actividad: ' + total;
+                }
+              }
+            }
+          }
+        }
+      });
+      stackedRendered = true;
+    }
+
+    function renderHeatmap(){
+      if (heatmapRendered) { if (heatmapChart) heatmapChart.resize(); return; }
+      const el = document.getElementById('pdHeatmapChart');
+      const h = pda?.heatmap_data;
+      if (!el || !h) return;
+
+      const activities = (h.activities || []).map(String);
+      const emotions = (h.emotions || []).map(String);
+      const intensity = h.intensity || {};
+
+      if (!activities.length || !emotions.length) {
+        el.parentNode.innerHTML = '<div class="alert alert-info">No hay datos suficientes para visualizar</div>';
+        return;
+      }
+
+      const matrixData = [];
+      let maxV = 0;
+      emotions.forEach((em, x) => {
+        const byAct = intensity[em] || {};
+        activities.forEach((act, y) => {
+          const v = Number(byAct[act] || 0);
+          if (v > 0) {
+            matrixData.push({ x, y, v });
+            if (v > maxV) maxV = v;
+          }
         });
       });
-      
-      // Select all columns button
+      if (maxV === 0) {
+        el.parentNode.innerHTML = '<div class="alert alert-info">No hay intensidad suficiente para el heatmap</div>';
+        return;
+      }
+
+      heatmapChart = new Chart(el.getContext('2d'), {
+        type: 'matrix',
+        data: {
+          datasets: [{
+            label: 'Intensidad Emocional',
+            data: matrixData,
+            backgroundColor: (ctx) => {
+              const v = ctx.raw ? ctx.raw.v : 0;
+              const alpha = Math.max(0.1, v / maxV);
+              return `rgba(255, 99, 132, ${alpha})`;
+            },
+            borderWidth: 1,
+            borderColor: '#fff',
+            width: (ctx) => {
+              const a = ctx.chart.chartArea;
+              return (a.right - a.left) / emotions.length - 1;
+            },
+            height: (ctx) => {
+              const a = ctx.chart.chartArea;
+              return (a.bottom - a.top) / activities.length - 1;
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Heatmap Actividad–Emoción' },
+            tooltip: {
+              callbacks: {
+                title: (items) => {
+                  if (!items.length) return '';
+                  const d = items[0].raw;
+                  return `Actividad: ${activities[d.y]} · Emoción: ${emotions[d.x]}`;
+                },
+                label: (item) => `Conteo: ${item.raw ? item.raw.v : 0}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'category',
+              labels: emotions,
+              offset: true,
+              title: { display: true, text: 'Emociones' },
+              ticks: { maxRotation: 0 }
+            },
+            y: {
+              type: 'category',
+              labels: activities,
+              offset: true,
+              title: { display: true, text: 'Actividades (ocel:activity)' }
+            }
+          }
+        }
+      });
+      heatmapRendered = true;
+    }
+
+    function renderRanking(){
+      if (rankingRendered) return;
+      const container = document.getElementById('pdNegativeActivitiesRanking');
+      const obj = pda?.negativity_ranking;
+      if (!container || !obj) return;
+
+      const arr = Object.keys(obj).map(act => ({
+        activity: String(act),
+        negative_count: Number(obj[act].negative_count || 0),
+        total_count: Number(obj[act].total_count || 0),
+        negativity_ratio: Number(obj[act].negativity_ratio || 0)
+      })).sort((a,b) => b.negativity_ratio - a.negativity_ratio);
+
+      if (!arr.length) {
+        container.innerHTML = '<div class="alert alert-info">No hay datos suficientes para visualizar</div>';
+        return;
+      }
+
+      let html = `
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th style="width:48px">#</th>
+                <th>Actividad</th>
+                <th style="width:140px" class="text-end">% Negatividad</th>
+                <th>Proporción</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      arr.forEach((row, i) => {
+        const pct = (row.negativity_ratio * 100).toFixed(1);
+        html += `
+          <tr class="ranking-item">
+            <td>${i+1}</td>
+            <td><span class="badge bg-light text-dark"> ${row.activity} </span></td>
+            <td class="ranking-value text-end">${pct}%</td>
+            <td>
+              <div class="ranking-bar" style="width:${pct}%; max-width:100%"></div>
+              <small class="text-muted">${row.negative_count} / ${row.total_count} negativos</small>
+            </td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+
+      rankingRendered = true;
+    }
+
+    // Render inicial SOLO de la pestaña activa (stacked)
+    renderStacked();
+
+    // Escucha el cambio de pestaña (Bootstrap 4 y 5)
+    const tabs = document.querySelectorAll('#processEmotionsTabs a[data-toggle="tab"], #processEmotionsTabs a[data-bs-toggle="tab"]');
+    tabs.forEach(tab => {
+      tab.addEventListener('shown.bs.tab', function () {
+        const target = this.getAttribute('href') || this.dataset.bsTarget || '';
+        if (target === '#process-heatmap') {
+          renderHeatmap();
+        } else if (target === '#process-ranking') {
+          renderRanking();
+        } else if (target === '#process-stacked') {
+          renderStacked();
+        }
+      });
+    });
+  })();
+</script>
+
+<script>
+  // ====== Filtro columnas + descarga ======
+  document.addEventListener('DOMContentLoaded', function() {
+    const columnToggles = document.querySelectorAll('.column-toggle');
+    const selectAllBtn = document.getElementById('selectAllColumns');
+    const deselectAllBtn = document.getElementById('deselectAllColumns');
+    
+    function updateColumnVisibility(columnIndex, visible) {
+      const columnElements = document.querySelectorAll(`.column-${columnIndex}`);
+      columnElements.forEach(el => { el.style.display = visible ? '' : 'none'; });
+    }
+    
+    columnToggles.forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const columnIndex = this.getAttribute('data-column');
+        updateColumnVisibility(columnIndex, this.checked);
+      });
+    });
+    
+    if (selectAllBtn) {
       selectAllBtn.addEventListener('click', function(e) {
         e.preventDefault();
         columnToggles.forEach(toggle => {
@@ -564,8 +744,9 @@
           updateColumnVisibility(columnIndex, true);
         });
       });
-      
-      // Deselect all columns button
+    }
+    
+    if (deselectAllBtn) {
       deselectAllBtn.addEventListener('click', function(e) {
         e.preventDefault();
         columnToggles.forEach(toggle => {
@@ -574,36 +755,31 @@
           updateColumnVisibility(columnIndex, false);
         });
       });
+    }
 
-      const downloadBtn = document.getElementById('downloadFilteredButton');
-      if (downloadBtn) {
-        downloadBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          
-          // Recopilar columnas visibles (las que están activas/checked)
-          const activeColumns = [];
-          const activeColumnNames = [];
-          
-          columnToggles.forEach(toggle => {
-            if (toggle.checked) {
-              activeColumns.push(toggle.getAttribute('data-column'));
-              // Obtener el texto de la etiqueta asociada al checkbox
-              const labelText = toggle.nextElementSibling.textContent.trim();
-              activeColumnNames.push(labelText);
-            }
-          });
-          
-          // Construir URL con columnas activas
-          const baseUrl = "/monitoring/result/{{execution_id}}/?download=True&scenario={{scenario}}";
-          const columnsParam = activeColumns.length > 0 ? 
-                              `&columns=${activeColumns.join(',')}` : "";
-          const namesParam = activeColumnNames.length > 0 ?
-                            `&column_names=${encodeURIComponent(JSON.stringify(activeColumnNames))}` : "";
-          
-          // Redirigir para descargar
-          window.location.href = baseUrl + columnsParam + namesParam;
+    const downloadBtn = document.getElementById('downloadFilteredButton');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const activeColumns = [];
+        const activeColumnNames = [];
+        
+        columnToggles.forEach(toggle => {
+          if (toggle.checked) {
+            activeColumns.push(toggle.getAttribute('data-column'));
+            const labelText = toggle.nextElementSibling.textContent.trim();
+            activeColumnNames.push(labelText);
+          }
         });
-      }
-    });
-  </script>
-  {% endblock javascripts %}
+        
+        const baseUrl = "/monitoring/result/{{execution_id}}/?download=True&scenario={{scenario}}";
+        const columnsParam = activeColumns.length > 0 ? `&columns=${activeColumns.join(',')}` : "";
+        const namesParam = activeColumnNames.length > 0 ? `&column_names=${encodeURIComponent(JSON.stringify(activeColumnNames))}` : "";
+        
+        window.location.href = baseUrl + columnsParam + namesParam;
+      });
+    }
+  });
+</script>
+{% endblock javascripts %}
