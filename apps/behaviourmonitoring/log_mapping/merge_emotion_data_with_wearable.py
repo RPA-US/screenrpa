@@ -34,6 +34,8 @@ def merge_emotions_with_wearable(emotions_csv_path, wearable_csv_path, output_pa
             logging.error("No se encontró columna de timestamp en datos de wearables")
             return False
         
+        emotions_df['timestamp'] = emotions_df['timestamp'].dt.tz_localize(None)
+        wearable_df['timestamp'] = wearable_df['timestamp'].dt.tz_localize(None)
         # Ordenar por timestamp
         emotions_df = emotions_df.sort_values('timestamp')
         wearable_df = wearable_df.sort_values('timestamp')
