@@ -135,33 +135,6 @@
               </div>
               {% endif %}
 
-              {# ---------- Transiciones (tabla simple) ---------- #}
-              {% if emotion_report.extra_data.emotion_transitions %}
-              <div>
-                <h6 class="mb-2">{% blocktranslate %}Emotion Transitions{% endblocktranslate %}</h6>
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th>{% blocktranslate %}Transition{% endblocktranslate %}</th>
-                      <th class="text-right">{% blocktranslate %}Count{% endblocktranslate %}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for trans, cnt in emotion_report.extra_data.emotion_transitions.items|dictsortreversed:"1" %}
-                      <tr>
-                        <td>{{ trans }}</td>
-                        <td class="text-right">{{ cnt }}</td>
-                      </tr>
-                    {% empty %}
-                      <tr><td colspan="2" class="text-muted">{% blocktranslate %}No data{% endblocktranslate %}</td></tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% endif %}
-
-            </div>
-          </div>
 
           {# ---------- Pasamos extra_data a JS de forma segura ---------- #}
           {{ emotion_report.extra_data|json_script:"extraData" }}
