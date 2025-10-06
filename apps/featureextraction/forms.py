@@ -318,7 +318,13 @@ class PostprocessingForm(forms.ModelForm):
     class Meta:
         model = Postprocessing
         exclude = ("user",)
-        fields = ("technique_name", "preloaded_file", "preloaded", "title")
+        fields = (
+            "technique_name",
+            "preloaded_file",
+            "preloaded",
+            "title",
+            "gaze_conciliation",
+        )
         labels = {
             "technique_name": _("Technique"),
             "preloaded_file": "Preload Execution Results",
@@ -337,6 +343,10 @@ class PostprocessingForm(forms.ModelForm):
                     "required": "true",
                     "onchange": "changeTechniqueOptions()",
                 }
+            ),
+            "gaze_conciliation": forms.Select(
+                choices=[("union", "Union"), ("intersection", "Intersection")],
+                attrs={"class": "form-control"},
             ),
         }
 
