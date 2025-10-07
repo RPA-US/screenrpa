@@ -265,7 +265,9 @@ def state_ui_element_centroid(ui_log_path, path_scenario, execution, fe):
                         if eval(relevant_compos_predicate)
                     ]
                 else:
-                    compos_list = data["compos"]
+                    compos_list = [
+                        compo for compo in data["compos"] if compo["relevant"]
+                    ]
 
                 num_UI_elements += len(compos_list)
                 if len(compos_list) > max_num_UI_elements:

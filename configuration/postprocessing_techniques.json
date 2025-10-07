@@ -1,4 +1,5 @@
 {
     "centroid": "combine_ui_element_centroid",
-    "centroid_plaintext": "combine_ui_element_centroid_and_text"
+    "centroid_plaintext": "combine_ui_element_centroid_and_text",
+    "only_gaze": "only_gaze_conciliation"
 }
