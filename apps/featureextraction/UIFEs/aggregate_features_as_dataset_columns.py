@@ -102,7 +102,9 @@ def occurrence_ui_element_class(ui_log_path, path_scenario, execution, fe):
                         if eval(relevant_compos_predicate)
                     ]
                 else:
-                    compos_list = data["compos"]
+                    compos_list = [
+                        compo for compo in data["compos"] if compo["relevant"]
+                    ]
 
                 # quantity_ui_elements = Counter({key: 0 for key in ui_elements_classification_classes})
                 num_UI_elements += len(compos_list)
