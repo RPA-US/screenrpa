@@ -243,7 +243,7 @@ def decision_tree_training(log_path, scenario_path, execution):
         act = flattened_csv_log_path.split("_")[-1].split(".")[0]
         print(flattened_csv_log_path + "\n")
 
-        flattened_dataset = pd.read_csv(flattened_csv_log_path)
+        flattened_dataset = pd.read_csv(flattened_csv_log_path, low_memory=False)
         # flattened_dataset.to_csv(path + "flattened_dataset.csv")
 
         # for col in flattened_dataset.columns:

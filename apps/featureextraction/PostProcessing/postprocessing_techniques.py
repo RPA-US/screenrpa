@@ -5,9 +5,12 @@ import numpy as np
 from shapely.geometry import Polygon, Point
 from tqdm import tqdm
 import pandas as pd
-from shapely import intersection_all
+import polars as pl
+from shapely import STRtree, intersection_all
+from shapely import points as from_shapely_points
 from apps.analyzer.models import Execution
 from apps.featureextraction.utils import read_ui_log_as_dataframe
+from concurrent.futures import ThreadPoolExecutor
 
 
 def filter_intersection_relevant(path_scenario, execution, compos_nparray, rows):
@@ -26,7 +29,7 @@ def filter_intersection_relevant(path_scenario, execution, compos_nparray, rows)
     ]
     activity_screenshots = rows[
         execution.case_study.special_colnames["Screenshot"]
-    ].values.tolist()
+    ].to_list()
     activity_relevant_regions = np.concatenate(
         [
             np.load(os.path.join(fixation_regions_path, f), allow_pickle=True)
@@ -67,40 +70,52 @@ def combine_ui_element_centroid_aux(
     screenshot_colname = execution.case_study.special_colnames["Screenshot"]
     text_classname = execution.ui_elements_classification.model.text_classname
 
+    if not os.path.exists(
+        os.path.join(path_scenario + "_results", "log_enriched.csv")
+    ):  # to be applied only to aggregated features
+        log = read_ui_log_as_dataframe(ui_log_path, lib="polars").with_row_count(
+            "orig_idx"
+        )
+        log.write_csv(os.path.join(path_scenario + "_results", "log_enriched.csv"))
+        del log
     if not os.path.exists(os.path.join(path_scenario + "_results", "pipeline_log.csv")):
         fe_log = read_ui_log_as_dataframe(
-            os.path.join(path_scenario + "_results", "log_enriched.csv")
+            os.path.join(path_scenario + "_results", "log_enriched.csv"), lib="polars"
         )
         pd_log = read_ui_log_as_dataframe(
-            os.path.join(path_scenario + "_results", "pd_log.csv")
+            os.path.join(path_scenario + "_results", "pd_log.csv"), lib="polars"
         )
-        cols_to_drop = pd_log.columns.tolist()
+        cols_to_drop = pd_log.columns
         cols_to_drop.remove(execution.case_study.special_colnames["Screenshot"])
-        fe_log = fe_log.drop(columns=cols_to_drop, errors="ignore")
-        log = pd.merge(
-            pd_log,
+        fe_log = fe_log.drop(cols_to_drop, strict=False)
+        log = pd_log.join(
             fe_log,
             how="inner",
             on=execution.case_study.special_colnames["Screenshot"],
-        )
+        ).with_row_count("orig_idx")
         del fe_log
         del pd_log
     else:
         log = read_ui_log_as_dataframe(
-            os.path.join(path_scenario + "_results", "pipeline_log.csv")
-        )
+            os.path.join(path_scenario + "_results", "pipeline_log.csv"), lib="polars"
+        ).with_row_count("orig_idx")
     activities = list(
-        set(
-            log.loc[
-                :, execution.case_study.special_colnames["Activity"]
-            ].values.tolist()
-        )
+        set(log[execution.case_study.special_colnames["Activity"]].to_list())
     )
 
     for activity in activities:
-        rows = log[log[execution.case_study.special_colnames["Activity"]] == activity]
-        for index, row in tqdm(
-            rows.iterrows(), desc="Updating centroids with classes for each screenshot"
+        rows = log.filter(
+            pl.col(execution.case_study.special_colnames["Activity"]) == activity
+        )
+        centroid_regex = re.compile(r".*_(\d*\.?\d+)-(\d*\.?\d+)")
+        centroid_columns = [
+            col
+            for col in rows.columns
+            if centroid_regex.match(col) and rows.get_column(col).count() > 0
+        ]
+        for row in tqdm(
+            rows.iter_rows(named=True),
+            desc="Updating centroids with classes for each screenshot",
         ):
             screenshot_filename = os.path.basename(row[screenshot_colname])
 
@@ -113,7 +128,6 @@ def combine_ui_element_centroid_aux(
                 ) as f:
                     data = json.load(f)
 
-                # Both components and centroids as numpy arrays to make it more performant
                 compos_nparray = np.array(data["compos"])
 
                 if gaze_conciliation == "intersection":
@@ -122,28 +136,40 @@ def combine_ui_element_centroid_aux(
                         path_scenario, execution, compos_nparray, rows
                     )
 
+                data["compos"] = list(compos_nparray)
+                with open(
+                    os.path.join(metadata_json_root, screenshot_filename + ".json"), "w"
+                ) as f:
+                    json.dump(data, f, indent=4)
+
                 log = centroid_conciliation(
-                    rows,
                     log,
-                    index,
+                    activity,
+                    centroid_columns,
+                    row["orig_idx"],
                     data,
                     compos_nparray,
                     use_text,
                     only_gaze_conciliation,
-                    execution.ui_elements_classification.model.text_classname,
+                    text_classname,
                 )
 
     # Copy trace_id column because it gets deleted sometimes
     trace = log[execution.case_study.special_colnames["Case"]]
     variant = log[execution.case_study.special_colnames["Variant"]]
     # Remove columns with the same values
-    log = log.T.drop_duplicates().T
-    log[execution.case_study.special_colnames["Case"]] = trace
-    log[execution.case_study.special_colnames["Variant"]] = variant
+    log = pl.from_pandas(log.to_pandas().T.drop_duplicates().T).drop("orig_idx")
+    log = log.with_columns(
+        [
+            pl.Series(execution.case_study.special_colnames["Case"], trace),
+            pl.Series(execution.case_study.special_colnames["Variant"], variant),
+        ]
+    )
     # Remove nan columns
-    log = log.dropna(axis=1, how="all")
+    # log = log.select(pl.all().fill_nan(None))  # polars does not have dropna for columns
+    log = log[[s.name for s in log if not (s.null_count() == log.height)]]
     # Save the updated log
-    log.to_csv(os.path.join(execution_root, "pipeline_log.csv"), index=False)
+    log.write_csv(os.path.join(execution_root, "pipeline_log.csv"), separator=",")
 
     # Save relevant uicompo data. This is relevant for aggregated features
     for compo in data["compos"]:
@@ -161,8 +187,9 @@ def combine_ui_element_centroid_aux(
 
 
 def centroid_conciliation(
-    rows,
     log,
+    activity,
+    centroid_columns,
     index,
     data,
     compos_nparray,
@@ -183,15 +210,9 @@ def centroid_conciliation(
         only_gaze_conciliation: Whether to only remove non-relevant components
         text_classname: Classname used for text elements
     """
-    # identifier_-centroidY
     centroid_regex = re.compile(r".*_(\d*\.?\d+)-(\d*\.?\d+)")
-    # Get all the columns that match the regex and do not contain only nan values
-    centroid_columns = [
-        col
-        for col in rows.columns
-        if centroid_regex.match(col) and not rows[col].isnull().all()
-    ]
-
+    pending = dict()
+    # keep legacy-only branch untouched except for parsing optimizations
     if only_gaze_conciliation:
         non_relevant_compos_ids = set(map(lambda x: x["id"], data["compos"])) - set(
             map(lambda x: x["id"], compos_nparray)
@@ -200,58 +221,149 @@ def centroid_conciliation(
             compo for compo in data["compos"] if compo["id"] in non_relevant_compos_ids
         ]
         for compo in non_relevant_compos:
-            for col in centroid_columns:
-                centroid = np.array(
-                    [
-                        centroid_regex.match(col).groups()[0],
-                        centroid_regex.match(col).groups()[1],
-                    ]
-                )
-                classname = col.split("_", maxsplit=2)[2]
+            # Single columns
+            if (
+                c := f"rpa-us_{compo['centroid'][0]}-{compo['centroid'][1]}"
+                in centroid_columns
+            ):
+                pending[c] = None
+            if (
+                c
+                := f"rpa-us_{compo['centroid'][0]}-{compo['centroid'][1]}_{compo['class']}"
+                in centroid_columns
+            ):
+                pending[c] = None
+            c = f"rpa-us_{compo['centroid'][0]}-{compo['centroid'][1]}_{compo.get('text')}"
+            if use_text and compo["class"] == text_classname and c in centroid_columns:
+                pending[c] = None
 
-                if (
-                    compo["centroid"][0] == centroid[0]
-                    and compo["centroid"][1] == centroid[1]
-                ):
-                    if (
-                        use_text
-                        and compo["class"] == text_classname
-                        and compo["text"] == classname
-                    ):
-                        log.at[:, col] = np.nan
-                    elif compo["class"] == classname:
-                        log.at[:, col] = np.nan
+            # FIXME: Aggregated columns. How do we handle these? We cannot set them to NaN, and we cannot subtract from it
+            # if c := f"numeric__rpa_us_{compo['class']}_{activity}" in log.columns:
+            #     pending[c] = np.nan
+            # c = f"numeric__rpa_us_{compo.get('text')}_{activity}"
+            # if use_text and compo["class"] == text_classname and c in log.columns:
+            #     pending[c] = np.nan
     else:
-        # Pre-compute Polygon objects to avoid creating them in each iteration
-        compos_polygons = [
-            (Polygon(compo["points"]), compo) for compo in compos_nparray
-        ]
+        # Build polygons and keep mapping to compos
+        compos_list = list(compos_nparray)
+        polygons = []
+        poly_to_compo = {}
+        for compo in compos_list:
+            poly = Polygon(compo["points"])
+            polygons.append(poly)
+            poly_to_compo[id(poly)] = compo
 
-        # Match each centroid with the smallest object containing it using Polygon from shapely
-        for col in centroid_columns:
-            centroid = np.array(
-                [
-                    centroid_regex.match(col).groups()[0],
-                    centroid_regex.match(col).groups()[1],
-                ]
+        # Build spatial index
+        if len(polygons) == 0:
+            return log
+
+        tree = STRtree(polygons)
+
+        pending = assign_centroids_to_compo(
+            centroid_columns,
+            centroid_regex,
+            tree,
+            poly_to_compo,
+            use_text,
+            text_classname,
+        )
+
+    # apply pending assignments in a single vectorized write where possible
+    if pending:
+        exprs = [
+            (
+                pl.when(pl.col("orig_idx") == index)
+                .then(pl.lit(pending[c]))
+                .otherwise(pl.col(c))
+                .alias(c)
             )
-            centroid_point = Point(centroid.astype(float))
-            containing_compos = [
-                (compo, poly.area)
-                for poly, compo in compos_polygons
-                if poly.contains(centroid_point)
-            ]
-            if len(containing_compos) == 0:
-                continue
-            compo = min(containing_compos, key=lambda x: x[1])[0]
-
-            # Insert the class of the smallest object containing the centroid
-            if use_text and compo["class"] == text_classname:
-                log.at[index, col] = compo["text"]
-            else:
-                log.at[index, col] = compo["class"]
+            if c in pending
+            else pl.col(c)
+            for c in log.columns
+        ]
+        return log.with_columns(exprs)
 
     return log
+
+
+def assign_centroids_to_compo(
+    centroid_columns: list[str],
+    centroid_regex,
+    tree: STRtree,
+    poly_to_compo: dict[int, dict],
+    use_text: bool,
+    text_classname: str,
+) -> dict[str, str]:
+    coords = []
+    col_indices = []
+    # Collect points in bulk
+    for idx, col in enumerate(centroid_columns):
+        m = centroid_regex.match(col)
+        if not m:
+            continue
+        cx = float(m.groups()[0])
+        cy = float(m.groups()[1])
+        coords.append((cx, cy))
+        col_indices.append(idx)
+    if not coords:
+        return {}
+
+    coords_arr = np.array(coords)  # shape (M, 2)
+    # Create geometry array of points
+    points = from_shapely_points(coords_arr[:, 0], coords_arr[:, 1])  # vectorized
+
+    # Bulk query: get all (point_i, poly_j) pairs
+    pairs = tree.query(points, predicate="within")
+    if len(pairs) == 0:
+        return {}
+
+    df = pd.DataFrame(pairs.T, columns=["point_idx", "poly_idx"])
+    df["area"] = df["poly_idx"].apply(
+        lambda j: tree.geometries[j].area
+    )  # point | intersecting polygon | polygon area
+
+    # For each point_idx, pick the poly_idx with minimum area
+    idx_min_area = df.groupby("point_idx")["area"].idxmin()
+    df_min = df.loc[idx_min_area]  # point | polygon with min area | area
+
+    pending: dict[str, str] = {}
+    # For each assigned centroid, choose the right class/text
+
+    # Partition pairs into balanced chunks
+    pairs = list(zip(df_min["point_idx"], df_min["poly_idx"]))
+    n_threads = min(8, os.cpu_count() or 1)
+    chunk_size = max(1, len(pairs) // n_threads)
+    chunks = [pairs[i : i + chunk_size] for i in range(0, len(pairs), chunk_size)]
+
+    n_cols = len(centroid_columns)
+
+    # Preallocate object array for results
+    pending_arr = np.empty(n_cols, dtype=object)
+
+    # Worker function operating on a chunk of (pt_i, poly_i) pairs
+    def worker(rows):
+        for pt_i, poly_i in rows:
+            poly = tree.geometries[int(poly_i)]
+            compo = poly_to_compo.get(id(poly))
+            if compo is None:
+                continue
+            idx = col_indices[int(pt_i)]  # numeric index into centroid_columns
+            pending_arr[idx] = (
+                compo.get("text")
+                if use_text and compo.get("class") == text_classname
+                else compo.get("class")
+            )
+
+    # Execute threads in parallel
+    with ThreadPoolExecutor(max_workers=n_threads) as ex:
+        ex.map(worker, chunks)
+
+    # Convert non-empty array entries back into a dictionary
+    pending = {
+        centroid_columns[i]: val for i, val in enumerate(pending_arr) if val is not None
+    }
+
+    return pending
 
 
 def combine_ui_element_centroid(
