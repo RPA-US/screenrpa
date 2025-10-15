@@ -73,9 +73,7 @@ def combine_ui_element_centroid_aux(
     if not os.path.exists(
         os.path.join(path_scenario + "_results", "log_enriched.csv")
     ):  # to be applied only to aggregated features
-        log = read_ui_log_as_dataframe(ui_log_path, lib="polars").with_row_count(
-            "orig_idx"
-        )
+        log = read_ui_log_as_dataframe(ui_log_path, lib="polars")
         log.write_csv(os.path.join(path_scenario + "_results", "log_enriched.csv"))
         del log
     if not os.path.exists(os.path.join(path_scenario + "_results", "pipeline_log.csv")):
