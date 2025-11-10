@@ -1,16 +1,14 @@
-version: '3.7'
-
 # Volumes
 volumes:
   db_data:
-    name: ${DOCKERNAME}db_data
+    name: db_data
   screenrpa_data:
-    name: ${DOCKERNAME}screenrpa_data
+    name: screenrpa_data
 
 services:
   db:
-    image: postgres
-    container_name: ${DOCKERNAME}screenrpa-db-dev
+    image: postgres:16
+    container_name: screenrpa-db-dev
     restart: always
     env_file: ./.env
     hostname: db
@@ -22,16 +20,13 @@ services:
       - db_network
 
   screen-rpa:
-    container_name: ${DOCKERNAME}screenrpa-dev
+    container_name: screenrpa-dev
     restart: unless-stopped
     env_file: ./.env
     command: tail -F anything
     build:
       context: ../.
-      dockerfile: ./docker/Dockerfile
-      args:
-        branch: ${BRANCH_DOCKER}
-        target: dev
+      dockerfile: ./docker/local.Dockerfile
     ports:
       - "8000:8000"
     volumes:
