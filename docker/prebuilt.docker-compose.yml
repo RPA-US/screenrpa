@@ -2,8 +2,10 @@
 volumes:
   db_data:
     name: db_data
-  screenrpa_data:
-    name: screenrpa_data
+  screenrpa_exp_data:
+    name: screenrpa_exp_data
+  screenrpa_repro_data:
+    name: screenrpa_repro_data
 
 services:
   db:
@@ -19,7 +21,7 @@ services:
     networks:
       - db_network
 
-  screen-rpa:
+  screenrpa:
     container_name: screenrpa-dev
     restart: unless-stopped
     env_file: ./.env
@@ -28,7 +30,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - screenrpa_data:/screenrpa
+      - screenrpa_exp_data:/screenrpa/media
+      - screenrpa_repro_data:/reproducibility
     networks:
       - db_network
       - web_network
@@ -46,7 +49,7 @@ services:
     networks:
       - web_network
     depends_on: 
-      - screen-rpa
+      - screenrpa
 networks:
   db_network:
     driver: bridge
