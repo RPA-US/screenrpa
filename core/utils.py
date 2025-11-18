@@ -38,6 +38,7 @@ def read_ui_log_as_dataframe(log_path, nrows=None, ncols=None, lib="pandas"):
                 separator=separator,
                 n_rows=nrows,
                 columns=list(range(ncols)) if ncols else None,
+                infer_schema_length=100000,
             )  # , index_col=0)
         case _:
             raise ValueError(
