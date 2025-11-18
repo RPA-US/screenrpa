@@ -101,16 +101,16 @@ def combine_ui_element_centroid_aux(
         set(log[execution.case_study.special_colnames["Activity"]].to_list())
     )
 
+    centroid_regex = re.compile(r".*_(\d*\.?\d+)-(\d*\.?\d+)")
+    centroid_columns = [
+        col
+        for col in log.columns
+        if centroid_regex.match(col) and log.get_column(col).count() > 0
+    ]
     for activity in activities:
         rows = log.filter(
             pl.col(execution.case_study.special_colnames["Activity"]) == activity
         )
-        centroid_regex = re.compile(r".*_(\d*\.?\d+)-(\d*\.?\d+)")
-        centroid_columns = [
-            col
-            for col in rows.columns
-            if centroid_regex.match(col) and rows.get_column(col).count() > 0
-        ]
         for row in tqdm(
             rows.iter_rows(named=True),
             desc="Updating centroids with classes for each screenshot",
