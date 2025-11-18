@@ -166,8 +166,6 @@ def combine_ui_element_centroid_aux(
     # Remove nan columns
     # log = log.select(pl.all().fill_nan(None))  # polars does not have dropna for columns
     log = log[[s.name for s in log if not (s.null_count() == log.height)]]
-    # Save the updated log
-    log.write_csv(os.path.join(execution_root, "pipeline_log.csv"), separator=",")
 
     # Save relevant uicompo data. This is relevant for aggregated features
     for compo in data["compos"]:
@@ -175,6 +173,13 @@ def combine_ui_element_centroid_aux(
             compo["relevant"] = True
         else:
             compo["relevant"] = False
+            # Remove non relevant components from the log
+            col = f"rpa-us_{compo['centroid'][0]}-{compo['centroid'][1]}"
+            if col in centroid_columns:
+                log.drop_in_place(col)
+
+    # Save the updated log
+    log.write_csv(os.path.join(execution_root, "pipeline_log.csv"), separator=",")
 
     with open(
         os.path.join(metadata_json_root, screenshot_filename + ".json"), "w"
